@@ -2,21 +2,35 @@ import React, { useState } from 'react';
 import { cn } from '@/lib/utils';
 import { Search, UserCheck, UserX } from 'lucide-react';
 import { Input } from '@/components/ui/input';
+import StudentPanelFilters from './StudentPanelFilters';
 
 export default function StudentPanel({ students, seats, onDragStudent }) {
   const [search, setSearch] = useState('');
+  const [filter, setFilter] = useState('all');
 
   const seatedIds = new Set(seats.filter(s => s.student_id).map(s => s.student_id));
+
+  function matchesFilter(s) {
+    if (filter === 'all') return true;
+    if (filter === 'front') return s.row_preference === 'front';
+    if (filter === 'middle') return s.row_preference === 'middle';
+    if (filter === 'back') return s.row_preference === 'back';
+    if (filter === 'left') return s.side_preference === 'left';
+    if (filter === 'right') return s.side_preference === 'right';
+    return true;
+  }
 
   const unseated = students.filter(s =>
     s.is_active !== false &&
     !seatedIds.has(s.id) &&
-    s.name.includes(search)
+    s.name.includes(search) &&
+    matchesFilter(s)
   );
   const seated = students.filter(s =>
     s.is_active !== false &&
     seatedIds.has(s.id) &&
-    s.name.includes(search)
+    s.name.includes(search) &&
+    matchesFilter(s)
   );
 
   function handleDragStart(e, student) {
@@ -24,7 +38,7 @@ export default function StudentPanel({ students, seats, onDragStudent }) {
   }
 
   return (
-    <div className="flex flex-col gap-3 h-full">
+    <div className="flex flex-col gap-2 h-full">
       <div className="relative">
         <Search className="absolute right-3 top-2.5 w-4 h-4 text-muted-foreground" />
         <Input
@@ -34,6 +48,7 @@ export default function StudentPanel({ students, seats, onDragStudent }) {
           onChange={e => setSearch(e.target.value)}
         />
       </div>
+      <StudentPanelFilters activeFilter={filter} onFilterChange={setFilter} />
 
       <div className="flex-1 overflow-y-auto space-y-4 pl-1">
         {unseated.length > 0 && (

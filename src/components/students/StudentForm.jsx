@@ -4,7 +4,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { X } from 'lucide-react';
+import { X, MapPin } from 'lucide-react';
 
 const SPECIAL_NEEDS_OPTIONS = [
   { value: 'vision', label: '👁️ ראייה' },
@@ -20,7 +20,9 @@ export default function StudentForm({ student, students, onSave, onCancel }) {
     gender: student?.gender || 'male',
     height: student?.height || 'medium',
     row_preference: student?.row_preference || 'none',
+    permanent_row: student?.permanent_row || 'none',
     side_preference: student?.side_preference || 'none',
+    avoid_edges: student?.avoid_edges || false,
     special_needs: student?.special_needs || [],
     friends: student?.friends || [],
     avoid: student?.avoid || [],
@@ -101,6 +103,32 @@ export default function StudentForm({ student, students, onSave, onCancel }) {
               <SelectItem value="right">ימין</SelectItem>
             </SelectContent>
           </Select>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-2 gap-3">
+        <div>
+          <Label className="text-xs">📍 שורה קבועה (כפויה)</Label>
+          <Select value={form.permanent_row} onValueChange={v => setForm(f => ({ ...f, permanent_row: v }))}>
+            <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="none">ללא</SelectItem>
+              <SelectItem value="front">תמיד קדמי</SelectItem>
+              <SelectItem value="middle">תמיד אמצעי</SelectItem>
+              <SelectItem value="back">תמיד אחורי</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        <div className="flex items-end pb-1">
+          <button
+            type="button"
+            onClick={() => setForm(f => ({ ...f, avoid_edges: !f.avoid_edges }))}
+            className={`flex items-center gap-2 px-3 py-2 rounded-lg border text-xs transition-colors w-full justify-center ${
+              form.avoid_edges ? 'bg-primary/10 border-primary text-primary' : 'border-border hover:border-primary/30'
+            }`}
+          >
+            {form.avoid_edges ? '✅' : '⬜'} הימנע מקצוות
+          </button>
         </div>
       </div>
 

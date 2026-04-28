@@ -5,6 +5,8 @@ import AppLayout from '@/components/layout/AppLayout';
 import ClassroomGrid from '@/components/classroom/ClassroomGrid';
 import StudentPanel from '@/components/classroom/StudentPanel';
 import GridControls from '@/components/classroom/GridControls';
+import ConflictHelper from '@/components/classroom/ConflictHelper';
+import QuickEditMode from '@/components/classroom/QuickEditMode';
 import { buildInitialSeats, smartSort, calcSatisfactionScore, getSeatAt } from '@/lib/seatingUtils';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -43,6 +45,8 @@ export default function SeatingPage() {
   const [selectedSeat, setSelectedSeat] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [lastSaved, setLastSaved] = useState(null);
+  const [quickEditMode, setQuickEditMode] = useState(false);
+  const [quickEditSeat, setQuickEditSeat] = useState(null);
 
   // Load from localStorage on mount
   useEffect(() => {
@@ -195,7 +199,34 @@ ${students.map(s => `
   }
 
   function handleSeatClick(seat) {
+    if (quickEditMode) {
+      setQuickEditSeat(seat);
+      return;
+    }
     setSelectedSeat(seat);
+  }
+
+  function handleQuickAction(action) {
+    if (!quickEditSeat) return;
+    setSeats(prev => prev.map(s => {
+      if (s.id !== quickEditSeat.id) return s;
+      if (action === 'lock') return { ...s, is_locked: !s.is_locked };
+      if (action === 'hide') return { ...s, is_hidden: !s.is_hidden, student_id: s.is_hidden ? s.student_id : null };
+      if (action === 'gap') return { ...s, is_gap: !s.is_gap, student_id: s.is_gap ? s.student_id : null };
+      return s;
+    }));
+    setQuickEditSeat(prev => {
+      if (!prev) return null;
+      if (action === 'lock') return { ...prev, is_locked: !prev.is_locked };
+      if (action === 'hide') return { ...prev, is_hidden: !prev.is_hidden };
+      if (action === 'gap') return { ...prev, is_gap: !prev.is_gap };
+      return prev;
+    });
+  }
+
+  function handleApplyConflictSuggestion(studentId, fromSeatId, toSeatId) {
+    handleMoveStu(studentId, fromSeatId, toSeatId);
+    toast.success('הצעת הסידור הוחלה');
   }
 
   function handleToggleLock() {
@@ -235,6 +266,17 @@ ${students.map(s => `
             satisfactionScore={satisfactionScore}
             unseatedCount={unseatedCount}
             isLoading={isLoading}
+          />
+          <ConflictHelper
+            seats={seats}
+            students={students}
+            onApplySuggestion={handleApplyConflictSuggestion}
+          />
+          <QuickEditMode
+            active={quickEditMode}
+            onToggle={() => { setQuickEditMode(v => !v); setQuickEditSeat(null); }}
+            onQuickAction={handleQuickAction}
+            selectedSeat={quickEditSeat}
           />
           {lastSaved && (
             <p className="text-[10px] text-muted-foreground text-center">

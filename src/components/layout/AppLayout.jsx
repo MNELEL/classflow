@@ -1,10 +1,11 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
-import { LayoutGrid, Users, History, BookOpen } from 'lucide-react';
+import { LayoutGrid, Users, History, BookOpen, Settings } from 'lucide-react';
 
 const NAV_ITEMS = [
-  { path: '/', label: 'מפת ישיבה', icon: LayoutGrid },
+  { path: '/', label: 'דשבורד', icon: BookOpen },
+  { path: '/seating', label: 'מפת ישיבה', icon: LayoutGrid },
   { path: '/students', label: 'תלמידים', icon: Users },
   { path: '/history', label: 'היסטוריה', icon: History },
 ];
@@ -23,7 +24,7 @@ export default function AppLayout({ children }) {
           <span className="font-bold text-lg tracking-tight">ClassManager Pro</span>
         </div>
 
-        <nav className="flex gap-1">
+        <nav className="flex gap-1 items-center">
           {NAV_ITEMS.map(item => {
             const Icon = item.icon;
             const active = location.pathname === item.path;
@@ -43,6 +44,17 @@ export default function AppLayout({ children }) {
               </Link>
             );
           })}
+          <Link
+            to="/settings"
+            className={cn(
+              'flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors mr-1',
+              location.pathname === '/settings'
+                ? 'bg-primary text-primary-foreground'
+                : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
+            )}
+          >
+            <Settings className="w-4 h-4" />
+          </Link>
         </nav>
       </header>
 

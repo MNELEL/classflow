@@ -161,6 +161,17 @@ export function smartSort(seats, students) {
       if (usedSeats.has(seat.id)) continue;
       let score = 0;
 
+      // Permanent row assignment
+      if (student.permanent_row === 'front' && seat.row !== 0) score -= 50;
+      if (student.permanent_row === 'front' && seat.row === 0) score += 30;
+      if (student.permanent_row === 'back' && seat.row !== totalRows - 1) score -= 50;
+      if (student.permanent_row === 'back' && seat.row === totalRows - 1) score += 30;
+      if (student.permanent_row === 'middle') {
+        const mid = Math.floor(totalRows / 2);
+        if (Math.abs(seat.row - mid) > 1) score -= 50;
+        else score += 30;
+      }
+
       // Row preference
       if (student.row_preference === 'front') score += (totalRows - seat.row) * 2;
       else if (student.row_preference === 'back') score += seat.row * 2;
@@ -172,6 +183,13 @@ export function smartSort(seats, students) {
       if (student.special_needs?.includes('vision') || student.special_needs?.includes('hearing')) {
         score += (totalRows - seat.row) * 3;
       }
+
+      // Height constraints: tall students → back, short students → front
+      const totalCols2 = Math.max(...availSeats.map(s => s.col)) + 1;
+      if (student.height === 'tall') score += seat.row * 3;
+      if (student.height === 'short') score += (totalRows - seat.row) * 2;
+      // Not on edges if needed
+      if (student.avoid_edges && (seat.col === 0 || seat.col === totalCols2 - 1)) score -= 15;
 
       // Side preference
       const totalCols = Math.max(...availSeats.map(s => s.col)) + 1;
