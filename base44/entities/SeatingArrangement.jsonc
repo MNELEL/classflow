@@ -1,0 +1,62 @@
+{
+  "name": "SeatingArrangement",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "\u05e9\u05dd \u05d4\u05e1\u05d9\u05d3\u05d5\u05e8"
+    },
+    "rows": {
+      "type": "number",
+      "default": 5,
+      "description": "\u05de\u05e1\u05e4\u05e8 \u05e9\u05d5\u05e8\u05d5\u05ea"
+    },
+    "cols": {
+      "type": "number",
+      "default": 6,
+      "description": "\u05de\u05e1\u05e4\u05e8 \u05d8\u05d5\u05e8\u05d9\u05dd"
+    },
+    "seats": {
+      "type": "array",
+      "description": "\u05de\u05e6\u05d1 \u05db\u05dc \u05de\u05d5\u05e9\u05d1",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "row": {
+            "type": "number"
+          },
+          "col": {
+            "type": "number"
+          },
+          "student_id": {
+            "type": "string"
+          },
+          "is_hidden": {
+            "type": "boolean"
+          },
+          "is_locked": {
+            "type": "boolean"
+          },
+          "is_gap": {
+            "type": "boolean"
+          }
+        }
+      }
+    },
+    "is_active": {
+      "type": "boolean",
+      "default": true,
+      "description": "\u05d4\u05d0\u05dd \u05d6\u05d4 \u05d4\u05e1\u05d9\u05d3\u05d5\u05e8 \u05d4\u05e4\u05e2\u05d9\u05dc"
+    },
+    "satisfaction_score": {
+      "type": "number",
+      "description": "\u05de\u05d3\u05d3 \u05e9\u05d1\u05d9\u05e2\u05d5\u05ea \u05e8\u05e6\u05d5\u05df 0-100"
+    }
+  },
+  "required": [
+    "name"
+  ]
+}

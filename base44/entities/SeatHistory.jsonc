@@ -1,0 +1,33 @@
+{
+  "name": "SeatHistory",
+  "type": "object",
+  "properties": {
+    "student_id": {
+      "type": "string",
+      "description": "\u05de\u05d6\u05d4\u05d4 \u05d4\u05ea\u05dc\u05de\u05d9\u05d3"
+    },
+    "arrangement_id": {
+      "type": "string",
+      "description": "\u05de\u05d6\u05d4\u05d4 \u05d4\u05e1\u05d9\u05d3\u05d5\u05e8"
+    },
+    "seat_id": {
+      "type": "string",
+      "description": "\u05de\u05d6\u05d4\u05d4 \u05d4\u05de\u05d5\u05e9\u05d1"
+    },
+    "row": {
+      "type": "number"
+    },
+    "col": {
+      "type": "number"
+    },
+    "sat_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "\u05ea\u05d0\u05e8\u05d9\u05da \u05d5\u05e9\u05e2\u05d4"
+    }
+  },
+  "required": [
+    "student_id",
+    "seat_id"
+  ]
+}
