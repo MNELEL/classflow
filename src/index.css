@@ -78,7 +78,23 @@
   body {
     @apply bg-background text-foreground font-heebo;
     direction: rtl;
+    overscroll-behavior: none;
+    -webkit-tap-highlight-color: transparent;
   }
+}
+
+/* Safe area support for notched devices */
+:root {
+  --sat: env(safe-area-inset-top, 0px);
+  --sab: env(safe-area-inset-bottom, 0px);
+  --sal: env(safe-area-inset-left, 0px);
+  --sar: env(safe-area-inset-right, 0px);
+}
+
+/* Tap target polish */
+button, a, [role="button"] {
+  user-select: none;
+  -webkit-user-select: none;
 }
 
 .seat-card {

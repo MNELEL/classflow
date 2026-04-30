@@ -8,7 +8,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
 import { toast } from 'sonner';
-import { Palette, LayoutGrid, Settings, Save } from 'lucide-react';
+import { Palette, LayoutGrid, Settings, Save, Trash2 } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog';
 
 const SETTINGS_KEY = 'classmanager_settings';
 
@@ -36,6 +37,7 @@ function applyPalette(paletteId) {
 }
 
 export default function SettingsPage() {
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [settings, setSettings] = useState({
     color_palette: 'indigo',
     theme: 'light',
@@ -213,8 +215,53 @@ export default function SettingsPage() {
           <Button className="w-full" onClick={saveSettings}>
             <Save className="w-4 h-4 ml-1" /> שמור הגדרות
           </Button>
+
+          {/* Danger Zone */}
+          <Card className="border-destructive/40">
+            <CardHeader>
+              <CardTitle className="text-base flex items-center gap-2 text-destructive">
+                <Trash2 className="w-4 h-4" /> אזור מסוכן
+              </CardTitle>
+              <CardDescription>פעולות בלתי הפיכות</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Button
+                variant="destructive"
+                className="w-full"
+                onClick={() => setShowDeleteDialog(true)}
+              >
+                <Trash2 className="w-4 h-4 ml-1" /> מחק חשבון
+              </Button>
+            </CardContent>
+          </Card>
         </div>
       </div>
+
+      <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <DialogContent dir="rtl">
+          <DialogHeader>
+            <DialogTitle className="text-destructive">מחיקת חשבון</DialogTitle>
+            <DialogDescription>
+              פעולה זו בלתי הפיכה. כל הנתונים שלך, כולל תלמידים וסידורי ישיבה, יימחקו לצמיתות.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="flex-row-reverse gap-2 sm:gap-0">
+            <Button variant="outline" onClick={() => setShowDeleteDialog(false)}>
+              ביטול
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={() => {
+                localStorage.clear();
+                toast.success('החשבון נמחק. להתראות!');
+                setShowDeleteDialog(false);
+              }}
+            >
+              <Trash2 className="w-4 h-4 ml-1" /> אישור מחיקה
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </AppLayout>
   );
 }

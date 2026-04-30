@@ -9,9 +9,10 @@ import ConflictHelper from '@/components/classroom/ConflictHelper';
 import QuickEditMode from '@/components/classroom/QuickEditMode';
 import { buildInitialSeats, smartSort, calcSatisfactionScore, getSeatAt } from '@/lib/seatingUtils';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Lock, Unlock, EyeOff } from 'lucide-react';
+import { Lock, Unlock, EyeOff, SlidersHorizontal, Users } from 'lucide-react';
 import { toast } from 'sonner';
 
 const STORAGE_KEY = 'classmanager_seats';
@@ -249,44 +250,92 @@ ${students.map(s => `
     ? students.find(s => s.id === selectedSeat.student_id)
     : null;
 
+  const ControlsPanel = (
+    <div className="flex flex-col gap-3 p-3">
+      <GridControls
+        rows={rows} cols={cols}
+        onRowsChange={handleRowsChange}
+        onColsChange={handleColsChange}
+        onSmartSort={handleSmartSort}
+        onQuickSort={handleQuickSort}
+        onClearAll={handleClearAll}
+        showNumbers={showNumbers}
+        onToggleNumbers={() => setShowNumbers(v => !v)}
+        satisfactionScore={satisfactionScore}
+        unseatedCount={unseatedCount}
+        isLoading={isLoading}
+      />
+      <ConflictHelper
+        seats={seats}
+        students={students}
+        onApplySuggestion={handleApplyConflictSuggestion}
+      />
+      <QuickEditMode
+        active={quickEditMode}
+        onToggle={() => { setQuickEditMode(v => !v); setQuickEditSeat(null); }}
+        onQuickAction={handleQuickAction}
+        selectedSeat={quickEditSeat}
+      />
+      {lastSaved && (
+        <p className="text-[10px] text-muted-foreground text-center">
+          נשמר {lastSaved.toLocaleTimeString('he-IL', { hour: '2-digit', minute: '2-digit' })}
+        </p>
+      )}
+    </div>
+  );
+
+  const StudentsPanel = (
+    <div className="p-3 h-full flex flex-col">
+      <h3 className="text-xs font-bold mb-2 text-muted-foreground uppercase tracking-wider">תלמידים</h3>
+      <StudentPanel students={students} seats={seats} />
+    </div>
+  );
+
   return (
     <AppLayout>
-      <div className="flex h-[calc(100vh-57px)]" dir="rtl">
-        {/* Right sidebar - controls */}
-        <div className="w-52 border-l border-border bg-card p-3 flex flex-col gap-3 overflow-y-auto shrink-0">
-          <GridControls
-            rows={rows} cols={cols}
-            onRowsChange={handleRowsChange}
-            onColsChange={handleColsChange}
-            onSmartSort={handleSmartSort}
-            onQuickSort={handleQuickSort}
-            onClearAll={handleClearAll}
-            showNumbers={showNumbers}
-            onToggleNumbers={() => setShowNumbers(v => !v)}
-            satisfactionScore={satisfactionScore}
-            unseatedCount={unseatedCount}
-            isLoading={isLoading}
-          />
-          <ConflictHelper
-            seats={seats}
-            students={students}
-            onApplySuggestion={handleApplyConflictSuggestion}
-          />
-          <QuickEditMode
-            active={quickEditMode}
-            onToggle={() => { setQuickEditMode(v => !v); setQuickEditSeat(null); }}
-            onQuickAction={handleQuickAction}
-            selectedSeat={quickEditSeat}
-          />
-          {lastSaved && (
-            <p className="text-[10px] text-muted-foreground text-center">
-              נשמר אוטומטית {lastSaved.toLocaleTimeString('he-IL', { hour: '2-digit', minute: '2-digit' })}
-            </p>
-          )}
+      <div className="flex h-[calc(100vh-57px-64px)] relative" dir="rtl">
+
+        {/* Desktop: fixed sidebars */}
+        <div className="hidden md:flex w-52 border-l border-border bg-card overflow-y-auto shrink-0 flex-col">
+          {ControlsPanel}
         </div>
 
         {/* Main grid */}
-        <div className="flex-1 overflow-auto p-4">
+        <div className="flex-1 overflow-auto p-2 md:p-4 relative">
+          {/* Mobile floating action buttons */}
+          <div className="flex md:hidden gap-2 mb-3 justify-between">
+            <Sheet>
+              <SheetTrigger asChild>
+                <Button size="sm" variant="outline" className="flex-1 gap-1.5">
+                  <SlidersHorizontal className="w-4 h-4" /> פקדים
+                </Button>
+              </SheetTrigger>
+              <SheetContent side="right" className="w-72 overflow-y-auto p-0" dir="rtl">
+                <SheetHeader className="p-4 border-b">
+                  <SheetTitle>פקדי כיתה</SheetTitle>
+                </SheetHeader>
+                {ControlsPanel}
+              </SheetContent>
+            </Sheet>
+
+            <Sheet>
+              <SheetTrigger asChild>
+                <Button size="sm" variant="outline" className="flex-1 gap-1.5">
+                  <Users className="w-4 h-4" /> תלמידים
+                  {unseatedCount > 0 && (
+                    <Badge className="bg-warning text-white text-[10px] px-1.5 py-0">{unseatedCount}</Badge>
+                  )}
+                </Button>
+              </SheetTrigger>
+              <SheetContent side="left" className="w-64 overflow-y-auto p-0" dir="rtl">
+                <SheetHeader className="p-4 border-b">
+                  <SheetTitle>תלמידים</SheetTitle>
+                </SheetHeader>
+                {StudentsPanel}
+              </SheetContent>
+            </Sheet>
+          </div>
+
           <ClassroomGrid
             seats={seats}
             students={students}
@@ -298,13 +347,9 @@ ${students.map(s => `
           />
         </div>
 
-        {/* Left sidebar - student panel */}
-        <div className="w-48 border-r border-border bg-card p-3 overflow-hidden flex flex-col shrink-0">
-          <h3 className="text-xs font-bold mb-2 text-muted-foreground uppercase tracking-wider">תלמידים</h3>
-          <StudentPanel
-            students={students}
-            seats={seats}
-          />
+        {/* Desktop: right student sidebar */}
+        <div className="hidden md:flex w-48 border-r border-border bg-card overflow-hidden flex-col shrink-0">
+          {StudentsPanel}
         </div>
       </div>
 
