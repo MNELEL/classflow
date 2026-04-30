@@ -199,6 +199,20 @@ export function smartSort(seats, students) {
         score += (totalCols - Math.abs(seat.col - Math.floor(totalCols / 2)));
       }
 
+      // Learning group: strong bonus for sitting adjacent to group members
+      if (student.learning_group) {
+        const groupMembers = studentsToPlace.filter(
+          s => s.id !== student.id && s.learning_group === student.learning_group
+        );
+        for (const member of groupMembers) {
+          const memberSeat = currentNewSeats.find(s => s.student_id === member.id);
+          if (memberSeat) {
+            if (isAdjacent(seat, memberSeat)) score += 25;
+            else if (getDistance(seat, memberSeat) === 2) score += 10;
+          }
+        }
+      }
+
       // Friends nearby
       if (student.friends) {
         for (const fid of student.friends) {

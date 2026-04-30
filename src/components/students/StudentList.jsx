@@ -32,6 +32,7 @@ export default function StudentList({ students, onSave, onDelete }) {
                 <p className="font-medium text-sm">{student.name}</p>
                 <div className="flex items-center gap-1.5 mt-0.5">
                   {student.group && <Badge variant="outline" className="text-[10px] py-0">{student.group}</Badge>}
+                  {student.learning_group && <Badge className="text-[10px] py-0 bg-primary/10 text-primary border-primary/30">🧩 {student.learning_group}</Badge>}
                   {student.special_needs?.map(n => (
                     <span key={n} className="text-muted-foreground">{NEED_ICONS[n]}</span>
                   ))}

@@ -27,6 +27,7 @@ export default function StudentForm({ student, students, onSave, onCancel }) {
     friends: student?.friends || [],
     avoid: student?.avoid || [],
     separate: student?.separate || [],
+    learning_group: student?.learning_group || '',
     group: student?.group || '',
     notes: student?.notes || '',
     is_active: student?.is_active !== false,
@@ -63,9 +64,20 @@ export default function StudentForm({ student, students, onSave, onCancel }) {
           <Input value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} placeholder="שם מלא" className="mt-1" />
         </div>
         <div>
-          <Label className="text-xs">קבוצה</Label>
+          <Label className="text-xs">קבוצה כללית</Label>
           <Input value={form.group} onChange={e => setForm(f => ({ ...f, group: e.target.value }))} placeholder="שם קבוצה" className="mt-1" />
         </div>
+      </div>
+
+      <div>
+        <Label className="text-xs">🧩 קבוצת למידה (לישיבה צמודה)</Label>
+        <Input
+          value={form.learning_group}
+          onChange={e => setForm(f => ({ ...f, learning_group: e.target.value }))}
+          placeholder="למשל: קבוצה א׳, מתקדמים, מדעים..."
+          className="mt-1"
+        />
+        <p className="text-[10px] text-muted-foreground mt-1">תלמידים עם אותו שם קבוצה יושבו בצמוד אוטומטית</p>
       </div>
 
       <div className="grid grid-cols-3 gap-3">
