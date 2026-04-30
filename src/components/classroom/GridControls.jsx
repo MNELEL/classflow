@@ -1,7 +1,8 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { Wand2, Shuffle, Hash, Eye, EyeOff, RefreshCw } from 'lucide-react';
+import { Wand2, Shuffle, Hash, EyeOff, RefreshCw, FileDown, FileSpreadsheet } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { exportToPDF, exportToExcel } from '@/lib/exportUtils';
 
 export default function GridControls({
   rows, cols, onRowsChange, onColsChange,
@@ -10,6 +11,8 @@ export default function GridControls({
   satisfactionScore,
   unseatedCount,
   isLoading,
+  seats,
+  students,
 }) {
   return (
     <div className="bg-card border border-border rounded-xl p-4 space-y-3">
@@ -82,6 +85,17 @@ export default function GridControls({
         {showNumbers ? <EyeOff className="w-4 h-4 ml-1" /> : <Hash className="w-4 h-4 ml-1" />}
         {showNumbers ? 'הסתר מספרים' : 'הצג מספרים'}
       </Button>
+
+      {/* Export */}
+      <div className="border-t border-border pt-3 space-y-1.5">
+        <p className="text-[10px] text-muted-foreground font-semibold uppercase tracking-wider">ייצוא</p>
+        <Button variant="outline" size="sm" className="w-full gap-1.5" onClick={() => exportToPDF(seats, students, rows, cols)}>
+          <FileDown className="w-3.5 h-3.5" /> ייצוא PDF
+        </Button>
+        <Button variant="outline" size="sm" className="w-full gap-1.5" onClick={() => exportToExcel(seats, students, rows, cols)}>
+          <FileSpreadsheet className="w-3.5 h-3.5" /> ייצוא Excel
+        </Button>
+      </div>
     </div>
   );
 }

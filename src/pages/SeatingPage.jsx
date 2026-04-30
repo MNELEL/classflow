@@ -264,6 +264,8 @@ ${students.map(s => `
         satisfactionScore={satisfactionScore}
         unseatedCount={unseatedCount}
         isLoading={isLoading}
+        seats={seats}
+        students={students}
       />
       <ConflictHelper
         seats={seats}

@@ -4,10 +4,11 @@ import { useQuery } from '@tanstack/react-query';
 import AppLayout from '@/components/layout/AppLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Users, LayoutGrid, AlertTriangle, CheckCircle2, Clock, TrendingUp } from 'lucide-react';
+import { Users, LayoutGrid, AlertTriangle, CheckCircle2, Clock, TrendingUp, FileDown, FileSpreadsheet } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { calcSatisfactionScore } from '@/lib/seatingUtils';
+import { exportToPDF, exportToExcel } from '@/lib/exportUtils';
 
 export default function DashboardPage() {
   const { data: students = [], isLoading: loadingStudents } = useQuery({
@@ -179,7 +180,7 @@ export default function DashboardPage() {
         {/* Actions */}
         <div className="flex gap-3 flex-wrap">
           <Button asChild>
-            <Link to="/">
+            <Link to="/seating">
               <LayoutGrid className="w-4 h-4 ml-1" /> פתח לוח כיתה
             </Link>
           </Button>
@@ -188,11 +189,16 @@ export default function DashboardPage() {
               <Users className="w-4 h-4 ml-1" /> נהל תלמידים
             </Link>
           </Button>
-          <Button variant="outline" asChild>
-            <Link to="/settings">
-              <Clock className="w-4 h-4 ml-1" /> הגדרות
-            </Link>
-          </Button>
+          {savedSeats && savedArrangement && (
+            <>
+              <Button variant="outline" onClick={() => exportToPDF(savedSeats, students, savedArrangement.rows, savedArrangement.cols)}>
+                <FileDown className="w-4 h-4 ml-1" /> ייצוא PDF
+              </Button>
+              <Button variant="outline" onClick={() => exportToExcel(savedSeats, students, savedArrangement.rows, savedArrangement.cols)}>
+                <FileSpreadsheet className="w-4 h-4 ml-1" /> ייצוא Excel
+              </Button>
+            </>
+          )}
         </div>
       </div>
     </AppLayout>
