@@ -1,9 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import AppLayout from '@/components/layout/AppLayout';
 import StudentList from '@/components/students/StudentList';
 import ImportStudentsModal from '@/components/students/ImportStudentsModal';
+import { usePullToRefresh } from '@/hooks/usePullToRefresh';
+import PullToRefreshIndicator from '@/components/ui/PullToRefreshIndicator';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Upload } from 'lucide-react';
@@ -12,10 +14,16 @@ export default function StudentsPage() {
   const qc = useQueryClient();
   const [showImport, setShowImport] = useState(false);
 
-  const { data: students = [], isLoading } = useQuery({
+  const { data: students = [], isLoading, refetch } = useQuery({
     queryKey: ['students'],
     queryFn: () => base44.entities.Student.list(),
   });
+
+  const handleRefresh = useCallback(async () => {
+    await refetch();
+  }, [refetch]);
+
+  const { containerRef, pullY, refreshing } = usePullToRefresh(handleRefresh);
 
   const saveMutation = useMutation({
     mutationFn: async (data) => {
@@ -26,6 +34,20 @@ export default function StudentsPage() {
         return base44.entities.Student.create(data);
       }
     },
+    onMutate: async (data) => {
+      await qc.cancelQueries({ queryKey: ['students'] });
+      const prev = qc.getQueryData(['students']);
+      qc.setQueryData(['students'], (old = []) => {
+        if (data.id) {
+          return old.map(s => s.id === data.id ? { ...s, ...data } : s);
+        }
+        return [...old, { ...data, id: `temp-${Date.now()}` }];
+      });
+      return { prev };
+    },
+    onError: (_err, _data, ctx) => {
+      if (ctx?.prev) qc.setQueryData(['students'], ctx.prev);
+    },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['students'] });
       toast.success('תלמיד נשמר בהצלחה');
@@ -34,6 +56,15 @@ export default function StudentsPage() {
 
   const deleteMutation = useMutation({
     mutationFn: (id) => base44.entities.Student.delete(id),
+    onMutate: async (id) => {
+      await qc.cancelQueries({ queryKey: ['students'] });
+      const prev = qc.getQueryData(['students']);
+      qc.setQueryData(['students'], (old = []) => old.filter(s => s.id !== id));
+      return { prev };
+    },
+    onError: (_err, _id, ctx) => {
+      if (ctx?.prev) qc.setQueryData(['students'], ctx.prev);
+    },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['students'] });
       toast.success('תלמיד נמחק');
@@ -88,7 +119,8 @@ export default function StudentsPage() {
 
   return (
     <AppLayout>
-      <div className="max-w-2xl mx-auto p-6" dir="rtl">
+      <div ref={containerRef} className="max-w-2xl mx-auto p-6 overflow-y-auto h-full relative" dir="rtl">
+        <PullToRefreshIndicator pullY={pullY} refreshing={refreshing} />
         {isLoading ? (
           <div className="flex justify-center py-12">
             <div className="w-8 h-8 border-4 border-primary/20 border-t-primary rounded-full animate-spin" />

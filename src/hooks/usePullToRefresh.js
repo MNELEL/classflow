@@ -1,0 +1,56 @@
+import { useRef, useEffect, useState } from 'react';
+
+const THRESHOLD = 72; // px to pull before triggering
+const RESISTANCE = 2.5;
+
+export function usePullToRefresh(onRefresh) {
+  const [pulling, setPulling] = useState(false);
+  const [pullY, setPullY] = useState(0);
+  const [refreshing, setRefreshing] = useState(false);
+  const startY = useRef(null);
+  const containerRef = useRef(null);
+
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+
+    function onTouchStart(e) {
+      // Only trigger when scrolled to top
+      if (el.scrollTop > 0) return;
+      startY.current = e.touches[0].clientY;
+    }
+
+    function onTouchMove(e) {
+      if (startY.current === null) return;
+      const dy = e.touches[0].clientY - startY.current;
+      if (dy <= 0) { setPullY(0); setPulling(false); return; }
+      e.preventDefault();
+      setPulling(true);
+      setPullY(Math.min(dy / RESISTANCE, THRESHOLD * 1.5));
+    }
+
+    async function onTouchEnd() {
+      if (!pulling) { startY.current = null; return; }
+      if (pullY >= THRESHOLD) {
+        setRefreshing(true);
+        setPullY(THRESHOLD);
+        await onRefresh();
+        setRefreshing(false);
+      }
+      setPulling(false);
+      setPullY(0);
+      startY.current = null;
+    }
+
+    el.addEventListener('touchstart', onTouchStart, { passive: true });
+    el.addEventListener('touchmove', onTouchMove, { passive: false });
+    el.addEventListener('touchend', onTouchEnd);
+    return () => {
+      el.removeEventListener('touchstart', onTouchStart);
+      el.removeEventListener('touchmove', onTouchMove);
+      el.removeEventListener('touchend', onTouchEnd);
+    };
+  }, [pulling, pullY, onRefresh]);
+
+  return { containerRef, pullY, pulling, refreshing };
+}

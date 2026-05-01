@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { LayoutGrid, Users, History, BookOpen, Settings, ChevronRight } from 'lucide-react';
@@ -21,6 +21,15 @@ const PAGE_TITLES = {
 export default function AppLayout({ children }) {
   const location = useLocation();
   const navigate = useNavigate();
+
+  const handleNavClick = useCallback((e, path) => {
+    if (location.pathname === path) {
+      e.preventDefault();
+      navigate(path, { replace: true });
+      // Scroll the main content area back to top
+      document.querySelector('main')?.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  }, [location.pathname, navigate]);
   const isDashboard = location.pathname === '/';
   const title = PAGE_TITLES[location.pathname] || 'ClassManager Pro';
 
@@ -81,6 +90,7 @@ export default function AppLayout({ children }) {
             <Link
               key={item.path}
               to={item.path}
+              onClick={(e) => handleNavClick(e, item.path)}
               className={cn(
                 'flex-1 flex flex-col items-center justify-center gap-0.5 min-h-[56px] py-2 select-none transition-colors',
                 active

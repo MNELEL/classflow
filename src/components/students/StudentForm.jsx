@@ -2,9 +2,39 @@ import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
+import MobileSelect from './MobileSelect';
 import { X, MapPin } from 'lucide-react';
+
+const HEIGHT_OPTIONS = [
+  { value: 'short', label: 'נמוך' },
+  { value: 'medium', label: 'בינוני' },
+  { value: 'tall', label: 'גבוה' },
+];
+const ROW_PREF_OPTIONS = [
+  { value: 'none', label: 'אין העדפה' },
+  { value: 'front', label: 'קדמית' },
+  { value: 'middle', label: 'אמצעית' },
+  { value: 'back', label: 'אחורית' },
+];
+const SIDE_PREF_OPTIONS = [
+  { value: 'none', label: 'אין העדפה' },
+  { value: 'left', label: 'שמאל' },
+  { value: 'center', label: 'מרכז' },
+  { value: 'right', label: 'ימין' },
+];
+const PERM_ROW_OPTIONS = [
+  { value: 'none', label: 'ללא' },
+  { value: 'front', label: 'תמיד קדמי 🎯' },
+  { value: 'middle', label: 'תמיד אמצעי' },
+  { value: 'back', label: 'תמיד אחורי' },
+];
+const PERM_COL_OPTIONS = [
+  { value: 'none', label: 'ללא' },
+  { value: 'left', label: 'תמיד שמאל' },
+  { value: 'center', label: 'תמיד מרכז' },
+  { value: 'right', label: 'תמיד ימין' },
+];
 
 const SPECIAL_NEEDS_OPTIONS = [
   { value: 'vision', label: '👁️ ראייה' },
@@ -84,38 +114,15 @@ export default function StudentForm({ student, students, onSave, onCancel }) {
       <div className="grid grid-cols-3 gap-3">
         <div>
           <Label className="text-xs">גובה</Label>
-          <Select value={form.height} onValueChange={v => setForm(f => ({ ...f, height: v }))}>
-            <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
-            <SelectContent>
-              <SelectItem value="short">נמוך</SelectItem>
-              <SelectItem value="medium">בינוני</SelectItem>
-              <SelectItem value="tall">גבוה</SelectItem>
-            </SelectContent>
-          </Select>
+          <MobileSelect value={form.height} onValueChange={v => setForm(f => ({ ...f, height: v }))} options={HEIGHT_OPTIONS} label="גובה" />
         </div>
         <div>
           <Label className="text-xs">העדפת שורה</Label>
-          <Select value={form.row_preference} onValueChange={v => setForm(f => ({ ...f, row_preference: v }))}>
-            <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
-            <SelectContent>
-              <SelectItem value="none">אין העדפה</SelectItem>
-              <SelectItem value="front">קדמית</SelectItem>
-              <SelectItem value="middle">אמצעית</SelectItem>
-              <SelectItem value="back">אחורית</SelectItem>
-            </SelectContent>
-          </Select>
+          <MobileSelect value={form.row_preference} onValueChange={v => setForm(f => ({ ...f, row_preference: v }))} options={ROW_PREF_OPTIONS} label="העדפת שורה" />
         </div>
         <div>
           <Label className="text-xs">העדפת צד</Label>
-          <Select value={form.side_preference} onValueChange={v => setForm(f => ({ ...f, side_preference: v }))}>
-            <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
-            <SelectContent>
-              <SelectItem value="none">אין העדפה</SelectItem>
-              <SelectItem value="left">שמאל</SelectItem>
-              <SelectItem value="center">מרכז</SelectItem>
-              <SelectItem value="right">ימין</SelectItem>
-            </SelectContent>
-          </Select>
+          <MobileSelect value={form.side_preference} onValueChange={v => setForm(f => ({ ...f, side_preference: v }))} options={SIDE_PREF_OPTIONS} label="העדפת צד" />
         </div>
       </div>
 
@@ -124,27 +131,11 @@ export default function StudentForm({ student, students, onSave, onCancel }) {
         <div className="grid grid-cols-2 gap-3 bg-accent/30 rounded-xl p-3">
           <div>
             <Label className="text-[10px] text-muted-foreground mb-1 block">שורה קבועה</Label>
-            <Select value={form.permanent_row} onValueChange={v => setForm(f => ({ ...f, permanent_row: v }))}>
-              <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="none">ללא</SelectItem>
-                <SelectItem value="front">תמיד קדמי 🎯</SelectItem>
-                <SelectItem value="middle">תמיד אמצעי</SelectItem>
-                <SelectItem value="back">תמיד אחורי</SelectItem>
-              </SelectContent>
-            </Select>
+            <MobileSelect value={form.permanent_row} onValueChange={v => setForm(f => ({ ...f, permanent_row: v }))} options={PERM_ROW_OPTIONS} label="שורה קבועה" triggerClassName="h-8 text-xs" />
           </div>
           <div>
             <Label className="text-[10px] text-muted-foreground mb-1 block">טור קבוע</Label>
-            <Select value={form.permanent_col} onValueChange={v => setForm(f => ({ ...f, permanent_col: v }))}>
-              <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="none">ללא</SelectItem>
-                <SelectItem value="left">תמיד שמאל</SelectItem>
-                <SelectItem value="center">תמיד מרכז</SelectItem>
-                <SelectItem value="right">תמיד ימין</SelectItem>
-              </SelectContent>
-            </Select>
+            <MobileSelect value={form.permanent_col} onValueChange={v => setForm(f => ({ ...f, permanent_col: v }))} options={PERM_COL_OPTIONS} label="טור קבוע" triggerClassName="h-8 text-xs" />
           </div>
           <div className="col-span-2">
             <button

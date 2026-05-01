@@ -1,6 +1,8 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
+import { usePullToRefresh } from '@/hooks/usePullToRefresh';
+import PullToRefreshIndicator from '@/components/ui/PullToRefreshIndicator';
 import AppLayout from '@/components/layout/AppLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -11,10 +13,13 @@ import { calcSatisfactionScore } from '@/lib/seatingUtils';
 import { exportToPDF, exportToExcel, printSeating } from '@/lib/exportUtils';
 
 export default function DashboardPage() {
-  const { data: students = [], isLoading: loadingStudents } = useQuery({
+  const { data: students = [], isLoading: loadingStudents, refetch } = useQuery({
     queryKey: ['students'],
     queryFn: () => base44.entities.Student.list(),
   });
+
+  const handleRefresh = useCallback(async () => { await refetch(); }, [refetch]);
+  const { containerRef, pullY, refreshing } = usePullToRefresh(handleRefresh);
 
   const activeStudents = students.filter(s => s.is_active !== false);
   const studentsWithNeeds = students.filter(s => s.special_needs?.length > 0);
@@ -45,7 +50,8 @@ export default function DashboardPage() {
 
   return (
     <AppLayout>
-      <div className="p-6 max-w-5xl mx-auto" dir="rtl">
+      <div ref={containerRef} className="p-6 max-w-5xl mx-auto overflow-y-auto h-full relative" dir="rtl">
+        <PullToRefreshIndicator pullY={pullY} refreshing={refreshing} />
         <div className="mb-8">
           <h1 className="text-3xl font-bold">סקירה כללית</h1>
           <p className="text-muted-foreground mt-1">מצב הכיתה שלך במבט אחד</p>

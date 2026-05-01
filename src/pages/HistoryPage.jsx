@@ -1,20 +1,28 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import AppLayout from '@/components/layout/AppLayout';
 import { format } from 'date-fns';
 import { he } from 'date-fns/locale';
+import { usePullToRefresh } from '@/hooks/usePullToRefresh';
+import PullToRefreshIndicator from '@/components/ui/PullToRefreshIndicator';
 
 export default function HistoryPage() {
-  const { data: students = [] } = useQuery({
+  const { data: students = [], refetch: refetchStudents } = useQuery({
     queryKey: ['students'],
     queryFn: () => base44.entities.Student.list(),
   });
 
-  const { data: history = [], isLoading } = useQuery({
+  const { data: history = [], isLoading, refetch: refetchHistory } = useQuery({
     queryKey: ['history'],
     queryFn: () => base44.entities.SeatHistory.list('-sat_at', 100),
   });
+
+  const handleRefresh = useCallback(async () => {
+    await Promise.all([refetchStudents(), refetchHistory()]);
+  }, [refetchStudents, refetchHistory]);
+
+  const { containerRef, pullY, refreshing } = usePullToRefresh(handleRefresh);
 
   const studentMap = Object.fromEntries(students.map(s => [s.id, s]));
 
@@ -27,8 +35,9 @@ export default function HistoryPage() {
 
   return (
     <AppLayout>
-      <div className="max-w-3xl mx-auto p-6" dir="rtl">
-        <h1 className="text-2xl font-bold mb-6">היסטוריית ישיבה</h1>
+      <div ref={containerRef} className="max-w-3xl mx-auto p-6 overflow-y-auto h-full relative" dir="rtl">
+        <PullToRefreshIndicator pullY={pullY} refreshing={refreshing} />
+        <h1 className="text-2xl font-bold mb-6 mt-0">היסטוריית ישיבה</h1>
 
         {isLoading ? (
           <div className="flex justify-center py-12">
