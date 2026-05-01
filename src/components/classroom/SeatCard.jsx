@@ -1,6 +1,14 @@
 import React from 'react';
 import { cn } from '@/lib/utils';
-import { Lock, Eye, Volume2, Zap, Settings } from 'lucide-react';
+import { Lock, Eye, Volume2, Zap, Settings, Ban } from 'lucide-react';
+
+const BLOCK_ICONS = {
+  broken: '🪑',
+  speaker: '🔊',
+  ac: '❄️',
+  door: '🚪',
+  other: '⚠️',
+};
 
 const SPECIAL_ICONS = {
   vision: <Eye className="w-3 h-3" />,
@@ -21,6 +29,23 @@ export default function SeatCard({
 }) {
   if (seat.is_hidden) return <div className="w-full h-16" />;
   if (seat.is_gap) return <div className="w-full h-4" />;
+
+  if (seat.is_blocked) {
+    return (
+      <div
+        className={cn(
+          'seat-card relative rounded-lg border-2 border-dashed border-orange-300 bg-orange-50 dark:bg-orange-950/20 dark:border-orange-700 cursor-pointer select-none flex flex-col items-center justify-center p-1.5 min-h-[64px]',
+          isDraggingOver && 'drag-over'
+        )}
+        onClick={() => onClick && onClick(seat)}
+      >
+        <Ban className="w-4 h-4 text-orange-500" />
+        <span className="text-[10px] text-orange-600 dark:text-orange-400 font-medium mt-0.5 text-center leading-tight">
+          {BLOCK_ICONS[seat.block_reason] || '⚠️'} חסום
+        </span>
+      </div>
+    );
+  }
 
   const isEmpty = !student;
   const hasConstraints = student && (

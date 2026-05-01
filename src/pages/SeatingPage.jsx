@@ -165,8 +165,8 @@ ${students.map(s => `
       });
 
       if (result?.assignments) {
-        const newSeats = seats.map(s => ({ ...s, student_id: s.is_locked ? s.student_id : null }));
-        const lockedIds = new Set(seats.filter(s => s.is_locked).map(s => s.student_id));
+        const newSeats = seats.map(s => ({ ...s, student_id: (s.is_locked && !s.is_blocked) ? s.student_id : null }));
+        const lockedIds = new Set(seats.filter(s => s.is_locked && !s.is_blocked).map(s => s.student_id));
         
         for (const a of result.assignments) {
           const student = students.find(s => s.name === a.student_name);
@@ -207,13 +207,17 @@ ${students.map(s => `
     setSelectedSeat(seat);
   }
 
-  function handleQuickAction(action) {
+  function handleQuickAction(action, payload) {
     if (!quickEditSeat) return;
     setSeats(prev => prev.map(s => {
       if (s.id !== quickEditSeat.id) return s;
       if (action === 'lock') return { ...s, is_locked: !s.is_locked };
       if (action === 'hide') return { ...s, is_hidden: !s.is_hidden, student_id: s.is_hidden ? s.student_id : null };
       if (action === 'gap') return { ...s, is_gap: !s.is_gap, student_id: s.is_gap ? s.student_id : null };
+      if (action === 'block') {
+        const blocking = payload !== null; // null = unblock
+        return { ...s, is_blocked: blocking, block_reason: blocking ? payload : null, student_id: blocking ? null : s.student_id };
+      }
       return s;
     }));
     setQuickEditSeat(prev => {
@@ -221,6 +225,7 @@ ${students.map(s => `
       if (action === 'lock') return { ...prev, is_locked: !prev.is_locked };
       if (action === 'hide') return { ...prev, is_hidden: !prev.is_hidden };
       if (action === 'gap') return { ...prev, is_gap: !prev.is_gap };
+      if (action === 'block') return { ...prev, is_blocked: payload !== null, block_reason: payload };
       return prev;
     });
   }

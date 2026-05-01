@@ -1,9 +1,19 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Lock, Unlock, EyeOff, Minus, X } from 'lucide-react';
+import { Lock, Unlock, EyeOff, Minus, X, Ban } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
+const BLOCK_REASONS = [
+  { value: 'broken', label: '🪑 כיסא תקול' },
+  { value: 'speaker', label: '🔊 ליד רמקול' },
+  { value: 'ac', label: '❄️ ליד מזגן' },
+  { value: 'door', label: '🚪 ליד דלת' },
+  { value: 'other', label: '⚠️ סיבה אחרת' },
+];
+
 export default function QuickEditMode({ active, onToggle, onQuickAction, selectedSeat }) {
+  const [showBlockReasons, setShowBlockReasons] = useState(false);
+
   if (!active) {
     return (
       <Button variant="outline" size="sm" className="w-full" onClick={onToggle}>
@@ -59,6 +69,44 @@ export default function QuickEditMode({ active, onToggle, onQuickAction, selecte
           <Minus className="w-3 h-3 ml-1" />
           {selectedSeat?.is_gap ? 'בטל גאפ' : 'הפוך לגאפ'}
         </Button>
+
+        {/* Block / Unblock */}
+        {selectedSeat?.is_blocked ? (
+          <Button
+            size="sm"
+            variant="outline"
+            className="text-xs h-8 col-span-2 border-orange-300 text-orange-600 hover:bg-orange-50"
+            disabled={!selectedSeat}
+            onClick={() => { onQuickAction('block', null); setShowBlockReasons(false); }}
+          >
+            <Ban className="w-3 h-3 ml-1" /> בטל חסימה
+          </Button>
+        ) : (
+          <>
+            <Button
+              size="sm"
+              variant="outline"
+              className="text-xs h-8 col-span-2 border-orange-300 text-orange-600 hover:bg-orange-50"
+              disabled={!selectedSeat}
+              onClick={() => setShowBlockReasons(v => !v)}
+            >
+              <Ban className="w-3 h-3 ml-1" /> חסום מושב
+            </Button>
+            {showBlockReasons && (
+              <div className="col-span-2 space-y-1">
+                {BLOCK_REASONS.map(r => (
+                  <button
+                    key={r.value}
+                    className="w-full text-right text-xs px-3 py-1.5 rounded-lg bg-orange-50 dark:bg-orange-950/20 hover:bg-orange-100 dark:hover:bg-orange-900/30 text-orange-700 dark:text-orange-400 transition-colors"
+                    onClick={() => { onQuickAction('block', r.value); setShowBlockReasons(false); }}
+                  >
+                    {r.label}
+                  </button>
+                ))}
+              </div>
+            )}
+          </>
+        )}
       </div>
     </div>
   );

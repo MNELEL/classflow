@@ -125,7 +125,7 @@ export function detectConflicts(seat, seats, students) {
 
 // Smart sort algorithm
 export function smartSort(seats, students) {
-  const activeSeat = seats.filter(s => !s.is_hidden && !s.is_gap);
+  const activeSeat = seats.filter(s => !s.is_hidden && !s.is_gap && !s.is_blocked);
   const unlockedSeats = activeSeat.filter(s => !s.is_locked);
   const lockedSeats = activeSeat.filter(s => s.is_locked);
 
@@ -139,7 +139,7 @@ export function smartSort(seats, students) {
     student_id: s.is_locked ? s.student_id : null,
   }));
 
-  const availableSeats = newSeats.filter(s => !s.is_hidden && !s.is_gap && !s.is_locked);
+  const availableSeats = newSeats.filter(s => !s.is_hidden && !s.is_gap && !s.is_locked && !s.is_blocked);
   const totalRows = Math.max(...availableSeats.map(s => s.row)) + 1;
 
   // Sort students by constraints priority
