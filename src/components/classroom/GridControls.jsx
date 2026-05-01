@@ -1,8 +1,8 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { Wand2, Shuffle, Hash, EyeOff, RefreshCw, FileDown, FileSpreadsheet } from 'lucide-react';
+import { Wand2, Shuffle, Hash, EyeOff, RefreshCw, FileDown, FileSpreadsheet, Printer } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
-import { exportToPDF, exportToExcel } from '@/lib/exportUtils';
+import { exportToPDF, exportToExcel, printSeating } from '@/lib/exportUtils';
 
 export default function GridControls({
   rows, cols, onRowsChange, onColsChange,
@@ -94,6 +94,9 @@ export default function GridControls({
         </Button>
         <Button variant="outline" size="sm" className="w-full gap-1.5" onClick={() => exportToExcel(seats, students, rows, cols)}>
           <FileSpreadsheet className="w-3.5 h-3.5" /> ייצוא Excel
+        </Button>
+        <Button variant="outline" size="sm" className="w-full gap-1.5" onClick={() => printSeating(seats, students, rows, cols)}>
+          <Printer className="w-3.5 h-3.5" /> הדפסה
         </Button>
       </div>
     </div>

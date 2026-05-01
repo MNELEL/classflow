@@ -4,11 +4,11 @@ import { useQuery } from '@tanstack/react-query';
 import AppLayout from '@/components/layout/AppLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Users, LayoutGrid, AlertTriangle, CheckCircle2, Clock, TrendingUp, FileDown, FileSpreadsheet } from 'lucide-react';
+import { Users, LayoutGrid, AlertTriangle, CheckCircle2, Clock, TrendingUp, FileDown, FileSpreadsheet, Printer } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { calcSatisfactionScore } from '@/lib/seatingUtils';
-import { exportToPDF, exportToExcel } from '@/lib/exportUtils';
+import { exportToPDF, exportToExcel, printSeating } from '@/lib/exportUtils';
 
 export default function DashboardPage() {
   const { data: students = [], isLoading: loadingStudents } = useQuery({
@@ -196,6 +196,9 @@ export default function DashboardPage() {
               </Button>
               <Button variant="outline" onClick={() => exportToExcel(savedSeats, students, savedArrangement.rows, savedArrangement.cols)}>
                 <FileSpreadsheet className="w-4 h-4 ml-1" /> ייצוא Excel
+              </Button>
+              <Button variant="outline" onClick={() => printSeating(savedSeats, students, savedArrangement.rows, savedArrangement.cols)}>
+                <Printer className="w-4 h-4 ml-1" /> הדפסה
               </Button>
             </>
           )}
