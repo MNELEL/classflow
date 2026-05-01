@@ -21,6 +21,7 @@ export default function StudentForm({ student, students, onSave, onCancel }) {
     height: student?.height || 'medium',
     row_preference: student?.row_preference || 'none',
     permanent_row: student?.permanent_row || 'none',
+    permanent_col: student?.permanent_col || 'none',
     side_preference: student?.side_preference || 'none',
     avoid_edges: student?.avoid_edges || false,
     special_needs: student?.special_needs || [],
@@ -118,30 +119,46 @@ export default function StudentForm({ student, students, onSave, onCancel }) {
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-3">
-        <div>
-          <Label className="text-xs">📍 שורה קבועה (כפויה)</Label>
-          <Select value={form.permanent_row} onValueChange={v => setForm(f => ({ ...f, permanent_row: v }))}>
-            <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
-            <SelectContent>
-              <SelectItem value="none">ללא</SelectItem>
-              <SelectItem value="front">תמיד קדמי</SelectItem>
-              <SelectItem value="middle">תמיד אמצעי</SelectItem>
-              <SelectItem value="back">תמיד אחורי</SelectItem>
-            </SelectContent>
-          </Select>
+      <div>
+        <Label className="text-xs mb-1.5 block">📍 אילוצים פיזיים כפויים</Label>
+        <div className="grid grid-cols-2 gap-3 bg-accent/30 rounded-xl p-3">
+          <div>
+            <Label className="text-[10px] text-muted-foreground mb-1 block">שורה קבועה</Label>
+            <Select value={form.permanent_row} onValueChange={v => setForm(f => ({ ...f, permanent_row: v }))}>
+              <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">ללא</SelectItem>
+                <SelectItem value="front">תמיד קדמי 🎯</SelectItem>
+                <SelectItem value="middle">תמיד אמצעי</SelectItem>
+                <SelectItem value="back">תמיד אחורי</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div>
+            <Label className="text-[10px] text-muted-foreground mb-1 block">טור קבוע</Label>
+            <Select value={form.permanent_col} onValueChange={v => setForm(f => ({ ...f, permanent_col: v }))}>
+              <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">ללא</SelectItem>
+                <SelectItem value="left">תמיד שמאל</SelectItem>
+                <SelectItem value="center">תמיד מרכז</SelectItem>
+                <SelectItem value="right">תמיד ימין</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="col-span-2">
+            <button
+              type="button"
+              onClick={() => setForm(f => ({ ...f, avoid_edges: !f.avoid_edges }))}
+              className={`flex items-center gap-2 px-3 py-2 rounded-lg border text-xs transition-colors w-full justify-center ${
+                form.avoid_edges ? 'bg-primary/10 border-primary text-primary' : 'border-border hover:border-primary/30'
+              }`}
+            >
+              {form.avoid_edges ? '✅' : '⬜'} הימנע מקצוות הכיתה
+            </button>
+          </div>
         </div>
-        <div className="flex items-end pb-1">
-          <button
-            type="button"
-            onClick={() => setForm(f => ({ ...f, avoid_edges: !f.avoid_edges }))}
-            className={`flex items-center gap-2 px-3 py-2 rounded-lg border text-xs transition-colors w-full justify-center ${
-              form.avoid_edges ? 'bg-primary/10 border-primary text-primary' : 'border-border hover:border-primary/30'
-            }`}
-          >
-            {form.avoid_edges ? '✅' : '⬜'} הימנע מקצוות
-          </button>
-        </div>
+        <p className="text-[10px] text-muted-foreground mt-1">⚠️ אילוצים כפויים יגרמו לחיווי סגול על המפה אם לא מתקיימים</p>
       </div>
 
       <div>

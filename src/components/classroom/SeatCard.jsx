@@ -20,6 +20,7 @@ export default function SeatCard({
   seat,
   student,
   conflictType,
+  physicalViolation,
   showNumbers,
   seatNumber,
   onDrop,
@@ -57,6 +58,8 @@ export default function SeatCard({
 
   const bgColor = isEmpty
     ? 'bg-muted/60 border-dashed border-border'
+    : physicalViolation
+    ? 'bg-purple-50 border-purple-400 dark:bg-purple-950/30 dark:border-purple-600'
     : conflictType === 'conflict'
     ? 'bg-red-50 border-red-300 dark:bg-red-950/30 dark:border-red-700'
     : conflictType === 'good'
@@ -115,6 +118,9 @@ export default function SeatCard({
               <span className="text-muted-foreground"><Settings className="w-3 h-3" /></span>
             )}
           </div>
+          {physicalViolation && (
+            <span className="absolute -top-1.5 -right-1.5 bg-purple-500 text-white rounded-full w-4 h-4 flex items-center justify-center text-[9px] font-bold" title="הפרת אילוץ פיזי">📍</span>
+          )}
           {conflictType === 'conflict' && (
             <span className="absolute -top-1.5 -left-1.5 bg-red-500 text-white rounded-full w-4 h-4 flex items-center justify-center text-[9px] font-bold">!</span>
           )}

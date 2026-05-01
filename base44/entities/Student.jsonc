@@ -47,6 +47,17 @@
       "default": "none",
       "description": "\u05e9\u05d5\u05e8\u05d4 \u05e7\u05d1\u05d5\u05e2\u05d4 - \u05db\u05d5\u05e4\u05d4 \u05e2\u05dc \u05d4\u05d0\u05dc\u05d2\u05d5\u05e8\u05d9\u05ea\u05dd"
     },
+    "permanent_col": {
+      "type": "string",
+      "enum": [
+        "left",
+        "center",
+        "right",
+        "none"
+      ],
+      "default": "none",
+      "description": "\u05d8\u05d5\u05e8 \u05e7\u05d1\u05d5\u05e2 - \u05db\u05d5\u05e4\u05d4 \u05e2\u05dc \u05d4\u05d0\u05dc\u05d2\u05d5\u05e8\u05d9\u05ea\u05dd"
+    },
     "side_preference": {
       "type": "string",
       "enum": [

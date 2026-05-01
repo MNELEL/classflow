@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import SeatCard from './SeatCard';
-import { detectConflicts, getSeatAt } from '@/lib/seatingUtils';
+import { detectConflicts, detectPhysicalViolation, getSeatAt } from '@/lib/seatingUtils';
 
 export default function ClassroomGrid({
   seats,
@@ -56,12 +56,14 @@ export default function ClassroomGrid({
             if (!seat) return <div key={`${r}-${c}`} />;
             const student = seat.student_id ? studentMap[seat.student_id] : null;
             const conflict = student ? detectConflicts(seat, seats, students) : { type: null };
+            const physicalViolation = student ? detectPhysicalViolation(seat, seats, student) : false;
             return (
               <SeatCard
                 key={seat.id}
                 seat={seat}
                 student={student}
                 conflictType={conflict.type}
+                physicalViolation={physicalViolation}
                 showNumbers={showNumbers}
                 seatNumber={seatNumbers[seat.id]}
                 isDraggingOver={draggingOver === seat.id}

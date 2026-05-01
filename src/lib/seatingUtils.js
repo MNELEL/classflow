@@ -95,6 +95,29 @@ export function calcSatisfactionScore(seats, students) {
   return Math.round((total / count) * 100);
 }
 
+// Detect physical constraint violations (permanent_row / permanent_col)
+export function detectPhysicalViolation(seat, seats, student) {
+  if (!student) return false;
+  const totalRows = Math.max(...seats.map(s => s.row)) + 1;
+  const totalCols = Math.max(...seats.map(s => s.col)) + 1;
+  const thirdRow = Math.floor(totalRows / 3);
+  const thirdCol = Math.floor(totalCols / 3);
+
+  if (student.permanent_row && student.permanent_row !== 'none') {
+    if (student.permanent_row === 'front' && seat.row !== 0) return true;
+    if (student.permanent_row === 'back' && seat.row !== totalRows - 1) return true;
+    if (student.permanent_row === 'middle' && Math.abs(seat.row - Math.floor(totalRows / 2)) > 1) return true;
+  }
+
+  if (student.permanent_col && student.permanent_col !== 'none') {
+    if (student.permanent_col === 'left' && seat.col > thirdCol) return true;
+    if (student.permanent_col === 'right' && seat.col < totalCols - 1 - thirdCol) return true;
+    if (student.permanent_col === 'center' && (seat.col < thirdCol || seat.col > totalCols - 1 - thirdCol)) return true;
+  }
+
+  return false;
+}
+
 // Detect conflicts for a seat
 export function detectConflicts(seat, seats, students) {
   const student = students.find(s => s.id === seat.student_id);
@@ -170,6 +193,19 @@ export function smartSort(seats, students) {
         const mid = Math.floor(totalRows / 2);
         if (Math.abs(seat.row - mid) > 1) score -= 50;
         else score += 30;
+      }
+
+      // Permanent col assignment
+      const totalColsAll = Math.max(...availSeats.map(s => s.col)) + 1;
+      const thirdC = Math.floor(totalColsAll / 3);
+      if (student.permanent_col === 'left') {
+        if (seat.col <= thirdC) score += 30; else score -= 50;
+      }
+      if (student.permanent_col === 'right') {
+        if (seat.col >= totalColsAll - 1 - thirdC) score += 30; else score -= 50;
+      }
+      if (student.permanent_col === 'center') {
+        if (seat.col > thirdC && seat.col < totalColsAll - 1 - thirdC) score += 30; else score -= 50;
       }
 
       // Row preference
