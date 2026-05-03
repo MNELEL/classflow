@@ -146,152 +146,166 @@ export function detectConflicts(seat, seats, students) {
   return { type: null };
 }
 
-// Smart sort algorithm
+// Smart sort algorithm — greedy with multi-pass improvement
 export function smartSort(seats, students) {
-  const activeSeat = seats.filter(s => !s.is_hidden && !s.is_gap && !s.is_blocked);
-  const unlockedSeats = activeSeat.filter(s => !s.is_locked);
-  const lockedSeats = activeSeat.filter(s => s.is_locked);
-
-  // Students not locked
+  const lockedSeats = seats.filter(s => s.is_locked && !s.is_hidden && !s.is_gap && !s.is_blocked);
   const lockedStudentIds = new Set(lockedSeats.map(s => s.student_id).filter(Boolean));
   const studentsToPlace = students.filter(s => s.is_active !== false && !lockedStudentIds.has(s.id));
 
-  // Clear unlocked seats
-  const newSeats = seats.map(s => ({
-    ...s,
-    student_id: s.is_locked ? s.student_id : null,
-  }));
+  const availableSeats = seats.filter(s => !s.is_hidden && !s.is_gap && !s.is_locked && !s.is_blocked);
 
-  const availableSeats = newSeats.filter(s => !s.is_hidden && !s.is_gap && !s.is_locked && !s.is_blocked);
+  if (availableSeats.length === 0 || studentsToPlace.length === 0) return seats;
+
   const totalRows = Math.max(...availableSeats.map(s => s.row)) + 1;
+  const totalCols = Math.max(...availableSeats.map(s => s.col)) + 1;
+  const thirdC = Math.floor(totalCols / 3);
 
-  // Sort students by constraints priority
+  // Priority: students with more hard constraints go first
   const prioritized = [...studentsToPlace].sort((a, b) => {
-    const aConstraints = (a.special_needs?.length || 0) + (a.avoid?.length || 0) + (a.separate?.length || 0);
-    const bConstraints = (b.special_needs?.length || 0) + (b.avoid?.length || 0) + (b.separate?.length || 0);
-    return bConstraints - aConstraints;
+    const score = (s) =>
+      (s.special_needs?.length || 0) * 4 +
+      (s.permanent_row && s.permanent_row !== 'none' ? 3 : 0) +
+      (s.permanent_col && s.permanent_col !== 'none' ? 3 : 0) +
+      (s.avoid?.length || 0) * 2 +
+      (s.separate?.length || 0) * 2 +
+      (s.friends?.length || 0);
+    return score(b) - score(a);
   });
 
-  const placed = new Set();
-  const usedSeats = new Set();
+  // Score a seat for a student given the current placement state
+  function scoreSeat(student, seat, currentSeats) {
+    let s = 0;
 
-  // Helper: find best seat for student
-  function findBestSeat(student, availSeats, currentNewSeats) {
+    // ── Hard constraints (permanent placement) ──
+    if (student.permanent_row && student.permanent_row !== 'none') {
+      const mid = Math.floor(totalRows / 2);
+      if (student.permanent_row === 'front') s += seat.row === 0 ? 40 : -60;
+      else if (student.permanent_row === 'back') s += seat.row === totalRows - 1 ? 40 : -60;
+      else if (student.permanent_row === 'middle') s += Math.abs(seat.row - mid) <= 1 ? 40 : -60;
+    }
+    if (student.permanent_col && student.permanent_col !== 'none') {
+      if (student.permanent_col === 'left') s += seat.col <= thirdC ? 40 : -60;
+      else if (student.permanent_col === 'right') s += seat.col >= totalCols - 1 - thirdC ? 40 : -60;
+      else if (student.permanent_col === 'center') s += (seat.col > thirdC && seat.col < totalCols - 1 - thirdC) ? 40 : -60;
+    }
+
+    // ── Special needs → front ──
+    if (student.special_needs?.includes('vision') || student.special_needs?.includes('hearing')) {
+      s += (totalRows - seat.row) * 5;
+    }
+    if (student.special_needs?.includes('mobility')) {
+      // Aisle preference — edges
+      if (seat.col === 0 || seat.col === totalCols - 1) s += 15;
+    }
+
+    // ── Height ──
+    if (student.height === 'tall') s += seat.row * 4;
+    else if (student.height === 'short') s += (totalRows - seat.row) * 3;
+
+    // ── Row preference ──
+    if (student.row_preference === 'front') s += (totalRows - seat.row) * 3;
+    else if (student.row_preference === 'back') s += seat.row * 3;
+    else if (student.row_preference === 'middle') s += (totalRows - Math.abs(seat.row - Math.floor(totalRows / 2))) * 3;
+
+    // ── Side preference ──
+    if (student.side_preference === 'left') s += (totalCols - seat.col) * 2;
+    else if (student.side_preference === 'right') s += seat.col * 2;
+    else if (student.side_preference === 'center') s += (totalCols - Math.abs(seat.col - Math.floor(totalCols / 2))) * 2;
+
+    // ── Avoid edges ──
+    if (student.avoid_edges && (seat.col === 0 || seat.col === totalCols - 1)) s -= 20;
+
+    // ── Social constraints (based on already-placed students) ──
+    for (const other of currentSeats) {
+      if (!other.student_id) continue;
+      const dist = getDistance(seat, other);
+      const adj = dist === 1;
+
+      if (student.friends?.includes(other.student_id)) {
+        if (adj) s += 20;
+        else if (dist === 2) s += 8;
+      }
+      if (student.avoid?.includes(other.student_id)) {
+        if (adj) s -= 35;
+        else if (dist === 2) s -= 10;
+      }
+      if (student.separate?.includes(other.student_id)) {
+        if (dist < 3) s -= 25;
+        else if (dist < 5) s -= 8;
+      }
+    }
+
+    // ── Learning group ──
+    if (student.learning_group) {
+      for (const other of currentSeats) {
+        if (!other.student_id) continue;
+        const member = studentsToPlace.find(st => st.id === other.student_id && st.learning_group === student.learning_group);
+        if (member) {
+          const dist = getDistance(seat, other);
+          if (dist === 1) s += 30;
+          else if (dist === 2) s += 12;
+        }
+      }
+    }
+
+    return s;
+  }
+
+  // ── Pass 1: greedy placement ──
+  const baseSeats = seats.map(s => ({ ...s, student_id: s.is_locked ? s.student_id : null }));
+  const usedSeatIds = new Set(lockedSeats.map(s => s.id));
+
+  for (const student of prioritized) {
     let bestSeat = null;
     let bestScore = -Infinity;
 
-    for (const seat of availSeats) {
-      if (usedSeats.has(seat.id)) continue;
-      let score = 0;
-
-      // Permanent row assignment
-      if (student.permanent_row === 'front' && seat.row !== 0) score -= 50;
-      if (student.permanent_row === 'front' && seat.row === 0) score += 30;
-      if (student.permanent_row === 'back' && seat.row !== totalRows - 1) score -= 50;
-      if (student.permanent_row === 'back' && seat.row === totalRows - 1) score += 30;
-      if (student.permanent_row === 'middle') {
-        const mid = Math.floor(totalRows / 2);
-        if (Math.abs(seat.row - mid) > 1) score -= 50;
-        else score += 30;
-      }
-
-      // Permanent col assignment
-      const totalColsAll = Math.max(...availSeats.map(s => s.col)) + 1;
-      const thirdC = Math.floor(totalColsAll / 3);
-      if (student.permanent_col === 'left') {
-        if (seat.col <= thirdC) score += 30; else score -= 50;
-      }
-      if (student.permanent_col === 'right') {
-        if (seat.col >= totalColsAll - 1 - thirdC) score += 30; else score -= 50;
-      }
-      if (student.permanent_col === 'center') {
-        if (seat.col > thirdC && seat.col < totalColsAll - 1 - thirdC) score += 30; else score -= 50;
-      }
-
-      // Row preference
-      if (student.row_preference === 'front') score += (totalRows - seat.row) * 2;
-      else if (student.row_preference === 'back') score += seat.row * 2;
-      else if (student.row_preference === 'middle') {
-        score += (totalRows - Math.abs(seat.row - Math.floor(totalRows / 2))) * 2;
-      }
-
-      // Special needs: vision/hearing → front rows
-      if (student.special_needs?.includes('vision') || student.special_needs?.includes('hearing')) {
-        score += (totalRows - seat.row) * 3;
-      }
-
-      // Height constraints: tall students → back, short students → front
-      const totalCols2 = Math.max(...availSeats.map(s => s.col)) + 1;
-      if (student.height === 'tall') score += seat.row * 3;
-      if (student.height === 'short') score += (totalRows - seat.row) * 2;
-      // Not on edges if needed
-      if (student.avoid_edges && (seat.col === 0 || seat.col === totalCols2 - 1)) score -= 15;
-
-      // Side preference
-      const totalCols = Math.max(...availSeats.map(s => s.col)) + 1;
-      if (student.side_preference === 'left') score += (totalCols - seat.col);
-      else if (student.side_preference === 'right') score += seat.col;
-      else if (student.side_preference === 'center') {
-        score += (totalCols - Math.abs(seat.col - Math.floor(totalCols / 2)));
-      }
-
-      // Learning group: strong bonus for sitting adjacent to group members
-      if (student.learning_group) {
-        const groupMembers = studentsToPlace.filter(
-          s => s.id !== student.id && s.learning_group === student.learning_group
-        );
-        for (const member of groupMembers) {
-          const memberSeat = currentNewSeats.find(s => s.student_id === member.id);
-          if (memberSeat) {
-            if (isAdjacent(seat, memberSeat)) score += 25;
-            else if (getDistance(seat, memberSeat) === 2) score += 10;
-          }
-        }
-      }
-
-      // Friends nearby
-      if (student.friends) {
-        for (const fid of student.friends) {
-          const friendSeat = currentNewSeats.find(s => s.student_id === fid);
-          if (friendSeat && isAdjacent(seat, friendSeat)) score += 10;
-        }
-      }
-
-      // Avoid: penalty
-      if (student.avoid) {
-        for (const aid of student.avoid) {
-          const avoidSeat = currentNewSeats.find(s => s.student_id === aid);
-          if (avoidSeat && isAdjacent(seat, avoidSeat)) score -= 20;
-        }
-      }
-
-      // Separate: penalty
-      if (student.separate) {
-        for (const sid of student.separate) {
-          const sepSeat = currentNewSeats.find(s => s.student_id === sid);
-          if (sepSeat && getDistance(seat, sepSeat) < 3) score -= 15;
-        }
-      }
-
-      if (score > bestScore) {
-        bestScore = score;
-        bestSeat = seat;
-      }
+    for (const seat of availableSeats) {
+      if (usedSeatIds.has(seat.id)) continue;
+      const sc = scoreSeat(student, seat, baseSeats);
+      if (sc > bestScore) { bestScore = sc; bestSeat = seat; }
     }
-    return bestSeat;
-  }
 
-  for (const student of prioritized) {
-    const seat = findBestSeat(student, availableSeats, newSeats);
-    if (seat) {
-      const idx = newSeats.findIndex(s => s.id === seat.id);
+    if (bestSeat) {
+      const idx = baseSeats.findIndex(s => s.id === bestSeat.id);
       if (idx !== -1) {
-        newSeats[idx] = { ...newSeats[idx], student_id: student.id };
-        usedSeats.add(seat.id);
-        placed.add(student.id);
+        baseSeats[idx] = { ...baseSeats[idx], student_id: student.id };
+        usedSeatIds.add(bestSeat.id);
       }
     }
   }
 
-  return newSeats;
+  // ── Pass 2: swap improvement (try swapping pairs to improve total score) ──
+  const SWAP_PASSES = 3;
+  for (let pass = 0; pass < SWAP_PASSES; pass++) {
+    let improved = false;
+    const placed = baseSeats.filter(s => s.student_id && !s.is_locked);
+
+    for (let i = 0; i < placed.length; i++) {
+      for (let j = i + 1; j < placed.length; j++) {
+        const seatA = placed[i];
+        const seatB = placed[j];
+        const studentA = students.find(s => s.id === seatA.student_id);
+        const studentB = students.find(s => s.id === seatB.student_id);
+        if (!studentA || !studentB) continue;
+
+        const before = scoreSeat(studentA, seatA, baseSeats) + scoreSeat(studentB, seatB, baseSeats);
+        const after = scoreSeat(studentA, seatB, baseSeats) + scoreSeat(studentB, seatA, baseSeats);
+
+        if (after > before + 2) {
+          // Perform swap
+          const idxA = baseSeats.findIndex(s => s.id === seatA.id);
+          const idxB = baseSeats.findIndex(s => s.id === seatB.id);
+          baseSeats[idxA] = { ...baseSeats[idxA], student_id: studentB.id };
+          baseSeats[idxB] = { ...baseSeats[idxB], student_id: studentA.id };
+          // Update placed references for this pass
+          placed[i] = baseSeats[idxA];
+          placed[j] = baseSeats[idxB];
+          improved = true;
+        }
+      }
+    }
+    if (!improved) break;
+  }
+
+  return baseSeats;
 }
