@@ -1,18 +1,10 @@
 import React, { useState } from 'react';
 import SeatCard from './SeatCard';
 import { detectConflicts, detectPhysicalViolation, getSeatAt } from '@/lib/seatingUtils';
+import { motion } from 'framer-motion';
 
-export default function ClassroomGrid({
-  seats,
-  students,
-  rows,
-  cols,
-  showNumbers,
-  onSeatClick,
-  onMoveStu,
-}) {
+export default function ClassroomGrid({ seats, students, rows, cols, showNumbers, onSeatClick, onMoveStu }) {
   const [draggingOver, setDraggingOver] = useState(null);
-
   const studentMap = Object.fromEntries(students.map(s => [s.id, s]));
 
   let seatNum = 1;
@@ -20,9 +12,7 @@ export default function ClassroomGrid({
   for (let r = 0; r < rows; r++) {
     for (let c = 0; c < cols; c++) {
       const seat = getSeatAt(seats, r, c);
-      if (seat && !seat.is_hidden && !seat.is_gap) {
-        seatNumbers[seat.id] = seatNum++;
-      }
+      if (seat && !seat.is_hidden && !seat.is_gap) seatNumbers[seat.id] = seatNum++;
     }
   }
 
@@ -37,43 +27,55 @@ export default function ClassroomGrid({
   return (
     <div className="w-full">
       {/* Teacher board */}
-      <div className="flex justify-center mb-4">
-        <div className="bg-primary/10 border-2 border-primary/30 rounded-xl px-8 py-2 text-primary font-semibold text-sm">
-          לוח המורה
+      <div className="flex justify-center mb-5">
+        <div className="relative">
+          <div className="absolute inset-0 bg-primary/20 blur-xl rounded-2xl" />
+          <div className="relative bg-gradient-to-r from-primary/20 via-primary/30 to-primary/20 border-2 border-primary/40 rounded-2xl px-10 py-2.5 text-primary font-bold text-sm tracking-wide shadow-sm">
+            📋 לוח המורה
+          </div>
         </div>
       </div>
 
-      <div
-        className="grid gap-2"
-        style={{
-          gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))`,
-          gridTemplateRows: `repeat(${rows}, auto)`,
-        }}
-      >
-        {Array.from({ length: rows }).map((_, r) =>
-          Array.from({ length: cols }).map((_, c) => {
-            const seat = getSeatAt(seats, r, c);
-            if (!seat) return <div key={`${r}-${c}`} />;
-            const student = seat.student_id ? studentMap[seat.student_id] : null;
-            const conflict = student ? detectConflicts(seat, seats, students) : { type: null };
-            const physicalViolation = student ? detectPhysicalViolation(seat, seats, student) : false;
-            return (
-              <SeatCard
-                key={seat.id}
-                seat={seat}
-                student={student}
-                conflictType={conflict.type}
-                physicalViolation={physicalViolation}
-                showNumbers={showNumbers}
-                seatNumber={seatNumbers[seat.id]}
-                isDraggingOver={draggingOver === seat.id}
-                onDrop={handleDrop}
-                onDragStart={() => {}}
-                onClick={onSeatClick}
-              />
-            );
-          })
-        )}
+      {/* Row labels + grid */}
+      <div className="flex gap-2 items-start">
+        {/* Row numbers */}
+        <div className="flex flex-col gap-2 pt-0.5" style={{ minWidth: '18px' }}>
+          {Array.from({ length: rows }).map((_, r) => (
+            <div key={r} className="h-[64px] flex items-center justify-center">
+              <span className="text-[9px] text-muted-foreground/40 font-mono">{r + 1}</span>
+            </div>
+          ))}
+        </div>
+
+        <div
+          className="flex-1 grid gap-2"
+          style={{ gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))` }}
+        >
+          {Array.from({ length: rows }).map((_, r) =>
+            Array.from({ length: cols }).map((_, c) => {
+              const seat = getSeatAt(seats, r, c);
+              if (!seat) return <div key={`${r}-${c}`} />;
+              const student = seat.student_id ? studentMap[seat.student_id] : null;
+              const conflict = student ? detectConflicts(seat, seats, students) : { type: null };
+              const physicalViolation = student ? detectPhysicalViolation(seat, seats, student) : false;
+              return (
+                <SeatCard
+                  key={seat.id}
+                  seat={seat}
+                  student={student}
+                  conflictType={conflict.type}
+                  physicalViolation={physicalViolation}
+                  showNumbers={showNumbers}
+                  seatNumber={seatNumbers[seat.id]}
+                  isDraggingOver={draggingOver === seat.id}
+                  onDrop={handleDrop}
+                  onDragStart={() => setDraggingOver(null)}
+                  onClick={onSeatClick}
+                />
+              );
+            })
+          )}
+        </div>
       </div>
     </div>
   );

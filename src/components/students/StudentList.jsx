@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Edit2, Trash2, Plus, Eye, Volume2, Zap } from 'lucide-react';
+import { Edit2, Trash2, Plus, Eye, Volume2, Zap, Users } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import StudentForm from './StudentForm';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const NEED_ICONS = {
   vision: <Eye className="w-3 h-3" />,
@@ -25,34 +26,58 @@ export default function StudentList({ students, onSave, onDelete }) {
       </div>
 
       <div className="space-y-2">
-        {students.map(student => (
-          <div key={student.id} className="bg-card border border-border rounded-xl px-4 py-3 flex items-center justify-between hover:border-primary/30 transition-colors">
-            <div className="flex items-center gap-3">
-              <div>
-                <p className="font-medium text-sm">{student.name}</p>
-                <div className="flex items-center gap-1.5 mt-0.5">
-                  {student.group && <Badge variant="outline" className="text-[10px] py-0">{student.group}</Badge>}
-                  {student.learning_group && <Badge className="text-[10px] py-0 bg-primary/10 text-primary border-primary/30">🧩 {student.learning_group}</Badge>}
-                  {student.special_needs?.map(n => (
-                    <span key={n} className="text-muted-foreground">{NEED_ICONS[n]}</span>
-                  ))}
-                  {student.friends?.length > 0 && <span className="text-green-500 text-[11px]">💚 {student.friends.length}</span>}
-                  {student.avoid?.length > 0 && <span className="text-red-500 text-[11px]">🚫 {student.avoid.length}</span>}
+        <AnimatePresence>
+          {students.map((student, i) => (
+            <motion.div
+              key={student.id}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              transition={{ delay: i * 0.03 }}
+              className="bg-card border border-border/70 rounded-xl px-4 py-3 flex items-center justify-between hover:border-primary/30 hover:shadow-sm transition-all duration-200 group"
+            >
+              <div className="flex items-center gap-3">
+                {/* Avatar circle */}
+                <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-sm shrink-0">
+                  {student.name.charAt(0)}
+                </div>
+                <div>
+                  <p className="font-semibold text-sm">{student.name}</p>
+                  <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
+                    {student.group && <Badge variant="outline" className="text-[10px] py-0 h-4">{student.group}</Badge>}
+                    {student.learning_group && <Badge className="text-[10px] py-0 h-4 bg-primary/10 text-primary border-0">🧩 {student.learning_group}</Badge>}
+                    {student.special_needs?.map(n => (
+                      <span key={n} className="text-muted-foreground">{NEED_ICONS[n]}</span>
+                    ))}
+                    {student.friends?.length > 0 && <span className="text-emerald-500 text-[11px] font-medium">💚 {student.friends.length}</span>}
+                    {student.avoid?.length > 0 && <span className="text-red-500 text-[11px] font-medium">🚫 {student.avoid.length}</span>}
+                  </div>
                 </div>
               </div>
-            </div>
-            <div className="flex gap-1">
-              <Button size="icon" variant="ghost" onClick={() => setEditing(student)}>
-                <Edit2 className="w-4 h-4" />
-              </Button>
-              <Button size="icon" variant="ghost" onClick={() => onDelete(student.id)} className="text-destructive hover:text-destructive">
-                <Trash2 className="w-4 h-4" />
-              </Button>
-            </div>
-          </div>
-        ))}
+              <div className="flex gap-1 opacity-60 group-hover:opacity-100 transition-opacity">
+                <Button size="icon" variant="ghost" className="h-8 w-8" onClick={() => setEditing(student)}>
+                  <Edit2 className="w-3.5 h-3.5" />
+                </Button>
+                <Button size="icon" variant="ghost" className="h-8 w-8" onClick={() => onDelete(student.id)} className="text-destructive/60 hover:text-destructive h-8 w-8">
+                  <Trash2 className="w-3.5 h-3.5" />
+                </Button>
+              </div>
+            </motion.div>
+          ))}
+        </AnimatePresence>
+
         {students.length === 0 && (
-          <p className="text-center text-muted-foreground text-sm py-8">אין תלמידים עדיין. הוסף תלמיד ראשון!</p>
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="flex flex-col items-center py-14 gap-3 text-center"
+          >
+            <div className="w-16 h-16 rounded-2xl bg-muted/60 flex items-center justify-center">
+              <Users className="w-8 h-8 text-muted-foreground/30" />
+            </div>
+            <p className="font-semibold text-muted-foreground">אין תלמידים עדיין</p>
+            <p className="text-sm text-muted-foreground/60">לחץ על "הוסף תלמיד" כדי להתחיל</p>
+          </motion.div>
         )}
       </div>
 

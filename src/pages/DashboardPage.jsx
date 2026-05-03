@@ -6,11 +6,12 @@ import PullToRefreshIndicator from '@/components/ui/PullToRefreshIndicator';
 import AppLayout from '@/components/layout/AppLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Users, LayoutGrid, AlertTriangle, CheckCircle2, Clock, TrendingUp, FileDown, FileSpreadsheet, Printer } from 'lucide-react';
+import { Users, LayoutGrid, AlertTriangle, CheckCircle2, TrendingUp, FileDown, FileSpreadsheet, Printer, Sparkles } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { calcSatisfactionScore } from '@/lib/seatingUtils';
 import { exportToPDF, exportToExcel, printSeating } from '@/lib/exportUtils';
+import { motion } from 'framer-motion';
 
 export default function DashboardPage() {
   const { data: students = [], isLoading: loadingStudents, refetch } = useQuery({
@@ -20,6 +21,7 @@ export default function DashboardPage() {
 
   const handleRefresh = useCallback(async () => { await refetch(); }, [refetch]);
   const { containerRef, pullY, refreshing } = usePullToRefresh(handleRefresh);
+
 
   const activeStudents = students.filter(s => s.is_active !== false);
   const studentsWithNeeds = students.filter(s => s.special_needs?.length > 0);
@@ -48,144 +50,194 @@ export default function DashboardPage() {
     : satisfactionScore >= 50 ? 'bg-yellow-500'
     : 'bg-red-500';
 
+  const statCards = [
+    {
+      icon: <Users className="w-4 h-4" />,
+      label: 'סה"כ תלמידים',
+      value: activeStudents.length,
+      sub: 'תלמידים פעילים',
+      color: 'text-primary',
+      bg: 'bg-primary/10',
+    },
+    {
+      icon: <CheckCircle2 className="w-4 h-4" />,
+      label: 'משובצים',
+      value: seatedCount,
+      sub: `מתוך ${activeStudents.length}`,
+      color: 'text-emerald-600',
+      bg: 'bg-emerald-500/10',
+    },
+    {
+      icon: <AlertTriangle className="w-4 h-4" />,
+      label: 'ממתינים',
+      value: unseatedCount,
+      sub: 'לא משובצים',
+      color: unseatedCount > 0 ? 'text-yellow-600' : 'text-muted-foreground',
+      bg: unseatedCount > 0 ? 'bg-yellow-500/10' : 'bg-muted/50',
+    },
+    {
+      icon: <TrendingUp className="w-4 h-4" />,
+      label: 'שביעות רצון',
+      value: satisfactionScore !== null ? `${satisfactionScore}%` : '—',
+      sub: satisfactionScore !== null ? (satisfactionScore >= 75 ? 'מצוין!' : satisfactionScore >= 50 ? 'טוב' : 'טעון שיפור') : 'אין סידור',
+      color: scoreColor,
+      bg: satisfactionScore === null ? 'bg-muted/50' : satisfactionScore >= 75 ? 'bg-emerald-500/10' : satisfactionScore >= 50 ? 'bg-yellow-500/10' : 'bg-red-500/10',
+      progress: satisfactionScore,
+      progressBg: scoreBg,
+    },
+  ];
+
   return (
     <AppLayout>
-      <div ref={containerRef} className="p-6 max-w-5xl mx-auto overflow-y-auto h-full relative" dir="rtl">
+      <div ref={containerRef} className="p-5 max-w-5xl mx-auto overflow-y-auto h-full relative" dir="rtl">
         <PullToRefreshIndicator pullY={pullY} refreshing={refreshing} />
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold">סקירה כללית</h1>
-          <p className="text-muted-foreground mt-1">מצב הכיתה שלך במבט אחד</p>
-        </div>
+
+        {/* Header */}
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mb-7"
+        >
+          <div className="flex items-center gap-2 mb-1">
+            <Sparkles className="w-5 h-5 text-primary" />
+            <h1 className="text-2xl font-bold">סקירה כללית</h1>
+          </div>
+          <p className="text-muted-foreground text-sm">מצב הכיתה שלך במבט אחד</p>
+        </motion.div>
 
         {/* Stats grid */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-xs text-muted-foreground font-medium flex items-center gap-1.5">
-                <Users className="w-3.5 h-3.5" /> סה"כ תלמידים
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold">{activeStudents.length}</div>
-              <p className="text-xs text-muted-foreground mt-0.5">תלמידים פעילים</p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-xs text-muted-foreground font-medium flex items-center gap-1.5">
-                <CheckCircle2 className="w-3.5 h-3.5 text-green-500" /> משובצים
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold text-green-600">{seatedCount}</div>
-              <p className="text-xs text-muted-foreground mt-0.5">מתוך {activeStudents.length}</p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-xs text-muted-foreground font-medium flex items-center gap-1.5">
-                <AlertTriangle className="w-3.5 h-3.5 text-yellow-500" /> ממתינים
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className={`text-3xl font-bold ${unseatedCount > 0 ? 'text-yellow-600' : 'text-muted-foreground'}`}>
-                {unseatedCount}
-              </div>
-              <p className="text-xs text-muted-foreground mt-0.5">לא משובצים</p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-xs text-muted-foreground font-medium flex items-center gap-1.5">
-                <TrendingUp className="w-3.5 h-3.5" /> שביעות רצון
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className={`text-3xl font-bold ${scoreColor}`}>
-                {satisfactionScore !== null ? `${satisfactionScore}%` : '—'}
-              </div>
-              {satisfactionScore !== null && (
-                <div className="mt-2 w-full bg-muted rounded-full h-1.5">
-                  <div
-                    className={`h-1.5 rounded-full transition-all ${scoreBg}`}
-                    style={{ width: `${satisfactionScore}%` }}
-                  />
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
+          {loadingStudents
+            ? Array.from({ length: 4 }).map((_, i) => (
+                <div key={i} className="bg-card border border-border rounded-xl p-4 animate-pulse">
+                  <div className="h-3 bg-muted rounded w-2/3 mb-3" />
+                  <div className="h-8 bg-muted rounded w-1/2 mb-2" />
+                  <div className="h-2 bg-muted rounded w-3/4" />
                 </div>
-              )}
-            </CardContent>
-          </Card>
+              ))
+            : statCards.map((card, i) => (
+                <motion.div
+                  key={i}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: i * 0.07 }}
+                >
+                  <Card className="overflow-hidden border-border/60 hover:shadow-md transition-shadow duration-200">
+                    <CardContent className="p-4">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-xs text-muted-foreground font-medium">{card.label}</span>
+                        <div className={`w-7 h-7 rounded-lg ${card.bg} flex items-center justify-center ${card.color}`}>
+                          {card.icon}
+                        </div>
+                      </div>
+                      <div className={`text-3xl font-bold ${card.color} mb-0.5`}>{card.value}</div>
+                      <p className="text-xs text-muted-foreground">{card.sub}</p>
+                      {card.progress !== undefined && card.progress !== null && (
+                        <div className="mt-2 w-full bg-muted rounded-full h-1.5">
+                          <motion.div
+                            className={`h-1.5 rounded-full ${card.progressBg}`}
+                            initial={{ width: 0 }}
+                            animate={{ width: `${card.progress}%` }}
+                            transition={{ duration: 0.8, delay: 0.3 + i * 0.07 }}
+                          />
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                </motion.div>
+              ))}
         </div>
 
         {/* Details row */}
-        <div className="grid md:grid-cols-2 gap-4 mb-8">
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-sm">פרטי הסידור הנוכחי</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-2">
-              {savedArrangement ? (
-                <>
-                  <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">שורות</span>
-                    <span className="font-medium">{savedArrangement.rows}</span>
+        <div className="grid md:grid-cols-2 gap-3 mb-6">
+          <motion.div initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.3 }}>
+            <Card className="border-border/60">
+              <CardHeader className="pb-3 pt-4 px-4">
+                <CardTitle className="text-sm flex items-center gap-1.5">
+                  <LayoutGrid className="w-3.5 h-3.5 text-primary" /> פרטי הסידור הנוכחי
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="px-4 pb-4 space-y-2">
+                {savedArrangement ? (
+                  <>
+                    {[
+                      { label: 'שורות', value: savedArrangement.rows },
+                      { label: 'טורים', value: savedArrangement.cols },
+                      { label: 'סה"כ מושבים', value: savedArrangement.rows * savedArrangement.cols },
+                      {
+                        label: 'תפוסה',
+                        value: savedArrangement.rows * savedArrangement.cols > 0
+                          ? `${Math.round((seatedCount / (savedArrangement.rows * savedArrangement.cols)) * 100)}%`
+                          : '0%',
+                      },
+                    ].map(row => (
+                      <div key={row.label} className="flex justify-between items-center text-sm">
+                        <span className="text-muted-foreground">{row.label}</span>
+                        <span className="font-semibold tabular-nums">{row.value}</span>
+                      </div>
+                    ))}
+                  </>
+                ) : (
+                  <div className="flex flex-col items-center py-4 gap-2 text-center">
+                    <LayoutGrid className="w-8 h-8 text-muted-foreground/20" />
+                    <p className="text-sm text-muted-foreground">אין סידור שמור עדיין</p>
+                    <Button size="sm" asChild variant="outline">
+                      <Link to="/seating">צור סידור ראשון</Link>
+                    </Button>
                   </div>
-                  <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">טורים</span>
-                    <span className="font-medium">{savedArrangement.cols}</span>
-                  </div>
-                  <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">סה"כ מושבים</span>
-                    <span className="font-medium">{savedArrangement.rows * savedArrangement.cols}</span>
-                  </div>
-                  <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">תפוסה</span>
-                    <span className="font-medium">
-                      {savedArrangement.rows * savedArrangement.cols > 0
-                        ? Math.round((seatedCount / (savedArrangement.rows * savedArrangement.cols)) * 100)
-                        : 0}%
-                    </span>
-                  </div>
-                </>
-              ) : (
-                <p className="text-muted-foreground text-sm">אין סידור שמור</p>
-              )}
-            </CardContent>
-          </Card>
+                )}
+              </CardContent>
+            </Card>
+          </motion.div>
 
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-sm">פרופיל הכיתה</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-2">
-              <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">עם צרכים מיוחדים</span>
-                <Badge variant={studentsWithNeeds.length > 0 ? 'default' : 'secondary'}>
-                  {studentsWithNeeds.length} תלמידים
-                </Badge>
-              </div>
-              <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">עם אילוצים חברתיים</span>
-                <Badge variant="secondary">{studentsWithConstraints.length} תלמידים</Badge>
-              </div>
-              <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">בלי העדפות</span>
-                <Badge variant="outline">
-                  {students.filter(s =>
-                    !s.friends?.length && !s.avoid?.length && !s.special_needs?.length &&
-                    s.row_preference === 'none' && s.side_preference === 'none'
-                  ).length} תלמידים
-                </Badge>
-              </div>
-            </CardContent>
-          </Card>
+          <motion.div initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.35 }}>
+            <Card className="border-border/60">
+              <CardHeader className="pb-3 pt-4 px-4">
+                <CardTitle className="text-sm flex items-center gap-1.5">
+                  <Users className="w-3.5 h-3.5 text-primary" /> פרופיל הכיתה
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="px-4 pb-4 space-y-2">
+                {activeStudents.length === 0 ? (
+                  <div className="flex flex-col items-center py-4 gap-2 text-center">
+                    <Users className="w-8 h-8 text-muted-foreground/20" />
+                    <p className="text-sm text-muted-foreground">עדיין אין תלמידים</p>
+                    <Button size="sm" asChild variant="outline">
+                      <Link to="/students">הוסף תלמידים</Link>
+                    </Button>
+                  </div>
+                ) : (
+                  <>
+                    {[
+                      { label: 'עם צרכים מיוחדים', count: studentsWithNeeds.length, variant: studentsWithNeeds.length > 0 ? 'default' : 'secondary' },
+                      { label: 'עם אילוצים חברתיים', count: studentsWithConstraints.length, variant: 'secondary' },
+                      {
+                        label: 'ללא העדפות', count: students.filter(s =>
+                          !s.friends?.length && !s.avoid?.length && !s.special_needs?.length &&
+                          s.row_preference === 'none' && s.side_preference === 'none'
+                        ).length, variant: 'outline'
+                      },
+                    ].map(row => (
+                      <div key={row.label} className="flex justify-between items-center text-sm">
+                        <span className="text-muted-foreground">{row.label}</span>
+                        <Badge variant={row.variant} className="text-xs">{row.count}</Badge>
+                      </div>
+                    ))}
+                  </>
+                )}
+              </CardContent>
+            </Card>
+          </motion.div>
         </div>
 
         {/* Actions */}
-        <div className="flex gap-3 flex-wrap">
-          <Button asChild>
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.45 }}
+          className="flex gap-2 flex-wrap"
+        >
+          <Button asChild className="shadow-sm">
             <Link to="/seating">
               <LayoutGrid className="w-4 h-4 ml-1" /> פתח לוח כיתה
             </Link>
@@ -198,17 +250,17 @@ export default function DashboardPage() {
           {savedSeats && savedArrangement && (
             <>
               <Button variant="outline" onClick={() => exportToPDF(savedSeats, students, savedArrangement.rows, savedArrangement.cols)}>
-                <FileDown className="w-4 h-4 ml-1" /> ייצוא PDF
+                <FileDown className="w-4 h-4 ml-1" /> PDF
               </Button>
               <Button variant="outline" onClick={() => exportToExcel(savedSeats, students, savedArrangement.rows, savedArrangement.cols)}>
-                <FileSpreadsheet className="w-4 h-4 ml-1" /> ייצוא Excel
+                <FileSpreadsheet className="w-4 h-4 ml-1" /> Excel
               </Button>
               <Button variant="outline" onClick={() => printSeating(savedSeats, students, savedArrangement.rows, savedArrangement.cols)}>
                 <Printer className="w-4 h-4 ml-1" /> הדפסה
               </Button>
             </>
           )}
-        </div>
+        </motion.div>
       </div>
     </AppLayout>
   );

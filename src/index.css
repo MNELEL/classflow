@@ -98,12 +98,23 @@ button, a, [role="button"] {
 }
 
 .seat-card {
-  transition: all 0.15s ease;
-}
-.seat-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(99,102,241,0.15);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 .drag-over {
-  box-shadow: 0 0 0 3px hsl(var(--primary)) !important;
+  box-shadow: 0 0 0 2px hsl(var(--primary)), 0 4px 16px rgba(99,102,241,0.25) !important;
+}
+
+/* Smooth scrollbar */
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: hsl(var(--border)); border-radius: 99px; }
+::-webkit-scrollbar-thumb:hover { background: hsl(var(--muted-foreground) / 0.4); }
+
+/* Card hover polish */
+.card-hover {
+  transition: box-shadow 0.2s ease, transform 0.2s ease;
+}
+.card-hover:hover {
+  box-shadow: 0 6px 24px rgba(0,0,0,0.07);
+  transform: translateY(-1px);
 }
