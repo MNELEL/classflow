@@ -77,41 +77,66 @@ export default function StudentsPage() {
    * 2. Build a map: importId → entityId
    * 3. Update each student with resolved friends / avoid arrays
    */
-  async function handleImport(preview) {
+  async function handleImport(preview, prefsData, isAI = false) {
     toast('מייבא תלמידים...');
     try {
-      // Step 1: create all students
-      const created = await Promise.all(
-        preview.map(s =>
-          base44.entities.Student.create({ name: s.name, is_active: true })
-        )
-      );
+      if (isAI) {
+        // AI import: fields are already resolved by name, need to link by name after creation
+        // Step 1: create all students with their direct fields
+        const created = await Promise.all(
+          preview.map(s =>
+            base44.entities.Student.create({
+              name: s.name,
+              is_active: true,
+              row_preference: s.row_preference || 'none',
+              side_preference: s.side_preference || 'none',
+              height: s.height || 'medium',
+              special_needs: s.special_needs || [],
+              notes: s.notes || '',
+            })
+          )
+        );
 
-      // Step 2: build importId → entityId map
-      const idMap = {};
-      preview.forEach((s, i) => {
-        idMap[s._importId] = created[i].id;
-      });
+        // Step 2: build name → entityId map
+        const nameToId = {};
+        preview.forEach((s, i) => { nameToId[s.name] = created[i].id; });
 
-      // Step 3: update with resolved relations
-      await Promise.all(
-        preview.map((s, i) => {
-          const friends = (s._friendImportIds || [])
-            .filter(Boolean)
-            .map(iid => idMap[iid])
-            .filter(Boolean);
-          const avoid = (s._avoidImportIds || [])
-            .filter(Boolean)
-            .map(iid => idMap[iid])
-            .filter(Boolean);
+        // Step 3: update with resolved name-based relations
+        await Promise.all(
+          preview.map((s, i) => {
+            const friends = (s.friends_names || []).map(n => nameToId[n]).filter(Boolean);
+            const avoid = (s.avoid_names || []).map(n => nameToId[n]).filter(Boolean);
+            const separate = (s.separate_names || []).map(n => nameToId[n]).filter(Boolean);
+            if (!friends.length && !avoid.length && !separate.length) return Promise.resolve();
+            return base44.entities.Student.update(created[i].id, { friends, avoid, separate });
+          })
+        );
 
-          if (friends.length === 0 && avoid.length === 0) return Promise.resolve();
-          return base44.entities.Student.update(created[i].id, { friends, avoid });
-        })
-      );
+        qc.invalidateQueries({ queryKey: ['students'] });
+        toast.success(`יובאו ${created.length} תלמידים בהצלחה!`);
+      } else {
+        // JSON import: IDs are numeric import IDs
+        const created = await Promise.all(
+          preview.map(s =>
+            base44.entities.Student.create({ name: s.name, is_active: true })
+          )
+        );
 
-      qc.invalidateQueries({ queryKey: ['students'] });
-      toast.success(`יובאו ${created.length} תלמידים בהצלחה!`);
+        const idMap = {};
+        preview.forEach((s, i) => { idMap[s._importId] = created[i].id; });
+
+        await Promise.all(
+          preview.map((s, i) => {
+            const friends = (s._friendImportIds || []).filter(Boolean).map(iid => idMap[iid]).filter(Boolean);
+            const avoid = (s._avoidImportIds || []).filter(Boolean).map(iid => idMap[iid]).filter(Boolean);
+            if (!friends.length && !avoid.length) return Promise.resolve();
+            return base44.entities.Student.update(created[i].id, { friends, avoid });
+          })
+        );
+
+        qc.invalidateQueries({ queryKey: ['students'] });
+        toast.success(`יובאו ${created.length} תלמידים בהצלחה!`);
+      }
     } catch (err) {
       toast.error('שגיאה בייבוא — ' + (err?.message || 'נסה שוב'));
     }
