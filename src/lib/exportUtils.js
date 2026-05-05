@@ -1,8 +1,9 @@
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
+import { toast } from 'sonner';
 
 // ── Excel / CSV Export ────────────────────────────────────────────────────────
-export function exportToExcel(seats, students, rows, cols) {
+export async function exportToExcel(seats, students, rows, cols) {
   const studentMap = Object.fromEntries(students.map(s => [s.id, s]));
 
   const grid = Array.from({ length: rows }, (_, r) =>
@@ -23,8 +24,11 @@ export function exportToExcel(seats, students, rows, cols) {
   const a = document.createElement('a');
   a.href = url;
   a.download = `מפת_ישיבה_${new Date().toLocaleDateString('he-IL').replace(/\//g, '-')}.csv`;
+  document.body.appendChild(a);
   a.click();
+  document.body.removeChild(a);
   URL.revokeObjectURL(url);
+  toast.success('קובץ Excel (CSV) הורד בהצלחה!');
 }
 
 // ── Build clean seat grid HTML (shared between PDF and Print) ─────────────────
@@ -127,6 +131,7 @@ export async function exportToPDF(seats, students, rows, cols, title = '') {
     const doc = new jsPDF({ orientation, unit: 'px', format: [imgW + 40, imgH + 40] });
     doc.addImage(imgData, 'PNG', 20, 20, imgW, imgH);
     doc.save(`מפת_ישיבה_${dateStr.replace(/\//g, '-')}.pdf`);
+    toast.success('קובץ PDF הורד בהצלחה!');
   } finally {
     document.body.removeChild(container);
   }
@@ -173,4 +178,5 @@ export function printSeating(seats, students, rows, cols, title = '') {
     </html>
   `);
   printWindow.document.close();
+  toast.success('דף ההדפסה נפתח!');
 }

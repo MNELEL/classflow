@@ -120,7 +120,7 @@ export default function SeatingPage() {
     });
   }
 
-  // Smart AI sort
+  // Smart AI sort — guarantees ALL students are placed
   async function handleSmartSort() {
     if (students.length === 0) {
       toast.error('אין תלמידים לסידור');
@@ -128,59 +128,72 @@ export default function SeatingPage() {
     }
     setIsLoading(true);
     try {
-      // Use InvokeLLM for AI-enhanced sorting
-      const result = await base44.integrations.Core.InvokeLLM({
-        prompt: `אתה מערכת לסידור ישיבה בכיתה. 
-        
-קיימים ${students.length} תלמידים עם האילוצים הבאים:
-${students.map(s => `
-- ${s.name}: גובה=${s.height || 'בינוני'}, העדפת שורה=${s.row_preference || 'אין'}, צרכים מיוחדים=[${(s.special_needs || []).join(',')}], חברים=[${(s.friends || []).map(fid => students.find(x => x.id === fid)?.name || fid).join(',')}], להרחיק=[${(s.avoid || []).map(fid => students.find(x => x.id === fid)?.name || fid).join(',')}]
-`).join('')}
+      // First run the local smart algorithm — this now guarantees full placement
+      let sorted = smartSort(seats, students);
 
-מספר שורות: ${rows}, מספר טורים: ${cols}
+      // Optionally enrich with AI ordering hints
+      try {
+        const activeStudents = students.filter(s => s.is_active !== false);
+        const result = await base44.integrations.Core.InvokeLLM({
+          prompt: `אתה מערכת סידור ישיבה חכמה. יש ${activeStudents.length} תלמידים ו-${rows} שורות ו-${cols} טורים.
 
-ספק סידור אופטימלי. החזר JSON עם שדה "assignments" - מערך של אובייקטים עם: student_name, row (0-based), col (0-based).
+תלמידים:
+${activeStudents.map(s => `- ${s.name}: גובה=${s.height||'בינוני'}, שורה=${s.row_preference||'אין'}, צרכים=[${(s.special_needs||[]).join(',')}], חברים=[${(s.friends||[]).map(fid=>students.find(x=>x.id===fid)?.name||'').filter(Boolean).join(',')}], להרחיק=[${(s.avoid||[]).map(fid=>students.find(x=>x.id===fid)?.name||'').filter(Boolean).join(',')}], שורה_קבועה=${s.permanent_row||'אין'}`).join('\n')}
 
-כללים:
-1. תלמידים עם בעיות ראייה/שמיעה - שורה ראשונה
-2. תלמידים גבוהים - שורות אחוריות  
-3. כבד העדפות חברים (תלמידים שרוצים לשבת יחד - שים אותם בצמוד)
-4. הפרד תלמידים שצריך להפריד`,
-        response_json_schema: {
-          type: 'object',
-          properties: {
-            assignments: {
-              type: 'array',
-              items: {
-                type: 'object',
-                properties: {
-                  student_name: { type: 'string' },
-                  row: { type: 'number' },
-                  col: { type: 'number' },
+שבץ את כל ${activeStudents.length} התלמידים. חובה להחזיר assignment לכל תלמיד. כל מושב (row,col) יכול להכיל תלמיד אחד בלבד. row ו-col הם 0-based.`,
+          response_json_schema: {
+            type: 'object',
+            properties: {
+              assignments: {
+                type: 'array',
+                items: {
+                  type: 'object',
+                  properties: {
+                    student_name: { type: 'string' },
+                    row: { type: 'number' },
+                    col: { type: 'number' },
+                  }
                 }
               }
             }
           }
-        }
-      });
+        });
 
-      if (result?.assignments) {
-        const newSeats = seats.map(s => ({ ...s, student_id: (s.is_locked && !s.is_blocked) ? s.student_id : null }));
-        const lockedIds = new Set(seats.filter(s => s.is_locked && !s.is_blocked).map(s => s.student_id));
-        
-        for (const a of result.assignments) {
-          const student = students.find(s => s.name === a.student_name);
-          if (!student || lockedIds.has(student.id)) continue;
-          const seatIdx = newSeats.findIndex(s => s.row === a.row && s.col === a.col && !s.student_id && !s.is_hidden);
-          if (seatIdx !== -1) {
-            newSeats[seatIdx] = { ...newSeats[seatIdx], student_id: student.id };
+        if (result?.assignments?.length > 0) {
+          const newSeats = seats.map(s => ({ ...s, student_id: (s.is_locked && !s.is_blocked) ? s.student_id : null }));
+          const lockedIds = new Set(seats.filter(s => s.is_locked && !s.is_blocked).map(s => s.student_id));
+          const usedSeats = new Set();
+
+          for (const a of result.assignments) {
+            const student = students.find(s => s.name === a.student_name || s.name.includes(a.student_name));
+            if (!student || lockedIds.has(student.id)) continue;
+            const seatIdx = newSeats.findIndex(s => s.row === a.row && s.col === a.col && !s.student_id && !s.is_hidden && !s.is_gap && !s.is_blocked && !usedSeats.has(s.id));
+            if (seatIdx !== -1) {
+              newSeats[seatIdx] = { ...newSeats[seatIdx], student_id: student.id };
+              usedSeats.add(newSeats[seatIdx].id);
+            }
           }
+
+          // Fill any remaining unplaced students with the local algorithm result
+          const placedIds = new Set(newSeats.filter(s => s.student_id).map(s => s.student_id));
+          const unplaced = students.filter(s => s.is_active !== false && !placedIds.has(s.id) && !lockedIds.has(s.id));
+          const emptyAvail = newSeats.filter(s => !s.student_id && !s.is_hidden && !s.is_gap && !s.is_blocked);
+          for (let i = 0; i < unplaced.length && i < emptyAvail.length; i++) {
+            const idx = newSeats.findIndex(s => s.id === emptyAvail[i].id);
+            if (idx !== -1) newSeats[idx] = { ...newSeats[idx], student_id: unplaced[i].id };
+          }
+
+          sorted = newSeats;
         }
-        setSeats(newSeats);
-        toast.success('סידור AI הושלם!');
+      } catch {
+        // AI failed — keep local result which already has full placement
       }
+
+      setSeats(sorted);
+      const placedCount = sorted.filter(s => s.student_id).length;
+      const total = students.filter(s => s.is_active !== false).length;
+      toast.success(`סידור הושלם! שובצו ${placedCount} מתוך ${total} תלמידים`);
     } catch (err) {
-      // Fallback to local algorithm
       const sorted = smartSort(seats, students);
       setSeats(sorted);
       toast.success('סידור חכם הושלם!');

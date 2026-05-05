@@ -1,9 +1,20 @@
 import React, { useState } from 'react';
 import SeatCard from './SeatCard';
+import BoardLabelEditor from './BoardLabelEditor';
 import { detectConflicts, detectPhysicalViolation, getSeatAt } from '@/lib/seatingUtils';
 import { motion } from 'framer-motion';
 
+const BOARD_LABEL_KEY = 'classmanager_board_label';
+
 export default function ClassroomGrid({ seats, students, rows, cols, showNumbers, onSeatClick, onMoveStu }) {
+  const [boardLabel, setBoardLabel] = useState(() => {
+    try { return localStorage.getItem(BOARD_LABEL_KEY) || 'לוח המורה'; } catch { return 'לוח המורה'; }
+  });
+
+  function handleBoardLabelSave(val) {
+    setBoardLabel(val);
+    try { localStorage.setItem(BOARD_LABEL_KEY, val); } catch {}
+  }
   const [draggingOver, setDraggingOver] = useState(null);
   const studentMap = Object.fromEntries(students.map(s => [s.id, s]));
 
@@ -28,12 +39,7 @@ export default function ClassroomGrid({ seats, students, rows, cols, showNumbers
     <div className="w-full">
       {/* Teacher board */}
       <div className="flex justify-center mb-5">
-        <div className="relative">
-          <div className="absolute inset-0 bg-primary/20 blur-xl rounded-2xl" />
-          <div className="relative bg-gradient-to-r from-primary/20 via-primary/30 to-primary/20 border-2 border-primary/40 rounded-2xl px-10 py-2.5 text-primary font-bold text-sm tracking-wide shadow-sm">
-            📋 לוח המורה
-          </div>
-        </div>
+        <BoardLabelEditor label={boardLabel} onSave={handleBoardLabelSave} />
       </div>
 
       {/* Row labels + grid */}

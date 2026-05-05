@@ -292,12 +292,10 @@ export function smartSort(seats, students) {
         const after = scoreSeat(studentA, seatB, baseSeats) + scoreSeat(studentB, seatA, baseSeats);
 
         if (after > before + 2) {
-          // Perform swap
           const idxA = baseSeats.findIndex(s => s.id === seatA.id);
           const idxB = baseSeats.findIndex(s => s.id === seatB.id);
           baseSeats[idxA] = { ...baseSeats[idxA], student_id: studentB.id };
           baseSeats[idxB] = { ...baseSeats[idxB], student_id: studentA.id };
-          // Update placed references for this pass
           placed[i] = baseSeats[idxA];
           placed[j] = baseSeats[idxB];
           improved = true;
@@ -305,6 +303,16 @@ export function smartSort(seats, students) {
       }
     }
     if (!improved) break;
+  }
+
+  // ── Pass 3: ensure ALL active students are placed (fill remaining) ──
+  const placedIds = new Set(baseSeats.filter(s => s.student_id).map(s => s.student_id));
+  const unplaced = studentsToPlace.filter(s => !placedIds.has(s.id));
+  const emptySeats = baseSeats.filter(s => !s.student_id && !s.is_hidden && !s.is_gap && !s.is_locked && !s.is_blocked);
+
+  for (let i = 0; i < unplaced.length && i < emptySeats.length; i++) {
+    const idx = baseSeats.findIndex(s => s.id === emptySeats[i].id);
+    if (idx !== -1) baseSeats[idx] = { ...baseSeats[idx], student_id: unplaced[i].id };
   }
 
   return baseSeats;
