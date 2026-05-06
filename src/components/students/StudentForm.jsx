@@ -4,6 +4,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import MobileSelect from './MobileSelect';
+import { loadGroups, getGroupTypeColor, getGroupTypeLabel } from './GroupsManager';
 import { X, MapPin } from 'lucide-react';
 
 const HEIGHT_OPTIONS = [
@@ -45,6 +46,8 @@ const SPECIAL_NEEDS_OPTIONS = [
 ];
 
 export default function StudentForm({ student, students, onSave, onCancel }) {
+  const existingGroups = loadGroups();
+
   const [form, setForm] = useState({
     name: student?.name || '',
     gender: student?.gender || 'male',
@@ -101,14 +104,38 @@ export default function StudentForm({ student, students, onSave, onCancel }) {
       </div>
 
       <div>
-        <Label className="text-xs">🧩 קבוצת למידה (לישיבה צמודה)</Label>
+        <Label className="text-xs">🧩 קבוצה</Label>
         <Input
           value={form.learning_group}
           onChange={e => setForm(f => ({ ...f, learning_group: e.target.value }))}
-          placeholder="למשל: קבוצה א׳, מתקדמים, מדעים..."
+          placeholder="הקלד שם קבוצה..."
           className="mt-1"
+          list="groups-datalist"
         />
-        <p className="text-[10px] text-muted-foreground mt-1">תלמידים עם אותו שם קבוצה יושבו בצמוד אוטומטית</p>
+        {existingGroups.length > 0 && (
+          <datalist id="groups-datalist">
+            {existingGroups.map(g => <option key={g.id} value={g.name} />)}
+          </datalist>
+        )}
+        {existingGroups.length > 0 && (
+          <div className="flex flex-wrap gap-1 mt-1.5">
+            {existingGroups.map(g => (
+              <button
+                key={g.id}
+                type="button"
+                onClick={() => setForm(f => ({ ...f, learning_group: f.learning_group === g.name ? '' : g.name }))}
+                className={`text-[10px] px-2 py-0.5 rounded-full font-medium border transition-colors ${
+                  form.learning_group === g.name
+                    ? 'bg-primary text-primary-foreground border-primary'
+                    : `${getGroupTypeColor(g.type)} border-transparent`
+                }`}
+              >
+                {g.name}
+              </button>
+            ))}
+          </div>
+        )}
+        <p className="text-[10px] text-muted-foreground mt-1">תלמידים באותה קבוצה יושבו בצמוד/רחוק לפי הגדרת הקבוצה</p>
       </div>
 
       <div className="grid grid-cols-3 gap-3">

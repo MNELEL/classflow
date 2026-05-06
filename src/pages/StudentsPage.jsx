@@ -5,16 +5,18 @@ import AppLayout from '@/components/layout/AppLayout';
 import StudentList from '@/components/students/StudentList';
 import ImportStudentsModal from '@/components/students/ImportStudentsModal';
 import FreeTextImport from '@/components/students/FreeTextImport';
+import GroupsManager from '@/components/students/GroupsManager';
 import { usePullToRefresh } from '@/hooks/usePullToRefresh';
 import PullToRefreshIndicator from '@/components/ui/PullToRefreshIndicator';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
-import { Upload, Wand2 } from 'lucide-react';
+import { Upload, Wand2, Users } from 'lucide-react';
 
 export default function StudentsPage() {
   const qc = useQueryClient();
   const [showImport, setShowImport] = useState(false);
   const [showFreeText, setShowFreeText] = useState(false);
+  const [showGroups, setShowGroups] = useState(false);
 
   const { data: students = [], isLoading, refetch } = useQuery({
     queryKey: ['students'],
@@ -155,9 +157,12 @@ export default function StudentsPage() {
         ) : (
           <>
             {/* Import buttons above the list */}
-            <div className="flex justify-end gap-2 mb-4">
+            <div className="flex justify-end gap-2 mb-4 flex-wrap">
+              <Button variant="outline" size="sm" onClick={() => setShowGroups(true)} className="gap-1.5">
+                <Users className="w-4 h-4" /> קבוצות
+              </Button>
               <Button variant="outline" size="sm" onClick={() => setShowFreeText(true)} className="gap-1.5">
-                <Wand2 className="w-4 h-4" /> עדכון העדפות (AI)
+                <Wand2 className="w-4 h-4" /> עדכון (AI)
               </Button>
               <Button variant="outline" size="sm" onClick={() => setShowImport(true)} className="gap-1.5">
                 <Upload className="w-4 h-4" /> ייבוא JSON
@@ -183,6 +188,12 @@ export default function StudentsPage() {
         onClose={() => setShowFreeText(false)}
         students={students}
         onUpdateStudent={data => saveMutation.mutate(data)}
+      />
+
+      <GroupsManager
+        open={showGroups}
+        onClose={() => setShowGroups(false)}
+        students={students}
       />
     </AppLayout>
   );

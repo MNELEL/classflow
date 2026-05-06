@@ -7,6 +7,7 @@ import StudentPanel from '@/components/classroom/StudentPanel';
 import GridControls from '@/components/classroom/GridControls';
 import ConflictHelper from '@/components/classroom/ConflictHelper';
 import QuickEditMode from '@/components/classroom/QuickEditMode';
+import GroupSeatingOptimizer from '@/components/classroom/GroupSeatingOptimizer';
 import { buildInitialSeats, smartSort, calcSatisfactionScore, getSeatAt } from '@/lib/seatingUtils';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle } from '@/components/ui/sheet';
@@ -289,6 +290,11 @@ ${activeStudents.map(s => `- ${s.name}: גובה=${s.height||'בינוני'}, ש
         seats={seats}
         students={students}
         onApplySuggestion={handleApplyConflictSuggestion}
+      />
+      <GroupSeatingOptimizer
+        seats={seats}
+        students={students}
+        onApplySeats={setSeats}
       />
       <QuickEditMode
         active={quickEditMode}
