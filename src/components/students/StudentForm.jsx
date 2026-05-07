@@ -4,8 +4,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import MobileSelect from './MobileSelect';
-import { loadGroups, getGroupTypeColor, getGroupTypeLabel } from './GroupsManager';
-import { X, MapPin } from 'lucide-react';
+import { loadGroups, getGroupTypeColor } from './GroupsManager';
+import { X } from 'lucide-react';
 
 const HEIGHT_OPTIONS = [
   { value: 'short', label: 'נמוך' },
@@ -36,13 +36,32 @@ const PERM_COL_OPTIONS = [
   { value: 'center', label: 'תמיד מרכז' },
   { value: 'right', label: 'תמיד ימין' },
 ];
-
 const SPECIAL_NEEDS_OPTIONS = [
   { value: 'vision', label: '👁️ ראייה' },
   { value: 'hearing', label: '👂 שמיעה' },
   { value: 'adhd', label: '⚡ קשב וריכוז' },
   { value: 'mobility', label: '♿ ניידות' },
   { value: 'other', label: '✨ אחר' },
+];
+const ACADEMIC_LEVEL_OPTIONS = [
+  { value: 'weak', label: '🔴 חלש' },
+  { value: 'below_average', label: '🟠 מתקשה' },
+  { value: 'average', label: '🟡 בינוני' },
+  { value: 'above_average', label: '🔵 מעל ממוצע' },
+  { value: 'strong', label: '🟢 חזק' },
+  { value: 'excellent', label: '⭐ מצטיין' },
+];
+const TRAIT_OPTIONS = [
+  { value: 'attentive', label: '👂 מקשיב' },
+  { value: 'cooperative', label: '🤝 משתף פעולה' },
+  { value: 'struggling', label: '😟 מתקשה' },
+  { value: 'fast_learner', label: '⚡ מבין מהר' },
+  { value: 'needs_extra_explanation', label: '📖 צריך הסבר נוסף' },
+  { value: 'needs_teacher_attention', label: '🎯 זקוק לתשומת לב' },
+  { value: 'needs_encouragement', label: '💛 זקוק למחמאות' },
+  { value: 'disruptive', label: '⚠️ מפריע' },
+  { value: 'leader', label: '👑 מנהיג' },
+  { value: 'shy', label: '🌸 ביישן' },
 ];
 
 export default function StudentForm({ student, students, onSave, onCancel }) {
@@ -65,24 +84,21 @@ export default function StudentForm({ student, students, onSave, onCancel }) {
     group: student?.group || '',
     notes: student?.notes || '',
     is_active: student?.is_active !== false,
+    academic_level: student?.academic_level || 'average',
+    traits: student?.traits || [],
+    achievements: student?.achievements || '',
   });
 
   const others = students.filter(s => s.id !== student?.id);
 
   function toggleNeed(val) {
-    setForm(f => ({
-      ...f,
-      special_needs: f.special_needs.includes(val)
-        ? f.special_needs.filter(x => x !== val)
-        : [...f.special_needs, val],
-    }));
+    setForm(f => ({ ...f, special_needs: f.special_needs.includes(val) ? f.special_needs.filter(x => x !== val) : [...f.special_needs, val] }));
   }
-
+  function toggleTrait(val) {
+    setForm(f => ({ ...f, traits: f.traits.includes(val) ? f.traits.filter(x => x !== val) : [...f.traits, val] }));
+  }
   function toggleRelation(field, id) {
-    setForm(f => ({
-      ...f,
-      [field]: f[field].includes(id) ? f[field].filter(x => x !== id) : [...f[field], id],
-    }));
+    setForm(f => ({ ...f, [field]: f[field].includes(id) ? f[field].filter(x => x !== id) : [...f[field], id] }));
   }
 
   function handleSave() {
@@ -92,6 +108,7 @@ export default function StudentForm({ student, students, onSave, onCancel }) {
 
   return (
     <div className="space-y-4">
+      {/* Name & group */}
       <div className="grid grid-cols-2 gap-3">
         <div>
           <Label className="text-xs">שם התלמיד *</Label>
@@ -103,15 +120,10 @@ export default function StudentForm({ student, students, onSave, onCancel }) {
         </div>
       </div>
 
+      {/* Learning group */}
       <div>
-        <Label className="text-xs">🧩 קבוצה</Label>
-        <Input
-          value={form.learning_group}
-          onChange={e => setForm(f => ({ ...f, learning_group: e.target.value }))}
-          placeholder="הקלד שם קבוצה..."
-          className="mt-1"
-          list="groups-datalist"
-        />
+        <Label className="text-xs">🧩 קבוצת לימוד</Label>
+        <Input value={form.learning_group} onChange={e => setForm(f => ({ ...f, learning_group: e.target.value }))} placeholder="הקלד שם קבוצה..." className="mt-1" list="groups-datalist" />
         {existingGroups.length > 0 && (
           <datalist id="groups-datalist">
             {existingGroups.map(g => <option key={g.id} value={g.name} />)}
@@ -120,24 +132,49 @@ export default function StudentForm({ student, students, onSave, onCancel }) {
         {existingGroups.length > 0 && (
           <div className="flex flex-wrap gap-1 mt-1.5">
             {existingGroups.map(g => (
-              <button
-                key={g.id}
-                type="button"
+              <button key={g.id} type="button"
                 onClick={() => setForm(f => ({ ...f, learning_group: f.learning_group === g.name ? '' : g.name }))}
-                className={`text-[10px] px-2 py-0.5 rounded-full font-medium border transition-colors ${
-                  form.learning_group === g.name
-                    ? 'bg-primary text-primary-foreground border-primary'
-                    : `${getGroupTypeColor(g.type)} border-transparent`
-                }`}
-              >
+                className={`text-[10px] px-2 py-0.5 rounded-full font-medium border transition-colors ${form.learning_group === g.name ? 'bg-primary text-primary-foreground border-primary' : `${getGroupTypeColor(g.type)} border-transparent`}`}>
                 {g.name}
               </button>
             ))}
           </div>
         )}
-        <p className="text-[10px] text-muted-foreground mt-1">תלמידים באותה קבוצה יושבו בצמוד/רחוק לפי הגדרת הקבוצה</p>
       </div>
 
+      {/* Academic level */}
+      <div>
+        <Label className="text-xs mb-1.5 block">📊 רמה אקדמית</Label>
+        <div className="flex flex-wrap gap-1.5">
+          {ACADEMIC_LEVEL_OPTIONS.map(opt => (
+            <button key={opt.value} type="button" onClick={() => setForm(f => ({ ...f, academic_level: opt.value }))}
+              className={`px-3 py-1 rounded-full text-xs border transition-colors ${form.academic_level === opt.value ? 'bg-primary text-primary-foreground border-primary' : 'bg-muted border-border hover:border-primary/50'}`}>
+              {opt.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Traits */}
+      <div>
+        <Label className="text-xs mb-1.5 block">🏷️ תכונות התנהגותיות</Label>
+        <div className="flex flex-wrap gap-1.5">
+          {TRAIT_OPTIONS.map(opt => (
+            <button key={opt.value} type="button" onClick={() => toggleTrait(opt.value)}
+              className={`px-2.5 py-1 rounded-full text-xs border transition-colors ${form.traits.includes(opt.value) ? 'bg-primary text-primary-foreground border-primary' : 'bg-muted border-border hover:border-primary/50'}`}>
+              {opt.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Achievements */}
+      <div>
+        <Label className="text-xs">🌟 הצלחות וקישורים</Label>
+        <Input value={form.achievements} onChange={e => setForm(f => ({ ...f, achievements: e.target.value }))} placeholder="הישגים, קישורים לעבודות, הצלחות בולטות..." className="mt-1" />
+      </div>
+
+      {/* Physical preferences */}
       <div className="grid grid-cols-3 gap-3">
         <div>
           <Label className="text-xs">גובה</Label>
@@ -153,6 +190,7 @@ export default function StudentForm({ student, students, onSave, onCancel }) {
         </div>
       </div>
 
+      {/* Physical constraints */}
       <div>
         <Label className="text-xs mb-1.5 block">📍 אילוצים פיזיים כפויים</Label>
         <div className="grid grid-cols-2 gap-3 bg-accent/30 rounded-xl p-3">
@@ -165,66 +203,33 @@ export default function StudentForm({ student, students, onSave, onCancel }) {
             <MobileSelect value={form.permanent_col} onValueChange={v => setForm(f => ({ ...f, permanent_col: v }))} options={PERM_COL_OPTIONS} label="טור קבוע" triggerClassName="h-8 text-xs" />
           </div>
           <div className="col-span-2">
-            <button
-              type="button"
-              onClick={() => setForm(f => ({ ...f, avoid_edges: !f.avoid_edges }))}
-              className={`flex items-center gap-2 px-3 py-2 rounded-lg border text-xs transition-colors w-full justify-center ${
-                form.avoid_edges ? 'bg-primary/10 border-primary text-primary' : 'border-border hover:border-primary/30'
-              }`}
-            >
+            <button type="button" onClick={() => setForm(f => ({ ...f, avoid_edges: !f.avoid_edges }))}
+              className={`flex items-center gap-2 px-3 py-2 rounded-lg border text-xs transition-colors w-full justify-center ${form.avoid_edges ? 'bg-primary/10 border-primary text-primary' : 'border-border hover:border-primary/30'}`}>
               {form.avoid_edges ? '✅' : '⬜'} הימנע מקצוות הכיתה
             </button>
           </div>
         </div>
-        <p className="text-[10px] text-muted-foreground mt-1">⚠️ אילוצים כפויים יגרמו לחיווי סגול על המפה אם לא מתקיימים</p>
       </div>
 
+      {/* Special needs */}
       <div>
         <Label className="text-xs">צרכים מיוחדים</Label>
         <div className="flex flex-wrap gap-2 mt-1">
           {SPECIAL_NEEDS_OPTIONS.map(opt => (
-            <button
-              key={opt.value}
-              type="button"
-              onClick={() => toggleNeed(opt.value)}
-              className={`px-3 py-1 rounded-full text-xs border transition-colors ${
-                form.special_needs.includes(opt.value)
-                  ? 'bg-primary text-primary-foreground border-primary'
-                  : 'bg-muted border-border hover:border-primary/50'
-              }`}
-            >
+            <button key={opt.value} type="button" onClick={() => toggleNeed(opt.value)}
+              className={`px-3 py-1 rounded-full text-xs border transition-colors ${form.special_needs.includes(opt.value) ? 'bg-primary text-primary-foreground border-primary' : 'bg-muted border-border hover:border-primary/50'}`}>
               {opt.label}
             </button>
           ))}
         </div>
       </div>
 
+      {/* Relations */}
       {others.length > 0 && (
         <>
-          <RelationPicker
-            label="💚 חברים מועדפים"
-            field="friends"
-            value={form.friends}
-            students={others}
-            onToggle={toggleRelation}
-            activeClass="bg-green-100 border-green-400 dark:bg-green-900/30"
-          />
-          <RelationPicker
-            label="🚫 יש להרחיק (בצמוד)"
-            field="avoid"
-            value={form.avoid}
-            students={others}
-            onToggle={toggleRelation}
-            activeClass="bg-red-100 border-red-400 dark:bg-red-900/30"
-          />
-          <RelationPicker
-            label="↔️ יש לרחק (מרחק גדול)"
-            field="separate"
-            value={form.separate}
-            students={others}
-            onToggle={toggleRelation}
-            activeClass="bg-orange-100 border-orange-400 dark:bg-orange-900/30"
-          />
+          <RelationPicker label="💚 חברים מועדפים" field="friends" value={form.friends} students={others} onToggle={toggleRelation} activeClass="bg-green-100 border-green-400 dark:bg-green-900/30" />
+          <RelationPicker label="🚫 יש להרחיק (בצמוד)" field="avoid" value={form.avoid} students={others} onToggle={toggleRelation} activeClass="bg-red-100 border-red-400 dark:bg-red-900/30" />
+          <RelationPicker label="↔️ יש לרחק (מרחק גדול)" field="separate" value={form.separate} students={others} onToggle={toggleRelation} activeClass="bg-orange-100 border-orange-400 dark:bg-orange-900/30" />
         </>
       )}
 
@@ -247,14 +252,8 @@ function RelationPicker({ label, field, value, students, onToggle, activeClass }
       <Label className="text-xs">{label}</Label>
       <div className="flex flex-wrap gap-1.5 mt-1 max-h-24 overflow-y-auto">
         {students.map(s => (
-          <button
-            key={s.id}
-            type="button"
-            onClick={() => onToggle(field, s.id)}
-            className={`px-2 py-0.5 rounded-full text-xs border transition-colors ${
-              value.includes(s.id) ? activeClass : 'bg-muted border-border hover:border-primary/50'
-            }`}
-          >
+          <button key={s.id} type="button" onClick={() => onToggle(field, s.id)}
+            className={`px-2 py-0.5 rounded-full text-xs border transition-colors ${value.includes(s.id) ? activeClass : 'bg-muted border-border hover:border-primary/50'}`}>
             {s.name}
           </button>
         ))}

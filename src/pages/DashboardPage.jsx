@@ -7,6 +7,7 @@ import AppLayout from '@/components/layout/AppLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Users, LayoutGrid, AlertTriangle, CheckCircle2, TrendingUp, FileDown, FileSpreadsheet, Printer, Sparkles } from 'lucide-react';
+import TasksAlert from '@/components/dashboard/TasksAlert';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { calcSatisfactionScore } from '@/lib/seatingUtils';
@@ -229,6 +230,13 @@ export default function DashboardPage() {
             </Card>
           </motion.div>
         </div>
+
+        {/* Tasks Alert */}
+        {students.length > 0 && (
+          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }} className="mb-4">
+            <TasksAlert students={students} />
+          </motion.div>
+        )}
 
         {/* Actions */}
         <motion.div
