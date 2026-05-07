@@ -1,13 +1,13 @@
 import React, { useCallback } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { cn } from '@/lib/utils';
-import { LayoutGrid, Users, History, BookOpen, Settings, ChevronRight } from 'lucide-react';
+import { LayoutGrid, Users, History, BookOpen, Settings, ChevronRight, BarChart2 } from 'lucide-react';
 
 const NAV_ITEMS = [
   { path: '/', label: 'דשבורד', icon: BookOpen },
   { path: '/seating', label: 'ישיבה', icon: LayoutGrid },
   { path: '/students', label: 'תלמידים', icon: Users },
-  { path: '/history', label: 'היסטוריה', icon: History },
+  { path: '/reports', label: 'דוחות', icon: BarChart2 },
 ];
 
 const PAGE_TITLES = {
@@ -15,6 +15,7 @@ const PAGE_TITLES = {
   '/seating': 'מפת ישיבה',
   '/students': 'תלמידים',
   '/history': 'היסטוריה',
+  '/reports': 'דוחות',
   '/settings': 'הגדרות',
 };
 
