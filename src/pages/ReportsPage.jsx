@@ -11,6 +11,7 @@ import {
 import { Users, TrendingUp, Heart, AlertTriangle, CheckCircle2, Shield } from 'lucide-react';
 import { getStudentSeat, isAdjacent, getDistance, detectConflicts } from '@/lib/seatingUtils';
 import { motion } from 'framer-motion';
+import StudentReportGenerator from '@/components/reports/StudentReportGenerator';
 
 const COLORS = ['#6366f1', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4'];
 
@@ -131,9 +132,12 @@ export default function ReportsPage() {
       <div className="p-5 max-w-3xl mx-auto overflow-y-auto h-full space-y-5" dir="rtl">
 
         {/* Header */}
-        <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}>
-          <h1 className="text-2xl font-bold">דוחות כיתה</h1>
-          <p className="text-muted-foreground text-sm mt-0.5">{active.length} תלמידים פעילים</p>
+        <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="flex items-start justify-between gap-3">
+          <div>
+            <h1 className="text-2xl font-bold">דוחות כיתה</h1>
+            <p className="text-muted-foreground text-sm mt-0.5">{active.length} תלמידים פעילים</p>
+          </div>
+          <StudentReportGenerator students={students} />
         </motion.div>
 
         {/* Quick stats */}
