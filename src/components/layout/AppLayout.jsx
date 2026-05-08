@@ -1,14 +1,14 @@
 import React, { useCallback } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { cn } from '@/lib/utils';
-import { LayoutGrid, Users, History, BookOpen, Settings, ChevronRight, BarChart2, CalendarCheck } from 'lucide-react';
+import { LayoutGrid, Users, History, BookOpen, Settings, ChevronRight, BarChart2, CalendarCheck, GraduationCap } from 'lucide-react';
 
 const NAV_ITEMS = [
   { path: '/', label: 'דשבורד', icon: BookOpen },
   { path: '/seating', label: 'ישיבה', icon: LayoutGrid },
   { path: '/students', label: 'תלמידים', icon: Users },
   { path: '/attendance', label: 'נוכחות', icon: CalendarCheck },
-  { path: '/reports', label: 'דוחות', icon: BarChart2 },
+  { path: '/grades', label: 'ציונים', icon: GraduationCap },
 ];
 
 const PAGE_TITLES = {

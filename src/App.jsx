@@ -15,6 +15,7 @@ import DashboardPage from './pages/DashboardPage';
 import SettingsPage from './pages/SettingsPage';
 import ReportsPage from './pages/ReportsPage';
 import AttendancePage from './pages/AttendancePage';
+import GradeManagementPage from './pages/GradeManagementPage';
 
 const pageVariants = {
   initial: { opacity: 0, x: 20 },
@@ -35,6 +36,7 @@ function AnimatedRoutes() {
           <Route path="/settings" element={<SettingsPage />} />
           <Route path="/reports" element={<ReportsPage />} />
           <Route path="/attendance" element={<AttendancePage />} />
+          <Route path="/grades" element={<GradeManagementPage />} />
           <Route path="*" element={<PageNotFound />} />
         </Routes>
       </motion.div>
