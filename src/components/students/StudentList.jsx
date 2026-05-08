@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Edit2, Trash2, Plus, Eye, Volume2, Zap, CheckSquare, TrendingUp } from 'lucide-react';
+import { Edit2, Trash2, Plus, Eye, Volume2, Zap, CheckSquare, TrendingUp, FolderOpen } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import StudentForm from './StudentForm';
 import TaskManager from './TaskManager';
 import GradeManager from './GradeManager';
+import StudentPortfolio from '@/components/portfolio/StudentPortfolio';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const NEED_ICONS = {
@@ -28,6 +29,7 @@ export default function StudentList({ students, onSave, onDelete }) {
   const [adding, setAdding] = useState(false);
   const [taskStudent, setTaskStudent] = useState(null);
   const [gradeStudent, setGradeStudent] = useState(null);
+  const [portfolioStudent, setPortfolioStudent] = useState(null);
 
   return (
     <div className="space-y-3">
@@ -77,6 +79,9 @@ export default function StudentList({ students, onSave, onDelete }) {
                     <Button size="icon" variant="ghost" className="h-7 w-7" title="ציונים" onClick={() => setGradeStudent(student)}>
                       <TrendingUp className="w-3.5 h-3.5" />
                     </Button>
+                    <Button size="icon" variant="ghost" className="h-7 w-7" title="תיק אישי" onClick={() => setPortfolioStudent(portfolioStudent?.id === student.id ? null : student)}>
+                      <FolderOpen className={`w-3.5 h-3.5 ${portfolioStudent?.id === student.id ? 'text-primary' : ''}`} />
+                    </Button>
                     <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => setEditing(student)}>
                       <Edit2 className="w-3.5 h-3.5" />
                     </Button>
@@ -85,6 +90,7 @@ export default function StudentList({ students, onSave, onDelete }) {
                     </Button>
                   </div>
                 </div>
+                <StudentPortfolio student={student} open={portfolioStudent?.id === student.id} />
               </motion.div>
             );
           })}
