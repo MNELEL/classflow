@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useMemo } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { usePullToRefresh } from '@/hooks/usePullToRefresh';
@@ -20,6 +20,10 @@ export default function DashboardPage() {
     queryKey: ['students'],
     queryFn: () => base44.entities.Student.list(),
   });
+  const { data: grades = [] } = useQuery({ queryKey: ['grades'], queryFn: () => base44.entities.Grade.list('-date', 100) });
+  const { data: attendance = [] } = useQuery({ queryKey: ['attendance'], queryFn: () => base44.entities.Attendance.list('-date', 100) });
+  const { data: libraryItems = [] } = useQuery({ queryKey: ['library'], queryFn: () => base44.entities.LibraryItem.list('-created_date', 50) });
+  const { data: rewards = [] } = useQuery({ queryKey: ['rewards'], queryFn: () => base44.entities.Reward.list('-date', 200) });
 
   const handleRefresh = useCallback(async () => { await refetch(); }, [refetch]);
   const { containerRef, pullY, refreshing } = usePullToRefresh(handleRefresh);
@@ -41,6 +45,20 @@ export default function DashboardPage() {
   const satisfactionScore = savedSeats ? calcSatisfactionScore(savedSeats, students) : null;
   const seatedCount = savedSeats ? new Set(savedSeats.filter(s => s.student_id).map(s => s.student_id)).size : 0;
   const unseatedCount = activeStudents.length - seatedCount;
+
+  const avgGrade = useMemo(() => {
+    if (!grades.length) return null;
+    return Math.round(grades.reduce((s, g) => s + (g.score || 0), 0) / grades.length);
+  }, [grades]);
+
+  const avgAttendance = useMemo(() => {
+    if (!attendance.length) return null;
+    const present = attendance.filter(a => a.status === 'present').length;
+    return Math.round((present / attendance.length) * 100);
+  }, [attendance]);
+
+  const totalPoints = useMemo(() => rewards.reduce((s, r) => s + (r.points || 0), 0), [rewards]);
+  const pendingLibrary = libraryItems.filter(i => i.ai_status === 'pending' || i.ai_status === 'processing').length;
 
   const scoreColor = satisfactionScore === null ? 'text-muted-foreground'
     : satisfactionScore >= 75 ? 'text-green-600'
@@ -148,6 +166,27 @@ export default function DashboardPage() {
                   </Card>
                 </motion.div>
               ))}
+        </div>
+
+        {/* Second KPI row */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
+          {[
+            { emoji: '📊', label: 'ממוצע ציונים', value: avgGrade !== null ? avgGrade : '—', sub: avgGrade !== null ? (avgGrade >= 80 ? 'מצוין' : avgGrade >= 65 ? 'טוב' : 'טעון שיפור') : 'אין נתונים', color: 'text-blue-600', bg: 'bg-blue-500/10' },
+            { emoji: '📅', label: 'נוכחות ממוצעת', value: avgAttendance !== null ? `${avgAttendance}%` : '—', sub: avgAttendance !== null ? `${attendance.length} רשומות` : 'אין נתונים', color: 'text-emerald-600', bg: 'bg-emerald-500/10' },
+            { emoji: '📚', label: 'ספריית חומרים', value: libraryItems.length, sub: pendingLibrary > 0 ? `${pendingLibrary} ממתינים לAI` : 'הכל נותח', color: 'text-purple-600', bg: 'bg-purple-500/10' },
+            { emoji: '🏆', label: 'נקודות הוענקו', value: totalPoints, sub: `${rewards.length} פרסים`, color: 'text-yellow-600', bg: 'bg-yellow-500/10' },
+          ].map((card, i) => (
+            <motion.div key={i} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.28 + i * 0.06 }}>
+              <div className="bg-card border border-border/60 rounded-xl p-4 hover:shadow-md transition-shadow">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-xs text-muted-foreground font-medium">{card.label}</span>
+                  <span className="text-lg">{card.emoji}</span>
+                </div>
+                <div className={`text-3xl font-bold ${card.color} mb-0.5`}>{card.value}</div>
+                <p className="text-xs text-muted-foreground">{card.sub}</p>
+              </div>
+            </motion.div>
+          ))}
         </div>
 
         {/* Details row */}

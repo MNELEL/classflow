@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { base44 } from '@/api/base44Client';
 import AppLayout from '@/components/layout/AppLayout';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -8,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
 import { toast } from 'sonner';
-import { Palette, LayoutGrid, Settings, Save, Trash2 } from 'lucide-react';
+import { Palette, LayoutGrid, Settings, Save, Trash2, Plus, Tag } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog';
 
 const SETTINGS_KEY = 'classmanager_settings';
@@ -37,6 +39,18 @@ function applyPalette(paletteId) {
 }
 
 export default function SettingsPage() {
+  const qc = useQueryClient();
+  const { data: categories = [] } = useQuery({ queryKey: ['categories'], queryFn: () => base44.entities.LessonCategory.list() });
+  const [newCat, setNewCat] = useState({ name: '', description: '', icon: '', color_tag: '' });
+
+  const addCat = useMutation({
+    mutationFn: (d) => base44.entities.LessonCategory.create(d),
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ['categories'] }); setNewCat({ name: '', description: '', icon: '', color_tag: '' }); toast.success('קטגוריה נוספה'); },
+  });
+  const delCat = useMutation({
+    mutationFn: (id) => base44.entities.LessonCategory.delete(id),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['categories'] }),
+  });
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [settings, setSettings] = useState({
     color_palette: 'indigo',
@@ -83,6 +97,31 @@ export default function SettingsPage() {
         </div>
 
         <div className="space-y-6">
+          {/* Categories */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base flex items-center gap-2"><Tag className="w-4 h-4" /> קטגוריות לימוד</CardTitle>
+              <CardDescription>ניהול קטגוריות לחומרי לימוד ומבחנים</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <div className="flex flex-wrap gap-2">
+                {categories.map(c => (
+                  <div key={c.id} className="flex items-center gap-1.5 bg-muted/60 rounded-lg px-2.5 py-1.5">
+                    {c.icon && <span>{c.icon}</span>}
+                    <span className="text-sm font-medium">{c.name}</span>
+                    <button onClick={() => delCat.mutate(c.id)} className="text-destructive/40 hover:text-destructive mr-1"><Trash2 className="w-3 h-3" /></button>
+                  </div>
+                ))}
+              </div>
+              <div className="flex gap-2">
+                <Input placeholder="אייקון (אמוג'י)" value={newCat.icon} onChange={e => setNewCat(p => ({ ...p, icon: e.target.value }))} className="w-20 text-center" />
+                <Input placeholder="שם קטגוריה..." value={newCat.name} onChange={e => setNewCat(p => ({ ...p, name: e.target.value }))} className="flex-1" />
+                <Button size="icon" onClick={() => newCat.name && addCat.mutate(newCat)} disabled={!newCat.name}><Plus className="w-4 h-4" /></Button>
+              </div>
+              <Input placeholder="תיאור פדגוגי (אופציונלי)" value={newCat.description} onChange={e => setNewCat(p => ({ ...p, description: e.target.value }))} />
+            </CardContent>
+          </Card>
+
           {/* Appearance */}
           <Card>
             <CardHeader>

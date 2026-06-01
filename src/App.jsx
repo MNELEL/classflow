@@ -19,6 +19,7 @@ import GradeManagementPage from './pages/GradeManagementPage';
 import LibraryPage from './pages/LibraryPage';
 import GamificationPage from './pages/GamificationPage';
 import ToolkitPage from './pages/ToolkitPage';
+import ParentPortalPage from './pages/ParentPortalPage';
 
 const pageVariants = {
   initial: { opacity: 0, x: 20 },
@@ -43,6 +44,7 @@ function AnimatedRoutes() {
           <Route path="/library" element={<LibraryPage />} />
           <Route path="/gamification" element={<GamificationPage />} />
           <Route path="/toolkit" element={<ToolkitPage />} />
+          <Route path="/parents" element={<ParentPortalPage />} />
           <Route path="*" element={<PageNotFound />} />
         </Routes>
       </motion.div>
