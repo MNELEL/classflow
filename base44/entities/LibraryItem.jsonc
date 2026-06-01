@@ -1,0 +1,184 @@
+{
+  "name": "LibraryItem",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string",
+      "description": "\u05db\u05d5\u05ea\u05e8\u05ea \u05d4\u05d7\u05d5\u05de\u05e8"
+    },
+    "description": {
+      "type": "string",
+      "description": "\u05ea\u05d9\u05d0\u05d5\u05e8 \u05e7\u05e6\u05e8"
+    },
+    "category": {
+      "type": "string",
+      "description": "\u05e7\u05d8\u05d2\u05d5\u05e8\u05d9\u05d4 \u05dc\u05d9\u05de\u05d5\u05d3\u05d9\u05ea"
+    },
+    "subject": {
+      "type": "string",
+      "description": "\u05e0\u05d5\u05e9\u05d0"
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "\u05ea\u05d2\u05d9\u05d5\u05ea"
+    },
+    "difficulty": {
+      "type": "string",
+      "enum": [
+        "\u05e7\u05dc",
+        "\u05d1\u05d9\u05e0\u05d5\u05e0\u05d9",
+        "\u05e7\u05e9\u05d4"
+      ],
+      "description": "\u05e8\u05de\u05ea \u05e7\u05d5\u05e9\u05d9"
+    },
+    "source_type": {
+      "type": "string",
+      "enum": [
+        "audio_recording",
+        "audio_file",
+        "pdf",
+        "word_doc",
+        "presentation",
+        "video_file",
+        "youtube_link",
+        "external_link",
+        "text_note",
+        "image"
+      ],
+      "description": "\u05e1\u05d5\u05d2 \u05d4\u05de\u05e7\u05d5\u05e8"
+    },
+    "file_url": {
+      "type": "string",
+      "description": "\u05e7\u05d9\u05e9\u05d5\u05e8 \u05dc\u05e7\u05d5\u05d1\u05e5"
+    },
+    "file_name": {
+      "type": "string",
+      "description": "\u05e9\u05dd \u05d4\u05e7\u05d5\u05d1\u05e5"
+    },
+    "file_size": {
+      "type": "number",
+      "description": "\u05d2\u05d5\u05d3\u05dc \u05d1\u05d1\u05d9\u05d9\u05d8\u05d9\u05dd"
+    },
+    "youtube_url": {
+      "type": "string",
+      "description": "\u05e7\u05d9\u05e9\u05d5\u05e8 YouTube"
+    },
+    "external_url": {
+      "type": "string",
+      "description": "\u05e7\u05d9\u05e9\u05d5\u05e8 \u05d7\u05d9\u05e6\u05d5\u05e0\u05d9"
+    },
+    "transcript": {
+      "type": "string",
+      "description": "\u05ea\u05de\u05dc\u05d5\u05dc \u05d0\u05d5 \u05d8\u05e7\u05e1\u05d8"
+    },
+    "ai_status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "processing",
+        "ready",
+        "error"
+      ],
+      "default": "pending",
+      "description": "\u05e1\u05d8\u05d8\u05d5\u05e1 \u05e0\u05d9\u05ea\u05d5\u05d7 AI"
+    },
+    "ai_summary": {
+      "type": "string",
+      "description": "\u05e1\u05d9\u05db\u05d5\u05dd AI"
+    },
+    "ai_key_points": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "\u05e0\u05e7\u05d5\u05d3\u05d5\u05ea \u05de\u05e4\u05ea\u05d7 AI"
+    },
+    "ai_suggested_title": {
+      "type": "string",
+      "description": "\u05db\u05d5\u05ea\u05e8\u05ea \u05de\u05d5\u05e6\u05e2\u05ea AI"
+    },
+    "ai_suggested_category": {
+      "type": "string",
+      "description": "\u05e7\u05d8\u05d2\u05d5\u05e8\u05d9\u05d4 \u05de\u05d5\u05e6\u05e2\u05ea AI"
+    },
+    "ai_suggested_tags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "\u05ea\u05d2\u05d9\u05d5\u05ea \u05de\u05d5\u05e6\u05e2\u05d5\u05ea AI"
+    },
+    "generated_artifacts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "content": {
+            "type": "string"
+          },
+          "includes_answers": {
+            "type": "boolean"
+          },
+          "created_at": {
+            "type": "string"
+          }
+        }
+      },
+      "description": "\u05d7\u05d5\u05de\u05e8\u05d9\u05dd \u05e9\u05e0\u05d5\u05e6\u05e8\u05d5"
+    },
+    "lesson_log": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "date": {
+            "type": "string"
+          },
+          "student_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "notes": {
+            "type": "string"
+          },
+          "coverage_percent": {
+            "type": "number"
+          },
+          "homework_assigned": {
+            "type": "string"
+          }
+        }
+      },
+      "description": "\u05d9\u05d5\u05de\u05df \u05e9\u05d9\u05e2\u05d5\u05e8\u05d9\u05dd"
+    },
+    "is_favorite": {
+      "type": "boolean",
+      "default": false
+    },
+    "is_archived": {
+      "type": "boolean",
+      "default": false
+    }
+  },
+  "required": [
+    "title",
+    "source_type"
+  ]
+}
