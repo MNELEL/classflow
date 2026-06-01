@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import AppLayout from '@/components/layout/AppLayout';
@@ -12,6 +12,8 @@ import { Users, TrendingUp, Heart, AlertTriangle, CheckCircle2, Shield } from 'l
 import { getStudentSeat, isAdjacent, getDistance, detectConflicts } from '@/lib/seatingUtils';
 import { motion } from 'framer-motion';
 import StudentReportGenerator from '@/components/reports/StudentReportGenerator';
+import StudentAIReport from '@/components/reports/StudentAIReport';
+import BulletinGenerator from '@/components/reports/BulletinGenerator';
 
 const COLORS = ['#6366f1', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4'];
 
@@ -20,6 +22,7 @@ function loadSeats() {
 }
 
 export default function ReportsPage() {
+  const [tab, setTab] = useState('stats');
   const { data: students = [], isLoading } = useQuery({
     queryKey: ['students'],
     queryFn: () => base44.entities.Student.list(),
@@ -131,6 +134,20 @@ export default function ReportsPage() {
     <AppLayout>
       <div className="p-5 max-w-3xl mx-auto overflow-y-auto h-full space-y-5" dir="rtl">
 
+        {/* Tabs */}
+        <div className="flex gap-1 bg-muted/50 rounded-xl p-1">
+          {[['stats','📊 סטטיסטיקות'], ['student','🤖 דוח תלמיד AI'], ['bulletin','📰 ניוזלטר']].map(([id, label]) => (
+            <button key={id} onClick={() => setTab(id)}
+              className={`flex-1 py-1.5 rounded-lg text-xs font-medium transition-all ${tab === id ? 'bg-card shadow text-foreground' : 'text-muted-foreground hover:text-foreground'}`}>
+              {label}
+            </button>
+          ))}
+        </div>
+
+        {tab === 'student' && <StudentAIReport students={students} />}
+        {tab === 'bulletin' && <BulletinGenerator />}
+
+        {tab === 'stats' && <>
         {/* Header */}
         <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="flex items-start justify-between gap-3">
           <div>
@@ -281,6 +298,7 @@ export default function ReportsPage() {
           </motion.div>
         )}
 
+      </> }
       </div>
     </AppLayout>
   );
