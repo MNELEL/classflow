@@ -1,7 +1,7 @@
 import React, { useCallback } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { cn } from '@/lib/utils';
-import { LayoutGrid, Users, History, BookOpen, Settings, ChevronRight, BarChart2, CalendarCheck, GraduationCap, Library } from 'lucide-react';
+import { LayoutGrid, Users, History, BookOpen, Settings, ChevronRight, BarChart2, CalendarCheck, GraduationCap, Library, Trophy, Wrench } from 'lucide-react';
 
 const NAV_ITEMS = [
   { path: '/', label: 'דשבורד', icon: BookOpen },
@@ -10,6 +10,8 @@ const NAV_ITEMS = [
   { path: '/attendance', label: 'נוכחות', icon: CalendarCheck },
   { path: '/grades', label: 'ציונים', icon: GraduationCap },
   { path: '/library', label: 'ספרייה', icon: Library },
+  { path: '/gamification', label: 'נקודות', icon: Trophy },
+  { path: '/toolkit', label: 'כלים', icon: Wrench },
 ];
 
 const PAGE_TITLES = {
