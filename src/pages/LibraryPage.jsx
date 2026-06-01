@@ -29,7 +29,7 @@ export default function LibraryPage() {
   const { data: items = [], isLoading } = useQuery({
     queryKey: ['library'],
     queryFn: () => base44.entities.LibraryItem.list('-created_date', 100),
-    refetchInterval: (data) => data?.some(i => i.ai_status === 'processing') ? 4000 : false,
+    refetchInterval: (query) => query.state.data?.some(i => i.ai_status === 'processing') ? 4000 : false,
   });
 
   const pendingCount = items.filter(i => i.ai_status === 'pending').length;
