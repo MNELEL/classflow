@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import LessonPlanningTab from '@/components/library/LessonPlanningTab';
+import PlaylistPanel from '@/components/library/PlaylistPanel';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import AppLayout from '@/components/layout/AppLayout';
@@ -10,7 +11,7 @@ import LibraryItemDetail from '@/components/library/LibraryItemDetail';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Plus, Search, BookOpen, Loader2, Library, Sparkles, BookOpenCheck } from 'lucide-react';
+import { Plus, Search, BookOpen, Loader2, Library, Sparkles, BookOpenCheck, ListMusic } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const SOURCE_LABELS = {
@@ -26,7 +27,11 @@ export default function LibraryPage() {
   const [filterType, setFilterType] = useState('all');
   const [filterCategory, setFilterCategory] = useState('all');
   const [filterAI, setFilterAI] = useState('all');
+  const [filterSubject, setFilterSubject] = useState('all');
+  const [filterTag, setFilterTag] = useState('');
   const [showFavOnly, setShowFavOnly] = useState(false);
+  const [playlistIds, setPlaylistIds] = useState([]);
+  const [showPlaylist, setShowPlaylist] = useState(false);
 
   const { data: items = [], isLoading } = useQuery({
     queryKey: ['library'],
@@ -36,9 +41,13 @@ export default function LibraryPage() {
 
   const pendingCount = items.filter(i => i.ai_status === 'pending').length;
 
-  const categories = useMemo(() => {
-    const cats = [...new Set(items.map(i => i.category).filter(Boolean))];
-    return cats;
+  const categories = useMemo(() => [...new Set(items.map(i => i.category).filter(Boolean))], [items]);
+  const subjects = useMemo(() => [...new Set(items.map(i => i.subject).filter(Boolean))], [items]);
+  const allTags = useMemo(() => {
+    const tags = new Set();
+    items.forEach(i => (i.ai_suggested_tags || []).forEach(t => tags.add(t)));
+    items.forEach(i => (i.tags || []).forEach(t => tags.add(t)));
+    return [...tags];
   }, [items]);
 
   const filtered = useMemo(() => {
@@ -48,6 +57,11 @@ export default function LibraryPage() {
       if (filterType !== 'all' && item.source_type !== filterType) return false;
       if (filterCategory !== 'all' && item.category !== filterCategory) return false;
       if (filterAI !== 'all' && item.ai_status !== filterAI) return false;
+      if (filterSubject !== 'all' && item.subject !== filterSubject) return false;
+      if (filterTag) {
+        const allItemTags = [...(item.tags || []), ...(item.ai_suggested_tags || [])];
+        if (!allItemTags.includes(filterTag)) return false;
+      }
       if (search) {
         const q = search.toLowerCase();
         return (item.title || '').toLowerCase().includes(q) ||
@@ -57,7 +71,12 @@ export default function LibraryPage() {
       }
       return true;
     });
-  }, [items, search, filterType, filterCategory, filterAI, showFavOnly]);
+  }, [items, search, filterType, filterCategory, filterAI, filterSubject, filterTag, showFavOnly]);
+
+  const togglePlaylist = (id) => {
+    setPlaylistIds(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
+    setShowPlaylist(true);
+  };
 
   return (
     <AppLayout>
@@ -84,9 +103,19 @@ export default function LibraryPage() {
                   <p className="text-xs text-muted-foreground">{items.length} חומרים</p>
                 </div>
               </div>
-              <Button size="sm" onClick={() => setShowUpload(true)} className="gap-1">
-                <Plus className="w-4 h-4" /> הוסף חומר
-              </Button>
+              <div className="flex gap-2">
+                {playlistIds.length > 0 && (
+                  <Button size="sm" variant="outline" onClick={() => setShowPlaylist(v => !v)} className="gap-1">
+                    <ListMusic className="w-4 h-4" />
+                    <span className="bg-primary text-primary-foreground rounded-full w-4 h-4 flex items-center justify-center text-[10px]">
+                      {playlistIds.length}
+                    </span>
+                  </Button>
+                )}
+                <Button size="sm" onClick={() => setShowUpload(true)} className="gap-1">
+                  <Plus className="w-4 h-4" /> הוסף חומר
+                </Button>
+              </div>
             </div>
 
             {/* Pending AI alert */}
@@ -97,45 +126,79 @@ export default function LibraryPage() {
               </div>
             )}
 
-            {/* Search + Filters */}
-            <div className="space-y-2">
-              <div className="relative">
-                <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                <Input placeholder="חפש לפי כותרת, נושא, תגיות..." value={search}
-                  onChange={e => setSearch(e.target.value)} className="pr-9 h-9" />
-              </div>
-              <div className="flex gap-2 overflow-x-auto pb-1">
-                <Select value={filterType} onValueChange={setFilterType}>
-                  <SelectTrigger className="h-8 text-xs min-w-[120px]"><SelectValue placeholder="סוג..." /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">כל הסוגים</SelectItem>
-                    {Object.entries(SOURCE_LABELS).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}
-                  </SelectContent>
-                </Select>
-                {categories.length > 0 && (
-                  <Select value={filterCategory} onValueChange={setFilterCategory}>
-                    <SelectTrigger className="h-8 text-xs min-w-[110px]"><SelectValue placeholder="קטגוריה..." /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">כל הקטגוריות</SelectItem>
-                      {categories.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
-                    </SelectContent>
-                  </Select>
-                )}
-                <Select value={filterAI} onValueChange={setFilterAI}>
-                  <SelectTrigger className="h-8 text-xs min-w-[110px]"><SelectValue placeholder="סטטוס AI..." /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">כל הסטטוסים</SelectItem>
-                    <SelectItem value="ready">✅ נותחו</SelectItem>
-                    <SelectItem value="pending">⏳ ממתינים</SelectItem>
-                    <SelectItem value="processing">🔄 מנותחים</SelectItem>
-                  </SelectContent>
-                </Select>
-                <button onClick={() => setShowFavOnly(v => !v)}
-                  className={`h-8 px-3 rounded-lg border text-xs transition-colors whitespace-nowrap ${showFavOnly ? 'bg-pink-50 border-pink-300 text-pink-600 dark:bg-pink-900/20' : 'border-border text-muted-foreground'}`}>
-                  ♡ מועדפים
-                </button>
-              </div>
+            {/* Search */}
+            <div className="relative">
+              <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <Input placeholder="חפש לפי כותרת, נושא, תגיות..." value={search}
+                onChange={e => setSearch(e.target.value)} className="pr-9 h-9" />
             </div>
+
+            {/* Filters row 1 */}
+            <div className="flex gap-2 overflow-x-auto pb-1">
+              <Select value={filterType} onValueChange={setFilterType}>
+                <SelectTrigger className="h-8 text-xs min-w-[110px]"><SelectValue placeholder="סוג..." /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">כל הסוגים</SelectItem>
+                  {Object.entries(SOURCE_LABELS).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}
+                </SelectContent>
+              </Select>
+
+              {subjects.length > 0 && (
+                <Select value={filterSubject} onValueChange={setFilterSubject}>
+                  <SelectTrigger className="h-8 text-xs min-w-[110px]"><SelectValue placeholder="נושא..." /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">כל הנושאים</SelectItem>
+                    {subjects.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              )}
+
+              {categories.length > 0 && (
+                <Select value={filterCategory} onValueChange={setFilterCategory}>
+                  <SelectTrigger className="h-8 text-xs min-w-[110px]"><SelectValue placeholder="קטגוריה..." /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">כל הקטגוריות</SelectItem>
+                    {categories.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              )}
+
+              <Select value={filterAI} onValueChange={setFilterAI}>
+                <SelectTrigger className="h-8 text-xs min-w-[100px]"><SelectValue placeholder="AI..." /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">כל הסטטוסים</SelectItem>
+                  <SelectItem value="ready">✅ נותחו</SelectItem>
+                  <SelectItem value="pending">⏳ ממתינים</SelectItem>
+                  <SelectItem value="processing">🔄 מנותחים</SelectItem>
+                </SelectContent>
+              </Select>
+
+              <button onClick={() => setShowFavOnly(v => !v)}
+                className={`h-8 px-3 rounded-lg border text-xs transition-colors whitespace-nowrap ${showFavOnly ? 'bg-pink-50 border-pink-300 text-pink-600 dark:bg-pink-900/20' : 'border-border text-muted-foreground'}`}>
+                ♡ מועדפים
+              </button>
+            </div>
+
+            {/* Tags filter chips */}
+            {allTags.length > 0 && (
+              <div className="flex gap-1.5 overflow-x-auto pb-1">
+                <button
+                  onClick={() => setFilterTag('')}
+                  className={`h-6 px-2.5 rounded-full text-xs whitespace-nowrap border transition-colors ${!filterTag ? 'bg-primary text-primary-foreground border-primary' : 'border-border text-muted-foreground hover:border-primary/40'}`}
+                >
+                  הכל
+                </button>
+                {allTags.slice(0, 20).map(tag => (
+                  <button
+                    key={tag}
+                    onClick={() => setFilterTag(filterTag === tag ? '' : tag)}
+                    className={`h-6 px-2.5 rounded-full text-xs whitespace-nowrap border transition-colors ${filterTag === tag ? 'bg-primary text-primary-foreground border-primary' : 'border-border text-muted-foreground hover:border-primary/40'}`}
+                  >
+                    {tag}
+                  </button>
+                ))}
+              </div>
+            )}
 
             {/* Items grid */}
             {isLoading ? (
@@ -156,8 +219,20 @@ export default function LibraryPage() {
                 <AnimatePresence>
                   {filtered.map((item, i) => (
                     <motion.div key={item.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: i * 0.04 }}>
+                      transition={{ delay: i * 0.04 }} className="relative">
                       <LibraryItemCard item={item} onClick={() => setSelectedItemId(item.id)} />
+                      {/* Playlist toggle button */}
+                      <button
+                        onClick={(e) => { e.stopPropagation(); togglePlaylist(item.id); }}
+                        className={`absolute top-2 left-2 w-6 h-6 rounded-full flex items-center justify-center text-xs transition-colors border ${
+                          playlistIds.includes(item.id)
+                            ? 'bg-primary text-primary-foreground border-primary'
+                            : 'bg-card border-border text-muted-foreground hover:border-primary'
+                        }`}
+                        title="הוסף לרשימת השמעה"
+                      >
+                        <ListMusic className="w-3 h-3" />
+                      </button>
                     </motion.div>
                   ))}
                 </AnimatePresence>
@@ -178,6 +253,21 @@ export default function LibraryPage() {
           )}
         </AnimatePresence>
       </div>
+
+      {/* Playlist Panel */}
+      <AnimatePresence>
+        {showPlaylist && playlistIds.length > 0 && (
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 20 }}>
+            <PlaylistPanel
+              itemIds={playlistIds}
+              allItems={items}
+              onRemove={(id) => setPlaylistIds(prev => prev.filter(x => x !== id))}
+              onReorder={setPlaylistIds}
+              onClose={() => setShowPlaylist(false)}
+            />
+          </motion.div>
+        )}
+      </AnimatePresence>
     </AppLayout>
   );
 }
