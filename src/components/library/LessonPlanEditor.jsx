@@ -9,7 +9,7 @@ import {
   BookOpen, FileText, Target, Sparkles, X, ChevronDown, ChevronUp
 } from 'lucide-react';
 import { toast } from 'sonner';
-import { nanoid } from '@/lib/utils';
+
 
 const BLOCK_TYPES = ['פתיחה', 'מטרות', 'הוראה ישירה', 'תרגול', 'דיון', 'סיכום', 'הערכה'];
 
