@@ -1,34 +1,35 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { cn } from '@/lib/utils';
-import { LayoutGrid, Users, History, BookOpen, Settings, ChevronRight, BarChart2, CalendarCheck, GraduationCap, Library, Trophy, Wrench, Contact, FileText, Layers } from 'lucide-react';
+import { LayoutGrid, Users, BookOpen, Settings, ChevronRight, CalendarCheck, GraduationCap, Library, Trophy, Wrench, Contact, FileText, Layers } from 'lucide-react';
+import { loadBranding } from '@/lib/branding';
 
-const NAV_ITEMS = [
-  { path: '/', label: 'דשבורד', icon: BookOpen },
-  { path: '/seating', label: 'ישיבה', icon: LayoutGrid },
-  { path: '/students', label: 'תלמידים', icon: Users },
-  { path: '/attendance', label: 'נוכחות', icon: CalendarCheck },
-  { path: '/grades', label: 'ציונים', icon: GraduationCap },
-  { path: '/library', label: 'ספרייה', icon: Library },
-  { path: '/gamification', label: 'נקודות', icon: Trophy },
-  { path: '/toolkit', label: 'כלים', icon: Wrench },
-  { path: '/parents', label: 'הורים', icon: Contact },
-  { path: '/worksheets', label: 'דפ"ע', icon: FileText },
-  { path: '/question-bank', label: 'עזרים', icon: Layers },
-];
-
-const PAGE_TITLES = {
-  '/': 'ClassManager Pro',
-  '/seating': 'מפת ישיבה',
-  '/students': 'תלמידים',
-  '/history': 'היסטוריה',
-  '/reports': 'דוחות',
-  '/settings': 'הגדרות',
+const NAV_ICONS = {
+  '/': BookOpen,
+  '/seating': LayoutGrid,
+  '/students': Users,
+  '/attendance': CalendarCheck,
+  '/grades': GraduationCap,
+  '/library': Library,
+  '/gamification': Trophy,
+  '/toolkit': Wrench,
+  '/parents': Contact,
+  '/worksheets': FileText,
+  '/question-bank': Layers,
 };
+
+const NAV_PATHS = ['/', '/seating', '/students', '/attendance', '/grades', '/library', '/gamification', '/toolkit', '/parents', '/worksheets', '/question-bank'];
 
 export default function AppLayout({ children }) {
   const location = useLocation();
   const navigate = useNavigate();
+  const [branding, setBranding] = useState(loadBranding);
+
+  useEffect(() => {
+    const handler = (e) => setBranding(e.detail);
+    window.addEventListener('branding-updated', handler);
+    return () => window.removeEventListener('branding-updated', handler);
+  }, []);
 
   const handleNavClick = useCallback((e, path) => {
     if (location.pathname === path) {
@@ -39,7 +40,7 @@ export default function AppLayout({ children }) {
     }
   }, [location.pathname, navigate]);
   const isDashboard = location.pathname === '/';
-  const title = PAGE_TITLES[location.pathname] || 'ClassManager Pro';
+  const title = branding.page_titles?.[location.pathname] || branding.school_name || 'ClassManager Pro';
 
   return (
     <div className="min-h-screen bg-background flex flex-col" dir="rtl">
@@ -59,9 +60,13 @@ export default function AppLayout({ children }) {
               <ChevronRight className="w-5 h-5" />
             </button>
           ) : (
-            <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center shrink-0">
-              <BookOpen className="w-4 h-4 text-primary-foreground" />
-            </div>
+            branding.logo_url ? (
+              <img src={branding.logo_url} alt="לוגו" className="w-8 h-8 object-contain rounded-lg shrink-0" />
+            ) : (
+              <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center shrink-0">
+                <BookOpen className="w-4 h-4 text-primary-foreground" />
+              </div>
+            )
           )}
 
           <span className="font-bold text-base tracking-tight flex-1 text-center">{title}</span>
@@ -91,14 +96,15 @@ export default function AppLayout({ children }) {
         className="fixed bottom-0 inset-x-0 z-50 bg-card border-t border-border flex items-stretch"
         style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
       >
-        {NAV_ITEMS.map(item => {
-          const Icon = item.icon;
-          const active = location.pathname === item.path;
+        {NAV_PATHS.map(path => {
+          const Icon = NAV_ICONS[path];
+          const active = location.pathname === path;
+          const label = branding.nav_labels?.[path] || path;
           return (
             <Link
-              key={item.path}
-              to={item.path}
-              onClick={(e) => handleNavClick(e, item.path)}
+              key={path}
+              to={path}
+              onClick={(e) => handleNavClick(e, path)}
               className={cn(
                 'flex-1 flex flex-col items-center justify-center gap-0.5 min-h-[56px] py-2 select-none transition-colors',
                 active
@@ -107,7 +113,7 @@ export default function AppLayout({ children }) {
               )}
             >
               <Icon className={cn('w-5 h-5', active && 'scale-110 transition-transform')} />
-              <span className="text-[10px] font-medium">{item.label}</span>
+              <span className="text-[10px] font-medium">{label}</span>
             </Link>
           );
         })}

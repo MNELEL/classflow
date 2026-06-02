@@ -1,6 +1,7 @@
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 import { toast } from 'sonner';
+import { loadBranding } from '@/lib/branding';
 
 // ── Excel / CSV Export ────────────────────────────────────────────────────────
 export async function exportToExcel(seats, students, rows, cols) {
@@ -77,11 +78,33 @@ function buildSeatingTable(seats, students, rows, cols) {
   return { tableRows, cellW, cellH };
 }
 
+// ── Build branded header HTML ─────────────────────────────────────────────────
+function buildBrandedHeader(dateStr, rows, cols, docTitle) {
+  const b = loadBranding();
+  const schoolName = b.school_name || 'ClassManager Pro';
+  const teacherLine = [b.teacher_name, b.class_name].filter(Boolean).join(' · ');
+  const logoHtml = b.logo_url
+    ? `<img src="${b.logo_url}" style="height:48px;width:48px;object-fit:contain;border-radius:8px;" />`
+    : `<div style="background:#ede9fe;border-radius:8px;padding:6px 16px;font-size:12px;color:#5b21b6;font-weight:600;">${schoolName}</div>`;
+
+  return `
+    <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:18px;border-bottom:2px solid #7c3aed;padding-bottom:12px;">
+      <div>
+        <div style="font-size:22px;font-weight:800;color:#1e1b4b;">${docTitle}</div>
+        <div style="font-size:12px;color:#6b7280;margin-top:4px;">${dateStr} · ${rows} שורות × ${cols} טורים${teacherLine ? ' · ' + teacherLine : ''}</div>
+      </div>
+      ${logoHtml}
+    </div>
+  `;
+}
+
 // ── Styled HTML → PDF Export ──────────────────────────────────────────────────
 export async function exportToPDF(seats, students, rows, cols, title = '') {
+  const b = loadBranding();
   const dateStr = new Date().toLocaleDateString('he-IL');
   const { tableRows, cellW } = buildSeatingTable(seats, students, rows, cols);
   const tableWidth = cellW * cols + (cols - 1) * 6;
+  const docTitle = title || b.page_titles?.['/seating'] || 'מפת ישיבה';
 
   const htmlContent = `
     <div id="pdf-root" style="
@@ -91,13 +114,7 @@ export async function exportToPDF(seats, students, rows, cols, title = '') {
       padding:28px;
       width:${tableWidth + 56}px;
     ">
-      <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:18px;border-bottom:2px solid #7c3aed;padding-bottom:12px;">
-        <div>
-          <div style="font-size:22px;font-weight:800;color:#1e1b4b;">${title || 'מפת ישיבה'}</div>
-          <div style="font-size:12px;color:#6b7280;margin-top:4px;">${dateStr} · ${rows} שורות × ${cols} טורים</div>
-        </div>
-        <div style="background:#ede9fe;border-radius:8px;padding:6px 16px;font-size:12px;color:#5b21b6;font-weight:600;">ClassManager Pro</div>
-      </div>
+      ${buildBrandedHeader(dateStr, rows, cols, docTitle)}
 
       <div style="text-align:center;margin-bottom:16px;">
         <div style="display:inline-block;background:#e0e7ff;border:2px solid #6366f1;border-radius:10px;padding:6px 36px;color:#3730a3;font-weight:700;font-size:13px;letter-spacing:1px;">
@@ -139,8 +156,15 @@ export async function exportToPDF(seats, students, rows, cols, title = '') {
 
 // ── Print Export ──────────────────────────────────────────────────────────────
 export function printSeating(seats, students, rows, cols, title = '') {
+  const b = loadBranding();
   const dateStr = new Date().toLocaleDateString('he-IL');
   const { tableRows } = buildSeatingTable(seats, students, rows, cols);
+  const docTitle = title || b.page_titles?.['/seating'] || 'מפת ישיבה';
+  const schoolName = b.school_name || 'ClassManager Pro';
+  const teacherLine = [b.teacher_name, b.class_name].filter(Boolean).join(' · ');
+  const logoHtml = b.logo_url
+    ? `<img src="${b.logo_url}" style="height:44px;width:44px;object-fit:contain;border-radius:8px;" />`
+    : `<div class="badge">${schoolName}</div>`;
 
   const printWindow = window.open('', '_blank');
   printWindow.document.write(`
@@ -148,7 +172,7 @@ export function printSeating(seats, students, rows, cols, title = '') {
     <html dir="rtl" lang="he">
     <head>
       <meta charset="UTF-8">
-      <title>מפת ישיבה</title>
+      <title>${docTitle}</title>
       <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;600;700;800&display=swap" rel="stylesheet">
       <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -166,10 +190,10 @@ export function printSeating(seats, students, rows, cols, title = '') {
     <body>
       <div class="header">
         <div>
-          <div class="title">${title || 'מפת ישיבה'}</div>
-          <div class="subtitle">${dateStr} · ${rows} שורות × ${cols} טורים</div>
+          <div class="title">${docTitle}</div>
+          <div class="subtitle">${dateStr} · ${rows} שורות × ${cols} טורים${teacherLine ? ' · ' + teacherLine : ''}</div>
         </div>
-        <div class="badge">ClassManager Pro</div>
+        ${logoHtml}
       </div>
       <div class="board"><div class="board-inner">לוח המורה</div></div>
       <table><tbody>${tableRows}</tbody></table>

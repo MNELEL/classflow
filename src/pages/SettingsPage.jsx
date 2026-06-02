@@ -10,8 +10,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
 import { toast } from 'sonner';
-import { Palette, LayoutGrid, Settings, Save, Trash2, Plus, Tag } from 'lucide-react';
+import { Palette, LayoutGrid, Settings, Save, Trash2, Plus, Tag, Brush } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog';
+import BrandingPanel from '@/components/settings/BrandingPanel';
 
 const SETTINGS_KEY = 'classmanager_settings';
 
@@ -97,6 +98,19 @@ export default function SettingsPage() {
         </div>
 
         <div className="space-y-6">
+          {/* Branding */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base flex items-center gap-2">
+                <Brush className="w-4 h-4" /> מיתוג אישי
+              </CardTitle>
+              <CardDescription>שנה לוגו, שמות תפריטים וכותרות בכל המערכת</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <BrandingPanel />
+            </CardContent>
+          </Card>
+
           {/* Categories */}
           <Card>
             <CardHeader>
