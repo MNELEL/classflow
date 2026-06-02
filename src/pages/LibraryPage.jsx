@@ -2,6 +2,8 @@ import React, { useState, useMemo } from 'react';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import LessonPlanningTab from '@/components/library/LessonPlanningTab';
 import PlaylistPanel from '@/components/library/PlaylistPanel';
+import WeeklyPlannerBoard from '@/components/library/WeeklyPlannerBoard';
+import CoverageTracker from '@/components/library/CoverageTracker';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import AppLayout from '@/components/layout/AppLayout';
@@ -11,7 +13,7 @@ import LibraryItemDetail from '@/components/library/LibraryItemDetail';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Plus, Search, BookOpen, Loader2, Library, Sparkles, BookOpenCheck, ListMusic } from 'lucide-react';
+import { Plus, Search, BookOpen, Loader2, Library, Sparkles, BookOpenCheck, ListMusic, CalendarDays, BarChart2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const SOURCE_LABELS = {
@@ -82,12 +84,18 @@ export default function LibraryPage() {
     <AppLayout>
       <div className="p-4 space-y-4">
         <Tabs defaultValue="library">
-          <TabsList className="w-full mb-2">
-            <TabsTrigger value="library" className="flex-1 gap-1.5">
-              <Library className="w-4 h-4" /> ספרייה
+          <TabsList className="w-full mb-2 grid grid-cols-4">
+            <TabsTrigger value="library" className="gap-1 text-xs">
+              <Library className="w-3.5 h-3.5" /> ספרייה
             </TabsTrigger>
-            <TabsTrigger value="planning" className="flex-1 gap-1.5">
-              <BookOpenCheck className="w-4 h-4" /> מערכי שיעור
+            <TabsTrigger value="planning" className="gap-1 text-xs">
+              <BookOpenCheck className="w-3.5 h-3.5" /> מערכים
+            </TabsTrigger>
+            <TabsTrigger value="weekly" className="gap-1 text-xs">
+              <CalendarDays className="w-3.5 h-3.5" /> שבועי
+            </TabsTrigger>
+            <TabsTrigger value="coverage" className="gap-1 text-xs">
+              <BarChart2 className="w-3.5 h-3.5" /> כיסוי
             </TabsTrigger>
           </TabsList>
 
@@ -242,6 +250,14 @@ export default function LibraryPage() {
 
           <TabsContent value="planning" className="mt-0">
             <LessonPlanningTab />
+          </TabsContent>
+
+          <TabsContent value="weekly" className="mt-0">
+            <WeeklyPlannerBoard />
+          </TabsContent>
+
+          <TabsContent value="coverage" className="mt-0">
+            <CoverageTracker />
           </TabsContent>
         </Tabs>
 
