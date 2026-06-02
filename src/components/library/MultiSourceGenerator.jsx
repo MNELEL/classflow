@@ -10,8 +10,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Card, CardContent } from '@/components/ui/card';
 import {
   Sparkles, Search, X, Check, BookOpen, FileText, Layers,
-  Printer, Save, Download, ChevronDown, ChevronUp, Loader2, Eye
+  Printer, Save, Download, ChevronDown, ChevronUp, Loader2, Eye,
+  RefreshCw, Settings2
 } from 'lucide-react';
+import ExportModal from './ExportModal';
+import AIProviderSettings from './AIProviderSettings';
 import { motion, AnimatePresence } from 'framer-motion';
 import ReactMarkdown from 'react-markdown';
 import { toast } from 'sonner';
@@ -240,6 +243,9 @@ export default function MultiSourceGenerator() {
   const [previewOpen, setPreviewOpen] = useState(false);
   const [savedList, setSavedList] = useState([]);
   const [expandedSaved, setExpandedSaved] = useState(null);
+  const [exportItem, setExportItem] = useState(null);
+  const [showAISettings, setShowAISettings] = useState(false);
+  const [reviewMode, setReviewMode] = useState(false);
 
   const qc = useQueryClient();
 
@@ -269,20 +275,52 @@ export default function MultiSourceGenerator() {
   };
 
   const handleGenerate = async () => {
-    if (!outputType) { toast.error('בחר סוג חומר'); return; }
+    if (!reviewMode && !outputType) { toast.error('בחר סוג חומר'); return; }
     if (selectedIds.length === 0) { toast.error('בחר לפחות חומר אחד מהספרייה'); return; }
     setGenerating(true);
     setResult(null);
     try {
-      const prompt = buildPrompt(outputType, selectedItems, { grade, difficulty, count, extraInstructions });
+      let prompt;
+      if (reviewMode) {
+        const titles = selectedItems.map(i => `- ${i.title}`).join('\n');
+        const content = selectedItems.map(i =>
+          [i.transcript, i.ai_summary, ...(i.ai_key_points || [])].filter(Boolean).join('\n')
+        ).join('\n\n---\n\n').slice(0, 6000);
+        prompt = `אתה מורה מנוסה. בצע ניתוח עמוק של החומרים הלימודיים הבאים וצור חומר חזרה מקיף.
+
+חומרים שנלמדו:
+${titles}
+
+תוכן החומרים:
+${content || '(ניתח לפי הכותרות)'}
+
+צור את הדברים הבאים בעברית:
+## 🔄 שאלות חזרה (${count} שאלות)
+שאלות מגוונות המכסות את כל הנושאים — השלמה, רב-ברירה, פתוח, התאמה
+
+## 🃏 כרטיסיות מושגים מרכזיים
+מושג ← הגדרה/תשובה
+
+## 📋 נקודות עיקריות לזכור
+רשימה ממוקדת של הדברים החשובים ביותר
+
+## ❓ שאלות העמקה
+שאלות מחשבה ודיון
+
+שכבת גיל: ${grade} | רמת קושי: ${difficulty}
+${extraInstructions ? `הוראות נוספות: ${extraInstructions}` : ''}`;
+      } else {
+        prompt = buildPrompt(outputType, selectedItems, { grade, difficulty, count, extraInstructions });
+      }
+
       const res = await base44.integrations.Core.InvokeLLM({
         prompt,
         response_json_schema: { type: 'object', properties: { content: { type: 'string' } } }
       });
-      const outDef = OUTPUT_TYPES.find(o => o.id === outputType);
+      const outDef = reviewMode ? { label: 'שאלות חזרה', icon: '🔄' } : OUTPUT_TYPES.find(o => o.id === outputType);
       const newResult = {
         id: Date.now().toString(),
-        type: outputType,
+        type: reviewMode ? 'review' : outputType,
         typeLabel: outDef?.label || outputType,
         typeIcon: outDef?.icon || '📄',
         content: res.content,
@@ -314,11 +352,34 @@ export default function MultiSourceGenerator() {
         <div className="w-10 h-10 bg-gradient-to-br from-primary/20 to-purple-500/20 rounded-xl flex items-center justify-center">
           <Layers className="w-5 h-5 text-primary" />
         </div>
-        <div>
+        <div className="flex-1">
           <h2 className="font-bold text-base">מחולל מרובה-מקורות</h2>
-          <p className="text-xs text-muted-foreground">בחר חומרים מהספרייה וצור מהם דפי עבודה, חוברות, מלאכות ועוד</p>
+          <p className="text-xs text-muted-foreground">בחר חומרים וצור דפי עבודה, חוברות, שאלות חזרה ועוד</p>
         </div>
+        <Button size="sm" variant="outline" onClick={() => setShowAISettings(true)} className="gap-1 text-xs">
+          <Settings2 className="w-3.5 h-3.5" /> AI
+        </Button>
       </div>
+
+      {/* Review mode toggle */}
+      <div className="flex gap-2">
+        <button onClick={() => setReviewMode(false)}
+          className={`flex-1 py-1.5 text-xs rounded-lg border font-medium transition-colors ${!reviewMode ? 'bg-primary text-primary-foreground border-primary' : 'border-border text-muted-foreground hover:bg-accent'}`}>
+          ✨ יצירה חופשית
+        </button>
+        <button onClick={() => setReviewMode(true)}
+          className={`flex-1 py-1.5 text-xs rounded-lg border font-medium transition-colors ${reviewMode ? 'bg-primary text-primary-foreground border-primary' : 'border-border text-muted-foreground hover:bg-accent'}`}>
+          🔄 שאלות חזרה מחומרים
+        </button>
+      </div>
+
+      {/* Review mode description */}
+      {reviewMode && (
+        <div className="p-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-xl text-xs text-amber-700 dark:text-amber-300 flex items-start gap-2">
+          <RefreshCw className="w-4 h-4 shrink-0 mt-0.5" />
+          <span>בחר דפי עבודה, מערכי שיעור או חומרים שנלמדו — ה-AI ייצור שאלות חזרה, כרטיסיות ותרגול עמוק</span>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         {/* ── Left: source picker ───────────────────────────────────────────── */}
@@ -428,10 +489,12 @@ export default function MultiSourceGenerator() {
           </div>
 
           <Button className="w-full gap-2" onClick={handleGenerate}
-            disabled={generating || selectedIds.length === 0 || !outputType}>
+            disabled={generating || selectedIds.length === 0 || (!outputType && !reviewMode)}>
             {generating
               ? <><Loader2 className="w-4 h-4 animate-spin" /> מייצר עם AI...</>
-              : <><Sparkles className="w-4 h-4" /> צור {outType?.label || 'חומר'} מ-{selectedIds.length} מקורות</>
+              : reviewMode
+                ? <><RefreshCw className="w-4 h-4" /> צור שאלות חזרה מ-{selectedIds.length} חומרים</>
+                : <><Sparkles className="w-4 h-4" /> צור {outType?.label || 'חומר'} מ-{selectedIds.length} מקורות</>
             }
           </Button>
         </div>
@@ -463,8 +526,8 @@ export default function MultiSourceGenerator() {
                     <Button size="sm" variant="outline" onClick={() => setPreviewOpen(v => !v)}>
                       <Eye className="w-3.5 h-3.5 ml-1" /> {previewOpen ? 'הסתר' : 'הצג'}
                     </Button>
-                    <Button size="sm" onClick={() => printContent(result.typeLabel, result.content)}>
-                      <Printer className="w-3.5 h-3.5 ml-1" /> הדפס
+                    <Button size="sm" onClick={() => setExportItem(result)}>
+                      <Download className="w-3.5 h-3.5 ml-1" /> ייצוא
                     </Button>
                   </div>
                 </div>
@@ -514,9 +577,9 @@ export default function MultiSourceGenerator() {
                   </div>
                 </div>
                 <div className="flex gap-1 items-center">
-                  <Button size="sm" variant="ghost" onClick={(e) => { e.stopPropagation(); printContent(item.typeLabel, item.content); }}>
-                    <Printer className="w-3.5 h-3.5" />
-                  </Button>
+                <Button size="sm" variant="ghost" onClick={(e) => { e.stopPropagation(); setExportItem(item); }}>
+                  <Download className="w-3.5 h-3.5" />
+                </Button>
                   {expandedSaved === item.id ? <ChevronUp className="w-4 h-4 text-muted-foreground" /> : <ChevronDown className="w-4 h-4 text-muted-foreground" />}
                 </div>
               </div>
@@ -531,6 +594,20 @@ export default function MultiSourceGenerator() {
           ))}
         </div>
       )}
+      {/* Export modal */}
+      {exportItem && (
+        <ExportModal
+          open={!!exportItem}
+          onClose={() => setExportItem(null)}
+          title={exportItem.typeLabel}
+          content={exportItem.content}
+          grade={exportItem.grade}
+          subtitle={exportItem.sources?.join(', ')}
+        />
+      )}
+
+      {/* AI Provider settings */}
+      <AIProviderSettings open={showAISettings} onClose={() => setShowAISettings(false)} />
     </div>
   );
 }
