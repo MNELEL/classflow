@@ -13,7 +13,8 @@ import LibraryItemDetail from '@/components/library/LibraryItemDetail';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Plus, Search, BookOpen, Loader2, Library, Sparkles, BookOpenCheck, ListMusic, CalendarDays, BarChart2 } from 'lucide-react';
+import { Plus, Search, BookOpen, Loader2, Library, Sparkles, BookOpenCheck, ListMusic, CalendarDays, BarChart2, Layers } from 'lucide-react';
+import MultiSourceGenerator from '@/components/library/MultiSourceGenerator';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const SOURCE_LABELS = {
