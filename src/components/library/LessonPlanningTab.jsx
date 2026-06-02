@@ -2,13 +2,15 @@ import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
-import { Plus, BookOpenCheck, Loader2, Pencil, Trash2, Copy, LayoutTemplate } from 'lucide-react';
+import { Plus, BookOpenCheck, Loader2, Pencil, Trash2, Copy, LayoutTemplate, Share2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import LessonPlanEditor from './LessonPlanEditor';
+import ShareModal from './ShareModal';
 
 export default function LessonPlanningTab() {
   const queryClient = useQueryClient();
-  const [editingPlan, setEditingPlan] = useState(null); // null = list, 'new' = new, id = edit
+  const [editingPlan, setEditingPlan] = useState(null);
+  const [sharingPlan, setSharingPlan] = useState(null);
 
   const { data: plans = [], isLoading } = useQuery({
     queryKey: ['lesson-plans'],
@@ -91,6 +93,9 @@ export default function LessonPlanningTab() {
                   )}
                 </div>
                 <div className="flex gap-1 shrink-0">
+                  <Button variant="ghost" size="icon" className="w-7 h-7" onClick={() => setSharingPlan(plan)}>
+                    <Share2 className="w-3.5 h-3.5" />
+                  </Button>
                   <Button variant="ghost" size="icon" className="w-7 h-7" onClick={() => duplicatePlan.mutate(plan)}>
                     <Copy className="w-3.5 h-3.5" />
                   </Button>
@@ -106,6 +111,10 @@ export default function LessonPlanningTab() {
             ))}
           </AnimatePresence>
         </div>
+      )}
+
+      {sharingPlan && (
+        <ShareModal item={sharingPlan} type="lesson" onClose={() => setSharingPlan(null)} />
       )}
     </div>
   );

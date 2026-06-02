@@ -1,9 +1,10 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Heart, HeartOff, Sparkles, Loader2, Clock, AlertCircle } from 'lucide-react';
+import { Heart, Sparkles, Loader2, Clock, AlertCircle, Share2 } from 'lucide-react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { cn } from '@/lib/utils';
+import ShareModal from './ShareModal';
 
 const SOURCE_ICONS = {
   audio_recording: '🎙️', audio_file: '🎵', pdf: '📄', word_doc: '📝',
@@ -26,6 +27,7 @@ const AI_STATUS = {
 
 export default function LibraryItemCard({ item, onClick }) {
   const qc = useQueryClient();
+  const [showShare, setShowShare] = useState(false);
 
   const favMutation = useMutation({
     mutationFn: () => base44.entities.LibraryItem.update(item.id, { is_favorite: !item.is_favorite }),
@@ -47,10 +49,16 @@ export default function LibraryItemCard({ item, onClick }) {
             <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full font-medium">{item.category}</span>
           )}
         </div>
-        <button onClick={e => { e.stopPropagation(); favMutation.mutate(); }}
-          className="text-muted-foreground hover:text-pink-500 transition-colors">
-          {item.is_favorite ? <Heart className="w-4 h-4 fill-pink-500 text-pink-500" /> : <Heart className="w-4 h-4" />}
-        </button>
+        <div className="flex items-center gap-1">
+          <button onClick={e => { e.stopPropagation(); setShowShare(true); }}
+            className="text-muted-foreground hover:text-primary transition-colors p-1 rounded">
+            <Share2 className="w-3.5 h-3.5" />
+          </button>
+          <button onClick={e => { e.stopPropagation(); favMutation.mutate(); }}
+            className="text-muted-foreground hover:text-pink-500 transition-colors">
+            {item.is_favorite ? <Heart className="w-4 h-4 fill-pink-500 text-pink-500" /> : <Heart className="w-4 h-4" />}
+          </button>
+        </div>
       </div>
 
       {/* Title */}
@@ -106,6 +114,10 @@ export default function LibraryItemCard({ item, onClick }) {
             <span key={i} className="text-[10px] bg-muted text-muted-foreground px-1.5 py-0.5 rounded-full">{tag}</span>
           ))}
         </div>
+      )}
+
+      {showShare && (
+        <ShareModal item={item} type="library" onClose={() => setShowShare(false)} />
       )}
     </div>
   );
