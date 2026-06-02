@@ -85,9 +85,12 @@ export default function LibraryPage() {
     <AppLayout>
       <div className="p-4 space-y-4">
         <Tabs defaultValue="library">
-          <TabsList className="w-full mb-2 grid grid-cols-4">
+          <TabsList className="w-full mb-2 grid grid-cols-5">
             <TabsTrigger value="library" className="gap-1 text-xs">
               <Library className="w-3.5 h-3.5" /> ספרייה
+            </TabsTrigger>
+            <TabsTrigger value="generate" className="gap-1 text-xs">
+              <Layers className="w-3.5 h-3.5" /> יצירה
             </TabsTrigger>
             <TabsTrigger value="planning" className="gap-1 text-xs">
               <BookOpenCheck className="w-3.5 h-3.5" /> מערכים
@@ -247,6 +250,10 @@ export default function LibraryPage() {
                 </AnimatePresence>
               </div>
             )}
+          </TabsContent>
+
+          <TabsContent value="generate" className="mt-0">
+            <MultiSourceGenerator />
           </TabsContent>
 
           <TabsContent value="planning" className="mt-0">
