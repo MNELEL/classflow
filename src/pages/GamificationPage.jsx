@@ -3,22 +3,34 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import AppLayout from '@/components/layout/AppLayout';
 import Leaderboard from '@/components/gamification/Leaderboard';
+import BulkReward from '@/components/gamification/BulkReward';
+import RewardIdeas from '@/components/gamification/RewardIdeas';
+import CampaignTemplates from '@/components/gamification/CampaignTemplates';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Plus, Trophy, Star, Maximize2, Minimize2, Trash2, Loader2 } from 'lucide-react';
+import { Plus, Trophy, Star, Maximize2, Minimize2, Trash2, Loader2, Users, Lightbulb } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 
+const TABS = [
+  ['leaderboard', '🏆 מובילים'],
+  ['campaigns', '🎯 מבצעים'],
+  ['bulk', '👥 הענק לכיתה'],
+  ['ideas', '💡 רעיונות'],
+  ['history', '📜 היסטוריה'],
+];
+
 export default function GamificationPage() {
   const qc = useQueryClient();
-  const [tab, setTab] = useState('leaderboard'); // leaderboard | campaigns | history
+  const [tab, setTab] = useState('leaderboard');
   const [kioskMode, setKioskMode] = useState(false);
   const [showRewardForm, setShowRewardForm] = useState(false);
   const [showCampaignForm, setShowCampaignForm] = useState(false);
+  const [showTemplates, setShowTemplates] = useState(false);
   const [rewardForm, setRewardForm] = useState({ student_id: '', points: 1, reason: '' });
   const [campaignForm, setCampaignForm] = useState({ title: '', description: '', target_points: 100, reward_description: '', start_date: '', end_date: '' });
 
@@ -50,12 +62,13 @@ export default function GamificationPage() {
   function handleAddReward() {
     if (!rewardForm.student_id || !rewardForm.reason) { toast.error('מלא את כל השדות'); return; }
     const student = students.find(s => s.id === rewardForm.student_id);
-    addReward.mutate({
-      ...rewardForm,
-      student_name: student?.name || '',
-      date: format(new Date(), 'yyyy-MM-dd'),
-      points: Number(rewardForm.points),
-    });
+    addReward.mutate({ ...rewardForm, student_name: student?.name || '', date: format(new Date(), 'yyyy-MM-dd'), points: Number(rewardForm.points) });
+  }
+
+  function applyTemplate(t) {
+    setCampaignForm(f => ({ ...f, title: t.title, description: t.description, target_points: t.target_points, reward_description: t.reward_description }));
+    setShowTemplates(false);
+    setShowCampaignForm(true);
   }
 
   if (kioskMode) {
@@ -94,28 +107,35 @@ export default function GamificationPage() {
         </div>
 
         {/* Tabs */}
-        <div className="flex gap-1 bg-muted/50 rounded-xl p-1">
-          {[['leaderboard','🏆 מובילים'], ['campaigns','🎯 מבצעים'], ['history','📜 היסטוריה']].map(([id, label]) => (
+        <div className="flex gap-1 bg-muted/50 rounded-xl p-1 overflow-x-auto">
+          {TABS.map(([id, label]) => (
             <button key={id} onClick={() => setTab(id)}
-              className={`flex-1 py-1.5 rounded-lg text-xs font-medium transition-all ${tab === id ? 'bg-card shadow text-foreground' : 'text-muted-foreground hover:text-foreground'}`}>
+              className={`flex-shrink-0 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${tab === id ? 'bg-card shadow text-foreground' : 'text-muted-foreground hover:text-foreground'}`}>
               {label}
             </button>
           ))}
         </div>
 
-        {/* Leaderboard tab */}
-        {tab === 'leaderboard' && (
-          <Leaderboard students={students} pointsMap={pointsMap} />
-        )}
+        {/* Leaderboard */}
+        {tab === 'leaderboard' && <Leaderboard students={students} pointsMap={pointsMap} />}
 
-        {/* Campaigns tab */}
+        {/* Campaigns */}
         {tab === 'campaigns' && (
           <div className="space-y-3">
-            <Button size="sm" variant="outline" className="w-full gap-1" onClick={() => setShowCampaignForm(true)}>
-              <Plus className="w-3.5 h-3.5" /> צור מבצע חדש
-            </Button>
+            <div className="flex gap-2">
+              <Button size="sm" variant="outline" className="flex-1 gap-1" onClick={() => setShowTemplates(true)}>
+                <Lightbulb className="w-3.5 h-3.5" /> מתבניות מוכנות
+              </Button>
+              <Button size="sm" className="flex-1 gap-1" onClick={() => setShowCampaignForm(true)}>
+                <Plus className="w-3.5 h-3.5" /> מבצע חדש
+              </Button>
+            </div>
             {campaigns.length === 0 && (
-              <div className="text-center py-10 text-muted-foreground text-sm">אין מבצעים פעילים</div>
+              <div className="text-center py-10 text-muted-foreground text-sm">
+                <Trophy className="w-10 h-10 mx-auto mb-2 opacity-20" />
+                <p>אין מבצעים פעילים</p>
+                <p className="text-xs mt-1">צור מבצע ראשון עם תבנית מוכנה!</p>
+              </div>
             )}
             {campaigns.map(c => {
               const topPoints = Math.max(...students.map(s => pointsMap[s.id] || 0), 1);
@@ -132,14 +152,15 @@ export default function GamificationPage() {
                     </button>
                   </div>
                   <div className="flex items-center gap-2 mb-2">
-                    <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
-                      <div className="h-full bg-yellow-400 rounded-full transition-all" style={{ width: `${progress}%` }} />
+                    <div className="flex-1 h-2.5 bg-muted rounded-full overflow-hidden">
+                      <motion.div className="h-full bg-gradient-to-r from-yellow-400 to-orange-400 rounded-full"
+                        initial={{ width: 0 }} animate={{ width: `${progress}%` }} transition={{ duration: 0.8 }} />
                     </div>
-                    <span className="text-xs text-muted-foreground">{progress}%</span>
+                    <span className="text-xs font-semibold text-muted-foreground">{progress}%</span>
                   </div>
                   <div className="flex justify-between text-xs text-muted-foreground">
                     <span>🎁 {c.reward_description}</span>
-                    <span>יעד: {c.target_points} נקודות</span>
+                    <span>יעד: {c.target_points} נק'</span>
                   </div>
                 </div>
               );
@@ -147,7 +168,29 @@ export default function GamificationPage() {
           </div>
         )}
 
-        {/* History tab */}
+        {/* Bulk reward */}
+        {tab === 'bulk' && (
+          <div className="space-y-3">
+            <div className="bg-blue-50 dark:bg-blue-900/10 border border-blue-200 dark:border-blue-800 rounded-xl px-3 py-2 flex items-center gap-2">
+              <Users className="w-4 h-4 text-blue-500" />
+              <p className="text-xs text-blue-700 dark:text-blue-300">הענק נקודות למספר תלמידים בבת אחת</p>
+            </div>
+            <BulkReward students={students} onDone={() => setTab('leaderboard')} />
+          </div>
+        )}
+
+        {/* Ideas */}
+        {tab === 'ideas' && (
+          <div className="space-y-3">
+            <div className="bg-amber-50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-800 rounded-xl px-3 py-2 flex items-center gap-2">
+              <Lightbulb className="w-4 h-4 text-amber-500" />
+              <p className="text-xs text-amber-700 dark:text-amber-300">רעיונות לצ'פר ולתגמל תלמידים — לחץ להעתקה</p>
+            </div>
+            <RewardIdeas students={students} />
+          </div>
+        )}
+
+        {/* History */}
         {tab === 'history' && (
           <div className="space-y-2">
             {loadingRewards && <div className="flex justify-center py-8"><Loader2 className="w-5 h-5 animate-spin text-muted-foreground" /></div>}
@@ -184,7 +227,7 @@ export default function GamificationPage() {
             </Select>
             <div className="flex items-center gap-2">
               <label className="text-sm text-muted-foreground shrink-0">נקודות:</label>
-              <div className="flex gap-2 flex-1">
+              <div className="flex gap-1.5 flex-1">
                 {[1,2,3,5,10,-1,-3].map(p => (
                   <button key={p} onClick={() => setRewardForm(r => ({ ...r, points: p }))}
                     className={`flex-1 py-1.5 rounded-lg text-xs font-bold border transition-all ${rewardForm.points === p ? (p > 0 ? 'bg-green-500 text-white border-green-500' : 'bg-red-500 text-white border-red-500') : 'border-border'}`}>
@@ -198,6 +241,14 @@ export default function GamificationPage() {
               {addReward.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : '✨ הענק נקודות'}
             </Button>
           </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Campaign Templates Dialog */}
+      <Dialog open={showTemplates} onOpenChange={setShowTemplates}>
+        <DialogContent dir="rtl" className="max-w-md max-h-[80vh] overflow-y-auto">
+          <DialogHeader><DialogTitle>🎯 תבניות מבצעים מוכנות</DialogTitle></DialogHeader>
+          <CampaignTemplates onSelect={applyTemplate} />
         </DialogContent>
       </Dialog>
 
