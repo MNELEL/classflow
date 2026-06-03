@@ -7,6 +7,10 @@ import { Input } from '@/components/ui/input';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Play, Square, RotateCcw, Users, Shuffle, Clock, ChevronDown, ChevronUp } from 'lucide-react';
 import { toast } from 'sonner';
+import FlashCards from '@/components/toolkit/FlashCards';
+import NoiseMeter from '@/components/toolkit/NoiseMeter';
+import ExitTicket from '@/components/toolkit/ExitTicket';
+import RandomWordBoard from '@/components/toolkit/RandomWordBoard';
 
 // ────── NAME WHEEL ──────
 function NameWheel({ students }) {
@@ -235,9 +239,15 @@ export default function ToolkitPage() {
           <div className="w-9 h-9 bg-orange-100 dark:bg-orange-900/30 rounded-xl flex items-center justify-center text-xl">🔧</div>
           <h1 className="font-bold text-base">ארגז כלים</h1>
         </div>
-        <NameWheel students={students} />
-        <GroupGenerator students={students} />
-        <CountdownTimer />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <NameWheel students={students} />
+          <CountdownTimer />
+          <GroupGenerator students={students} />
+          <RandomWordBoard />
+        </div>
+        <FlashCards />
+        <ExitTicket />
+        <NoiseMeter />
       </div>
     </AppLayout>
   );

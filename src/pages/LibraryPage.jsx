@@ -13,9 +13,10 @@ import LibraryItemDetail from '@/components/library/LibraryItemDetail';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Plus, Search, BookOpen, Loader2, Library, Sparkles, BookOpenCheck, ListMusic, CalendarDays, BarChart2, Layers, Settings2 } from 'lucide-react';
+import { Plus, Search, BookOpen, Loader2, Library, Sparkles, BookOpenCheck, ListMusic, CalendarDays, BarChart2, Layers, Settings2, Bot, LayoutGrid, List } from 'lucide-react';
 import MultiSourceGenerator from '@/components/library/MultiSourceGenerator';
 import AIProviderSettings from '@/components/library/AIProviderSettings';
+import LibrarySearch from '@/components/library/LibrarySearch';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const SOURCE_LABELS = {
@@ -87,9 +88,12 @@ export default function LibraryPage() {
     <AppLayout>
       <div className="p-4 space-y-4">
         <Tabs defaultValue="library">
-          <TabsList className="w-full mb-2 grid grid-cols-5">
+          <TabsList className="w-full mb-2 grid grid-cols-6">
             <TabsTrigger value="library" className="gap-1 text-xs">
               <Library className="w-3.5 h-3.5" /> ספרייה
+            </TabsTrigger>
+            <TabsTrigger value="search" className="gap-1 text-xs">
+              <Bot className="w-3.5 h-3.5" /> AI שאל
             </TabsTrigger>
             <TabsTrigger value="generate" className="gap-1 text-xs">
               <Layers className="w-3.5 h-3.5" /> יצירה
@@ -255,6 +259,21 @@ export default function LibraryPage() {
                 </AnimatePresence>
               </div>
             )}
+          </TabsContent>
+
+          <TabsContent value="search" className="mt-0">
+            <div className="space-y-3">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 bg-purple-100 dark:bg-purple-900/30 rounded-xl flex items-center justify-center">
+                  <Bot className="w-4 h-4 text-purple-600 dark:text-purple-400" />
+                </div>
+                <div>
+                  <h2 className="font-bold text-sm">שאל AI על הספרייה</h2>
+                  <p className="text-xs text-muted-foreground">חפש, סכם ויצור מכל החומרים שלך</p>
+                </div>
+              </div>
+              <LibrarySearch items={items} />
+            </div>
           </TabsContent>
 
           <TabsContent value="generate" className="mt-0">
