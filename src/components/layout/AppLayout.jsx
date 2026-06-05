@@ -1,7 +1,7 @@
 import React, { useCallback, useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { cn } from '@/lib/utils';
-import { LayoutGrid, Users, BookOpen, Settings, ChevronRight, CalendarCheck, GraduationCap, Library, Trophy, Wrench, Contact, FileText, Layers } from 'lucide-react';
+import { LayoutGrid, Users, BookOpen, Settings, ChevronRight, CalendarCheck, GraduationCap, Library, Trophy, Wrench, Contact, FileText, Layers, Mic } from 'lucide-react';
 import { loadBranding } from '@/lib/branding';
 
 const NAV_ICONS = {
@@ -16,9 +16,10 @@ const NAV_ICONS = {
   '/parents': Contact,
   '/worksheets': FileText,
   '/question-bank': Layers,
+  '/lesson-analyzer': Mic,
 };
 
-const NAV_PATHS = ['/', '/seating', '/students', '/attendance', '/grades', '/library', '/gamification', '/toolkit', '/parents', '/worksheets', '/question-bank'];
+const NAV_PATHS = ['/', '/seating', '/students', '/attendance', '/grades', '/library', '/gamification', '/toolkit', '/parents', '/worksheets', '/question-bank', '/lesson-analyzer'];
 
 export default function AppLayout({ children }) {
   const location = useLocation();
