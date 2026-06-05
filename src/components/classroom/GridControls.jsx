@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Wand2, Shuffle, Hash, EyeOff, RefreshCw, FileDown, FileSpreadsheet, Printer, ClipboardList, Undo2, Redo2 } from 'lucide-react';
+import { Wand2, Shuffle, Hash, EyeOff, RefreshCw, FileDown, FileSpreadsheet, Printer, ClipboardList, Undo2, Redo2, Upload, CheckSquare } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { exportToPDF, exportToExcel, printSeating, printCleanSeating } from '@/lib/exportUtils';
+import ImportPreferencesModal from './ImportPreferencesModal';
 
 const QUICK_SORT_PREFS = [
   { value: 'none', label: 'ברירת מחדל' },
@@ -25,7 +26,11 @@ export default function GridControls({
   seats,
   students,
   onUndo, onRedo, canUndo, canRedo,
+  atLeastOneSatisfied, onToggleAtLeastOne,
+  onImportPreferences,
 }) {
+  const [showImport, setShowImport] = useState(false);
+
   return (
     <div className="bg-card border border-border rounded-xl p-4 space-y-3">
       {/* Score */}
@@ -88,6 +93,19 @@ export default function GridControls({
 
       {/* Actions */}
       <div className="space-y-2">
+        {/* At-least-one-satisfied toggle */}
+        <button
+          onClick={onToggleAtLeastOne}
+          className={`w-full flex items-center gap-2 text-xs px-2.5 py-1.5 rounded-lg border transition-colors ${
+            atLeastOneSatisfied
+              ? 'bg-primary/10 border-primary/30 text-primary font-semibold'
+              : 'border-border text-muted-foreground hover:bg-accent/30'
+          }`}
+        >
+          <CheckSquare className="w-3.5 h-3.5 shrink-0" />
+          <span>ערובה: לפחות דרישה אחת לכל תלמיד</span>
+        </button>
+
         <Button
           className="w-full bg-primary"
           size="sm"
@@ -114,6 +132,25 @@ export default function GridControls({
           <RefreshCw className="w-4 h-4 ml-1" /> נקה הכל
         </Button>
       </div>
+
+      {/* Import preferences */}
+      <Button
+        variant="outline"
+        size="sm"
+        className="w-full gap-1.5"
+        onClick={() => setShowImport(true)}
+      >
+        <Upload className="w-3.5 h-3.5" /> ייבוא העדפות / שמות
+      </Button>
+
+      {showImport && (
+        <ImportPreferencesModal
+          open={showImport}
+          onClose={() => setShowImport(false)}
+          students={students}
+          onApplyPreferences={onImportPreferences}
+        />
+      )}
 
       {/* Show numbers */}
       <Button

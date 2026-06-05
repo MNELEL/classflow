@@ -95,6 +95,50 @@ export function calcSatisfactionScore(seats, students) {
   return Math.round((total / count) * 100);
 }
 
+/**
+ * Checks if a student has AT LEAST ONE satisfied preference in the current arrangement.
+ * Used for the "at least one satisfied" guarantee mode.
+ */
+export function hasAtLeastOneSatisfied(student, mySeat, seats) {
+  if (!mySeat) return false;
+  const totalRows = Math.max(...seats.map(s => s.row)) + 1;
+
+  // Row preference
+  if (student.row_preference && student.row_preference !== 'none') {
+    if (
+      (student.row_preference === 'front' && mySeat.row === 0) ||
+      (student.row_preference === 'middle' && Math.abs(mySeat.row - Math.floor(totalRows / 2)) <= 1) ||
+      (student.row_preference === 'back' && mySeat.row === totalRows - 1)
+    ) return true;
+  }
+
+  // Friend nearby
+  if (student.friends?.length > 0) {
+    const adjSeats = seats.filter(s => s.student_id && isAdjacent(mySeat, s));
+    if (adjSeats.some(s => student.friends.includes(s.student_id))) return true;
+  }
+
+  // Side preference
+  const totalCols = Math.max(...seats.map(s => s.col)) + 1;
+  const thirdC = Math.floor(totalCols / 3);
+  if (student.side_preference && student.side_preference !== 'none') {
+    if (
+      (student.side_preference === 'left' && mySeat.col <= thirdC) ||
+      (student.side_preference === 'right' && mySeat.col >= totalCols - 1 - thirdC) ||
+      (student.side_preference === 'center' && mySeat.col > thirdC && mySeat.col < totalCols - 1 - thirdC)
+    ) return true;
+  }
+
+  // No preferences defined → trivially satisfied
+  if (!student.row_preference || student.row_preference === 'none') {
+    if (!student.friends?.length) {
+      if (!student.side_preference || student.side_preference === 'none') return true;
+    }
+  }
+
+  return false;
+}
+
 // Detect physical constraint violations (permanent_row / permanent_col)
 export function detectPhysicalViolation(seat, seats, student) {
   if (!student) return false;
@@ -147,7 +191,9 @@ export function detectConflicts(seat, seats, students) {
 }
 
 // Smart sort algorithm — greedy with multi-pass improvement
-export function smartSort(seats, students) {
+// options.atLeastOneSatisfied: bool — after placement, run a fixup pass to ensure each student has at least one satisfied preference
+export function smartSort(seats, students, options = {}) {
+  const { atLeastOneSatisfied = false } = options;
   const lockedSeats = seats.filter(s => s.is_locked && !s.is_hidden && !s.is_gap && !s.is_blocked);
   const lockedStudentIds = new Set(lockedSeats.map(s => s.student_id).filter(Boolean));
   const studentsToPlace = students.filter(s => s.is_active !== false && !lockedStudentIds.has(s.id));
@@ -313,6 +359,48 @@ export function smartSort(seats, students) {
   for (let i = 0; i < unplaced.length && i < emptySeats.length; i++) {
     const idx = baseSeats.findIndex(s => s.id === emptySeats[i].id);
     if (idx !== -1) baseSeats[idx] = { ...baseSeats[idx], student_id: unplaced[i].id };
+  }
+
+  // ── Pass 4 (optional): "at least one satisfied" fixup ──
+  // For each student who has no satisfied preference, try swapping with a neighbor to fix it
+  if (atLeastOneSatisfied) {
+    const allPlaced = baseSeats.filter(s => s.student_id && !s.is_locked);
+    for (const seatA of allPlaced) {
+      const studentA = students.find(s => s.id === seatA.student_id);
+      if (!studentA) continue;
+      if (hasAtLeastOneSatisfied(studentA, seatA, baseSeats)) continue;
+
+      // Try swapping with every other non-locked seat to find one that satisfies studentA
+      let swapped = false;
+      for (const seatB of allPlaced) {
+        if (seatB.id === seatA.id) continue;
+        const studentB = students.find(s => s.id === seatB.student_id);
+        if (!studentB) continue;
+
+        // Check if swap satisfies A (and doesn't break B's only satisfaction if B already has one)
+        const bHadSat = hasAtLeastOneSatisfied(studentB, seatB, baseSeats);
+
+        // Temporarily swap
+        const idxA = baseSeats.findIndex(s => s.id === seatA.id);
+        const idxB = baseSeats.findIndex(s => s.id === seatB.id);
+        baseSeats[idxA] = { ...baseSeats[idxA], student_id: studentB.id };
+        baseSeats[idxB] = { ...baseSeats[idxB], student_id: studentA.id };
+
+        const aNewSeat = baseSeats[idxB];
+        const bNewSeat = baseSeats[idxA];
+        const aGoodNow = hasAtLeastOneSatisfied(studentA, aNewSeat, baseSeats);
+        const bStillOk = !bHadSat || hasAtLeastOneSatisfied(studentB, bNewSeat, baseSeats);
+
+        if (aGoodNow && bStillOk) {
+          swapped = true;
+          break;
+        } else {
+          // Revert
+          baseSeats[idxA] = { ...baseSeats[idxA], student_id: studentA.id };
+          baseSeats[idxB] = { ...baseSeats[idxB], student_id: studentB.id };
+        }
+      }
+    }
   }
 
   return baseSeats;

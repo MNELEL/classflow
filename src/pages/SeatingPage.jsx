@@ -169,16 +169,25 @@ export default function SeatingPage() {
       // First run the local smart algorithm — this now guarantees full placement
       // Lock fixed-seat students before sorting
       const seatsWithFixed = seats.map(s => s.fixed_seat_number ? { ...s, is_locked: true } : s);
-      let sorted = smartSort(seatsWithFixed, students);
+      let sorted = smartSort(seatsWithFixed, students, { atLeastOneSatisfied });
 
       // Optionally enrich with AI ordering hints
       try {
         const activeStudents = students.filter(s => s.is_active !== false);
+        // Include session preference overrides + custom conditions in prompt
+        const prefOverrides = (() => { try { return JSON.parse(sessionStorage.getItem('cm_pref_overrides') || '{}'); } catch { return {}; } })();
+        const overrideLines = Object.values(prefOverrides).map(o =>
+          `  - ${o.student_name}: ${[o.row_preference && `שורה=${o.row_preference}`, o.side_preference && `צד=${o.side_preference}`, o.friends?.length && `חברים=[${o.friends.join(',')}]`, o.avoid?.length && `להרחיק=[${o.avoid.join(',')}]`, o.custom_condition].filter(Boolean).join(', ')}`
+        ).join('\n');
+        const customCondLines = customConditions.length > 0 ? `\nתנאים מיוחדים נוספים:\n${customConditions.map(c => `- ${c}`).join('\n')}` : '';
+        const atLeastOneLine = atLeastOneSatisfied ? '\n⚠️ חשוב: כל תלמיד חייב לקבל לפחות דרישה אחת מתוך ההעדפות שלו (מיקום / חבר בסמוך).' : '';
+
         const result = await base44.integrations.Core.InvokeLLM({
           prompt: `אתה מערכת סידור ישיבה חכמה. יש ${activeStudents.length} תלמידים ו-${rows} שורות ו-${cols} טורים.
 
 תלמידים:
 ${activeStudents.map(s => `- ${s.name}: גובה=${s.height||'בינוני'}, שורה=${s.row_preference||'אין'}, צרכים=[${(s.special_needs||[]).join(',')}], חברים=[${(s.friends||[]).map(fid=>students.find(x=>x.id===fid)?.name||'').filter(Boolean).join(',')}], להרחיק=[${(s.avoid||[]).map(fid=>students.find(x=>x.id===fid)?.name||'').filter(Boolean).join(',')}], שורה_קבועה=${s.permanent_row||'אין'}`).join('\n')}
+${overrideLines ? `\nהעדפות ייבוא נוספות:\n${overrideLines}` : ''}${customCondLines}${atLeastOneLine}
 
 שבץ את כל ${activeStudents.length} התלמידים. חובה להחזיר assignment לכל תלמיד. כל מושב (row,col) יכול להכיל תלמיד אחד בלבד. row ו-col הם 0-based.`,
           response_json_schema: {
@@ -247,6 +256,32 @@ ${activeStudents.map(s => `- ${s.name}: גובה=${s.height||'בינוני'}, ש
   }
 
   const [quickSortPref, setQuickSortPref] = useState('none');
+  const [atLeastOneSatisfied, setAtLeastOneSatisfied] = useState(false);
+  const [customConditions, setCustomConditions] = useState([]);
+
+  function handleImportPreferences(mappings) {
+    // mappings may contain: { student_name, row_preference, side_preference, friends, avoid, custom_condition }
+    // or { _custom_condition } for global conditions
+    // or { student_name, _bulk_only } for just name registration
+    const globals = mappings.filter(m => m._custom_condition);
+    if (globals.length > 0) {
+      setCustomConditions(prev => [...prev, ...globals.map(g => g._custom_condition)]);
+      return;
+    }
+
+    // Apply student-level preferences by updating student entities
+    // We store them as temporary overrides on the seats/state — actual entity update would need a mutation
+    // For now, we'll pass them forward to the smart sort as a prompt addition
+    const studentMappings = mappings.filter(m => !m._custom_condition && !m._bulk_only);
+    if (studentMappings.length > 0) {
+      // Store as session overrides accessible to the AI sort
+      const existing = JSON.parse(sessionStorage.getItem('cm_pref_overrides') || '{}');
+      studentMappings.forEach(m => {
+        if (m.student_name) existing[m.student_name] = m;
+      });
+      sessionStorage.setItem('cm_pref_overrides', JSON.stringify(existing));
+    }
+  }
 
   function handleQuickSort() {
     pushHistory(seats);
@@ -369,6 +404,9 @@ ${activeStudents.map(s => `- ${s.name}: גובה=${s.height||'בינוני'}, ש
         onRedo={handleRedo}
         canUndo={canUndo}
         canRedo={canRedo}
+        atLeastOneSatisfied={atLeastOneSatisfied}
+        onToggleAtLeastOne={() => setAtLeastOneSatisfied(v => !v)}
+        onImportPreferences={handleImportPreferences}
       />
       <ConflictHelper
         seats={seats}
