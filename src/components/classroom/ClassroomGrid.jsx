@@ -67,8 +67,10 @@ export default function ClassroomGrid({ seats, students, rows, cols, showNumbers
               // Pair spacing: add visual gap to the right or bottom of this cell
               const pairRightStyle = seat.pair_right ? { marginLeft: '12px', borderLeft: '3px solid hsl(var(--primary)/0.3)' } : {};
               const pairDownStyle = seat.pair_down ? { marginTop: '10px', borderTop: '3px solid hsl(var(--primary)/0.3)' } : {};
+              // Column aisle: extra right padding after this column
+              const colGapStyle = seat.col_gap_after ? { paddingLeft: '14px', borderLeft: '2px dashed hsl(var(--border))' } : {};
               return (
-                <div key={seat.id} style={{ ...pairRightStyle, ...pairDownStyle }}>
+                <div key={seat.id} style={{ ...pairRightStyle, ...pairDownStyle, ...colGapStyle }}>
                   <SeatCard
                     seat={seat}
                     student={student}

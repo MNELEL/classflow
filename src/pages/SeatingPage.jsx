@@ -258,6 +258,11 @@ ${activeStudents.map(s => `- ${s.name}: גובה=${s.height||'בינוני'}, ש
         if (action === 'pairDown') {
           return { ...s, pair_down: !s.pair_down };
         }
+        if (action === 'colGapAfter') {
+          // Apply to ALL seats in this column (any row) for consistent visual aisle
+          const targetCol = quickEditSeat.col;
+          return { ...s, col_gap_after: s.col === targetCol ? !s.col_gap_after : s.col_gap_after };
+        }
         return s;
       });
       return next;
@@ -272,6 +277,7 @@ ${activeStudents.map(s => `- ${s.name}: גובה=${s.height||'בינוני'}, ש
       if (action === 'lockFixed') return { ...prev, is_locked: !prev.is_locked };
       if (action === 'pairRight') return { ...prev, pair_right: !prev.pair_right };
       if (action === 'pairDown') return { ...prev, pair_down: !prev.pair_down };
+      if (action === 'colGapAfter') return { ...prev, col_gap_after: !prev.col_gap_after };
       return prev;
     });
   }

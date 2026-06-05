@@ -182,6 +182,99 @@ export async function exportToPDF(seats, students, rows, cols, title = '') {
   }
 }
 
+// ── Clean Print (no teacher annotations) ─────────────────────────────────────
+export function printCleanSeating(seats, students, rows, cols, title = '') {
+  const b = loadBranding();
+  const dateStr = new Date().toLocaleDateString('he-IL');
+  const docTitle = title || b.page_titles?.['/seating'] || 'מפת ישיבה';
+  const schoolName = b.school_name || '';
+  const logoHtml = b.logo_url
+    ? `<img src="${b.logo_url}" style="height:40px;width:40px;object-fit:contain;border-radius:6px;" />`
+    : '';
+
+  // Build table — only student names, no badges, no special styling for locked/gap/blocked
+  const studentMap = Object.fromEntries(students.map(s => [s.id, s]));
+  const maxTableW = 960;
+  const maxTableH = 540;
+  const cellW = Math.max(60, Math.min(130, Math.floor((maxTableW - cols * 6) / cols)));
+  const cellH = Math.max(40, Math.min(72, Math.floor((maxTableH - rows * 6) / rows)));
+  const fontSize = cellW > 100 ? 13 : cellW > 75 ? 11 : 9;
+
+  let tableRows = '';
+  for (let r = 0; r < rows; r++) {
+    let cells = '';
+    for (let c = 0; c < cols; c++) {
+      const seat = seats.find(s => s.row === r && s.col === c);
+      if (!seat || seat.is_hidden) {
+        cells += `<td style="width:${cellW}px;height:${cellH}px;padding:2px;"></td>`;
+        continue;
+      }
+      if (seat.is_gap || seat.is_blocked) {
+        cells += `<td style="width:${cellW}px;height:${cellH}px;padding:2px;"></td>`;
+        continue;
+      }
+      const colGapPad = seat.col_gap_after ? 'padding-left:14px;' : '';
+      const student = seat.student_id ? studentMap[seat.student_id] : null;
+      const name = student?.name || '';
+      cells += `<td style="width:${cellW}px;height:${cellH}px;max-width:${cellW}px;padding:2px;${colGapPad}">
+        <div style="
+          background:${name ? '#f8faff' : '#f5f5f5'};
+          border:${name ? '1.5px solid #bfcfe8' : '1px dashed #dde3ea'};
+          border-radius:7px; width:100%; height:100%;
+          display:flex; align-items:center; justify-content:center;
+          font-family:'Heebo',Arial,sans-serif;
+          font-size:${fontSize}px; font-weight:${name ? 600 : 400}; color:${name ? '#1a2540' : '#c5cdd8'};
+          overflow:hidden; text-align:center; padding:2px 4px;
+        ">
+          <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;direction:rtl;width:100%;text-align:center;">${name}</span>
+        </div>
+      </td>`;
+    }
+    tableRows += `<tr>${cells}</tr>`;
+  }
+
+  const printWindow = window.open('', '_blank');
+  printWindow.document.write(`
+    <!DOCTYPE html>
+    <html dir="rtl" lang="he">
+    <head>
+      <meta charset="UTF-8">
+      <title>${docTitle}</title>
+      <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;600;700;800&display=swap" rel="stylesheet">
+      <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Heebo', Arial, sans-serif; direction: rtl; padding: 20px; background: #fff; }
+        .header { display:flex; justify-content:space-between; align-items:center; border-bottom:2px solid #1d4ed8; padding-bottom:10px; margin-bottom:14px; }
+        .title { font-size:20px; font-weight:800; color:#0f172a; }
+        .subtitle { font-size:11px; color:#64748b; margin-top:2px; }
+        .board { text-align:center; margin-bottom:12px; }
+        .board-inner { display:inline-block; background:#dbeafe; border:2px solid #3b82f6; border-radius:9px; padding:5px 28px; color:#1d4ed8; font-weight:700; font-size:12px; }
+        table { border-collapse:separate; border-spacing:5px; margin:0 auto; width:100%; }
+        @media print {
+          @page { size: A4 landscape; margin: 8mm; }
+          body { padding: 0; }
+          table { width: 100% !important; }
+        }
+      </style>
+    </head>
+    <body>
+      <div class="header">
+        <div>
+          <div class="title">${docTitle}</div>
+          <div class="subtitle">${dateStr}${schoolName ? ' · ' + schoolName : ''} · ${rows} שורות × ${cols} טורים</div>
+        </div>
+        ${logoHtml}
+      </div>
+      <div class="board"><div class="board-inner">לוח המורה</div></div>
+      <table><tbody>${tableRows}</tbody></table>
+      <script>window.onload = () => { window.print(); }<\/script>
+    </body>
+    </html>
+  `);
+  printWindow.document.close();
+  toast.success('דף הדפסה נקי נפתח!');
+}
+
 // ── Print Export ──────────────────────────────────────────────────────────────
 export function printSeating(seats, students, rows, cols, title = '') {
   const b = loadBranding();

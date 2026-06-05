@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Lock, Unlock, EyeOff, Minus, X, Ban, MapPin, ArrowRight, ArrowDown } from 'lucide-react';
+import { Lock, Unlock, EyeOff, Minus, X, Ban, MapPin, ArrowRight, ArrowDown, MoveHorizontal } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const BLOCK_REASONS = [
@@ -140,6 +140,21 @@ export default function QuickEditMode({ active, onToggle, onQuickAction, selecte
               {selectedSeat?.pair_down ? 'בטל צמד למטה' : 'צמד למטה'}
             </Button>
           </div>
+        </div>
+
+        {/* Column aisle gap */}
+        <div className="col-span-2 pt-1 border-t border-border/40 space-y-1">
+          <p className="text-[10px] text-muted-foreground font-medium">📏 מרווח עמודה (מעבר אחרי הטור)</p>
+          <Button
+            size="sm"
+            variant={selectedSeat?.col_gap_after ? 'default' : 'outline'}
+            className="w-full text-xs h-8"
+            disabled={!selectedSeat}
+            onClick={() => onQuickAction('colGapAfter')}
+          >
+            <MoveHorizontal className="w-3 h-3 ml-1" />
+            {selectedSeat?.col_gap_after ? 'בטל מרווח אחרי טור זה' : 'הוסף מרווח אחרי טור זה'}
+          </Button>
         </div>
 
         {/* Block / Unblock */}
