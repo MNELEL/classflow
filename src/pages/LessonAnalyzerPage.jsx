@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { Mic, Upload, FileAudio, Loader2, ChevronDown, ChevronUp, BookOpen, HelpCircle, Trash2, Plus, CheckCircle2 } from 'lucide-react';
+import { Mic, Upload, FileAudio, Loader2, ChevronDown, ChevronUp, BookOpen, HelpCircle, Trash2, Plus, CheckCircle2, Library, Printer } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 
@@ -26,7 +26,44 @@ const STEP_LABELS = {
   done: 'הושלם!',
 };
 
-function AnalysisCard({ item, onDelete }) {
+function printWorksheet(item) {
+  const questions = item.ai_review_questions || [];
+  const html = `<!DOCTYPE html>
+<html dir="rtl" lang="he">
+<head>
+<meta charset="UTF-8"/>
+<title>דף עבודה – ${item.title}</title>
+<style>
+  body { font-family: 'Arial', sans-serif; direction: rtl; margin: 30px; font-size: 14px; color: #111; }
+  h1 { font-size: 20px; border-bottom: 2px solid #333; padding-bottom: 8px; margin-bottom: 4px; }
+  .meta { font-size: 12px; color: #555; margin-bottom: 24px; }
+  .question { margin-bottom: 20px; }
+  .question p { font-weight: bold; margin: 0 0 8px; }
+  .options { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 6px; }
+  .option { border: 1px solid #ccc; border-radius: 6px; padding: 4px 10px; font-size: 13px; }
+  .answer { font-size: 12px; color: #1a7a4a; margin-top: 4px; }
+  .open-line { border-bottom: 1px solid #999; height: 28px; margin-top: 8px; }
+  @media print { body { margin: 15mm; } }
+</style>
+</head>
+<body>
+<h1>דף עבודה – ${item.title}</h1>
+<div class="meta">${item.subject ? `מקצוע: ${item.subject} &nbsp;|&nbsp;` : ''}תאריך: ${new Date(item.created_date).toLocaleDateString('he-IL')}</div>
+${questions.map((q, i) => `
+<div class="question">
+  <p>שאלה ${i + 1}: ${q.question}</p>
+  ${q.options?.length ? `<div class="options">${q.options.map((o, j) => `<div class="option">${['א','ב','ג','ד'][j]}. ${o}</div>`).join('')}</div>` : `<div class="open-line"></div><div class="open-line"></div>`}
+  <div class="answer">✓ תשובה: ${q.answer}</div>
+</div>`).join('')}
+</body></html>`;
+  const w = window.open('', '_blank');
+  w.document.write(html);
+  w.document.close();
+  w.focus();
+  setTimeout(() => w.print(), 400);
+}
+
+function AnalysisCard({ item, onDelete, onSaveToLibrary, savingId }) {
   const [openSection, setOpenSection] = useState(null);
 
   const toggle = (s) => setOpenSection(prev => prev === s ? null : s);
@@ -48,9 +85,26 @@ function AnalysisCard({ item, onDelete }) {
                 </p>
               </div>
             </div>
-            <button onClick={() => onDelete(item.id)} className="text-muted-foreground hover:text-destructive p-1 rounded-lg transition-colors">
-              <Trash2 className="w-4 h-4" />
-            </button>
+            <div className="flex items-center gap-1">
+              <button
+                onClick={() => onSaveToLibrary(item)}
+                disabled={savingId === item.id}
+                title="שמור לספרייה"
+                className="text-muted-foreground hover:text-primary p-1 rounded-lg transition-colors disabled:opacity-40"
+              >
+                {savingId === item.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <Library className="w-4 h-4" />}
+              </button>
+              <button
+                onClick={() => printWorksheet(item)}
+                title="הדפס דף עבודה"
+                className="text-muted-foreground hover:text-emerald-600 p-1 rounded-lg transition-colors"
+              >
+                <Printer className="w-4 h-4" />
+              </button>
+              <button onClick={() => onDelete(item.id)} className="text-muted-foreground hover:text-destructive p-1 rounded-lg transition-colors">
+                <Trash2 className="w-4 h-4" />
+              </button>
+            </div>
           </div>
         </CardHeader>
         <CardContent className="px-4 pb-4 space-y-2">
@@ -130,6 +184,7 @@ export default function LessonAnalyzerPage() {
   const [title, setTitle] = useState('');
   const [subject, setSubject] = useState('');
   const [step, setStep] = useState(STEPS.IDLE);
+  const [savingId, setSavingId] = useState(null);
   const queryClient = useQueryClient();
 
   const { data: analyses = [] } = useQuery({
@@ -141,6 +196,32 @@ export default function LessonAnalyzerPage() {
     mutationFn: (id) => base44.entities.LibraryItem.delete(id),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['lesson_analyses'] }),
   });
+
+  const handleSaveToLibrary = async (item) => {
+    setSavingId(item.id);
+    try {
+      await base44.entities.Worksheet.create({
+        title: `חזרה: ${item.title}`,
+        subject: item.subject || '',
+        topic: item.title,
+        questions: (item.ai_review_questions || []).map((q, i) => ({
+          id: String(i + 1),
+          type: q.options?.length ? 'multiple_choice' : 'open',
+          question: q.question,
+          options: q.options || [],
+          answer: q.answer,
+          points: 10,
+        })),
+        num_questions: item.ai_review_questions?.length || 0,
+        instructions: item.ai_summary_sections?.map(s => `${s.heading}: ${s.content}`).join('\n') || '',
+      });
+      toast.success('דף העבודה נשמר לספרייה הדפי עבודה בהצלחה!');
+    } catch (e) {
+      toast.error('שגיאה בשמירה');
+    } finally {
+      setSavingId(null);
+    }
+  };
 
   const handleAnalyze = async () => {
     if (!file) { toast.error('בחר קובץ אודיו תחילה'); return; }
@@ -317,7 +398,7 @@ ${transcript}
           <div className="space-y-3">
             <h2 className="font-semibold text-sm text-muted-foreground">ניתוחים קודמים ({analyses.length})</h2>
             {analyses.filter(i => i.ai_summary_sections).map(item => (
-              <AnalysisCard key={item.id} item={item} onDelete={(id) => deleteMutation.mutate(id)} />
+              <AnalysisCard key={item.id} item={item} onDelete={(id) => deleteMutation.mutate(id)} onSaveToLibrary={handleSaveToLibrary} savingId={savingId} />
             ))}
           </div>
         )}
