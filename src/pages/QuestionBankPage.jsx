@@ -8,10 +8,11 @@ import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 import {
-  Search, CheckSquare, Square, GripVertical, Printer, X,
-  ChevronDown, ChevronUp, Layers, FileText, Filter
+  Search, CheckSquare, Square, GripVertical, X,
+  ChevronDown, ChevronUp, Layers, FileText
 } from 'lucide-react';
 import { toast } from 'sonner';
+import WorksheetExportPanel from '@/components/questionbank/WorksheetExportPanel';
 
 const TYPE_BADGE = {
   'רב-ברירה': 'bg-blue-100 text-blue-800 border-blue-200',
@@ -42,231 +43,6 @@ function flattenBank(worksheets) {
     });
   });
   return bank;
-}
-
-// ─── Print HTML builder ───────────────────────────────────────────────────────
-function buildPrintHTML({ title, subtitle, studentInfo, instructions, questions, showAnswers }) {
-  const totalPoints = questions.reduce((s, q) => s + (q.points || 10), 0);
-  return `<!DOCTYPE html>
-<html dir="rtl" lang="he">
-<head>
-  <meta charset="utf-8">
-  <title>${title}</title>
-  <style>
-    @import url('https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700&display=swap');
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
-      font-family: 'Heebo', Arial, sans-serif;
-      direction: rtl;
-      color: #1a1a2e;
-      background: white;
-      padding: 0;
-    }
-    .page {
-      max-width: 800px;
-      margin: 0 auto;
-      padding: 32px 40px;
-    }
-    /* Header */
-    .header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      border-bottom: 3px solid #4f46e5;
-      padding-bottom: 14px;
-      margin-bottom: 18px;
-    }
-    .header-title { }
-    .header-title h1 { font-size: 22px; font-weight: 700; color: #1e1b4b; }
-    .header-title .subtitle { font-size: 13px; color: #6b7280; margin-top: 2px; }
-    .header-logo {
-      width: 52px; height: 52px;
-      background: linear-gradient(135deg, #4f46e5, #7c3aed);
-      border-radius: 12px;
-      display: flex; align-items: center; justify-content: center;
-      color: white; font-size: 22px;
-    }
-    /* Student info bar */
-    .student-bar {
-      display: grid;
-      grid-template-columns: 1fr 1fr 1fr;
-      gap: 16px;
-      margin-bottom: 16px;
-    }
-    .student-field {
-      display: flex; flex-direction: column; gap: 4px;
-    }
-    .student-field label { font-size: 10px; color: #9ca3af; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
-    .student-field .field-line { border-bottom: 1.5px solid #d1d5db; height: 24px; }
-    /* Instructions */
-    .instructions-box {
-      background: #eff6ff;
-      border-right: 4px solid #4f46e5;
-      border-radius: 0 8px 8px 0;
-      padding: 10px 14px;
-      margin-bottom: 20px;
-      font-size: 13px;
-      color: #1e40af;
-    }
-    /* Questions */
-    .question {
-      margin-bottom: 22px;
-      page-break-inside: avoid;
-    }
-    .question-header {
-      display: flex;
-      align-items: flex-start;
-      justify-content: space-between;
-      margin-bottom: 8px;
-    }
-    .q-number {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      width: 26px; height: 26px;
-      background: #4f46e5;
-      color: white;
-      border-radius: 50%;
-      font-size: 12px;
-      font-weight: 700;
-      flex-shrink: 0;
-      margin-left: 10px;
-    }
-    .q-text {
-      font-size: 14px;
-      font-weight: 500;
-      flex: 1;
-      line-height: 1.5;
-    }
-    .q-meta {
-      display: flex; gap: 6px; align-items: center; flex-shrink: 0;
-    }
-    .badge {
-      font-size: 10px;
-      padding: 2px 8px;
-      border-radius: 999px;
-      border: 1px solid;
-      font-weight: 500;
-    }
-    .points-badge { background: #f3f4f6; border-color: #d1d5db; color: #374151; }
-    /* Options */
-    .options { list-style: none; margin: 10px 0 0 36px; }
-    .options li {
-      padding: 6px 12px;
-      margin: 4px 0;
-      border: 1px solid #e5e7eb;
-      border-radius: 6px;
-      font-size: 13px;
-      display: flex; gap: 8px; align-items: center;
-    }
-    .option-letter { font-weight: 700; color: #4f46e5; width: 16px; }
-    /* Answer lines */
-    .answer-lines { margin: 10px 0 0 36px; }
-    .answer-line {
-      border-bottom: 1px solid #9ca3af;
-      height: 28px;
-      margin-bottom: 8px;
-    }
-    /* Answer key */
-    .answer-key {
-      margin-top: 32px;
-      padding-top: 20px;
-      border-top: 2px dashed #d1d5db;
-    }
-    .answer-key h2 { font-size: 15px; font-weight: 700; color: #059669; margin-bottom: 14px; }
-    .answer-key-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
-    .answer-item {
-      background: #f0fdf4;
-      border: 1px solid #bbf7d0;
-      border-radius: 8px;
-      padding: 8px 12px;
-      font-size: 12px;
-    }
-    .answer-item strong { color: #065f46; }
-    /* Total */
-    .total-bar {
-      margin-top: 20px;
-      display: flex; justify-content: flex-start;
-      border-top: 1px solid #e5e7eb;
-      padding-top: 12px;
-    }
-    .total-box {
-      background: #1e1b4b;
-      color: white;
-      border-radius: 10px;
-      padding: 8px 20px;
-      font-size: 14px;
-      font-weight: 700;
-    }
-    @media print {
-      .page { padding: 20px 30px; }
-      body { background: white; }
-    }
-  </style>
-</head>
-<body>
-  <div class="page">
-    <!-- Header -->
-    <div class="header">
-      <div class="header-title">
-        <h1>${title}</h1>
-        ${subtitle ? `<div class="subtitle">${subtitle}</div>` : ''}
-      </div>
-      <div class="header-logo">📋</div>
-    </div>
-
-    <!-- Student info -->
-    <div class="student-bar">
-      <div class="student-field"><label>שם תלמיד</label><div class="field-line"></div></div>
-      <div class="student-field"><label>כיתה</label><div class="field-line"></div></div>
-      <div class="student-field"><label>תאריך</label><div class="field-line"></div></div>
-    </div>
-
-    ${instructions ? `<div class="instructions-box">📋 ${instructions}</div>` : ''}
-
-    <!-- Questions -->
-    ${questions.map((q, i) => `
-      <div class="question">
-        <div class="question-header">
-          <div style="display:flex; align-items:flex-start; flex:1">
-            <span class="q-number">${i + 1}</span>
-            <span class="q-text">${q.question}</span>
-          </div>
-          <div class="q-meta">
-            <span class="badge points-badge">${q.points || 10} נק'</span>
-          </div>
-        </div>
-        ${q.options?.length ? `
-          <ul class="options">
-            ${q.options.map((o, j) => `<li><span class="option-letter">${['א','ב','ג','ד'][j]}.</span>${o}</li>`).join('')}
-          </ul>
-        ` : ''}
-        ${q.type === 'שאלה פתוחה' ? `<div class="answer-lines"><div class="answer-line"></div><div class="answer-line"></div><div class="answer-line"></div></div>` : ''}
-        ${q.type === 'השלמת משפט' ? `<div class="answer-lines"><div class="answer-line"></div></div>` : ''}
-        ${q.type === 'נכון/לא נכון' ? `<div style="margin: 8px 0 0 36px; font-size:13px">☐ נכון &nbsp;&nbsp;&nbsp; ☐ לא נכון</div>` : ''}
-      </div>
-    `).join('')}
-
-    <!-- Total -->
-    <div class="total-bar">
-      <div class="total-box">סה"כ: ${totalPoints} נקודות</div>
-    </div>
-
-    ${showAnswers ? `
-      <div class="answer-key">
-        <h2>✅ מפתח תשובות</h2>
-        <div class="answer-key-grid">
-          ${questions.map((q, i) => `
-            <div class="answer-item">
-              <strong>שאלה ${i + 1}:</strong> ${q.answer || '—'}
-            </div>
-          `).join('')}
-        </div>
-      </div>
-    ` : ''}
-  </div>
-</body>
-</html>`;
 }
 
 // ─── Question row in bank ─────────────────────────────────────────────────────
@@ -347,9 +123,6 @@ export default function QuestionBankPage() {
   const [filterType, setFilterType] = useState('all');
   const [filterDiff, setFilterDiff] = useState('all');
   const [selected, setSelected] = useState([]); // array of question uids
-  const [worksheetTitle, setWorksheetTitle] = useState('');
-  const [worksheetInstructions, setWorksheetInstructions] = useState('');
-  const [includeAnswers, setIncludeAnswers] = useState(false);
   const [activeTab, setActiveTab] = useState('bank'); // 'bank' | 'builder'
 
   const { data: worksheets = [] } = useQuery({
@@ -380,8 +153,6 @@ export default function QuestionBankPage() {
     [selected, allQuestions]
   );
 
-  const totalPoints = selectedQuestions.reduce((s, q) => s + (q.points || 10), 0);
-
   const toggleSelect = (uid) => {
     setSelected(prev => prev.includes(uid) ? prev.filter(x => x !== uid) : [...prev, uid]);
   };
@@ -396,20 +167,17 @@ export default function QuestionBankPage() {
     });
   };
 
-  const printPDF = () => {
-    if (selectedQuestions.length === 0) { toast.error('בחר שאלות קודם'); return; }
-    const title = worksheetTitle || 'דף עבודה';
-    const html = buildPrintHTML({
-      title,
-      subtitle: `${selectedQuestions[0]?.ws_subject || ''} | ${selectedQuestions[0]?.ws_grade || ''}`,
-      instructions: worksheetInstructions,
-      questions: selectedQuestions,
-      showAnswers: includeAnswers,
+  // Add questions by subject/difficulty filter
+  const handleSelectByFilter = ({ subject, difficulty }) => {
+    const toAdd = allQuestions.filter(q => {
+      if (subject !== 'all' && q.ws_subject !== subject) return false;
+      if (difficulty !== 'all' && q.ws_difficulty !== difficulty) return false;
+      return true;
     });
-    const w = window.open('', '_blank');
-    w.document.write(html);
-    w.document.close();
-    setTimeout(() => w.print(), 400);
+    setSelected(prev => {
+      const newIds = toAdd.map(q => q.uid).filter(uid => !prev.includes(uid));
+      return [...prev, ...newIds];
+    });
   };
 
   return (
@@ -432,9 +200,6 @@ export default function QuestionBankPage() {
               {selected.length > 0 && (
                 <Badge className="bg-primary text-primary-foreground">{selected.length} נבחרות</Badge>
               )}
-              <Button size="sm" onClick={printPDF} disabled={selectedQuestions.length === 0} className="gap-1">
-                <Printer className="w-3.5 h-3.5" /> הדפס PDF
-              </Button>
             </div>
           </div>
 
@@ -527,33 +292,11 @@ export default function QuestionBankPage() {
         {/* ── Builder tab ── */}
         {activeTab === 'builder' && (
           <div className="flex-1 overflow-y-auto p-4 space-y-4">
-            {/* Worksheet settings */}
-            <div className="bg-card rounded-2xl border border-border p-4 space-y-3">
-              <h3 className="font-semibold text-sm flex items-center gap-2">
-                <FileText className="w-4 h-4 text-primary" /> פרטי דף העבודה
-              </h3>
-              <div>
-                <label className="text-xs text-muted-foreground block mb-1">כותרת הדף</label>
-                <Input value={worksheetTitle} onChange={e => setWorksheetTitle(e.target.value)}
-                  placeholder="לדוגמה: בחינה — שברים | כיתה ה'" className="h-8 text-sm" />
-              </div>
-              <div>
-                <label className="text-xs text-muted-foreground block mb-1">הוראות לתלמיד (אופציונלי)</label>
-                <Input value={worksheetInstructions} onChange={e => setWorksheetInstructions(e.target.value)}
-                  placeholder="ענה על כל השאלות. כל שאלה מנוקדת..." className="h-8 text-sm" />
-              </div>
-              <div className="flex items-center gap-2">
-                <input type="checkbox" id="answers" checked={includeAnswers} onChange={e => setIncludeAnswers(e.target.checked)}
-                  className="accent-primary w-4 h-4 rounded" />
-                <label htmlFor="answers" className="text-xs cursor-pointer">כלול מפתח תשובות בסוף הדף</label>
-              </div>
-              <div className="flex items-center justify-between pt-1 border-t border-border">
-                <span className="text-xs text-muted-foreground">סה"כ: <strong>{totalPoints}</strong> נקודות | <strong>{selectedQuestions.length}</strong> שאלות</span>
-                <Button size="sm" onClick={printPDF} disabled={selectedQuestions.length === 0} className="gap-1">
-                  <Printer className="w-3.5 h-3.5" /> הדפסה / PDF
-                </Button>
-              </div>
-            </div>
+            <WorksheetExportPanel
+              selectedQuestions={selectedQuestions}
+              allQuestions={allQuestions}
+              onSelectByFilter={handleSelectByFilter}
+            />
 
             {/* Sorted question list */}
             {selectedQuestions.length === 0 ? (
