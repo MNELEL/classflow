@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import AppLayout from '@/components/layout/AppLayout';
@@ -14,7 +14,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Lock, Unlock, EyeOff, SlidersHorizontal, Users } from 'lucide-react';
+import { Lock, Unlock, EyeOff, SlidersHorizontal, Users, Undo2, Redo2 } from 'lucide-react';
 import { toast } from 'sonner';
 
 const STORAGE_KEY = 'classmanager_seats';
@@ -50,6 +50,41 @@ export default function SeatingPage() {
   const [lastSaved, setLastSaved] = useState(null);
   const [quickEditMode, setQuickEditMode] = useState(false);
   const [quickEditSeat, setQuickEditSeat] = useState(null);
+
+  // Undo / Redo history
+  const historyRef = useRef([]);   // past states
+  const futureRef  = useRef([]);   // redo states
+  const [canUndo, setCanUndo] = useState(false);
+  const [canRedo, setCanRedo]  = useState(false);
+
+  function pushHistory(prevSeats) {
+    historyRef.current = [...historyRef.current.slice(-30), prevSeats];
+    futureRef.current  = [];
+    setCanUndo(true);
+    setCanRedo(false);
+  }
+
+  function handleUndo() {
+    if (!historyRef.current.length) return;
+    const prev = historyRef.current[historyRef.current.length - 1];
+    historyRef.current = historyRef.current.slice(0, -1);
+    futureRef.current  = [seats, ...futureRef.current.slice(0, 30)];
+    setSeats(prev);
+    setCanUndo(historyRef.current.length > 0);
+    setCanRedo(true);
+    toast('↩️ פעולה בוטלה');
+  }
+
+  function handleRedo() {
+    if (!futureRef.current.length) return;
+    const next = futureRef.current[0];
+    futureRef.current  = futureRef.current.slice(1);
+    historyRef.current = [...historyRef.current, seats];
+    setSeats(next);
+    setCanUndo(true);
+    setCanRedo(futureRef.current.length > 0);
+    toast('↪️ פעולה שוחזרה');
+  }
 
   // Load from localStorage on mount
   useEffect(() => {
@@ -98,6 +133,7 @@ export default function SeatingPage() {
   // Move student between seats
   function handleMoveStu(studentId, fromSeatId, toSeatId) {
     setSeats(prev => {
+      pushHistory(prev);
       const newSeats = prev.map(s => {
         if (s.id === toSeatId) {
           // If target has student, swap
@@ -197,6 +233,7 @@ ${activeStudents.map(s => `- ${s.name}: גובה=${s.height||'בינוני'}, ש
         // AI failed — keep local result which already has full placement
       }
 
+      pushHistory(seats);
       setSeats(sorted);
       const placedCount = sorted.filter(s => s.student_id).length;
       const total = students.filter(s => s.is_active !== false).length;
@@ -212,6 +249,7 @@ ${activeStudents.map(s => `- ${s.name}: גובה=${s.height||'בינוני'}, ש
   const [quickSortPref, setQuickSortPref] = useState('none');
 
   function handleQuickSort() {
+    pushHistory(seats);
     const seatsWithFixed = seats.map(s => s.fixed_seat_number ? { ...s, is_locked: true } : s);
     // Apply the selected preference to all students temporarily for this sort only
     const studentsWithPref = quickSortPref === 'none' ? students : students.map(s => ({
@@ -225,6 +263,7 @@ ${activeStudents.map(s => `- ${s.name}: גובה=${s.height||'בינוני'}, ש
   }
 
   function handleClearAll() {
+    pushHistory(seats);
     setSeats(prev => prev.map(s => ({ ...s, student_id: (s.is_locked || s.fixed_seat_number) ? s.student_id : null })));
     toast('הסידור נוקה');
   }
@@ -239,6 +278,7 @@ ${activeStudents.map(s => `- ${s.name}: גובה=${s.height||'בינוני'}, ש
 
   function handleQuickAction(action, payload) {
     if (!quickEditSeat) return;
+    pushHistory(seats);
     setSeats(prev => {
       const next = prev.map(s => {
         if (s.id !== quickEditSeat.id) return s;
@@ -325,6 +365,10 @@ ${activeStudents.map(s => `- ${s.name}: גובה=${s.height||'בינוני'}, ש
         isLoading={isLoading}
         seats={seats}
         students={students}
+        onUndo={handleUndo}
+        onRedo={handleRedo}
+        canUndo={canUndo}
+        canRedo={canRedo}
       />
       <ConflictHelper
         seats={seats}

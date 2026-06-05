@@ -64,13 +64,40 @@ export default function ClassroomGrid({ seats, students, rows, cols, showNumbers
               const student = seat.student_id ? studentMap[seat.student_id] : null;
               const conflict = student ? detectConflicts(seat, seats, students) : { type: null };
               const physicalViolation = student ? detectPhysicalViolation(seat, seats, student) : false;
-              // Pair spacing: add visual gap to the right or bottom of this cell
-              const pairRightStyle = seat.pair_right ? { marginLeft: '12px', borderLeft: '3px solid hsl(var(--primary)/0.3)' } : {};
-              const pairDownStyle = seat.pair_down ? { marginTop: '10px', borderTop: '3px solid hsl(var(--primary)/0.3)' } : {};
-              // Column aisle: extra right padding after this column
+              // Check if this seat is the RIGHT member of a pair (left neighbour has pair_right)
+              const leftNeighbour = getSeatAt(seats, r, c - 1);
+              const isRightOfPair = leftNeighbour?.pair_right === true;
+              // Check if this seat is the BOTTOM member of a pair
+              const topNeighbour = getSeatAt(seats, r - 1, c);
+              const isBottomOfPair = topNeighbour?.pair_down === true;
+
+              // Column aisle: extra padding after this column
               const colGapStyle = seat.col_gap_after ? { paddingLeft: '14px', borderLeft: '2px dashed hsl(var(--border))' } : {};
+
+              // Pair-right: group this seat + right neighbour in a shared desk wrapper
+              // We render the wrapper only on the LEFT seat of the pair
+              const pairRightWrapStyle = seat.pair_right ? {
+                outline: '2px solid hsl(var(--primary)/0.35)',
+                outlineOffset: '2px',
+                borderRadius: '14px',
+                background: 'hsl(var(--primary)/0.04)',
+                paddingLeft: '3px',
+              } : {};
+
+              // For the right-of-pair seat: add left connector line
+              const rightOfPairStyle = isRightOfPair ? {
+                borderLeft: '3px solid hsl(var(--primary)/0.3)',
+                paddingLeft: '3px',
+              } : {};
+
+              // Pair-down: highlight top of bottom seat
+              const bottomOfPairStyle = isBottomOfPair ? {
+                borderTop: '3px solid hsl(var(--primary)/0.3)',
+                paddingTop: '3px',
+              } : {};
+
               return (
-                <div key={seat.id} style={{ ...pairRightStyle, ...pairDownStyle, ...colGapStyle }}>
+                <div key={seat.id} style={{ ...colGapStyle, ...pairRightWrapStyle, ...rightOfPairStyle, ...bottomOfPairStyle }}>
                   <SeatCard
                     seat={seat}
                     student={student}

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { Wand2, Shuffle, Hash, EyeOff, RefreshCw, FileDown, FileSpreadsheet, Printer, ClipboardList } from 'lucide-react';
+import { Wand2, Shuffle, Hash, EyeOff, RefreshCw, FileDown, FileSpreadsheet, Printer, ClipboardList, Undo2, Redo2 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { exportToPDF, exportToExcel, printSeating, printCleanSeating } from '@/lib/exportUtils';
 
@@ -24,6 +24,7 @@ export default function GridControls({
   isLoading,
   seats,
   students,
+  onUndo, onRedo, canUndo, canRedo,
 }) {
   return (
     <div className="bg-card border border-border rounded-xl p-4 space-y-3">
@@ -65,6 +66,24 @@ export default function GridControls({
             <Button size="icon" variant="outline" className="h-7 w-7 text-xs" onClick={() => onColsChange(cols + 1)}>+</Button>
           </div>
         </div>
+      </div>
+
+      {/* Undo / Redo */}
+      <div className="flex gap-1.5">
+        <Button
+          variant="outline" size="sm" className="flex-1 gap-1"
+          onClick={onUndo} disabled={!canUndo}
+          title="ביטול פעולה אחרונה"
+        >
+          <Undo2 className="w-3.5 h-3.5" /> ביטול
+        </Button>
+        <Button
+          variant="outline" size="sm" className="flex-1 gap-1"
+          onClick={onRedo} disabled={!canRedo}
+          title="שחזור פעולה"
+        >
+          <Redo2 className="w-3.5 h-3.5" /> שחזור
+        </Button>
       </div>
 
       {/* Actions */}
