@@ -1,20 +1,41 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Loader2, Star, CheckSquare, Square } from 'lucide-react';
+import { Loader2, Star, CheckSquare, Square, Filter } from 'lucide-react';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
-import { useQueryClient } from '@tanstack/react-query';
+import { useQueryClient, useQuery } from '@tanstack/react-query';
+
+const CRITERIA = [
+  { id: 'all', label: '👥 כולם' },
+  { id: 'excellent', label: '🌟 מצטיינים', filter: s => s.academic_level === 'excellent' || s.academic_level === 'above_average' },
+  { id: 'struggling', label: '💪 זקוקים לעידוד', filter: s => (s.traits || []).includes('struggling') || (s.traits || []).includes('needs_encouragement') },
+  { id: 'leaders', label: '🎖️ מנהיגים', filter: s => (s.traits || []).includes('leader') },
+  { id: 'attentive', label: '🎯 קשובים', filter: s => (s.traits || []).includes('attentive') },
+];
 
 export default function BulkReward({ students, onDone }) {
   const qc = useQueryClient();
+  const [activeCriterion, setActiveCriterion] = useState('all');
   const [selected, setSelected] = useState(new Set(students.map(s => s.id)));
   const [points, setPoints] = useState(1);
   const [reason, setReason] = useState('');
   const [loading, setLoading] = useState(false);
 
   const QUICK_REASONS = ['השתתפות מצוינת', 'עבודה טובה', 'עזרה לחבר', 'שיפור ניכר', 'עמידה במשימה'];
+
+  function applyCriterion(cid) {
+    setActiveCriterion(cid);
+    if (cid === 'all') {
+      setSelected(new Set(students.map(s => s.id)));
+    } else {
+      const crit = CRITERIA.find(c => c.id === cid);
+      if (crit?.filter) {
+        setSelected(new Set(students.filter(crit.filter).map(s => s.id)));
+      }
+    }
+  }
 
   function toggleAll() {
     if (selected.size === students.length) setSelected(new Set());
@@ -46,6 +67,19 @@ export default function BulkReward({ students, onDone }) {
 
   return (
     <div className="space-y-4">
+      {/* Criteria selector */}
+      <div>
+        <p className="text-xs text-muted-foreground mb-1.5 font-medium flex items-center gap-1"><Filter className="w-3 h-3" /> בחר קריטריון:</p>
+        <div className="flex flex-wrap gap-1.5">
+          {CRITERIA.map(c => (
+            <button key={c.id} onClick={() => applyCriterion(c.id)}
+              className={`px-2.5 py-1 rounded-full text-xs border transition-all ${activeCriterion === c.id ? 'bg-primary text-primary-foreground border-primary' : 'border-border hover:border-primary/40'}`}>
+              {c.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
       {/* Points selector */}
       <div>
         <p className="text-xs text-muted-foreground mb-1.5 font-medium">נקודות לכל תלמיד:</p>
