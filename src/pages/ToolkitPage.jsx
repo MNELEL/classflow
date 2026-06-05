@@ -112,13 +112,28 @@ function NameWheel({ students }) {
 
 // ────── GROUP GENERATOR ──────
 function GroupGenerator({ students }) {
+  const [mode, setMode] = useState('bySize'); // bySize | byCount
   const [groupSize, setGroupSize] = useState(3);
+  const [groupCount, setGroupCount] = useState(4);
   const [groups, setGroups] = useState([]);
+
+  const maxGroups = Math.max(2, students.length);
+  const savedGroupCount = (() => {
+    try { return JSON.parse(localStorage.getItem('classmanager_groups') || '[]').length; } catch { return 0; }
+  })();
 
   function generate() {
     const shuffled = [...students].sort(() => Math.random() - 0.5);
     const result = [];
-    for (let i = 0; i < shuffled.length; i += groupSize) result.push(shuffled.slice(i, i + groupSize));
+    if (mode === 'bySize') {
+      for (let i = 0; i < shuffled.length; i += groupSize) result.push(shuffled.slice(i, i + groupSize));
+    } else {
+      // byCount — divide evenly
+      const count = mode === 'byExisting' ? savedGroupCount : groupCount;
+      for (let i = 0; i < count; i++) {
+        result.push(shuffled.filter((_, idx) => idx % count === i));
+      }
+    }
     setGroups(result);
     toast.success(`נוצרו ${result.length} קבוצות`);
   }
@@ -126,25 +141,66 @@ function GroupGenerator({ students }) {
   return (
     <div className="bg-card border border-border/70 rounded-2xl p-4">
       <h3 className="font-bold text-sm mb-3 flex items-center gap-2"><Users className="w-4 h-4" /> מחולל קבוצות</h3>
-      <div className="flex items-center gap-2 mb-3">
-        <label className="text-sm text-muted-foreground">תלמידים בקבוצה:</label>
-        <div className="flex gap-1">
-          {[2,3,4,5].map(n => (
-            <button key={n} onClick={() => setGroupSize(n)}
-              className={`w-9 h-8 rounded-lg border text-sm font-medium transition-all ${groupSize === n ? 'bg-primary text-primary-foreground border-primary' : 'border-border'}`}>
-              {n}
-            </button>
-          ))}
-        </div>
+
+      {/* Mode toggle */}
+      <div className="flex gap-1 bg-muted/50 rounded-lg p-1 mb-3">
+        <button onClick={() => setMode('bySize')}
+          className={`flex-1 py-1 rounded-md text-xs font-medium transition-all ${mode === 'bySize' ? 'bg-card shadow text-foreground' : 'text-muted-foreground'}`}>
+          לפי גודל קבוצה
+        </button>
+        <button onClick={() => setMode('byCount')}
+          className={`flex-1 py-1 rounded-md text-xs font-medium transition-all ${mode === 'byCount' ? 'bg-card shadow text-foreground' : 'text-muted-foreground'}`}>
+          לפי מספר קבוצות
+        </button>
       </div>
-      <Button size="sm" className="w-full gap-1 mb-3" onClick={generate}>
+
+      {mode === 'bySize' ? (
+        <div className="flex items-center gap-2 mb-3">
+          <label className="text-xs text-muted-foreground shrink-0">תלמידים בקבוצה:</label>
+          <div className="flex gap-1">
+            {[2,3,4,5,6].map(n => (
+              <button key={n} onClick={() => setGroupSize(n)}
+                className={`w-8 h-7 rounded-lg border text-xs font-medium transition-all ${groupSize === n ? 'bg-primary text-primary-foreground border-primary' : 'border-border'}`}>
+                {n}
+              </button>
+            ))}
+          </div>
+        </div>
+      ) : (
+        <div className="flex items-center gap-2 mb-3">
+          <label className="text-xs text-muted-foreground shrink-0">מספר קבוצות:</label>
+          <div className="flex gap-1 flex-wrap">
+            {[2,3,4,5,6,7,8].map(n => (
+              <button key={n} onClick={() => setGroupCount(n)}
+                className={`w-8 h-7 rounded-lg border text-xs font-medium transition-all ${groupCount === n ? 'bg-primary text-primary-foreground border-primary' : 'border-border'}`}>
+                {n}
+              </button>
+            ))}
+            {savedGroupCount > 0 && (
+              <button onClick={() => { setGroupCount(savedGroupCount); }}
+                className={`px-2 h-7 rounded-lg border text-xs font-medium transition-all ${groupCount === savedGroupCount ? 'bg-primary text-primary-foreground border-primary' : 'border-dashed border-primary/50 text-primary'}`}>
+                {savedGroupCount} קבועות
+              </button>
+            )}
+          </div>
+        </div>
+      )}
+
+      <Button size="sm" className="w-full gap-1 mb-3" onClick={generate} disabled={students.length === 0}>
         <Shuffle className="w-3.5 h-3.5" /> צור קבוצות אקראיות
       </Button>
+      {students.length > 0 && (
+        <p className="text-[10px] text-muted-foreground text-center mb-2">
+          {mode === 'bySize'
+            ? `${students.length} תלמידים ÷ ${groupSize} = ~${Math.ceil(students.length / groupSize)} קבוצות`
+            : `${students.length} תלמידים ÷ ${groupCount} קבוצות = ~${Math.ceil(students.length / groupCount)} לכל קבוצה`}
+        </p>
+      )}
       {groups.length > 0 && (
         <div className="grid grid-cols-2 gap-2">
           {groups.map((g, i) => (
             <div key={i} className="bg-muted/40 rounded-xl p-2.5">
-              <p className="text-xs font-bold text-muted-foreground mb-1.5">קבוצה {i + 1}</p>
+              <p className="text-xs font-bold text-muted-foreground mb-1.5">קבוצה {i + 1} ({g.length})</p>
               {g.map(s => <p key={s.id} className="text-xs">{s.name}</p>)}
             </div>
           ))}

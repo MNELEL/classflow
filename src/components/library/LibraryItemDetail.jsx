@@ -7,7 +7,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import ReactMarkdown from 'react-markdown';
-import { X, Sparkles, Loader2, Plus, Trash2, Printer, Heart, Edit2, Check } from 'lucide-react';
+import { X, Sparkles, Loader2, Plus, Trash2, Printer, Heart, Edit2, Check, BookOpen, Layers, GraduationCap, Star } from 'lucide-react';
 import { toast } from 'sonner';
 import ArtifactGenerator from './ArtifactGenerator';
 import { motion } from 'framer-motion';
@@ -38,6 +38,7 @@ export default function LibraryItemDetail({ itemId, onClose }) {
   const [selectedArtifact, setSelectedArtifact] = useState(null);
   const [editingTitle, setEditingTitle] = useState(false);
   const [titleDraft, setTitleDraft] = useState('');
+  const [activeTab, setActiveTab] = useState('ai');
 
   const { data: item, isLoading } = useQuery({
     queryKey: ['library-item', itemId],
@@ -102,7 +103,34 @@ export default function LibraryItemDetail({ itemId, onClose }) {
           <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
         </div>
       ) : item ? (
-        <Tabs defaultValue="ai" dir="rtl" className="flex-1 flex flex-col overflow-hidden">
+        <>
+        {/* Quick action buttons */}
+        <div className="px-4 py-2 border-b border-border bg-muted/30 flex gap-2 overflow-x-auto">
+          <Button size="sm" variant="outline" className="gap-1 text-xs h-7 whitespace-nowrap"
+            onClick={() => { setActiveTab('artifacts'); setShowGenerator(true); }}>
+            <BookOpen className="w-3 h-3" /> מערך שיעור
+          </Button>
+          <Button size="sm" variant="outline" className="gap-1 text-xs h-7 whitespace-nowrap"
+            onClick={() => { setActiveTab('artifacts'); setShowGenerator(true); }}>
+            <GraduationCap className="w-3 h-3" /> דף עבודה
+          </Button>
+          <Button size="sm" variant="outline" className="gap-1 text-xs h-7 whitespace-nowrap"
+            onClick={() => setActiveTab('artifacts')}>
+            <Layers className="w-3 h-3" /> שלב חומרים
+          </Button>
+          <button
+            onClick={() => updateMutation.mutate({ is_favorite: !item.is_favorite })}
+            className={`h-7 px-2.5 rounded-md border text-xs flex items-center gap-1 transition-colors whitespace-nowrap ${
+              item.is_favorite
+                ? 'bg-pink-50 border-pink-300 text-pink-600 dark:bg-pink-900/20 dark:border-pink-700 dark:text-pink-400'
+                : 'border-border text-muted-foreground hover:border-pink-300'
+            }`}>
+            <Star className={`w-3 h-3 ${item.is_favorite ? 'fill-current' : ''}`} />
+            {item.is_favorite ? 'מועדף' : 'הוסף למועדפים'}
+          </button>
+        </div>
+
+        <Tabs value={activeTab} onValueChange={setActiveTab} dir="rtl" className="flex-1 flex flex-col overflow-hidden">
           <TabsList className="w-full grid grid-cols-3 mx-4 mt-2 w-[calc(100%-2rem)]">
             <TabsTrigger value="content" className="text-xs">🎧 תוכן</TabsTrigger>
             <TabsTrigger value="ai" className="text-xs">🤖 AI</TabsTrigger>
@@ -262,6 +290,7 @@ export default function LibraryItemDetail({ itemId, onClose }) {
             )}
           </TabsContent>
         </Tabs>
+        </>
       ) : null}
 
       {/* Bottom delete */}

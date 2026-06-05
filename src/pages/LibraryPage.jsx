@@ -13,10 +13,11 @@ import LibraryItemDetail from '@/components/library/LibraryItemDetail';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Plus, Search, BookOpen, Loader2, Library, Sparkles, BookOpenCheck, ListMusic, CalendarDays, BarChart2, Layers, Settings2, Bot, LayoutGrid, List } from 'lucide-react';
+import { Plus, Search, BookOpen, Loader2, Library, Sparkles, BookOpenCheck, ListMusic, CalendarDays, BarChart2, Layers, Settings2, Bot, ExternalLink, Star } from 'lucide-react';
 import MultiSourceGenerator from '@/components/library/MultiSourceGenerator';
 import AIProviderSettings from '@/components/library/AIProviderSettings';
 import LibrarySearch from '@/components/library/LibrarySearch';
+import ExternalSourceSearch from '@/components/library/ExternalSourceSearch';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const SOURCE_LABELS = {
@@ -56,14 +57,17 @@ export default function LibraryPage() {
     return [...tags];
   }, [items]);
 
+  const [filterDifficulty, setFilterDifficulty] = useState('all');
+
   const filtered = useMemo(() => {
-    return items.filter(item => {
+    let result = items.filter(item => {
       if (item.is_archived) return false;
       if (showFavOnly && !item.is_favorite) return false;
       if (filterType !== 'all' && item.source_type !== filterType) return false;
       if (filterCategory !== 'all' && item.category !== filterCategory) return false;
       if (filterAI !== 'all' && item.ai_status !== filterAI) return false;
       if (filterSubject !== 'all' && item.subject !== filterSubject) return false;
+      if (filterDifficulty !== 'all' && item.difficulty !== filterDifficulty) return false;
       if (filterTag) {
         const allItemTags = [...(item.tags || []), ...(item.ai_suggested_tags || [])];
         if (!allItemTags.includes(filterTag)) return false;
@@ -73,11 +77,17 @@ export default function LibraryPage() {
         return (item.title || '').toLowerCase().includes(q) ||
           (item.subject || '').toLowerCase().includes(q) ||
           (item.ai_summary || '').toLowerCase().includes(q) ||
-          (item.ai_suggested_tags || []).some(t => t.toLowerCase().includes(q));
+          (item.description || '').toLowerCase().includes(q) ||
+          (item.ai_suggested_tags || []).some(t => t.toLowerCase().includes(q)) ||
+          (item.tags || []).some(t => t.toLowerCase().includes(q)) ||
+          (item.transcript || '').toLowerCase().includes(q);
       }
       return true;
     });
-  }, [items, search, filterType, filterCategory, filterAI, filterSubject, filterTag, showFavOnly]);
+    // Favorites first
+    result = [...result.filter(i => i.is_favorite), ...result.filter(i => !i.is_favorite)];
+    return result;
+  }, [items, search, filterType, filterCategory, filterAI, filterSubject, filterTag, filterDifficulty, showFavOnly]);
 
   const togglePlaylist = (id) => {
     setPlaylistIds(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
@@ -88,12 +98,15 @@ export default function LibraryPage() {
     <AppLayout>
       <div className="p-4 space-y-4">
         <Tabs defaultValue="library">
-          <TabsList className="w-full mb-2 grid grid-cols-6">
+          <TabsList className="w-full mb-2 grid grid-cols-7">
             <TabsTrigger value="library" className="gap-1 text-xs">
               <Library className="w-3.5 h-3.5" /> ספרייה
             </TabsTrigger>
             <TabsTrigger value="search" className="gap-1 text-xs">
-              <Bot className="w-3.5 h-3.5" /> AI שאל
+              <Bot className="w-3.5 h-3.5" /> AI
+            </TabsTrigger>
+            <TabsTrigger value="external" className="gap-1 text-xs">
+              <ExternalLink className="w-3.5 h-3.5" /> מאגרים
             </TabsTrigger>
             <TabsTrigger value="generate" className="gap-1 text-xs">
               <Layers className="w-3.5 h-3.5" /> יצירה
@@ -184,19 +197,28 @@ export default function LibraryPage() {
                 </Select>
               )}
 
+              <Select value={filterDifficulty} onValueChange={setFilterDifficulty}>
+                <SelectTrigger className="h-8 text-xs min-w-[90px]"><SelectValue placeholder="קושי..." /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">כל הרמות</SelectItem>
+                  <SelectItem value="קל">🟢 קל</SelectItem>
+                  <SelectItem value="בינוני">🟡 בינוני</SelectItem>
+                  <SelectItem value="קשה">🔴 קשה</SelectItem>
+                </SelectContent>
+              </Select>
+
               <Select value={filterAI} onValueChange={setFilterAI}>
-                <SelectTrigger className="h-8 text-xs min-w-[100px]"><SelectValue placeholder="AI..." /></SelectTrigger>
+                <SelectTrigger className="h-8 text-xs min-w-[90px]"><SelectValue placeholder="AI..." /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">כל הסטטוסים</SelectItem>
                   <SelectItem value="ready">✅ נותחו</SelectItem>
                   <SelectItem value="pending">⏳ ממתינים</SelectItem>
-                  <SelectItem value="processing">🔄 מנותחים</SelectItem>
                 </SelectContent>
               </Select>
 
               <button onClick={() => setShowFavOnly(v => !v)}
-                className={`h-8 px-3 rounded-lg border text-xs transition-colors whitespace-nowrap ${showFavOnly ? 'bg-pink-50 border-pink-300 text-pink-600 dark:bg-pink-900/20' : 'border-border text-muted-foreground'}`}>
-                ♡ מועדפים
+                className={`h-8 px-3 rounded-lg border text-xs transition-colors whitespace-nowrap flex items-center gap-1 ${showFavOnly ? 'bg-pink-50 border-pink-300 text-pink-600 dark:bg-pink-900/20 dark:border-pink-800 dark:text-pink-400' : 'border-border text-muted-foreground hover:border-pink-300'}`}>
+                <Star className={`w-3 h-3 ${showFavOnly ? 'fill-current' : ''}`} /> מועדפים
               </button>
             </div>
 
@@ -274,6 +296,10 @@ export default function LibraryPage() {
               </div>
               <LibrarySearch items={items} />
             </div>
+          </TabsContent>
+
+          <TabsContent value="external" className="mt-0">
+            <ExternalSourceSearch />
           </TabsContent>
 
           <TabsContent value="generate" className="mt-0">
