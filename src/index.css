@@ -1,5 +1,6 @@
 @import url('https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -7,79 +8,82 @@
 
 @layer base {
   :root {
-    /* ── Academic Light Theme ── */
-    --background: 210 30% 98%;          /* white-blue tint */
-    --foreground: 215 35% 10%;          /* deep navy ink */
-    --card: 0 0% 100%;
-    --card-foreground: 215 35% 10%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 215 35% 10%;
+    /* ── Modern Academic Light Theme ── */
+    /* Warm white background — clean, paper-like */
+    --background: 40 30% 97%;
+    --foreground: 224 40% 10%;
 
-    /* Sapphire-blue primary */
-    --primary: 217 91% 52%;
+    /* Cards: pure white with warmth */
+    --card: 0 0% 100%;
+    --card-foreground: 224 40% 10%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 224 40% 10%;
+
+    /* Teal-Indigo primary — academic & modern */
+    --primary: 237 70% 55%;
     --primary-foreground: 0 0% 100%;
 
-    /* Light cool-grey secondary */
-    --secondary: 213 20% 93%;
-    --secondary-foreground: 215 30% 22%;
-    --muted: 213 18% 91%;
-    --muted-foreground: 215 12% 46%;
+    /* Warm light grey secondary */
+    --secondary: 220 18% 94%;
+    --secondary-foreground: 224 30% 22%;
+    --muted: 220 16% 92%;
+    --muted-foreground: 220 10% 48%;
 
-    /* Sky-blue accent */
-    --accent: 213 90% 94%;
-    --accent-foreground: 217 91% 38%;
+    /* Soft indigo accent */
+    --accent: 237 75% 96%;
+    --accent-foreground: 237 70% 42%;
 
     --destructive: 4 82% 56%;
     --destructive-foreground: 0 0% 100%;
-    --success: 152 62% 40%;
+    --success: 158 64% 38%;
     --success-foreground: 0 0% 100%;
-    --warning: 38 95% 52%;
+    --warning: 36 90% 50%;
     --warning-foreground: 0 0% 100%;
 
-    --border: 213 20% 88%;
-    --input: 213 20% 88%;
-    --ring: 217 91% 52%;
-    --radius: 0.625rem;                 /* slightly tighter — crisp academic feel */
+    --border: 220 16% 88%;
+    --input: 220 16% 90%;
+    --ring: 237 70% 55%;
+    --radius: 0.75rem;
 
-    /* Sidebar: white with a left sapphire stripe feel */
-    --sidebar-background: 215 40% 12%;
-    --sidebar-foreground: 210 20% 85%;
-    --sidebar-primary: 217 91% 62%;
+    /* Sidebar: crisp white, minimal */
+    --sidebar-background: 0 0% 100%;
+    --sidebar-foreground: 224 30% 20%;
+    --sidebar-primary: 237 70% 55%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 215 35% 18%;
-    --sidebar-accent-foreground: 210 20% 90%;
-    --sidebar-border: 215 35% 20%;
-    --sidebar-ring: 217 91% 62%;
+    --sidebar-accent: 237 75% 96%;
+    --sidebar-accent-foreground: 237 70% 40%;
+    --sidebar-border: 220 16% 90%;
+    --sidebar-ring: 237 70% 55%;
   }
 
   .dark {
-    --background: 215 30% 9%;
-    --foreground: 210 18% 92%;
-    --card: 215 28% 12%;
-    --card-foreground: 210 18% 92%;
-    --popover: 215 28% 12%;
-    --popover-foreground: 210 18% 92%;
-    --primary: 217 88% 62%;
+    --background: 224 28% 8%;
+    --foreground: 220 18% 93%;
+    --card: 224 26% 11%;
+    --card-foreground: 220 18% 93%;
+    --popover: 224 26% 11%;
+    --popover-foreground: 220 18% 93%;
+    --primary: 237 72% 66%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 215 25% 18%;
-    --secondary-foreground: 210 18% 85%;
-    --muted: 215 25% 17%;
-    --muted-foreground: 215 12% 54%;
-    --accent: 217 60% 22%;
-    --accent-foreground: 217 88% 78%;
-    --destructive: 4 72% 52%;
+    --secondary: 224 22% 16%;
+    --secondary-foreground: 220 18% 86%;
+    --muted: 224 22% 15%;
+    --muted-foreground: 220 12% 54%;
+    --accent: 237 50% 20%;
+    --accent-foreground: 237 72% 78%;
+    --destructive: 4 70% 52%;
     --destructive-foreground: 0 0% 100%;
-    --border: 215 25% 20%;
-    --input: 215 25% 20%;
-    --ring: 217 88% 62%;
-    --sidebar-background: 215 30% 7%;
-    --sidebar-foreground: 210 18% 80%;
-    --sidebar-primary: 217 88% 62%;
+    --border: 224 22% 18%;
+    --input: 224 22% 18%;
+    --ring: 237 72% 66%;
+    --sidebar-background: 224 28% 6%;
+    --sidebar-foreground: 220 18% 80%;
+    --sidebar-primary: 237 72% 66%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 215 28% 14%;
-    --sidebar-accent-foreground: 210 18% 85%;
-    --sidebar-border: 215 28% 16%;
-    --sidebar-ring: 217 88% 62%;
+    --sidebar-accent: 224 26% 13%;
+    --sidebar-accent-foreground: 220 18% 86%;
+    --sidebar-border: 224 26% 15%;
+    --sidebar-ring: 237 72% 66%;
   }
 }
 
@@ -88,7 +92,8 @@
     @apply border-border outline-ring/50;
   }
   body {
-    @apply bg-background text-foreground font-heebo;
+    @apply bg-background text-foreground;
+    font-family: 'Plus Jakarta Sans', 'Heebo', sans-serif;
     direction: rtl;
     overscroll-behavior: none;
     -webkit-tap-highlight-color: transparent;
@@ -124,21 +129,35 @@ button, a, [role="button"] {
 
 /* Card hover polish */
 .card-hover {
-  transition: box-shadow 0.18s ease, transform 0.18s ease, border-color 0.18s ease;
+  transition: box-shadow 0.2s ease, transform 0.2s ease, border-color 0.2s ease;
 }
 .card-hover:hover {
-  box-shadow: 0 4px 20px rgba(29, 78, 216, 0.10);
+  box-shadow: 0 6px 24px rgba(79, 70, 229, 0.12);
   transform: translateY(-2px);
-  border-color: hsl(var(--primary) / 0.25);
+  border-color: hsl(var(--primary) / 0.3);
 }
 
 /* Academic: subtle top-border accent on cards */
 .card-academic {
-  border-top: 3px solid hsl(var(--primary) / 0.18);
+  border-top: 3px solid hsl(var(--primary) / 0.22);
+}
+
+/* Glass-card style for hero/stat cards */
+.card-glass {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid hsl(var(--border));
+  box-shadow: 0 2px 12px rgba(99, 102, 241, 0.07);
 }
 
 /* Crisp focus rings */
 :focus-visible {
   outline: 2px solid hsl(var(--primary));
   outline-offset: 2px;
+}
+
+/* Gradient background for header/hero areas */
+.bg-academic-gradient {
+  background: linear-gradient(135deg, hsl(237 70% 55% / 0.08) 0%, hsl(40 30% 97%) 60%);
 }

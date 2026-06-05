@@ -7,6 +7,7 @@ module.exports = {
       fontFamily: {
         heebo: ['Heebo', 'sans-serif'],
         inter: ['Inter', 'sans-serif'],
+        jakarta: ['"Plus Jakarta Sans"', 'Heebo', 'sans-serif'],
       },
       borderRadius: {
         lg: 'var(--radius)',

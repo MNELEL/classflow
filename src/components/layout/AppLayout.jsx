@@ -55,7 +55,7 @@ export default function AppLayout({ children }) {
     <div className="min-h-screen bg-background flex flex-col" dir="rtl">
       {/* Top Header */}
       <header
-        className="bg-card border-b border-border flex items-center justify-between sticky top-0 z-50 shadow-sm"
+        className="bg-white/90 backdrop-blur-md border-b border-border flex items-center justify-between sticky top-0 z-50 shadow-sm"
         style={{ paddingTop: 'env(safe-area-inset-top)', paddingLeft: 'env(safe-area-inset-left)', paddingRight: 'env(safe-area-inset-right)' }}
       >
         <div className="flex items-center gap-2 px-4 py-3 w-full">
@@ -102,7 +102,7 @@ export default function AppLayout({ children }) {
 
       {/* Bottom Navigation Bar */}
       <nav
-        className="fixed bottom-0 inset-x-0 z-50 bg-card border-t border-border flex items-stretch"
+        className="fixed bottom-0 inset-x-0 z-50 bg-white/95 backdrop-blur-md border-t border-border flex items-stretch shadow-[0_-1px_12px_rgba(99,102,241,0.07)]"
         style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
       >
         {NAV_PATHS.map(path => {
