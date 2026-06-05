@@ -14,6 +14,7 @@ import { motion } from 'framer-motion';
 import StudentReportGenerator from '@/components/reports/StudentReportGenerator';
 import StudentAIReport from '@/components/reports/StudentAIReport';
 import BulletinGenerator from '@/components/reports/BulletinGenerator';
+import PeriodReportGenerator from '@/components/reports/PeriodReportGenerator';
 
 const COLORS = ['#6366f1', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4'];
 
@@ -136,7 +137,7 @@ export default function ReportsPage() {
 
         {/* Tabs */}
         <div className="flex gap-1 bg-muted/50 rounded-xl p-1">
-          {[['stats','📊 סטטיסטיקות'], ['student','🤖 דוח תלמיד AI'], ['bulletin','📰 ניוזלטר']].map(([id, label]) => (
+          {[['stats','📊 סטטיסטיקות'], ['student','🤖 דוח תלמיד AI'], ['bulletin','📰 חוברת שבועית'], ['period','📋 דוח תקופתי']].map(([id, label]) => (
             <button key={id} onClick={() => setTab(id)}
               className={`flex-1 py-1.5 rounded-lg text-xs font-medium transition-all ${tab === id ? 'bg-card shadow text-foreground' : 'text-muted-foreground hover:text-foreground'}`}>
               {label}
@@ -146,6 +147,7 @@ export default function ReportsPage() {
 
         {tab === 'student' && <StudentAIReport students={students} />}
         {tab === 'bulletin' && <BulletinGenerator />}
+        {tab === 'period' && <PeriodReportGenerator />}
 
         {tab === 'stats' && <>
         {/* Header */}
