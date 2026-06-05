@@ -21,7 +21,7 @@ const NAV_ICONS = {
   '/homework': ClipboardCheck,
 };
 
-const NAV_PATHS = ['/', '/seating', '/students', '/attendance', '/grades', '/library', '/gamification', '/toolkit', '/parents', '/worksheets', '/question-bank', '/lesson-analyzer', '/curriculum', '/homework'];
+const NAV_PATHS = ['/', '/seating', '/students', '/attendance', '/grades', '/library', '/gamification', '/toolkit', '/worksheets', '/question-bank', '/lesson-analyzer', '/curriculum', '/homework', '/parents'];
 
 export default function AppLayout({ children }) {
   const location = useLocation();
