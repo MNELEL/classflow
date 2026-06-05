@@ -3,10 +3,12 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Sparkles, Loader2, Printer, ChevronDown, ChevronUp } from 'lucide-react';
+import { Sparkles, Loader2, Printer, ChevronDown, ChevronUp, FileDown } from 'lucide-react';
 import { toast } from 'sonner';
 import { motion } from 'framer-motion';
 import { format } from 'date-fns';
+import html2canvas from 'html2canvas';
+import jsPDF from 'jspdf';
 
 export default function BulletinGenerator() {
   const qc = useQueryClient();
@@ -20,6 +22,20 @@ export default function BulletinGenerator() {
   const { data: grades = [] } = useQuery({ queryKey: ['grades'], queryFn: () => base44.entities.Grade.list('-date', 100) });
   const { data: libraryItems = [] } = useQuery({ queryKey: ['library'], queryFn: () => base44.entities.LibraryItem.list('-created_date', 50) });
   const { data: rewards = [] } = useQuery({ queryKey: ['rewards'], queryFn: () => base44.entities.Reward.list('-date', 100) });
+
+  async function generatePDF() {
+    if (!bulletin) { toast.error('צור ניוזלטר לפני ייצוא PDF'); return; }
+    
+    const doc = new jsPDF({ direction: 'rtl', unit: 'mm', format: 'a4' });
+    const canvas = await html2canvas(document.getElementById('classpro-a4-canvas'), { scale: 2, useCORS: true });
+    const imgData = canvas.toDataURL('image/png');
+    const imgWidth = 210;
+    const imgHeight = (canvas.height * imgWidth) / canvas.width;
+    
+    doc.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
+    doc.save(`חוברת-שבועית-${className || 'כיתה'}-${startDate}.pdf`);
+    toast.success('ה-PDF ייוצר בהצלחה!');
+  }
 
   async function generate() {
     if (!startDate || !endDate) { toast.error('בחר טווח תאריכים'); return; }
@@ -129,9 +145,14 @@ ${context || 'שבוע לימודים רגיל'}
           {/* Print header */}
           <div className="flex justify-between items-center px-4 py-2.5 border-b border-border/50 bg-primary/5">
             <p className="text-sm font-bold text-primary">📰 ניוזלטר שבתי</p>
-            <Button size="sm" variant="outline" className="gap-1 text-xs h-7" onClick={() => window.print()}>
-              <Printer className="w-3 h-3" /> הדפס
-            </Button>
+            <div className="flex gap-1.5">
+              <Button size="sm" variant="outline" className="gap-1 text-xs h-7" onClick={generatePDF}>
+                <FileDown className="w-3 h-3" /> ייצא PDF
+              </Button>
+              <Button size="sm" variant="outline" className="gap-1 text-xs h-7" onClick={() => window.print()}>
+                <Printer className="w-3 h-3" /> הדפס
+              </Button>
+            </div>
           </div>
 
           <div id="classpro-a4-canvas" className="p-5 space-y-5">
