@@ -5,9 +5,11 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { Mic, Upload, FileAudio, Loader2, Plus, CheckCircle2 } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Mic, Upload, FileAudio, Loader2, Plus, CheckCircle2, Layers } from 'lucide-react';
 import { toast } from 'sonner';
 import LessonSummaryHub from '@/components/lessonanalyzer/LessonSummaryHub.jsx';
+import SummaryTaskBoard from '@/components/lessonanalyzer/SummaryTaskBoard.jsx';
 
 const STEPS = {
   IDLE: 'idle',
@@ -216,12 +218,23 @@ export default function LessonAnalyzerPage() {
             </CardContent>
           </Card>
 
-          {/* Summary Hub */}
-          <LessonSummaryHub
-            onSaveToLibrary={handleSaveToLibrary}
-            savingId={savingId}
-            onDelete={(id) => deleteMutation.mutate(id)}
-          />
+          {/* Tabs: summaries + task board */}
+          <Tabs defaultValue="hub" dir="rtl">
+            <TabsList className="w-full grid grid-cols-2 mb-2">
+              <TabsTrigger value="hub" className="text-xs gap-1"><Mic className="w-3 h-3" /> סיכומי שיעורים</TabsTrigger>
+              <TabsTrigger value="board" className="text-xs gap-1"><Layers className="w-3 h-3" /> לוח משימות</TabsTrigger>
+            </TabsList>
+            <TabsContent value="hub">
+              <LessonSummaryHub
+                onSaveToLibrary={handleSaveToLibrary}
+                savingId={savingId}
+                onDelete={(id) => deleteMutation.mutate(id)}
+              />
+            </TabsContent>
+            <TabsContent value="board">
+              <SummaryTaskBoard />
+            </TabsContent>
+          </Tabs>
 
         </div>
       </div>
