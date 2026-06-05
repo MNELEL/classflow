@@ -29,6 +29,7 @@ const LessonAnalyzerPage   = lazy(() => import('./pages/LessonAnalyzerPage'));
 const CurriculumPlannerPage = lazy(() => import('./pages/CurriculumPlannerPage'));
 const HomeworkPage         = lazy(() => import('./pages/HomeworkPage'));
 const SoundBoardPage       = lazy(() => import('./pages/SoundBoardPage'));
+const ExamScannerPage      = lazy(() => import('./pages/ExamScannerPage'));
 const StudentViewPage      = lazy(() => import('./pages/StudentViewPage'));
 const Login                = lazy(() => import('./pages/Login'));
 const Register             = lazy(() => import('./pages/Register'));
@@ -80,6 +81,7 @@ function AnimatedRoutes() {
               <Route path="/curriculum" element={<CurriculumPlannerPage />} />
               <Route path="/homework" element={<HomeworkPage />} />
               <Route path="/sound-board" element={<SoundBoardPage />} />
+              <Route path="/exam-scanner" element={<ExamScannerPage />} />
               <Route path="/student-view" element={<StudentViewPage />} />
             </Route>
 

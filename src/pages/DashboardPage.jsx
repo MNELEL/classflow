@@ -12,7 +12,7 @@ import AbsenceAlert from '@/components/dashboard/AbsenceAlert';
 import AcademicCalendar from '@/components/dashboard/AcademicCalendar';
 import SmartGuide from '@/components/dashboard/SmartGuide';
 import DailyBriefing from '@/components/dashboard/DailyBriefing';
-import BavaKammaTracker from '@/components/dashboard/BavaKammaTracker';
+import StudyProgressTracker from '@/components/dashboard/StudyProgressTracker';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { calcSatisfactionScore } from '@/lib/seatingUtils';
@@ -286,9 +286,9 @@ export default function DashboardPage() {
           </motion.div>
         </div>
 
-        {/* Bava Kamma Tracker */}
+        {/* Study Progress Tracker */}
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.34 }} className="mb-3">
-          <BavaKammaTracker />
+          <StudyProgressTracker />
         </motion.div>
 
         {/* Academic Calendar */}

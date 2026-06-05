@@ -8,12 +8,14 @@ import AIGradeInput from '@/components/grades/AIGradeInput';
 import AIGradeQuery from '@/components/grades/AIGradeQuery';
 import GradeReportPanel from '@/components/grades/GradeReportPanel';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Sparkles, MessageSquare, FileBarChart2, GraduationCap, FileUp, FileDown } from 'lucide-react';
+import { Sparkles, MessageSquare, FileBarChart2, GraduationCap, FileUp, FileDown, Camera } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { motion } from 'framer-motion';
 
 export default function GradeManagementPage() {
   const qc = useQueryClient();
+  const navigate = useNavigate();
   const [showCsvImport, setShowCsvImport] = useState(false);
   const { data: students = [] } = useQuery({
     queryKey: ['students'],
@@ -34,7 +36,10 @@ export default function GradeManagementPage() {
             <h1 className="text-2xl font-bold">ניהול ציונים</h1>
           </div>
           <p className="text-muted-foreground text-sm">הזנת ציונים חכמה, שאילתות AI, ודוחות מפורטים</p>
-          <div className="flex gap-2 mt-3">
+          <div className="flex gap-2 mt-3 flex-wrap">
+            <Button size="sm" onClick={() => navigate('/exam-scanner')} className="gap-1.5 text-xs">
+              <Camera className="w-3.5 h-3.5" /> סרוק מבחן (AI)
+            </Button>
             <Button size="sm" variant="outline" onClick={() => setShowCsvImport(true)} className="gap-1.5 text-xs">
               <FileUp className="w-3.5 h-3.5" /> ייבוא CSV
             </Button>
