@@ -87,6 +87,7 @@ export default function StudentForm({ student, students, onSave, onCancel }) {
     academic_level: student?.academic_level || 'average',
     traits: student?.traits || [],
     achievements: student?.achievements || '',
+    custom_conditions: student?.custom_conditions || '',
   });
 
   const others = students.filter(s => s.id !== student?.id);
@@ -232,6 +233,18 @@ export default function StudentForm({ student, students, onSave, onCancel }) {
           <RelationPicker label="↔️ יש לרחק (מרחק גדול)" field="separate" value={form.separate} students={others} onToggle={toggleRelation} activeClass="bg-orange-100 border-orange-400 dark:bg-orange-900/30" />
         </>
       )}
+
+      {/* Custom seating conditions */}
+      <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-xl p-3">
+        <Label className="text-xs font-bold text-amber-800 dark:text-amber-300 mb-1 block">📌 תנאים אישיים לסידור מקומות</Label>
+        <textarea
+          value={form.custom_conditions}
+          onChange={e => setForm(f => ({ ...f, custom_conditions: e.target.value }))}
+          placeholder={`לדוגמה:\n• לשבת ליד דוד כהן\n• לא לשבת ליד החלון\n• חייב לשבת בשורה הקדמית בגלל ראייה חלשה\n• לא יכול לשבת ליד הדלת`}
+          className="w-full mt-1 border border-amber-300 dark:border-amber-700 rounded-lg px-3 py-2 text-xs bg-white dark:bg-background min-h-[70px] resize-none placeholder:text-muted-foreground/60"
+        />
+        <p className="text-[10px] text-amber-700 dark:text-amber-400 mt-1">תנאים אלה יישלחו ל-AI בסידור החכם ויילקחו בחשבון</p>
+      </div>
 
       <div>
         <Label className="text-xs">הערות</Label>

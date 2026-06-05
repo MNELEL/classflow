@@ -182,12 +182,16 @@ export default function SeatingPage() {
         const customCondLines = customConditions.length > 0 ? `\nתנאים מיוחדים נוספים:\n${customConditions.map(c => `- ${c}`).join('\n')}` : '';
         const atLeastOneLine = atLeastOneSatisfied ? '\n⚠️ חשוב: כל תלמיד חייב לקבל לפחות דרישה אחת מתוך ההעדפות שלו (מיקום / חבר בסמוך).' : '';
 
+        // Build per-student custom conditions from entity field
+        const studentCustomConds = activeStudents.filter(s => s.custom_conditions).map(s => `  - ${s.name}: ${s.custom_conditions}`).join('\n');
+        const customCondsSection = studentCustomConds ? `\nתנאים אישיים של תלמידים (חובה לקחת בחשבון):\n${studentCustomConds}` : '';
+
         const result = await base44.integrations.Core.InvokeLLM({
           prompt: `אתה מערכת סידור ישיבה חכמה. יש ${activeStudents.length} תלמידים ו-${rows} שורות ו-${cols} טורים.
 
 תלמידים:
-${activeStudents.map(s => `- ${s.name}: גובה=${s.height||'בינוני'}, שורה=${s.row_preference||'אין'}, צרכים=[${(s.special_needs||[]).join(',')}], חברים=[${(s.friends||[]).map(fid=>students.find(x=>x.id===fid)?.name||'').filter(Boolean).join(',')}], להרחיק=[${(s.avoid||[]).map(fid=>students.find(x=>x.id===fid)?.name||'').filter(Boolean).join(',')}], שורה_קבועה=${s.permanent_row||'אין'}`).join('\n')}
-${overrideLines ? `\nהעדפות ייבוא נוספות:\n${overrideLines}` : ''}${customCondLines}${atLeastOneLine}
+${activeStudents.map(s => `- ${s.name}: גובה=${s.height||'בינוני'}, שורה=${s.row_preference||'אין'}, צרכים=[${(s.special_needs||[]).join(',')}], חברים=[${(s.friends||[]).map(fid=>students.find(x=>x.id===fid)?.name||'').filter(Boolean).join(',')}], להרחיק=[${(s.avoid||[]).map(fid=>students.find(x=>x.id===fid)?.name||'').filter(Boolean).join(',')}], שורה_קבועה=${s.permanent_row||'אין'}${s.custom_conditions ? `, תנאים="${s.custom_conditions}"` : ''}`).join('\n')}
+${overrideLines ? `\nהעדפות ייבוא נוספות:\n${overrideLines}` : ''}${customCondsSection}${customCondLines}${atLeastOneLine}
 
 שבץ את כל ${activeStudents.length} התלמידים. חובה להחזיר assignment לכל תלמיד. כל מושב (row,col) יכול להכיל תלמיד אחד בלבד. row ו-col הם 0-based.`,
           response_json_schema: {
@@ -528,6 +532,9 @@ ${overrideLines ? `\nהעדפות ייבוא נוספות:\n${overrideLines}` : 
                   <p className="text-xs text-muted-foreground">צרכים: {selectedStudent.special_needs.join(', ')}</p>
                 )}
                 {selectedStudent.notes && <p className="text-xs text-muted-foreground">{selectedStudent.notes}</p>}
+                {selectedStudent.custom_conditions && (
+                  <p className="text-xs text-amber-700 mt-1 bg-amber-50 rounded px-2 py-1">📌 {selectedStudent.custom_conditions}</p>
+                )}
               </div>
             ) : (
               <p className="text-muted-foreground text-sm">מושב ריק</p>

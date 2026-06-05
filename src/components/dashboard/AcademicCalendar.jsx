@@ -9,9 +9,53 @@ import { he } from 'date-fns/locale';
 
 const DAY_NAMES = ['א׳', 'ב׳', 'ג׳', 'ד׳', 'ה׳', 'ו׳', 'ש׳'];
 
+// Hebrew month names
+const HEB_MONTHS = [
+  'תשרי','חשון','כסלו','טבת','שבט','אדר','ניסן','אייר','סיון','תמוז','אב','אלול',
+  'אדר א׳','אדר ב׳'
+];
+
+// Hebrew letter digits
+const HEB_UNITS = ['','א','ב','ג','ד','ה','ו','ז','ח','ט'];
+const HEB_TENS  = ['','י','כ','ל','מ','נ','ס','ע','פ','צ'];
+const HEB_HUNDS = ['','ק','ר','ש','ת'];
+
+function numToHeb(n) {
+  if (n <= 0 || n > 30) return String(n);
+  // 15 & 16 special cases (avoid divine name)
+  if (n === 15) return 'ט״ו';
+  if (n === 16) return 'ט״ז';
+  let s = '';
+  const h = Math.floor(n / 100);
+  const t = Math.floor((n % 100) / 10);
+  const u = n % 10;
+  s += HEB_HUNDS[h] || '';
+  s += HEB_TENS[t] || '';
+  s += HEB_UNITS[u] || '';
+  if (s.length === 1) return s + '׳';
+  return s.slice(0, -1) + '״' + s.slice(-1);
+}
+
+// Meeus/Jones/Butcher algorithm for Hebrew date conversion
+function toHebrewDate(jsDate) {
+  // Use Intl API if available (best method)
+  try {
+    const hd = new Intl.DateTimeFormat('he-u-ca-hebrew', {
+      day: 'numeric', month: 'long', year: 'numeric'
+    }).format(jsDate);
+    // Extract the day number from the formatted Hebrew string
+    const dayMatch = hd.match(/(\d+)/);
+    const dayNum = dayMatch ? parseInt(dayMatch[1]) : jsDate.getDate();
+    return { dayStr: numToHeb(dayNum), fullHebrew: hd };
+  } catch {
+    return { dayStr: String(jsDate.getDate()), fullHebrew: '' };
+  }
+}
+
 export default function AcademicCalendar() {
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedDay, setSelectedDay] = useState(null);
+  const [showHebrew, setShowHebrew] = useState(true);
 
   const { data: tasks = [] } = useQuery({
     queryKey: ['tasks'],
@@ -32,7 +76,6 @@ export default function AcademicCalendar() {
     return m;
   }, [students]);
 
-  // Map dates to events
   const eventsByDate = useMemo(() => {
     const map = {};
     tasks.forEach(t => {
@@ -56,16 +99,32 @@ export default function AcademicCalendar() {
     return eachDayOfInterval({ start, end });
   }, [currentMonth]);
 
-  // Padding for first day of month (Sun=0)
   const firstDayOfWeek = getDay(startOfMonth(currentMonth));
 
   const selectedEvents = selectedDay ? (eventsByDate[format(selectedDay, 'yyyy-MM-dd')] || []) : [];
 
+  // Hebrew month/year label for header
+  const hebMonthLabel = useMemo(() => {
+    try {
+      return new Intl.DateTimeFormat('he-u-ca-hebrew', { month: 'long', year: 'numeric' }).format(currentMonth);
+    } catch {
+      return format(currentMonth, 'MMMM yyyy', { locale: he });
+    }
+  }, [currentMonth]);
+
   return (
     <Card className="border-border/60">
       <CardHeader className="pb-3 pt-4 px-4">
-        <CardTitle className="text-sm flex items-center gap-1.5">
-          <CalendarDays className="w-3.5 h-3.5 text-primary" /> לוח שנה לימודי
+        <CardTitle className="text-sm flex items-center justify-between gap-1.5">
+          <div className="flex items-center gap-1.5">
+            <CalendarDays className="w-3.5 h-3.5 text-primary" /> לוח שנה לימודי
+          </div>
+          <button
+            onClick={() => setShowHebrew(v => !v)}
+            className={`text-[10px] px-2 py-0.5 rounded border transition-colors ${showHebrew ? 'bg-primary/10 text-primary border-primary/30' : 'border-border text-muted-foreground'}`}
+          >
+            {showHebrew ? '🔤 עברי' : '🔢 לועזי'}
+          </button>
         </CardTitle>
       </CardHeader>
       <CardContent className="px-3 pb-4">
@@ -74,9 +133,13 @@ export default function AcademicCalendar() {
           <button onClick={() => setCurrentMonth(m => subMonths(m, 1))} className="p-1 rounded-lg hover:bg-accent transition-colors">
             <ChevronRight className="w-4 h-4" />
           </button>
-          <span className="text-sm font-semibold">
-            {format(currentMonth, 'MMMM yyyy', { locale: he })}
-          </span>
+          <div className="text-center">
+            {showHebrew ? (
+              <span className="text-sm font-semibold">{hebMonthLabel}</span>
+            ) : (
+              <span className="text-sm font-semibold">{format(currentMonth, 'MMMM yyyy', { locale: he })}</span>
+            )}
+          </div>
           <button onClick={() => setCurrentMonth(m => addMonths(m, 1))} className="p-1 rounded-lg hover:bg-accent transition-colors">
             <ChevronLeft className="w-4 h-4" />
           </button>
@@ -91,7 +154,6 @@ export default function AcademicCalendar() {
 
         {/* Calendar grid */}
         <div className="grid grid-cols-7 gap-0.5">
-          {/* Padding cells */}
           {Array.from({ length: firstDayOfWeek }).map((_, i) => (
             <div key={`pad-${i}`} />
           ))}
@@ -102,6 +164,7 @@ export default function AcademicCalendar() {
             const hasExam = dayEvents.some(e => e.type === 'exam');
             const isSelected = selectedDay && isSameDay(day, selectedDay);
             const today = isToday(day);
+            const { dayStr } = toHebrewDate(day);
 
             return (
               <button
@@ -112,8 +175,11 @@ export default function AcademicCalendar() {
                   ${!isSameMonth(day, currentMonth) ? 'opacity-30' : ''}
                 `}
               >
-                <span className="font-medium">{format(day, 'd')}</span>
-                {/* Dot indicators */}
+                {showHebrew ? (
+                  <span className="font-medium text-[10px] leading-tight">{dayStr}</span>
+                ) : (
+                  <span className="font-medium">{format(day, 'd')}</span>
+                )}
                 {dayEvents.length > 0 && (
                   <div className="flex gap-0.5 mt-0.5">
                     {hasTask && <div className={`w-1.5 h-1.5 rounded-full ${isSelected ? 'bg-white' : 'bg-blue-500'}`} />}
@@ -135,7 +201,10 @@ export default function AcademicCalendar() {
         {selectedDay && (
           <div className="mt-3 border-t border-border pt-3 space-y-1.5">
             <p className="text-xs font-semibold text-muted-foreground mb-2">
-              {format(selectedDay, 'd MMMM yyyy', { locale: he })} — {selectedEvents.length > 0 ? `${selectedEvents.length} אירועים` : 'אין אירועים'}
+              {showHebrew
+                ? toHebrewDate(selectedDay).fullHebrew
+                : format(selectedDay, 'd MMMM yyyy', { locale: he })
+              } — {selectedEvents.length > 0 ? `${selectedEvents.length} אירועים` : 'אין אירועים'}
             </p>
             {selectedEvents.length === 0 && (
               <p className="text-xs text-muted-foreground text-center py-2">אין משימות או מבחנים ביום זה</p>
