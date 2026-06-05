@@ -9,6 +9,7 @@ import { Loader2, Sparkles, FileDown, MessageCircle, Mail, Printer } from 'lucid
 import { toast } from 'sonner';
 import { format, subWeeks, subMonths, startOfMonth, endOfMonth, startOfYear, endOfYear } from 'date-fns';
 import { motion } from 'framer-motion';
+import { createPeriodReportWordDoc } from '@/lib/exportWord';
 
 const PERIOD_OPTIONS = [
   { label: 'שבועי', value: 'weekly' },
@@ -324,6 +325,26 @@ ${context}
     setTimeout(() => { win.focus(); win.print(); }, 600);
   }
 
+  async function generateWord() {
+    if (!reportData) { toast.error('צור דוח לפני ייצוא Word'); return; }
+    try {
+      await createPeriodReportWordDoc(reportData.full, className, reportData.periodLabel, reportData.audienceLabel, teacherName);
+      toast.success('מסמך ה-Word ייוצר בהצלחה!');
+    } catch {
+      toast.error('שגיאה בייצוא Word');
+    }
+  }
+
+  async function generateWord() {
+    if (!reportData) { toast.error('צור דוח לפני ייצוא Word'); return; }
+    try {
+      await createPeriodReportWordDoc(reportData.full, className, reportData.periodLabel, reportData.audienceLabel, teacherName);
+      toast.success('מסמך ה-Word ייוצר בהצלחה!');
+    } catch {
+      toast.error('שגיאה בייצוא Word');
+    }
+  }
+
   async function sendEmail() {
     if (!emailTo || !emailTo.includes('@')) { toast.error('הכנס כתובת מייל תקינה'); return; }
     setSendingEmail(true);
@@ -407,9 +428,14 @@ ${context}
           className="bg-card border border-border/70 rounded-2xl overflow-hidden">
           <div className="flex justify-between items-center px-4 py-2.5 border-b border-border/50 bg-primary/5">
             <p className="text-sm font-bold text-primary">📊 {reportData.periodLabel} — {reportData.audienceLabel}</p>
-            <Button size="sm" variant="outline" className="gap-1 text-xs h-7" onClick={openPrint}>
-              <Printer className="w-3 h-3" /> הדפס / PDF
-            </Button>
+            <div className="flex gap-1.5">
+              <Button size="sm" variant="outline" className="gap-1 text-xs h-7" onClick={generateWord}>
+                <FileDown className="w-3 h-3" /> Word
+              </Button>
+              <Button size="sm" variant="outline" className="gap-1 text-xs h-7" onClick={openPrint}>
+                <Printer className="w-3 h-3" /> PDF
+              </Button>
+            </div>
           </div>
 
           <div className="p-4 space-y-4">

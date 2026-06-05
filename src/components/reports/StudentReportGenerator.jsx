@@ -11,6 +11,7 @@ import { FileDown, MessageCircle, Mail, Loader2, User, TrendingUp, CheckSquare, 
 import { toast } from 'sonner';
 import { format, parseISO } from 'date-fns';
 import { he } from 'date-fns/locale';
+import { createStudentReportWordDoc } from '@/lib/exportWord';
 
 const LEVEL_LABELS = {
   weak: 'חלש', below_average: 'מתקשה', average: 'בינוני',
@@ -244,6 +245,18 @@ export default function StudentReportGenerator({ students }) {
     }, 600);
   }
 
+  async function handleDownloadWord() {
+    if (!student) { toast.error('בחר תלמיד'); return; }
+    setIsGenerating(true);
+    try {
+      await createStudentReportWordDoc(student, grades, tasks, teacherName, period);
+      toast.success('מסמך ה-Word ייוצר בהצלחה!');
+    } catch {
+      toast.error('שגיאה בייצוא Word');
+    }
+    setIsGenerating(false);
+  }
+
   function handleWhatsApp() {
     if (!student) { toast.error('בחר תלמיד'); return; }
     const text = encodeURIComponent(
@@ -353,8 +366,19 @@ export default function StudentReportGenerator({ students }) {
               </div>
             )}
 
+            {/* Word Download */}
+            <Button
+              className="w-full gap-2"
+              onClick={handleDownloadWord}
+              disabled={!student || isGenerating}
+            >
+              {isGenerating ? <Loader2 className="w-4 h-4 animate-spin" /> : <FileDown className="w-4 h-4" />}
+              הפק Word מעוצב
+            </Button>
+
             {/* PDF Download */}
             <Button
+              variant="outline"
               className="w-full gap-2"
               onClick={handleDownloadPDF}
               disabled={!student || isGenerating}
