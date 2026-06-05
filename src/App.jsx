@@ -23,6 +23,7 @@ import ParentPortalPage from './pages/ParentPortalPage';
 import WorksheetGeneratorPage from './pages/WorksheetGeneratorPage';
 import QuestionBankPage from './pages/QuestionBankPage';
 import LessonAnalyzerPage from './pages/LessonAnalyzerPage';
+import CurriculumPlannerPage from './pages/CurriculumPlannerPage';
 
 const pageVariants = {
   initial: { opacity: 0, x: 20 },
@@ -51,6 +52,7 @@ function AnimatedRoutes() {
           <Route path="/worksheets" element={<WorksheetGeneratorPage />} />
           <Route path="/question-bank" element={<QuestionBankPage />} />
           <Route path="/lesson-analyzer" element={<LessonAnalyzerPage />} />
+          <Route path="/curriculum" element={<CurriculumPlannerPage />} />
           <Route path="*" element={<PageNotFound />} />
         </Routes>
       </motion.div>

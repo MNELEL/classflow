@@ -1,0 +1,83 @@
+{
+  "name": "CurriculumWeek",
+  "type": "object",
+  "properties": {
+    "week_label": {
+      "type": "string",
+      "description": "\u05ea\u05d9\u05d0\u05d5\u05e8 \u05d4\u05e9\u05d1\u05d5\u05e2 (\u05dc\u05de\u05e9\u05dc: \u05e9\u05d1\u05d5\u05e2 \u05d0' \u05ea\u05e9\u05e4\"\u05d5)"
+    },
+    "week_start": {
+      "type": "string",
+      "format": "date",
+      "description": "\u05ea\u05d0\u05e8\u05d9\u05da \u05ea\u05d7\u05d9\u05dc\u05ea \u05d4\u05e9\u05d1\u05d5\u05e2"
+    },
+    "subject": {
+      "type": "string",
+      "description": "\u05de\u05e7\u05e6\u05d5\u05e2 / \u05de\u05e1\u05db\u05ea"
+    },
+    "free_text_goals": {
+      "type": "string",
+      "description": "\u05de\u05d4 \u05d4\u05de\u05d5\u05e8\u05d4 \u05db\u05ea\u05d1 \u05d1\u05d7\u05d5\u05e4\u05e9\u05d9\u05d5\u05ea (\u05dc\u05de\u05e9\u05dc: \u05d1\u05d1\u05d0 \u05e7\u05de\u05d0 \u05d3\u05e3 \u05dc)"
+    },
+    "parsed_goals": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "source_type": {
+            "type": "string"
+          },
+          "external_links": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "label": {
+                  "type": "string"
+                },
+                "url": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "library_item_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "is_completed": {
+            "type": "boolean"
+          },
+          "suggested_next": {
+            "type": "string"
+          }
+        }
+      },
+      "description": "\u05d4\u05e1\u05e4\u05e7\u05d9\u05dd \u05d4\u05de\u05e4\u05d5\u05e8\u05d8\u05d9\u05dd \u05dc\u05d0\u05d7\u05e8 \u05e2\u05d9\u05d1\u05d5\u05d3 AI"
+    },
+    "notes": {
+      "type": "string",
+      "description": "\u05d4\u05e2\u05e8\u05d5\u05ea \u05dc\u05de\u05d5\u05e8\u05d4"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "planned",
+        "in_progress",
+        "completed"
+      ],
+      "default": "planned"
+    }
+  },
+  "required": [
+    "week_start"
+  ]
+}

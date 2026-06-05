@@ -19,6 +19,7 @@ export const DEFAULT_BRANDING = {
     '/worksheets': 'דפ"ע',
     '/question-bank': 'עזרים',
     '/lesson-analyzer': 'הקלטות',
+    '/curriculum': 'הספקים',
   },
   page_titles: {
     '/': 'ClassManager Pro',
@@ -33,6 +34,7 @@ export const DEFAULT_BRANDING = {
     '/worksheets': 'דפי עבודה',
     '/question-bank': 'עזרים',
     '/lesson-analyzer': 'ניתוח שיעורים',
+    '/curriculum': 'עוזר ההספקים',
     '/history': 'היסטוריה',
     '/reports': 'דוחות',
     '/settings': 'הגדרות',
