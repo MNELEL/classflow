@@ -121,11 +121,33 @@ button, a, [role="button"] {
   box-shadow: 0 0 0 2px hsl(var(--primary)), 0 4px 16px rgba(99,102,241,0.25) !important;
 }
 
-/* Smooth scrollbar */
-::-webkit-scrollbar { width: 4px; height: 4px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: hsl(var(--border)); border-radius: 99px; }
-::-webkit-scrollbar-thumb:hover { background: hsl(var(--muted-foreground) / 0.4); }
+/* Smooth scrollbar — desktop only */
+@media (pointer: fine) {
+  ::-webkit-scrollbar { width: 4px; height: 4px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: hsl(var(--border)); border-radius: 99px; }
+  ::-webkit-scrollbar-thumb:hover { background: hsl(var(--muted-foreground) / 0.4); }
+}
+
+/* Hide scrollbars on touch / inner containers while keeping scroll functional */
+.no-scrollbar {
+  scrollbar-width: none;        /* Firefox */
+  -ms-overflow-style: none;     /* IE/Edge */
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;                /* Chrome/Safari/Android */
+}
+
+/* Apply to all overflow containers on touch devices */
+@media (pointer: coarse) {
+  * {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  *::-webkit-scrollbar {
+    display: none;
+  }
+}
 
 /* Card hover polish */
 .card-hover {

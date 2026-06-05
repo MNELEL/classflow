@@ -1,4 +1,4 @@
-import React, { useCallback, useState, useEffect } from 'react';
+import React, { useCallback, useState, useEffect, useRef } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { LayoutGrid, Users, BookOpen, Settings, ChevronRight, CalendarCheck, GraduationCap, Library, Trophy, Wrench, Contact, FileText, Layers, Mic, ClipboardList, ClipboardCheck } from 'lucide-react';
@@ -28,26 +28,38 @@ export default function AppLayout({ children }) {
   const navigate = useNavigate();
   const [branding, setBranding] = useState(loadBranding);
 
+  // Tab Stack Preservation: remember scroll position per tab
+  const scrollPositions = useRef({});
+  const mainRef = useRef(null);
+
   useEffect(() => {
     const handler = (e) => setBranding(e.detail);
     window.addEventListener('branding-updated', handler);
     return () => window.removeEventListener('branding-updated', handler);
   }, []);
 
+  // Restore scroll position when tab changes
+  useEffect(() => {
+    const main = mainRef.current;
+    if (!main) return;
+    const savedY = scrollPositions.current[location.pathname] ?? 0;
+    // Use rAF so content is rendered before scrolling
+    requestAnimationFrame(() => { main.scrollTop = savedY; });
+  }, [location.pathname]);
+
   const handleNavClick = useCallback((e, path) => {
+    // Save current scroll before switching
+    if (mainRef.current) {
+      scrollPositions.current[location.pathname] = mainRef.current.scrollTop;
+    }
     if (location.pathname === path) {
       e.preventDefault();
-      // Scroll every scrollable child inside <main> back to top
-      const main = document.querySelector('main');
-      if (main) {
-        main.scrollTo({ top: 0, behavior: 'smooth' });
-        // Also scroll any overflow-y children (e.g. inner scroll containers)
-        main.querySelectorAll('[class*="overflow-y"]').forEach(el => {
-          el.scrollTo({ top: 0, behavior: 'smooth' });
-        });
-      }
+      // Same-tab tap → scroll to top and reset saved position
+      scrollPositions.current[path] = 0;
+      if (mainRef.current) mainRef.current.scrollTo({ top: 0, behavior: 'smooth' });
     }
   }, [location.pathname]);
+
   const isDashboard = location.pathname === '/';
   const title = branding.page_titles?.[location.pathname] || branding.school_name || 'ClassManager Pro';
 
@@ -59,7 +71,6 @@ export default function AppLayout({ children }) {
         style={{ paddingTop: 'env(safe-area-inset-top)', paddingLeft: 'env(safe-area-inset-left)', paddingRight: 'env(safe-area-inset-right)' }}
       >
         <div className="flex items-center gap-2 px-4 py-3 w-full">
-          {/* Back button on sub-pages */}
           {!isDashboard ? (
             <button
               onClick={() => navigate(-1)}
@@ -80,7 +91,6 @@ export default function AppLayout({ children }) {
 
           <span className="font-bold text-base tracking-tight flex-1 text-center">{title}</span>
 
-          {/* Settings icon on right (only on non-settings pages) */}
           {location.pathname !== '/settings' ? (
             <Link
               to="/settings"
@@ -95,8 +105,11 @@ export default function AppLayout({ children }) {
         </div>
       </header>
 
-      {/* Main Content — padded for bottom nav */}
-      <main className="flex-1 overflow-hidden pb-[calc(64px+env(safe-area-inset-bottom))]">
+      {/* Main Content — single scrollable container per tab */}
+      <main
+        ref={mainRef}
+        className="flex-1 overflow-y-auto no-scrollbar pb-[calc(64px+env(safe-area-inset-bottom))]"
+      >
         {children}
       </main>
 
@@ -115,10 +128,8 @@ export default function AppLayout({ children }) {
               to={path}
               onClick={(e) => handleNavClick(e, path)}
               className={cn(
-                'flex-1 flex flex-col items-center justify-center gap-0.5 min-h-[56px] py-2 select-none transition-colors',
-                active
-                  ? 'text-primary'
-                  : 'text-muted-foreground hover:text-foreground'
+                'flex-1 flex flex-col items-center justify-center gap-0.5 min-h-[56px] min-w-[44px] py-2 select-none transition-colors',
+                active ? 'text-primary' : 'text-muted-foreground hover:text-foreground'
               )}
             >
               <Icon className={cn('w-5 h-5', active && 'scale-110 transition-transform')} />

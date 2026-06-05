@@ -39,8 +39,23 @@ export default function AttendanceManager({ students }) {
         return base44.entities.Attendance.create({ student_id: studentId, date: selectedDate, status });
       }
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['attendance'] }),
-    onError: () => toast.error('שגיאה בשמירת נוכחות'),
+    onMutate: async ({ studentId, status }) => {
+      await qc.cancelQueries({ queryKey: ['attendance'] });
+      const previous = qc.getQueryData(['attendance']);
+      qc.setQueryData(['attendance'], (old = []) => {
+        const existing = old.find(a => a.student_id === studentId && a.date === selectedDate);
+        if (existing) {
+          return old.map(a => a.student_id === studentId && a.date === selectedDate ? { ...a, status } : a);
+        }
+        return [...old, { id: `optimistic-${studentId}`, student_id: studentId, date: selectedDate, status }];
+      });
+      return { previous };
+    },
+    onError: (_err, _vars, ctx) => {
+      if (ctx?.previous) qc.setQueryData(['attendance'], ctx.previous);
+      toast.error('שגיאה בשמירת נוכחות');
+    },
+    onSettled: () => qc.invalidateQueries({ queryKey: ['attendance'] }),
   });
 
   const activeStudents = students.filter(s => s.is_active !== false);

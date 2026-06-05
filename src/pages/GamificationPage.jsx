@@ -46,7 +46,21 @@ export default function GamificationPage() {
 
   const addReward = useMutation({
     mutationFn: (data) => base44.entities.Reward.create(data),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ['rewards'] }); toast.success('נקודות נרשמו!'); setShowRewardForm(false); setRewardForm({ student_id: '', points: 1, reason: '' }); },
+    onMutate: async (newReward) => {
+      await qc.cancelQueries({ queryKey: ['rewards'] });
+      const previous = qc.getQueryData(['rewards']);
+      qc.setQueryData(['rewards'], (old = []) => [
+        { ...newReward, id: `optimistic-${Date.now()}` },
+        ...old,
+      ]);
+      return { previous };
+    },
+    onError: (_err, _vars, ctx) => {
+      if (ctx?.previous) qc.setQueryData(['rewards'], ctx.previous);
+      toast.error('שגיאה בשמירת הנקודות');
+    },
+    onSuccess: () => { toast.success('נקודות נרשמו!'); setShowRewardForm(false); setRewardForm({ student_id: '', points: 1, reason: '' }); },
+    onSettled: () => qc.invalidateQueries({ queryKey: ['rewards'] }),
   });
 
   const addCampaign = useMutation({
