@@ -4,9 +4,20 @@ import { Wand2, Shuffle, Hash, EyeOff, RefreshCw, FileDown, FileSpreadsheet, Pri
 import { Badge } from '@/components/ui/badge';
 import { exportToPDF, exportToExcel, printSeating } from '@/lib/exportUtils';
 
+const QUICK_SORT_PREFS = [
+  { value: 'none', label: 'ברירת מחדל' },
+  { value: 'front', label: '⬆️ קדמה' },
+  { value: 'middle', label: '↔️ אמצע' },
+  { value: 'back', label: '⬇️ אחורה' },
+  { value: 'left', label: '◀️ שמאל' },
+  { value: 'center', label: '⬛ מרכז' },
+  { value: 'right', label: '▶️ ימין' },
+];
+
 export default function GridControls({
   rows, cols, onRowsChange, onColsChange,
-  onSmartSort, onQuickSort, onClearAll,
+  onSmartSort, onQuickSort, quickSortPref, onQuickSortPrefChange,
+  onClearAll,
   showNumbers, onToggleNumbers,
   satisfactionScore,
   unseatedCount,
@@ -67,9 +78,19 @@ export default function GridControls({
           <Wand2 className="w-4 h-4 ml-1" />
           {isLoading ? 'מסדר...' : 'סידור חכם (AI)'}
         </Button>
-        <Button variant="outline" size="sm" className="w-full" onClick={onQuickSort}>
-          <Shuffle className="w-4 h-4 ml-1" /> סידור מהיר
-        </Button>
+        <div className="space-y-1">
+          <label className="text-[11px] text-muted-foreground block">העדפה לסידור מהיר</label>
+          <select
+            value={quickSortPref}
+            onChange={e => onQuickSortPrefChange(e.target.value)}
+            className="w-full text-xs border border-border rounded-md px-2 py-1.5 bg-background text-foreground"
+          >
+            {QUICK_SORT_PREFS.map(p => <option key={p.value} value={p.value}>{p.label}</option>)}
+          </select>
+          <Button variant="outline" size="sm" className="w-full" onClick={onQuickSort}>
+            <Shuffle className="w-4 h-4 ml-1" /> סידור מהיר
+          </Button>
+        </div>
         <Button variant="ghost" size="sm" className="w-full text-destructive hover:text-destructive" onClick={onClearAll}>
           <RefreshCw className="w-4 h-4 ml-1" /> נקה הכל
         </Button>

@@ -64,21 +64,25 @@ export default function ClassroomGrid({ seats, students, rows, cols, showNumbers
               const student = seat.student_id ? studentMap[seat.student_id] : null;
               const conflict = student ? detectConflicts(seat, seats, students) : { type: null };
               const physicalViolation = student ? detectPhysicalViolation(seat, seats, student) : false;
+              // Pair spacing: add visual gap to the right or bottom of this cell
+              const pairRightStyle = seat.pair_right ? { marginLeft: '12px', borderLeft: '3px solid hsl(var(--primary)/0.3)' } : {};
+              const pairDownStyle = seat.pair_down ? { marginTop: '10px', borderTop: '3px solid hsl(var(--primary)/0.3)' } : {};
               return (
-                <SeatCard
-                  key={seat.id}
-                  seat={seat}
-                  student={student}
-                  conflictType={conflict.type}
-                  physicalViolation={physicalViolation}
-                  showNumbers={showNumbers}
-                  seatNumber={seatNumbers[seat.id]}
-                  isDraggingOver={draggingOver === seat.id}
-                  onDrop={handleDrop}
-                  onDragStart={() => setDraggingOver(null)}
-                  onClick={onSeatClick}
-                  teacherView={teacherView}
-                />
+                <div key={seat.id} style={{ ...pairRightStyle, ...pairDownStyle }}>
+                  <SeatCard
+                    seat={seat}
+                    student={student}
+                    conflictType={conflict.type}
+                    physicalViolation={physicalViolation}
+                    showNumbers={showNumbers}
+                    seatNumber={seatNumbers[seat.id]}
+                    isDraggingOver={draggingOver === seat.id}
+                    onDrop={handleDrop}
+                    onDragStart={() => setDraggingOver(null)}
+                    onClick={onSeatClick}
+                    teacherView={teacherView}
+                  />
+                </div>
               );
             })
           )}

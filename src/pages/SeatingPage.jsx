@@ -209,9 +209,17 @@ ${activeStudents.map(s => `- ${s.name}: גובה=${s.height||'בינוני'}, ש
     setIsLoading(false);
   }
 
+  const [quickSortPref, setQuickSortPref] = useState('none');
+
   function handleQuickSort() {
     const seatsWithFixed = seats.map(s => s.fixed_seat_number ? { ...s, is_locked: true } : s);
-    const sorted = smartSort(seatsWithFixed, students);
+    // Apply the selected preference to all students temporarily for this sort only
+    const studentsWithPref = quickSortPref === 'none' ? students : students.map(s => ({
+      ...s,
+      row_preference: ['front','middle','back'].includes(quickSortPref) ? quickSortPref : s.row_preference,
+      side_preference: ['left','center','right'].includes(quickSortPref) ? quickSortPref : s.side_preference,
+    }));
+    const sorted = smartSort(seatsWithFixed, studentsWithPref);
     setSeats(sorted);
     toast.success('סידור מהיר הושלם!');
   }
@@ -231,19 +239,29 @@ ${activeStudents.map(s => `- ${s.name}: גובה=${s.height||'בינוני'}, ש
 
   function handleQuickAction(action, payload) {
     if (!quickEditSeat) return;
-    setSeats(prev => prev.map(s => {
-      if (s.id !== quickEditSeat.id) return s;
-      if (action === 'lock') return { ...s, is_locked: !s.is_locked };
-      if (action === 'hide') return { ...s, is_hidden: !s.is_hidden, student_id: s.is_hidden ? s.student_id : null };
-      if (action === 'gap') return { ...s, is_gap: !s.is_gap, student_id: s.is_gap ? s.student_id : null };
-      if (action === 'block') {
-        const blocking = payload !== null;
-        return { ...s, is_blocked: blocking, block_reason: blocking ? payload : null, student_id: blocking ? null : s.student_id };
-      }
-      if (action === 'fixSeat') return { ...s, fixed_seat_number: payload || null, is_locked: payload ? true : s.is_locked };
-      if (action === 'lockFixed') return { ...s, is_locked: !s.is_locked };
-      return s;
-    }));
+    setSeats(prev => {
+      const next = prev.map(s => {
+        if (s.id !== quickEditSeat.id) return s;
+        if (action === 'lock') return { ...s, is_locked: !s.is_locked };
+        if (action === 'hide') return { ...s, is_hidden: !s.is_hidden, student_id: s.is_hidden ? s.student_id : null };
+        if (action === 'gap') return { ...s, is_gap: !s.is_gap, student_id: s.is_gap ? s.student_id : null };
+        if (action === 'block') {
+          const blocking = payload !== null;
+          return { ...s, is_blocked: blocking, block_reason: blocking ? payload : null, student_id: blocking ? null : s.student_id };
+        }
+        if (action === 'fixSeat') return { ...s, fixed_seat_number: payload || null, is_locked: payload ? true : s.is_locked };
+        if (action === 'lockFixed') return { ...s, is_locked: !s.is_locked };
+        if (action === 'pairRight') {
+          // Mark this seat as paired with the one to its right → insert visual gap after
+          return { ...s, pair_right: !s.pair_right };
+        }
+        if (action === 'pairDown') {
+          return { ...s, pair_down: !s.pair_down };
+        }
+        return s;
+      });
+      return next;
+    });
     setQuickEditSeat(prev => {
       if (!prev) return null;
       if (action === 'lock') return { ...prev, is_locked: !prev.is_locked };
@@ -252,6 +270,8 @@ ${activeStudents.map(s => `- ${s.name}: גובה=${s.height||'בינוני'}, ש
       if (action === 'block') return { ...prev, is_blocked: payload !== null, block_reason: payload };
       if (action === 'fixSeat') return { ...prev, fixed_seat_number: payload || null, is_locked: payload ? true : prev.is_locked };
       if (action === 'lockFixed') return { ...prev, is_locked: !prev.is_locked };
+      if (action === 'pairRight') return { ...prev, pair_right: !prev.pair_right };
+      if (action === 'pairDown') return { ...prev, pair_down: !prev.pair_down };
       return prev;
     });
   }
@@ -289,6 +309,8 @@ ${activeStudents.map(s => `- ${s.name}: גובה=${s.height||'בינוני'}, ש
         onColsChange={handleColsChange}
         onSmartSort={handleSmartSort}
         onQuickSort={handleQuickSort}
+        quickSortPref={quickSortPref}
+        onQuickSortPrefChange={setQuickSortPref}
         onClearAll={handleClearAll}
         showNumbers={showNumbers}
         onToggleNumbers={() => setShowNumbers(v => !v)}
@@ -320,6 +342,7 @@ ${activeStudents.map(s => `- ${s.name}: גובה=${s.height||'בינוני'}, ש
         onToggle={() => { setQuickEditMode(v => !v); setQuickEditSeat(null); }}
         onQuickAction={handleQuickAction}
         selectedSeat={quickEditSeat}
+        seats={seats}
         students={students}
       />
       {lastSaved && (

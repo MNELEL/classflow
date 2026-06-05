@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Lock, Unlock, EyeOff, Minus, X, Ban, MapPin } from 'lucide-react';
+import { Lock, Unlock, EyeOff, Minus, X, Ban, MapPin, ArrowRight, ArrowDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const BLOCK_REASONS = [
@@ -12,7 +12,7 @@ const BLOCK_REASONS = [
   { value: 'other', label: '⚠️ סיבה אחרת' },
 ];
 
-export default function QuickEditMode({ active, onToggle, onQuickAction, selectedSeat, students = [] }) {
+export default function QuickEditMode({ active, onToggle, onQuickAction, selectedSeat, seats = [], students = [] }) {
   const [showBlockReasons, setShowBlockReasons] = useState(false);
   const [fixedSeatInput, setFixedSeatInput] = useState('');
 
@@ -113,6 +113,33 @@ export default function QuickEditMode({ active, onToggle, onQuickAction, selecte
               </Button>
             </div>
           )}
+        </div>
+
+        {/* Pair seats (double-desk) */}
+        <div className="col-span-2 pt-1 border-t border-border/40 space-y-1">
+          <p className="text-[10px] text-muted-foreground font-medium">🪑 שולחן דו-מושבי (מאחד עם שכן)</p>
+          <div className="flex gap-1">
+            <Button
+              size="sm"
+              variant={selectedSeat?.pair_right ? 'default' : 'outline'}
+              className="text-xs h-8 flex-1"
+              disabled={!selectedSeat}
+              onClick={() => onQuickAction('pairRight')}
+            >
+              <ArrowRight className="w-3 h-3 ml-1" />
+              {selectedSeat?.pair_right ? 'בטל צמד ימין' : 'צמד ימין'}
+            </Button>
+            <Button
+              size="sm"
+              variant={selectedSeat?.pair_down ? 'default' : 'outline'}
+              className="text-xs h-8 flex-1"
+              disabled={!selectedSeat}
+              onClick={() => onQuickAction('pairDown')}
+            >
+              <ArrowDown className="w-3 h-3 ml-1" />
+              {selectedSeat?.pair_down ? 'בטל צמד למטה' : 'צמד למטה'}
+            </Button>
+          </div>
         </div>
 
         {/* Block / Unblock */}
