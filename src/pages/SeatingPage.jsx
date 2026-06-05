@@ -14,8 +14,9 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Lock, Unlock, EyeOff, SlidersHorizontal, Users, Undo2, Redo2 } from 'lucide-react';
+import { Lock, Unlock, EyeOff, SlidersHorizontal, Users, BarChart2 } from 'lucide-react';
 import { toast } from 'sonner';
+import SatisfactionReport from '@/components/classroom/SatisfactionReport';
 
 const STORAGE_KEY = 'classmanager_seats';
 const ARRANGEMENT_KEY = 'classmanager_arrangement';
@@ -262,6 +263,7 @@ ${overrideLines ? `\nהעדפות ייבוא נוספות:\n${overrideLines}` : 
   const [quickSortPref, setQuickSortPref] = useState('none');
   const [atLeastOneSatisfied, setAtLeastOneSatisfied] = useState(false);
   const [customConditions, setCustomConditions] = useState([]);
+  const [showSatisfactionReport, setShowSatisfactionReport] = useState(false);
 
   function handleImportPreferences(mappings) {
     // mappings may contain: { student_name, row_preference, side_preference, friends, avoid, custom_condition }
@@ -497,6 +499,19 @@ ${overrideLines ? `\nהעדפות ייבוא נוספות:\n${overrideLines}` : 
             </Sheet>
           </div>
 
+          {/* Satisfaction score bar */}
+          <div className="flex items-center justify-between mb-2 px-1">
+            <div className="flex items-center gap-2">
+              <span className={`text-sm font-bold ${satisfactionScore >= 80 ? 'text-green-600' : satisfactionScore >= 50 ? 'text-yellow-600' : 'text-red-500'}`}>
+                {satisfactionScore}%
+              </span>
+              <span className="text-xs text-muted-foreground">שביעות רצון</span>
+            </div>
+            <Button size="sm" variant="outline" className="gap-1.5 text-xs h-7" onClick={() => setShowSatisfactionReport(true)}>
+              <BarChart2 className="w-3.5 h-3.5" /> דוח מפורט
+            </Button>
+          </div>
+
           <ClassroomGrid
             seats={seats}
             students={students}
@@ -514,6 +529,18 @@ ${overrideLines ? `\nהעדפות ייבוא נוספות:\n${overrideLines}` : 
           {StudentsPanel}
         </div>
       </div>
+
+      {/* Satisfaction Report Dialog */}
+      <Dialog open={showSatisfactionReport} onOpenChange={setShowSatisfactionReport}>
+        <DialogContent className="max-w-md max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <BarChart2 className="w-4 h-4" /> דוח שביעות רצון — ניקוד סידור
+            </DialogTitle>
+          </DialogHeader>
+          <SatisfactionReport seats={seats} students={students} />
+        </DialogContent>
+      </Dialog>
 
       {/* Seat detail dialog */}
       <Dialog open={!!selectedSeat} onOpenChange={() => setSelectedSeat(null)}>
