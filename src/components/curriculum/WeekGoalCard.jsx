@@ -67,15 +67,23 @@ export default function WeekGoalCard({ goal, onToggleComplete, onUpdate }) {
             <div className="px-4 pb-3 space-y-3">
               {goal.external_links?.length > 0 && (
                 <div>
-                  <p className="text-[11px] font-bold text-muted-foreground mb-1.5">קישורים חיצוניים</p>
+                  <p className="text-[11px] font-bold text-muted-foreground mb-1.5">קישורים ומקורות</p>
                   <div className="space-y-1.5">
-                    {goal.external_links.map((link, i) => (
-                      <a key={i} href={link.url} target="_blank" rel="noopener noreferrer"
-                        className="flex items-center gap-2 p-2.5 rounded-lg border border-blue-200 bg-blue-50 hover:bg-blue-100 transition-colors">
-                        <ExternalLink className="w-3.5 h-3.5 text-blue-600 shrink-0" />
-                        <span className="text-xs text-blue-800 font-medium truncate">{link.label}</span>
-                      </a>
-                    ))}
+                    {goal.external_links.map((link, i) => {
+                      const isSefaria = link.url?.includes('sefaria.org');
+                      const isHebrewBooks = link.url?.includes('hebrewbooks.org');
+                      const bg = isSefaria ? 'border-emerald-200 bg-emerald-50 hover:bg-emerald-100' : isHebrewBooks ? 'border-amber-200 bg-amber-50 hover:bg-amber-100' : 'border-blue-200 bg-blue-50 hover:bg-blue-100';
+                      const textColor = isSefaria ? 'text-emerald-800' : isHebrewBooks ? 'text-amber-800' : 'text-blue-800';
+                      const icon = isSefaria ? '📜' : isHebrewBooks ? '📚' : '🔗';
+                      return (
+                        <a key={i} href={link.url} target="_blank" rel="noopener noreferrer"
+                          className={`flex items-center gap-2 p-2.5 rounded-lg border ${bg} transition-colors`}>
+                          <span className="text-sm shrink-0">{icon}</span>
+                          <span className={`text-xs ${textColor} font-medium flex-1 truncate`}>{link.label}</span>
+                          <ExternalLink className={`w-3 h-3 ${textColor} opacity-60 shrink-0`} />
+                        </a>
+                      );
+                    })}
                   </div>
                 </div>
               )}

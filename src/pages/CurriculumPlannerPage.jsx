@@ -10,6 +10,7 @@ import { toast } from 'sonner';
 import { AnimatePresence, motion } from 'framer-motion';
 import WeekCard from '@/components/curriculum/WeekCard';
 import AppLayout from '@/components/layout/AppLayout';
+import TractateSelector from '@/components/curriculum/TractateSelector';
 
 export default function CurriculumPlannerPage() {
   const [showForm, setShowForm] = useState(false);
@@ -44,25 +45,31 @@ export default function CurriculumPlannerPage() {
         tags: i.tags,
       }));
 
+      const isBavaKamma = freeText.includes('בבא קמא') || subject?.includes('בבא קמא');
       const result = await base44.integrations.Core.InvokeLLM({
-        prompt: `אתה עוזר למורה יהודי/כללי לתכנן הספקים שבועיים.
+        prompt: `אתה עוזר מומחה למורה ישיבה/כולל לתכנון הספקים שבועיים בתלמוד בבלי ובלימודי קודש.
 המורה כתב: "${freeText}"
 מקצוע/נושא: "${subject || 'לא צוין'}"
 
 משימתך:
-1. פרק את הטקסט להספקים ספציפיים (כל יחידת תוכן = פריט נפרד).
-2. לכל הספק — מצא קישורים רלוונטיים ממקורות אמינים: Sefaria (sefaria.org), HebrewBooks (hebrewbooks.org), מאגרי ידע חינמיים.
-3. לכל הספק — בדוק אם קיים בספרייה הפנימית (הרשימה למטה) ואם כן — ציין את ה-id שלו.
-4. הצע המשך לוגי לשבוע הבא ("suggested_next").
+1. פרק את הטקסט להספקים ספציפיים (כל דף / יחידת תוכן = פריט נפרד).
+2. לכל הספק — בנה קישור **מדויק** ל-Sefaria:
+   ${isBavaKamma ? `
+   עבור בבא קמא:
+   - קישור לדף לפי פורמט: https://www.sefaria.org/Bava_Kamma.[NUM][SIDE]?lang=bi
+     כאשר NUM = מספר הדף בערבי, SIDE = a (עמוד א) או b (עמוד ב)
+     לדוגמה: דף ל עמוד א → https://www.sefaria.org/Bava_Kamma.30a?lang=bi
+   - קישור נוסף ל-HebrewBooks למי שמעדיף: https://hebrewbooks.org/shas.aspx?mesechta=3&daf=[NUM]&format=pdf
+   - אם יש רש"י / תוספות מוזכרים — הוסף קישור ספציפי.
+   ` : ''}
+   - לתלמוד בבלי אחר: https://www.sefaria.org/[TRACTATE_EN].[DafNum][a/b]?lang=bi
+   - לתנ"ך: https://www.sefaria.org/[Book].[chapter].[verse]?lang=bi
+   - לרמב"ם: https://www.sefaria.org/Mishneh_Torah,[Section].[chapter].[halacha]?lang=bi
+3. לכל הספק — בדוק אם קיים בספרייה הפנימית ואם כן — ציין את ה-id שלו.
+4. הצע המשך לוגי לשבוע הבא ("suggested_next") — הדף הבא, הסוגיה הבאה.
 
 ספריית המורה:
 ${JSON.stringify(libraryContext)}
-
-הנחיות לקישורים:
-- לתלמוד בבלי: https://www.sefaria.org/[מסכת].[דף][עמוד]?lang=he
-- לתנ"ך: https://www.sefaria.org/[ספר].[פרק].[פסוק]?lang=he
-- לספרות הלכה כללית: https://hebrewbooks.org/
-- לחומרים כלליים תן קישור לחיפוש או אתר רלוונטי.
 
 החזר JSON בלבד.`,
         add_context_from_internet: true,
@@ -169,11 +176,16 @@ ${JSON.stringify(libraryContext)}
                   </div>
 
                   <div>
-                    <label className="text-xs text-muted-foreground mb-1 block">מה צריך להספיק השבוע? (כתוב בחופשיות)</label>
+                    <div className="flex items-center justify-between mb-1">
+                      <label className="text-xs text-muted-foreground">מה צריך להספיק השבוע? (כתוב בחופשיות)</label>
+                      <TractateSelector
+                        onInsertText={text => setFreeText(prev => prev ? prev + '\n' + text : text)}
+                      />
+                    </div>
                     <Textarea
                       value={freeText}
                       onChange={e => setFreeText(e.target.value)}
-                      placeholder={'דוגמה:\nבבא קמא דף ל עמוד א עד דף ל עמוד ב\nפרשת השבוע — בראשית פרקים א-ב\nחשבון — כפל וחילוק עד 100'}
+                      placeholder={'דוגמאות:\nבבא קמא דף ל עמוד א עד דף לב עמוד א\nסוגיית ארבעה אבות נזיקין — עד "השן והרגל"\nרש"י ד"ה "המניח" עד סוף הפרק'}
                       className="text-sm min-h-[120px] leading-relaxed"
                     />
                   </div>
