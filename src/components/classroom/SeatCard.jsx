@@ -13,7 +13,7 @@ const SPECIAL_ICONS = {
 
 export default function SeatCard({
   seat, student, conflictType, physicalViolation,
-  showNumbers, seatNumber, onDrop, onDragStart, onClick, isDraggingOver,
+  showNumbers, seatNumber, onDrop, onDragStart, onClick, isDraggingOver, teacherView = true,
 }) {
   const [isHovered, setIsHovered] = useState(false);
 
@@ -73,7 +73,7 @@ export default function SeatCard({
         'relative rounded-xl border-2 cursor-pointer select-none flex flex-col items-center justify-center p-1.5 min-h-[64px] group transition-shadow duration-200',
         bgColor,
         isDraggingOver && !isEmpty && 'ring-2 ring-primary ring-offset-1',
-        seat.is_locked && 'ring-1 ring-yellow-400/60',
+        seat.is_locked && teacherView && 'ring-1 ring-yellow-400/60',
       )}
       onDragOver={handleDragOver}
       onDrop={handleDrop}
@@ -86,10 +86,13 @@ export default function SeatCard({
       {showNumbers && (
         <span className="absolute top-0.5 right-1 text-[8px] text-muted-foreground/60 font-mono">{seatNumber}</span>
       )}
-      {seat.is_locked && (
+      {seat.is_locked && teacherView && (
         <span className="absolute top-0.5 left-1 text-yellow-500/80">
           <Lock className="w-2.5 h-2.5" />
         </span>
+      )}
+      {seat.fixed_seat_number && teacherView && (
+        <span className="absolute bottom-0.5 left-1 text-[8px] text-blue-500/80 font-bold">#{seat.fixed_seat_number}</span>
       )}
 
       <AnimatePresence mode="wait">

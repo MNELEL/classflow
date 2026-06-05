@@ -131,7 +131,9 @@ export default function SeatingPage() {
     setIsLoading(true);
     try {
       // First run the local smart algorithm — this now guarantees full placement
-      let sorted = smartSort(seats, students);
+      // Lock fixed-seat students before sorting
+      const seatsWithFixed = seats.map(s => s.fixed_seat_number ? { ...s, is_locked: true } : s);
+      let sorted = smartSort(seatsWithFixed, students);
 
       // Optionally enrich with AI ordering hints
       try {
@@ -162,8 +164,12 @@ ${activeStudents.map(s => `- ${s.name}: גובה=${s.height||'בינוני'}, ש
         });
 
         if (result?.assignments?.length > 0) {
-          const newSeats = seats.map(s => ({ ...s, student_id: (s.is_locked && !s.is_blocked) ? s.student_id : null }));
-          const lockedIds = new Set(seats.filter(s => s.is_locked && !s.is_blocked).map(s => s.student_id));
+          // Preserve locked AND fixed-seat assignments
+          const newSeats = seats.map(s => ({
+            ...s,
+            student_id: ((s.is_locked || s.fixed_seat_number) && !s.is_blocked) ? s.student_id : null
+          }));
+          const lockedIds = new Set(seats.filter(s => (s.is_locked || s.fixed_seat_number) && !s.is_blocked).map(s => s.student_id));
           const usedSeats = new Set();
 
           for (const a of result.assignments) {
@@ -204,13 +210,14 @@ ${activeStudents.map(s => `- ${s.name}: גובה=${s.height||'בינוני'}, ש
   }
 
   function handleQuickSort() {
-    const sorted = smartSort(seats, students);
+    const seatsWithFixed = seats.map(s => s.fixed_seat_number ? { ...s, is_locked: true } : s);
+    const sorted = smartSort(seatsWithFixed, students);
     setSeats(sorted);
     toast.success('סידור מהיר הושלם!');
   }
 
   function handleClearAll() {
-    setSeats(prev => prev.map(s => ({ ...s, student_id: s.is_locked ? s.student_id : null })));
+    setSeats(prev => prev.map(s => ({ ...s, student_id: (s.is_locked || s.fixed_seat_number) ? s.student_id : null })));
     toast('הסידור נוקה');
   }
 
@@ -230,9 +237,11 @@ ${activeStudents.map(s => `- ${s.name}: גובה=${s.height||'בינוני'}, ש
       if (action === 'hide') return { ...s, is_hidden: !s.is_hidden, student_id: s.is_hidden ? s.student_id : null };
       if (action === 'gap') return { ...s, is_gap: !s.is_gap, student_id: s.is_gap ? s.student_id : null };
       if (action === 'block') {
-        const blocking = payload !== null; // null = unblock
+        const blocking = payload !== null;
         return { ...s, is_blocked: blocking, block_reason: blocking ? payload : null, student_id: blocking ? null : s.student_id };
       }
+      if (action === 'fixSeat') return { ...s, fixed_seat_number: payload || null, is_locked: payload ? true : s.is_locked };
+      if (action === 'lockFixed') return { ...s, is_locked: !s.is_locked };
       return s;
     }));
     setQuickEditSeat(prev => {
@@ -241,6 +250,8 @@ ${activeStudents.map(s => `- ${s.name}: גובה=${s.height||'בינוני'}, ש
       if (action === 'hide') return { ...prev, is_hidden: !prev.is_hidden };
       if (action === 'gap') return { ...prev, is_gap: !prev.is_gap };
       if (action === 'block') return { ...prev, is_blocked: payload !== null, block_reason: payload };
+      if (action === 'fixSeat') return { ...prev, fixed_seat_number: payload || null, is_locked: payload ? true : prev.is_locked };
+      if (action === 'lockFixed') return { ...prev, is_locked: !prev.is_locked };
       return prev;
     });
   }
@@ -309,6 +320,7 @@ ${activeStudents.map(s => `- ${s.name}: גובה=${s.height||'בינוני'}, ש
         onToggle={() => { setQuickEditMode(v => !v); setQuickEditSeat(null); }}
         onQuickAction={handleQuickAction}
         selectedSeat={quickEditSeat}
+        students={students}
       />
       {lastSaved && (
         <p className="text-[10px] text-muted-foreground text-center">
@@ -378,6 +390,7 @@ ${activeStudents.map(s => `- ${s.name}: גובה=${s.height||'בינוני'}, ש
             showNumbers={showNumbers}
             onSeatClick={handleSeatClick}
             onMoveStu={handleMoveStu}
+            teacherView={true}
           />
         </div>
 

@@ -6,7 +6,7 @@ import { motion } from 'framer-motion';
 
 const BOARD_LABEL_KEY = 'classmanager_board_label';
 
-export default function ClassroomGrid({ seats, students, rows, cols, showNumbers, onSeatClick, onMoveStu }) {
+export default function ClassroomGrid({ seats, students, rows, cols, showNumbers, onSeatClick, onMoveStu, teacherView = true }) {
   const [boardLabel, setBoardLabel] = useState(() => {
     try { return localStorage.getItem(BOARD_LABEL_KEY) || 'לוח המורה'; } catch { return 'לוח המורה'; }
   });
@@ -77,6 +77,7 @@ export default function ClassroomGrid({ seats, students, rows, cols, showNumbers
                   onDrop={handleDrop}
                   onDragStart={() => setDraggingOver(null)}
                   onClick={onSeatClick}
+                  teacherView={teacherView}
                 />
               );
             })
