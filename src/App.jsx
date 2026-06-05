@@ -2,12 +2,13 @@ import { Toaster } from "@/components/ui/toaster"
 import { Toaster as Sonner } from 'sonner';
 import { QueryClientProvider } from '@tanstack/react-query'
 import { queryClientInstance } from '@/lib/query-client'
-import { BrowserRouter as Router, Route, Routes, useLocation } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Routes, useLocation, Navigate } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useEffect, lazy, Suspense } from 'react';
 import PageNotFound from './lib/PageNotFound';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
+import ProtectedRoute from '@/components/ProtectedRoute';
 
 // Lazy-loaded pages for code splitting
 const SeatingPage          = lazy(() => import('./pages/SeatingPage'));
@@ -27,6 +28,10 @@ const QuestionBankPage     = lazy(() => import('./pages/QuestionBankPage'));
 const LessonAnalyzerPage   = lazy(() => import('./pages/LessonAnalyzerPage'));
 const CurriculumPlannerPage = lazy(() => import('./pages/CurriculumPlannerPage'));
 const HomeworkPage         = lazy(() => import('./pages/HomeworkPage'));
+const Login                = lazy(() => import('./pages/Login'));
+const Register             = lazy(() => import('./pages/Register'));
+const ForgotPassword       = lazy(() => import('./pages/ForgotPassword'));
+const ResetPassword        = lazy(() => import('./pages/ResetPassword'));
 
 const pageVariants = {
   initial: { opacity: 0, x: 20 },
@@ -47,24 +52,34 @@ function AnimatedRoutes() {
       <motion.div key={location.pathname} variants={pageVariants} initial="initial" animate="animate" exit="exit" style={{ height: '100%' }}>
         <Suspense fallback={<PageLoader />}>
           <Routes location={location}>
-            <Route path="/"               element={<DashboardPage />} />
-            <Route path="/seating"        element={<SeatingPage />} />
-            <Route path="/students"       element={<StudentsPage />} />
-            <Route path="/history"        element={<HistoryPage />} />
-            <Route path="/settings"       element={<SettingsPage />} />
-            <Route path="/reports"        element={<ReportsPage />} />
-            <Route path="/attendance"     element={<AttendancePage />} />
-            <Route path="/grades"         element={<GradeManagementPage />} />
-            <Route path="/library"        element={<LibraryPage />} />
-            <Route path="/gamification"   element={<GamificationPage />} />
-            <Route path="/toolkit"        element={<ToolkitPage />} />
-            <Route path="/parents"        element={<ParentPortalPage />} />
-            <Route path="/worksheets"     element={<WorksheetGeneratorPage />} />
-            <Route path="/question-bank"  element={<QuestionBankPage />} />
-            <Route path="/lesson-analyzer" element={<LessonAnalyzerPage />} />
-            <Route path="/curriculum"     element={<CurriculumPlannerPage />} />
-            <Route path="/homework"       element={<HomeworkPage />} />
-            <Route path="*"              element={<PageNotFound />} />
+            {/* Public auth routes */}
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
+            <Route path="/reset-password" element={<ResetPassword />} />
+
+            {/* Protected app routes */}
+            <Route element={<ProtectedRoute unauthenticatedElement={<Navigate to="/login" replace />} />}>
+              <Route path="/" element={<DashboardPage />} />
+              <Route path="/seating" element={<SeatingPage />} />
+              <Route path="/students" element={<StudentsPage />} />
+              <Route path="/history" element={<HistoryPage />} />
+              <Route path="/settings" element={<SettingsPage />} />
+              <Route path="/reports" element={<ReportsPage />} />
+              <Route path="/attendance" element={<AttendancePage />} />
+              <Route path="/grades" element={<GradeManagementPage />} />
+              <Route path="/library" element={<LibraryPage />} />
+              <Route path="/gamification" element={<GamificationPage />} />
+              <Route path="/toolkit" element={<ToolkitPage />} />
+              <Route path="/parents" element={<ParentPortalPage />} />
+              <Route path="/worksheets" element={<WorksheetGeneratorPage />} />
+              <Route path="/question-bank" element={<QuestionBankPage />} />
+              <Route path="/lesson-analyzer" element={<LessonAnalyzerPage />} />
+              <Route path="/curriculum" element={<CurriculumPlannerPage />} />
+              <Route path="/homework" element={<HomeworkPage />} />
+            </Route>
+
+            <Route path="*" element={<PageNotFound />} />
           </Routes>
         </Suspense>
       </motion.div>
