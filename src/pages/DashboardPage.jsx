@@ -11,6 +11,7 @@ import TasksAlert from '@/components/dashboard/TasksAlert';
 import AbsenceAlert from '@/components/dashboard/AbsenceAlert';
 import AcademicCalendar from '@/components/dashboard/AcademicCalendar';
 import SmartGuide from '@/components/dashboard/SmartGuide';
+import DailyBriefing from '@/components/dashboard/DailyBriefing';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { calcSatisfactionScore } from '@/lib/seatingUtils';
@@ -134,6 +135,9 @@ export default function DashboardPage() {
           </div>
           <p className="text-muted-foreground text-sm">מצב הכיתה שלך במבט אחד</p>
         </motion.div>
+
+        {/* Daily Briefing */}
+        <DailyBriefing students={students} />
 
         {/* Stats grid */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
