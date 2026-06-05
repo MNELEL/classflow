@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, memo } from 'react';
 import { cn } from '@/lib/utils';
 import { Lock, Eye, Volume2, Zap, Heart, Ban, AlertTriangle, CheckCircle2, MapPin } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -11,7 +11,7 @@ const SPECIAL_ICONS = {
   adhd: <Zap className="w-2.5 h-2.5" />,
 };
 
-export default function SeatCard({
+const SeatCard = memo(function SeatCard({
   seat, student, conflictType, physicalViolation,
   showNumbers, seatNumber, onDrop, onDragStart, onClick, isDraggingOver, teacherView = true,
 }) {
@@ -166,4 +166,6 @@ export default function SeatCard({
       )}
     </motion.div>
   );
-}
+});
+
+export default SeatCard;

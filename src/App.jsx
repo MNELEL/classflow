@@ -4,27 +4,29 @@ import { QueryClientProvider } from '@tanstack/react-query'
 import { queryClientInstance } from '@/lib/query-client'
 import { BrowserRouter as Router, Route, Routes, useLocation } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
-import { useEffect } from 'react';
+import { useEffect, lazy, Suspense } from 'react';
 import PageNotFound from './lib/PageNotFound';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
-import SeatingPage from './pages/SeatingPage';
-import StudentsPage from './pages/StudentsPage';
-import HistoryPage from './pages/HistoryPage';
-import DashboardPage from './pages/DashboardPage';
-import SettingsPage from './pages/SettingsPage';
-import ReportsPage from './pages/ReportsPage';
-import AttendancePage from './pages/AttendancePage';
-import GradeManagementPage from './pages/GradeManagementPage';
-import LibraryPage from './pages/LibraryPage';
-import GamificationPage from './pages/GamificationPage';
-import ToolkitPage from './pages/ToolkitPage';
-import ParentPortalPage from './pages/ParentPortalPage';
-import WorksheetGeneratorPage from './pages/WorksheetGeneratorPage';
-import QuestionBankPage from './pages/QuestionBankPage';
-import LessonAnalyzerPage from './pages/LessonAnalyzerPage';
-import CurriculumPlannerPage from './pages/CurriculumPlannerPage';
-import HomeworkPage from './pages/HomeworkPage';
+
+// Lazy-loaded pages for code splitting
+const SeatingPage          = lazy(() => import('./pages/SeatingPage'));
+const StudentsPage         = lazy(() => import('./pages/StudentsPage'));
+const HistoryPage          = lazy(() => import('./pages/HistoryPage'));
+const DashboardPage        = lazy(() => import('./pages/DashboardPage'));
+const SettingsPage         = lazy(() => import('./pages/SettingsPage'));
+const ReportsPage          = lazy(() => import('./pages/ReportsPage'));
+const AttendancePage       = lazy(() => import('./pages/AttendancePage'));
+const GradeManagementPage  = lazy(() => import('./pages/GradeManagementPage'));
+const LibraryPage          = lazy(() => import('./pages/LibraryPage'));
+const GamificationPage     = lazy(() => import('./pages/GamificationPage'));
+const ToolkitPage          = lazy(() => import('./pages/ToolkitPage'));
+const ParentPortalPage     = lazy(() => import('./pages/ParentPortalPage'));
+const WorksheetGeneratorPage = lazy(() => import('./pages/WorksheetGeneratorPage'));
+const QuestionBankPage     = lazy(() => import('./pages/QuestionBankPage'));
+const LessonAnalyzerPage   = lazy(() => import('./pages/LessonAnalyzerPage'));
+const CurriculumPlannerPage = lazy(() => import('./pages/CurriculumPlannerPage'));
+const HomeworkPage         = lazy(() => import('./pages/HomeworkPage'));
 
 const pageVariants = {
   initial: { opacity: 0, x: 20 },
@@ -32,31 +34,39 @@ const pageVariants = {
   exit: { opacity: 0, x: -20, transition: { duration: 0.15, ease: 'easeIn' } },
 };
 
+const PageLoader = () => (
+  <div className="fixed inset-0 flex items-center justify-center">
+    <div className="w-8 h-8 border-4 border-primary/20 border-t-primary rounded-full animate-spin" />
+  </div>
+);
+
 function AnimatedRoutes() {
   const location = useLocation();
   return (
     <AnimatePresence mode="wait">
       <motion.div key={location.pathname} variants={pageVariants} initial="initial" animate="animate" exit="exit" style={{ height: '100%' }}>
-        <Routes location={location}>
-          <Route path="/" element={<DashboardPage />} />
-          <Route path="/seating" element={<SeatingPage />} />
-          <Route path="/students" element={<StudentsPage />} />
-          <Route path="/history" element={<HistoryPage />} />
-          <Route path="/settings" element={<SettingsPage />} />
-          <Route path="/reports" element={<ReportsPage />} />
-          <Route path="/attendance" element={<AttendancePage />} />
-          <Route path="/grades" element={<GradeManagementPage />} />
-          <Route path="/library" element={<LibraryPage />} />
-          <Route path="/gamification" element={<GamificationPage />} />
-          <Route path="/toolkit" element={<ToolkitPage />} />
-          <Route path="/parents" element={<ParentPortalPage />} />
-          <Route path="/worksheets" element={<WorksheetGeneratorPage />} />
-          <Route path="/question-bank" element={<QuestionBankPage />} />
-          <Route path="/lesson-analyzer" element={<LessonAnalyzerPage />} />
-          <Route path="/curriculum" element={<CurriculumPlannerPage />} />
-          <Route path="/homework" element={<HomeworkPage />} />
-          <Route path="*" element={<PageNotFound />} />
-        </Routes>
+        <Suspense fallback={<PageLoader />}>
+          <Routes location={location}>
+            <Route path="/"               element={<DashboardPage />} />
+            <Route path="/seating"        element={<SeatingPage />} />
+            <Route path="/students"       element={<StudentsPage />} />
+            <Route path="/history"        element={<HistoryPage />} />
+            <Route path="/settings"       element={<SettingsPage />} />
+            <Route path="/reports"        element={<ReportsPage />} />
+            <Route path="/attendance"     element={<AttendancePage />} />
+            <Route path="/grades"         element={<GradeManagementPage />} />
+            <Route path="/library"        element={<LibraryPage />} />
+            <Route path="/gamification"   element={<GamificationPage />} />
+            <Route path="/toolkit"        element={<ToolkitPage />} />
+            <Route path="/parents"        element={<ParentPortalPage />} />
+            <Route path="/worksheets"     element={<WorksheetGeneratorPage />} />
+            <Route path="/question-bank"  element={<QuestionBankPage />} />
+            <Route path="/lesson-analyzer" element={<LessonAnalyzerPage />} />
+            <Route path="/curriculum"     element={<CurriculumPlannerPage />} />
+            <Route path="/homework"       element={<HomeworkPage />} />
+            <Route path="*"              element={<PageNotFound />} />
+          </Routes>
+        </Suspense>
       </motion.div>
     </AnimatePresence>
   );
@@ -65,11 +75,9 @@ function AnimatedRoutes() {
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
 
-  // Sync system dark mode preference
   useEffect(() => {
     const mq = window.matchMedia('(prefers-color-scheme: dark)');
     const savedSettings = (() => { try { return JSON.parse(localStorage.getItem('classmanager_settings') || '{}'); } catch { return {}; } })();
-    // Only apply system preference if user hasn't explicitly set a theme
     if (!savedSettings.theme) {
       if (mq.matches) document.documentElement.classList.add('dark');
       else document.documentElement.classList.remove('dark');
@@ -86,20 +94,12 @@ const AuthenticatedApp = () => {
   }, []);
 
   if (isLoadingPublicSettings || isLoadingAuth) {
-    return (
-      <div className="fixed inset-0 flex items-center justify-center">
-        <div className="w-8 h-8 border-4 border-primary/20 border-t-primary rounded-full animate-spin"></div>
-      </div>
-    );
+    return <PageLoader />;
   }
 
   if (authError) {
-    if (authError.type === 'user_not_registered') {
-      return <UserNotRegisteredError />;
-    } else if (authError.type === 'auth_required') {
-      navigateToLogin();
-      return null;
-    }
+    if (authError.type === 'user_not_registered') return <UserNotRegisteredError />;
+    if (authError.type === 'auth_required') { navigateToLogin(); return null; }
   }
 
   return <AnimatedRoutes />;

@@ -294,11 +294,11 @@ function DraftCard({ card, students, isEditing, onEdit, onUpdate, onRemove }) {
             </div>
             <div>
               <label className="text-xs text-muted-foreground mb-1 block">ציון</label>
-              <Input type="number" value={card.score} onChange={e => onUpdate('score', e.target.value)} className="h-8 text-sm" />
+              <Input type="number" inputMode="numeric" value={card.score} onChange={e => onUpdate('score', e.target.value)} className="h-8 text-sm" />
             </div>
             <div>
               <label className="text-xs text-muted-foreground mb-1 block">מתוך</label>
-              <Input type="number" value={card.max_score} onChange={e => onUpdate('max_score', e.target.value)} className="h-8 text-sm" />
+              <Input type="number" inputMode="numeric" value={card.max_score} onChange={e => onUpdate('max_score', e.target.value)} className="h-8 text-sm" />
             </div>
           </div>
           <div>

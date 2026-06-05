@@ -37,11 +37,17 @@ export default function AppLayout({ children }) {
   const handleNavClick = useCallback((e, path) => {
     if (location.pathname === path) {
       e.preventDefault();
-      navigate(path, { replace: true });
-      // Scroll the main content area back to top
-      document.querySelector('main')?.scrollTo({ top: 0, behavior: 'smooth' });
+      // Scroll every scrollable child inside <main> back to top
+      const main = document.querySelector('main');
+      if (main) {
+        main.scrollTo({ top: 0, behavior: 'smooth' });
+        // Also scroll any overflow-y children (e.g. inner scroll containers)
+        main.querySelectorAll('[class*="overflow-y"]').forEach(el => {
+          el.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+      }
     }
-  }, [location.pathname, navigate]);
+  }, [location.pathname]);
   const isDashboard = location.pathname === '/';
   const title = branding.page_titles?.[location.pathname] || branding.school_name || 'ClassManager Pro';
 
