@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { usePullToRefresh } from '@/hooks/usePullToRefresh';
@@ -6,17 +6,20 @@ import PullToRefreshIndicator from '@/components/ui/PullToRefreshIndicator';
 import AppLayout from '@/components/layout/AppLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Users, LayoutGrid, AlertTriangle, CheckCircle2, TrendingUp, FileDown, FileSpreadsheet, Printer, Sparkles } from 'lucide-react';
+import { Users, LayoutGrid, AlertTriangle, CheckCircle2, TrendingUp, FileDown, FileSpreadsheet, Printer, Sparkles, Map } from 'lucide-react';
 import TasksAlert from '@/components/dashboard/TasksAlert';
 import AbsenceAlert from '@/components/dashboard/AbsenceAlert';
 import AcademicCalendar from '@/components/dashboard/AcademicCalendar';
+import SmartGuide from '@/components/dashboard/SmartGuide';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { calcSatisfactionScore } from '@/lib/seatingUtils';
 import { exportToPDF, exportToExcel, printSeating } from '@/lib/exportUtils';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 
 export default function DashboardPage() {
+  const [showGuide, setShowGuide] = useState(false);
+
   const { data: students = [], isLoading: loadingStudents, refetch } = useQuery({
     queryKey: ['students'],
     queryFn: () => base44.entities.Student.list(),
@@ -119,9 +122,15 @@ export default function DashboardPage() {
           animate={{ opacity: 1, y: 0 }}
           className="mb-7"
         >
-          <div className="flex items-center gap-2 mb-1">
-            <Sparkles className="w-5 h-5 text-primary" />
-            <h1 className="text-2xl font-bold">סקירה כללית</h1>
+          <div className="flex items-center justify-between mb-1">
+            <div className="flex items-center gap-2">
+              <Sparkles className="w-5 h-5 text-primary" />
+              <h1 className="text-2xl font-bold">סקירה כללית</h1>
+            </div>
+            <Button size="sm" variant="outline" onClick={() => setShowGuide(true)} className="gap-1.5 text-xs">
+              <Map className="w-3.5 h-3.5" />
+              מדריך חכם
+            </Button>
           </div>
           <p className="text-muted-foreground text-sm">מצב הכיתה שלך במבט אחד</p>
         </motion.div>
@@ -323,6 +332,9 @@ export default function DashboardPage() {
           )}
         </motion.div>
       </div>
+      <AnimatePresence>
+        {showGuide && <SmartGuide onClose={() => setShowGuide(false)} />}
+      </AnimatePresence>
     </AppLayout>
   );
 }
