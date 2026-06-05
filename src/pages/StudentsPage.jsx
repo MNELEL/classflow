@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import AppLayout from '@/components/layout/AppLayout';
@@ -10,7 +10,7 @@ import { usePullToRefresh } from '@/hooks/usePullToRefresh';
 import PullToRefreshIndicator from '@/components/ui/PullToRefreshIndicator';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
-import { Upload, Wand2, Users, FileDown, FileUp } from 'lucide-react';
+import { Upload, Wand2, Users, FileDown, FileUp, SortAsc, SortDesc, Calendar } from 'lucide-react';
 import CsvImportModal, { exportToCSV } from '@/components/data/CsvImportModal';
 
 export default function StudentsPage() {
@@ -19,11 +19,29 @@ export default function StudentsPage() {
   const [showFreeText, setShowFreeText] = useState(false);
   const [showGroups, setShowGroups] = useState(false);
   const [showCsvImport, setShowCsvImport] = useState(false);
+  const [sortMode, setSortMode] = useState('created'); // 'created' | 'firstName' | 'lastName'
 
   const { data: students = [], isLoading, refetch } = useQuery({
     queryKey: ['students'],
     queryFn: () => base44.entities.Student.list(),
   });
+
+  // Sort students
+  const sortedStudents = React.useMemo(() => {
+    const sorted = [...students];
+    if (sortMode === 'firstName') {
+      sorted.sort((a, b) => a.name.localeCompare(b.name, 'he'));
+    } else if (sortMode === 'lastName') {
+      sorted.sort((a, b) => {
+        const aLast = a.name.split(' ').slice(-1)[0];
+        const bLast = b.name.split(' ').slice(-1)[0];
+        return aLast.localeCompare(bLast, 'he');
+      });
+    } else if (sortMode === 'created') {
+      sorted.sort((a, b) => new Date(b.created_date) - new Date(a.created_date));
+    }
+    return sorted;
+  }, [students, sortMode]);
 
   const handleRefresh = useCallback(async () => {
     await refetch();
@@ -176,8 +194,31 @@ export default function StudentsPage() {
                 <FileDown className="w-4 h-4" /> ייצוא CSV
               </Button>
             </div>
+            {/* Sort controls */}
+            <div className="flex gap-2 mb-4 flex-wrap items-center">
+              <p className="text-xs text-muted-foreground shrink-0">מיון:</p>
+              <button
+                onClick={() => setSortMode('created')}
+                className={`px-3 py-1.5 rounded-lg border text-xs font-medium transition-all flex items-center gap-1.5 ${sortMode === 'created' ? 'bg-primary text-primary-foreground border-primary' : 'border-border hover:bg-muted'}`}
+              >
+                <Calendar className="w-3.5 h-3.5" /> האחרון שנוסף
+              </button>
+              <button
+                onClick={() => setSortMode('firstName')}
+                className={`px-3 py-1.5 rounded-lg border text-xs font-medium transition-all flex items-center gap-1.5 ${sortMode === 'firstName' ? 'bg-primary text-primary-foreground border-primary' : 'border-border hover:bg-muted'}`}
+              >
+                <SortAsc className="w-3.5 h-3.5" /> לפי שם פרטי (א-ת)
+              </button>
+              <button
+                onClick={() => setSortMode('lastName')}
+                className={`px-3 py-1.5 rounded-lg border text-xs font-medium transition-all flex items-center gap-1.5 ${sortMode === 'lastName' ? 'bg-primary text-primary-foreground border-primary' : 'border-border hover:bg-muted'}`}
+              >
+                <SortDesc className="w-3.5 h-3.5" /> לפי שם משפחה (א-ת)
+              </button>
+            </div>
+
             <StudentList
-              students={students}
+              students={sortedStudents}
               onSave={data => saveMutation.mutate(data)}
               onDelete={id => deleteMutation.mutate(id)}
             />

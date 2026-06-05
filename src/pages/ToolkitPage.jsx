@@ -2,10 +2,11 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import AppLayout from '@/components/layout/AppLayout';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Play, Square, RotateCcw, Users, Shuffle, Clock, ChevronDown, ChevronUp } from 'lucide-react';
+import { Play, Square, RotateCcw, Users, Shuffle, Clock, ChevronDown, ChevronUp, Music, Eye } from 'lucide-react';
 import { toast } from 'sonner';
 import FlashCards from '@/components/toolkit/FlashCards';
 import NoiseMeter from '@/components/toolkit/NoiseMeter';
@@ -283,6 +284,7 @@ function CountdownTimer() {
 
 // ────── PAGE ──────
 export default function ToolkitPage() {
+  const navigate = useNavigate();
   const { data: students = [] } = useQuery({
     queryKey: ['students'],
     queryFn: () => base44.entities.Student.filter({ is_active: true }),
@@ -295,6 +297,33 @@ export default function ToolkitPage() {
           <div className="w-9 h-9 bg-orange-100 dark:bg-orange-900/30 rounded-xl flex items-center justify-center text-xl">🔧</div>
           <h1 className="font-bold text-base">ארגז כלים</h1>
         </div>
+        
+        {/* Quick links to new pages */}
+        <div className="grid grid-cols-2 gap-2">
+          <Button
+            variant="outline"
+            className="gap-2 h-auto py-3"
+            onClick={() => navigate('/sound-board')}
+          >
+            <Music className="w-5 h-5 text-purple-600" />
+            <div className="text-right">
+              <p className="text-xs font-bold">ניהול סאונד</p>
+              <p className="text-[10px] text-muted-foreground">צלילים והישגים</p>
+            </div>
+          </Button>
+          <Button
+            variant="outline"
+            className="gap-2 h-auto py-3"
+            onClick={() => navigate('/student-view')}
+          >
+            <Eye className="w-5 h-5 text-green-600" />
+            <div className="text-right">
+              <p className="text-xs font-bold">תצוגת תלמידים</p>
+              <p className="text-[10px] text-muted-foreground">להקרנה בכיתה</p>
+            </div>
+          </Button>
+        </div>
+
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <NameWheel students={students} />
           <CountdownTimer />
