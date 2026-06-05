@@ -2,6 +2,7 @@ import React, { useState, useRef } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import AppLayout from '@/components/layout/AppLayout';
+import EventSoundMapper from '@/components/soundboard/EventSoundMapper';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -225,6 +226,9 @@ export default function SoundBoardPage() {
             </p>
           )}
         </div>
+
+        {/* Event → Sound mapping */}
+        <EventSoundMapper />
 
         {/* Hidden audio elements */}
         {sounds.map(sound => (
