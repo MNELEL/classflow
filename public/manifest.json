@@ -1,23 +1,23 @@
 {
   "name": "ClassManager Pro",
   "short_name": "כיתה",
-  "description": "ניהול כיתה חכם למורים",
+  "description": "ניהול כיתה חכם למורה המודרני",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#f5f3ff",
+  "background_color": "#3730a3",
   "theme_color": "#4f46e5",
   "orientation": "portrait",
   "icons": [
     {
-      "src": "/icon-192.svg",
+      "src": "https://media.base44.com/images/public/69efc0a68bae1b1d07582eda/364f176d0_generated_image.png",
       "sizes": "192x192",
-      "type": "image/svg+xml",
+      "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "/icon-512.svg",
+      "src": "https://media.base44.com/images/public/69efc0a68bae1b1d07582eda/364f176d0_generated_image.png",
       "sizes": "512x512",
-      "type": "image/svg+xml",
+      "type": "image/png",
       "purpose": "any maskable"
     }
   ]
