@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192" width="192" height="192">
+  <defs>
+    <linearGradient id="bg2" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#4f46e5;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#7c3aed;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#2563eb;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  <rect width="192" height="192" rx="42" ry="42" fill="url(#bg2)"/>
+  <!-- Book -->
+  <g transform="translate(28, 42)">
+    <path d="M64 18 Q36 10 10 18 L10 90 Q36 82 64 90 Z" fill="white" fill-opacity="0.2" stroke="white" stroke-width="2" stroke-opacity="0.6"/>
+    <path d="M68 18 Q96 10 122 18 L122 90 Q96 82 68 90 Z" fill="white" fill-opacity="0.25" stroke="white" stroke-width="2" stroke-opacity="0.6"/>
+    <line x1="66" y1="17" x2="66" y2="91" stroke="white" stroke-width="3" stroke-opacity="0.9"/>
+    <line x1="20" y1="38" x2="58" y2="33" stroke="white" stroke-width="2" stroke-opacity="0.5" stroke-linecap="round"/>
+    <line x1="20" y1="50" x2="58" y2="45" stroke="white" stroke-width="2" stroke-opacity="0.5" stroke-linecap="round"/>
+    <line x1="74" y1="33" x2="112" y2="38" stroke="white" stroke-width="2" stroke-opacity="0.5" stroke-linecap="round"/>
+    <line x1="74" y1="45" x2="112" y2="50" stroke="white" stroke-width="2" stroke-opacity="0.5" stroke-linecap="round"/>
+  </g>
+  <!-- Aleph -->
+  <text x="96" y="34" font-family="serif" font-size="26" fill="white" fill-opacity="0.9" text-anchor="middle" dominant-baseline="central" font-weight="bold">א</text>
+  <!-- Stars -->
+  <path d="M152,55 L155,63 L163,63 L157,68 L159,76 L152,71 L145,76 L147,68 L141,63 L149,63 Z" fill="#fbbf24" opacity="0.9"/>
+  <!-- Students -->
+  <g transform="translate(96,152)">
+    <circle cx="-22" cy="0" r="8" fill="white" fill-opacity="0.35"/>
+    <circle cx="0" cy="-4" r="10" fill="white" fill-opacity="0.5"/>
+    <circle cx="22" cy="0" r="8" fill="white" fill-opacity="0.35"/>
+  </g>
+</svg>

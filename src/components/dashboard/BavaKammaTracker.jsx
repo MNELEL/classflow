@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { BookOpen, ChevronDown, ChevronUp } from 'lucide-react';
+import { motion } from 'framer-motion';
 
 // בבא קמא: דפים ב-קיט
 const TOTAL_DAFIM = 119;
@@ -70,16 +71,38 @@ export default function BavaKammaTracker() {
         </div>
 
         {/* Progress bar always visible */}
-        <div className="mt-2">
-          <div className="flex justify-between items-center mb-1">
-            <span className="text-[10px] text-muted-foreground">{count} דפים הוספקו</span>
-            <span className="text-[10px] font-bold text-amber-700">{percent}%</span>
+        <div className="mt-2 flex items-center gap-3">
+          {/* Ring indicator */}
+          <div className="relative w-10 h-10 shrink-0">
+            <svg className="w-10 h-10 -rotate-90" viewBox="0 0 40 40">
+              <circle cx="20" cy="20" r="16" fill="none" stroke="#fde68a" strokeWidth="4" />
+              <motion.circle
+                cx="20" cy="20" r="16"
+                fill="none"
+                stroke="#d97706"
+                strokeWidth="4"
+                strokeLinecap="round"
+                strokeDasharray={`${2 * Math.PI * 16}`}
+                initial={{ strokeDashoffset: 2 * Math.PI * 16 }}
+                animate={{ strokeDashoffset: 2 * Math.PI * 16 * (1 - percent / 100) }}
+                transition={{ duration: 1.2, ease: 'easeOut' }}
+              />
+            </svg>
+            <span className="absolute inset-0 flex items-center justify-center text-[9px] font-bold text-amber-700">{percent}%</span>
           </div>
-          <div className="w-full bg-muted rounded-full h-2">
-            <div
-              className="h-2 rounded-full bg-amber-500 transition-all duration-500"
-              style={{ width: `${percent}%` }}
-            />
+          <div className="flex-1">
+            <div className="flex justify-between items-center mb-1">
+              <span className="text-[10px] text-muted-foreground">{count} דפים הוספקו</span>
+              <span className="text-[10px] font-bold text-amber-700">{count}/{TOTAL_DAFIM}</span>
+            </div>
+            <div className="w-full bg-muted rounded-full h-2">
+              <motion.div
+                className="h-2 rounded-full bg-gradient-to-r from-amber-400 to-amber-600"
+                initial={{ width: 0 }}
+                animate={{ width: `${percent}%` }}
+                transition={{ duration: 1, ease: 'easeOut' }}
+              />
+            </div>
           </div>
         </div>
       </CardHeader>

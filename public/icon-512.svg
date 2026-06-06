@@ -1,0 +1,63 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#4f46e5;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#7c3aed;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#2563eb;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="shine" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#ffffff;stop-opacity:0.18" />
+      <stop offset="100%" style="stop-color:#ffffff;stop-opacity:0" />
+    </linearGradient>
+    <filter id="shadow">
+      <feDropShadow dx="0" dy="8" stdDeviation="16" flood-color="#000" flood-opacity="0.28"/>
+    </filter>
+  </defs>
+  <!-- Rounded square background -->
+  <rect width="512" height="512" rx="112" ry="112" fill="url(#bg)" filter="url(#shadow)"/>
+  <!-- Shine overlay -->
+  <rect width="512" height="256" rx="112" ry="112" fill="url(#shine)"/>
+
+  <!-- Open book shape -->
+  <g transform="translate(80, 120)">
+    <!-- Left page -->
+    <path d="M172 50 Q100 30 30 50 L30 240 Q100 220 172 240 Z" fill="white" fill-opacity="0.18" stroke="white" stroke-width="4" stroke-opacity="0.6"/>
+    <!-- Right page -->
+    <path d="M180 50 Q252 30 322 50 L322 240 Q252 220 180 240 Z" fill="white" fill-opacity="0.22" stroke="white" stroke-width="4" stroke-opacity="0.6"/>
+    <!-- Spine -->
+    <line x1="176" y1="48" x2="176" y2="242" stroke="white" stroke-width="6" stroke-opacity="0.9"/>
+    <!-- Lines on left page -->
+    <line x1="55" y1="100" x2="155" y2="90" stroke="white" stroke-width="3.5" stroke-opacity="0.5" stroke-linecap="round"/>
+    <line x1="55" y1="125" x2="155" y2="115" stroke="white" stroke-width="3.5" stroke-opacity="0.5" stroke-linecap="round"/>
+    <line x1="55" y1="150" x2="140" y2="141" stroke="white" stroke-width="3.5" stroke-opacity="0.5" stroke-linecap="round"/>
+    <!-- Lines on right page -->
+    <line x1="197" y1="90" x2="297" y2="100" stroke="white" stroke-width="3.5" stroke-opacity="0.5" stroke-linecap="round"/>
+    <line x1="197" y1="115" x2="297" y2="125" stroke="white" stroke-width="3.5" stroke-opacity="0.5" stroke-linecap="round"/>
+    <line x1="197" y1="141" x2="282" y2="150" stroke="white" stroke-width="3.5" stroke-opacity="0.5" stroke-linecap="round"/>
+  </g>
+
+  <!-- Star of David / aleph symbol at top -->
+  <g transform="translate(256, 78)">
+    <!-- Aleph letter stylized -->
+    <text font-family="serif" font-size="64" fill="white" fill-opacity="0.92" text-anchor="middle" dominant-baseline="central" font-weight="bold">א</text>
+  </g>
+
+  <!-- Bottom: 3 student dots as a class -->
+  <g transform="translate(256, 400)">
+    <circle cx="-56" cy="0" r="20" fill="white" fill-opacity="0.35"/>
+    <circle cx="0" cy="-8" r="24" fill="white" fill-opacity="0.5"/>
+    <circle cx="56" cy="0" r="20" fill="white" fill-opacity="0.35"/>
+    <!-- caps -->
+    <path d="M-56,-20 Q-56,-34 -44,-30 L-68,-30 Q-56,-34 -56,-20" fill="white" fill-opacity="0.55"/>
+    <path d="M0,-32 Q0,-48 14,-43 L-14,-43 Q0,-48 0,-32" fill="white" fill-opacity="0.7"/>
+    <path d="M56,-20 Q56,-34 68,-30 L44,-30 Q56,-34 56,-20" fill="white" fill-opacity="0.55"/>
+  </g>
+
+  <!-- Gold star sparkle -->
+  <g transform="translate(388, 148)">
+    <path d="M0,-22 L5,-8 L19,-8 L8,2 L12,16 L0,7 L-12,16 L-8,2 L-19,-8 L-5,-8 Z" fill="#fbbf24" opacity="0.92"/>
+  </g>
+  <g transform="translate(132, 160)">
+    <path d="M0,-14 L3,-5 L12,-5 L5,1 L7,10 L0,4 L-7,10 L-5,1 L-12,-5 L-3,-5 Z" fill="#fbbf24" opacity="0.75"/>
+  </g>
+</svg>

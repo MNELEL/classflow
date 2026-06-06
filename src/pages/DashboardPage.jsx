@@ -105,11 +105,12 @@ export default function DashboardPage() {
       icon: <TrendingUp className="w-4 h-4" />,
       label: 'שביעות רצון',
       value: satisfactionScore !== null ? `${satisfactionScore}%` : '—',
-      sub: satisfactionScore !== null ? (satisfactionScore >= 75 ? 'מצוין!' : satisfactionScore >= 50 ? 'טוב' : 'טעון שיפור') : 'אין סידור',
+      sub: satisfactionScore !== null ? (satisfactionScore >= 75 ? '🌟 מצוין!' : satisfactionScore >= 50 ? '👍 טוב' : '⚠️ טעון שיפור') : 'אין סידור',
       color: scoreColor,
       bg: satisfactionScore === null ? 'bg-muted/50' : satisfactionScore >= 75 ? 'bg-emerald-500/10' : satisfactionScore >= 50 ? 'bg-yellow-500/10' : 'bg-red-500/10',
       progress: satisfactionScore,
       progressBg: scoreBg,
+      ring: satisfactionScore,
     },
   ];
 
@@ -167,7 +168,34 @@ export default function DashboardPage() {
                       </div>
                       <div className={`text-3xl font-bold ${card.color} mb-0.5`}>{card.value}</div>
                       <p className="text-xs text-muted-foreground">{card.sub}</p>
-                      {card.progress !== undefined && card.progress !== null && (
+                      {card.ring !== undefined && card.ring !== null ? (
+                        <div className="mt-2 flex items-center gap-2">
+                          <div className="relative w-8 h-8 shrink-0">
+                            <svg className="w-8 h-8 -rotate-90" viewBox="0 0 32 32">
+                              <circle cx="16" cy="16" r="13" fill="none" stroke="currentColor" strokeWidth="3" className="text-muted opacity-20" />
+                              <motion.circle
+                                cx="16" cy="16" r="13"
+                                fill="none"
+                                stroke={card.ring >= 75 ? '#22c55e' : card.ring >= 50 ? '#eab308' : '#ef4444'}
+                                strokeWidth="3"
+                                strokeLinecap="round"
+                                strokeDasharray={`${2 * Math.PI * 13}`}
+                                initial={{ strokeDashoffset: 2 * Math.PI * 13 }}
+                                animate={{ strokeDashoffset: 2 * Math.PI * 13 * (1 - card.ring / 100) }}
+                                transition={{ duration: 1, delay: 0.4 + i * 0.07 }}
+                              />
+                            </svg>
+                          </div>
+                          <div className="flex-1 w-full bg-muted rounded-full h-1.5">
+                            <motion.div
+                              className={`h-1.5 rounded-full ${card.progressBg}`}
+                              initial={{ width: 0 }}
+                              animate={{ width: `${card.ring}%` }}
+                              transition={{ duration: 0.8, delay: 0.3 + i * 0.07 }}
+                            />
+                          </div>
+                        </div>
+                      ) : card.progress !== undefined && card.progress !== null && (
                         <div className="mt-2 w-full bg-muted rounded-full h-1.5">
                           <motion.div
                             className={`h-1.5 rounded-full ${card.progressBg}`}
@@ -286,14 +314,14 @@ export default function DashboardPage() {
           </motion.div>
         </div>
 
-        {/* Study Progress Tracker */}
+        {/* Academic Calendar (Hebrew) — includes BK + trackers tabs */}
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.34 }} className="mb-3">
-          <StudyProgressTracker />
+          <AcademicCalendar />
         </motion.div>
 
-        {/* Academic Calendar */}
+        {/* Study Progress Tracker */}
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.36 }} className="mb-3">
-          <AcademicCalendar />
+          <StudyProgressTracker />
         </motion.div>
 
         {/* Absence Alert */}

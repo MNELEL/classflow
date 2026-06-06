@@ -4,6 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { BookOpen, Plus, Trash2, ChevronDown, ChevronUp, X, Edit2, Check } from 'lucide-react';
+import { motion } from 'framer-motion';
 
 const STORAGE_KEY = 'classmanager_study_trackers';
 
@@ -170,10 +171,19 @@ export default function StudyProgressTracker() {
                 {isOpen ? <ChevronUp className="w-3.5 h-3.5 text-muted-foreground" /> : <ChevronDown className="w-3.5 h-3.5 text-muted-foreground" />}
               </div>
 
-              {/* Progress bar */}
-              <div className="px-3 pb-1">
-                <div className="w-full bg-muted rounded-full h-1.5">
-                  <div className={`h-1.5 rounded-full ${col.bar} transition-all duration-500`} style={{ width: `${percent}%` }} />
+              {/* Progress bar with ring for completed */}
+              <div className="px-3 pb-1 flex items-center gap-2">
+                {percent === 100 && (
+                  <span className="text-emerald-600 text-sm">✅</span>
+                )}
+                <div className="flex-1 w-full bg-muted rounded-full h-2">
+                  <motion.div
+                    className={`h-2 rounded-full ${col.bar} transition-all duration-700`}
+                    initial={{ width: 0 }}
+                    animate={{ width: `${percent}%` }}
+                    transition={{ duration: 0.8 }}
+                    style={{ width: `${percent}%` }}
+                  />
                 </div>
               </div>
 
