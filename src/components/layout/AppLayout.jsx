@@ -1,36 +1,47 @@
 import React, { useCallback, useState, useEffect, useRef } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { cn } from '@/lib/utils';
-import { LayoutGrid, Users, BookOpen, Settings, ChevronRight, CalendarCheck, GraduationCap, Library, Trophy, Wrench, Contact, FileText, Layers, Mic, ClipboardList, ClipboardCheck, Music, Eye } from 'lucide-react';
+import {
+  LayoutGrid, Users, BookOpen, Settings, ChevronRight,
+  CalendarCheck, GraduationCap, Library, Trophy, Wrench,
+  Contact, FileText, Layers, Mic, ClipboardList, ClipboardCheck,
+  Music, Eye, MoreHorizontal
+} from 'lucide-react';
 import { loadBranding } from '@/lib/branding';
+import {
+  Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerClose
+} from '@/components/ui/drawer';
 
-const NAV_ICONS = {
-  '/': BookOpen,
-  '/seating': LayoutGrid,
-  '/students': Users,
-  '/attendance': CalendarCheck,
-  '/grades': GraduationCap,
-  '/library': Library,
-  '/gamification': Trophy,
-  '/toolkit': Wrench,
-  '/parents': Contact,
-  '/worksheets': FileText,
-  '/question-bank': Layers,
-  '/lesson-analyzer': Mic,
-  '/curriculum': ClipboardList,
-  '/homework': ClipboardCheck,
-  '/sound-board': Music,
-  '/student-view': Eye,
-};
+// Primary 5 nav items (always visible)
+const PRIMARY_NAV = [
+  { path: '/', icon: BookOpen, label: 'ראשי' },
+  { path: '/seating', icon: LayoutGrid, label: 'סידור' },
+  { path: '/students', icon: Users, label: 'תלמידים' },
+  { path: '/library', icon: Library, label: 'ספרייה' },
+];
 
-const NAV_PATHS = ['/', '/seating', '/students', '/attendance', '/grades', '/library', '/gamification', '/toolkit', '/worksheets', '/question-bank', '/lesson-analyzer', '/curriculum', '/homework', '/parents', '/sound-board', '/student-view'];
+// More menu items (shown in drawer)
+const MORE_NAV = [
+  { path: '/attendance',     icon: CalendarCheck,  label: 'נוכחות' },
+  { path: '/grades',         icon: GraduationCap,  label: 'ציונים' },
+  { path: '/gamification',   icon: Trophy,         label: 'גמיפיקציה' },
+  { path: '/toolkit',        icon: Wrench,         label: 'כלים' },
+  { path: '/parents',        icon: Contact,        label: 'הורים' },
+  { path: '/worksheets',     icon: FileText,       label: 'דפי עבודה' },
+  { path: '/question-bank',  icon: Layers,         label: 'שאלות' },
+  { path: '/lesson-analyzer',icon: Mic,            label: 'שיעורים' },
+  { path: '/curriculum',     icon: ClipboardList,  label: 'תכנית לימודים' },
+  { path: '/homework',       icon: ClipboardCheck, label: 'שיעורי בית' },
+  { path: '/sound-board',    icon: Music,          label: 'לוח צלילים' },
+  { path: '/student-view',   icon: Eye,            label: 'תצוגת תלמיד' },
+];
 
 export default function AppLayout({ children }) {
   const location = useLocation();
   const navigate = useNavigate();
   const [branding, setBranding] = useState(loadBranding);
+  const [moreOpen, setMoreOpen] = useState(false);
 
-  // Tab Stack Preservation: remember scroll position per tab
   const scrollPositions = useRef({});
   const mainRef = useRef(null);
 
@@ -45,25 +56,33 @@ export default function AppLayout({ children }) {
     const main = mainRef.current;
     if (!main) return;
     const savedY = scrollPositions.current[location.pathname] ?? 0;
-    // Use rAF so content is rendered before scrolling
     requestAnimationFrame(() => { main.scrollTop = savedY; });
   }, [location.pathname]);
 
   const handleNavClick = useCallback((e, path) => {
-    // Save current scroll before switching
     if (mainRef.current) {
       scrollPositions.current[location.pathname] = mainRef.current.scrollTop;
     }
     if (location.pathname === path) {
       e.preventDefault();
-      // Same-tab tap → scroll to top and reset saved position
       scrollPositions.current[path] = 0;
       if (mainRef.current) mainRef.current.scrollTo({ top: 0, behavior: 'smooth' });
     }
   }, [location.pathname]);
 
+  const handleMoreNavClick = useCallback((path) => {
+    if (mainRef.current) {
+      scrollPositions.current[location.pathname] = mainRef.current.scrollTop;
+    }
+    setMoreOpen(false);
+    navigate(path);
+  }, [location.pathname, navigate]);
+
   const isDashboard = location.pathname === '/';
   const title = branding.page_titles?.[location.pathname] || branding.school_name || 'ClassManager Pro';
+
+  // Check if current path is in the "more" section
+  const isMoreActive = MORE_NAV.some(item => item.path === location.pathname);
 
   return (
     <div className="min-h-screen bg-background flex flex-col" dir="rtl">
@@ -107,7 +126,7 @@ export default function AppLayout({ children }) {
         </div>
       </header>
 
-      {/* Main Content — single scrollable container per tab */}
+      {/* Main Content */}
       <main
         ref={mainRef}
         className="flex-1 overflow-y-auto no-scrollbar pb-[calc(64px+env(safe-area-inset-bottom))]"
@@ -115,15 +134,14 @@ export default function AppLayout({ children }) {
         {children}
       </main>
 
-      {/* Bottom Navigation Bar */}
+      {/* Bottom Navigation Bar — 5 items only */}
       <nav
         className="fixed bottom-0 inset-x-0 z-50 bg-white/95 backdrop-blur-md border-t border-border flex items-stretch shadow-[0_-1px_12px_rgba(99,102,241,0.07)]"
         style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
       >
-        {NAV_PATHS.map(path => {
-          const Icon = NAV_ICONS[path];
+        {PRIMARY_NAV.map(({ path, icon: Icon, label }) => {
           const active = location.pathname === path;
-          const label = branding.nav_labels?.[path] || path;
+          const navLabel = branding.nav_labels?.[path] || label;
           return (
             <Link
               key={path}
@@ -135,11 +153,59 @@ export default function AppLayout({ children }) {
               )}
             >
               <Icon className={cn('w-5 h-5', active && 'scale-110 transition-transform')} />
-              <span className="text-[10px] font-medium">{label}</span>
+              <span className="text-[10px] font-medium">{navLabel}</span>
             </Link>
           );
         })}
+
+        {/* More button */}
+        <button
+          onClick={() => setMoreOpen(true)}
+          className={cn(
+            'flex-1 flex flex-col items-center justify-center gap-0.5 min-h-[56px] min-w-[44px] py-2 select-none transition-colors',
+            isMoreActive ? 'text-primary' : 'text-muted-foreground hover:text-foreground'
+          )}
+          aria-label="עוד"
+        >
+          <MoreHorizontal className={cn('w-5 h-5', isMoreActive && 'scale-110 transition-transform')} />
+          <span className="text-[10px] font-medium">עוד</span>
+        </button>
       </nav>
+
+      {/* More Drawer */}
+      <Drawer open={moreOpen} onOpenChange={setMoreOpen}>
+        <DrawerContent className="pb-[env(safe-area-inset-bottom)]" dir="rtl">
+          <DrawerHeader className="text-right pb-2">
+            <DrawerTitle className="text-base font-bold">כל הכלים</DrawerTitle>
+          </DrawerHeader>
+          <div className="grid grid-cols-4 gap-1 px-4 pb-6">
+            {MORE_NAV.map(({ path, icon: Icon, label }) => {
+              const active = location.pathname === path;
+              const navLabel = branding.nav_labels?.[path] || label;
+              return (
+                <button
+                  key={path}
+                  onClick={() => handleMoreNavClick(path)}
+                  className={cn(
+                    'flex flex-col items-center justify-center gap-1.5 rounded-xl p-3 min-h-[72px] transition-colors select-none',
+                    active
+                      ? 'bg-primary/10 text-primary'
+                      : 'hover:bg-accent text-muted-foreground hover:text-foreground'
+                  )}
+                >
+                  <div className={cn(
+                    'w-10 h-10 rounded-xl flex items-center justify-center',
+                    active ? 'bg-primary text-primary-foreground' : 'bg-secondary'
+                  )}>
+                    <Icon className="w-5 h-5" />
+                  </div>
+                  <span className="text-[11px] font-medium text-center leading-tight">{navLabel}</span>
+                </button>
+              );
+            })}
+          </div>
+        </DrawerContent>
+      </Drawer>
     </div>
   );
 }
