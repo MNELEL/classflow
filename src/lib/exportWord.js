@@ -22,6 +22,84 @@ const TRAIT_LABELS = {
 const STATUS_LABELS = { pending: 'ממתין', in_progress: 'בביצוע', done: 'הושלם' };
 const PERIOD_LABELS = { weekly: 'שבועי', monthly: 'חודשי', exam: 'מבחן', quiz: 'בוחן', homework: 'שיעורי בית' };
 
+export async function createPeriodReportWordDoc(data, className, periodLabel, audienceLabel, teacherName) {
+  const { summary, highlights = [], challenges = [], classAchievements = [], recommendation, subjectSummaries = [], stats = {} } = data;
+
+  const doc = new Document({
+    sections: [{
+      properties: { page: { margin: { top: 1200, right: 900, bottom: 1200, left: 900 } } },
+      children: [
+        new Paragraph({
+          text: `דוח ${periodLabel} — ${className || 'כיתה'}`,
+          heading: HeadingLevel.HEADING_1,
+          alignment: AlignmentType.CENTER,
+          spacing: { after: 200 },
+        }),
+        new Paragraph({
+          children: [new TextRun({ text: `מיועד ל: ${audienceLabel}${teacherName ? ` | מורה: ${teacherName}` : ''}`, size: 22, color: '4338ca' })],
+          alignment: AlignmentType.CENTER,
+          spacing: { after: 400 },
+        }),
+
+        new Paragraph({ text: 'נתונים עיקריים', heading: HeadingLevel.HEADING_2, spacing: { before: 200, after: 100 } }),
+        stats.totalStudents ? new Paragraph({ children: [new TextRun({ text: 'תלמידים: ', bold: true }), new TextRun(String(stats.totalStudents))] }) : null,
+        stats.avgGrade != null ? new Paragraph({ children: [new TextRun({ text: 'ממוצע ציונים: ', bold: true }), new TextRun(`${stats.avgGrade}%`)] }) : null,
+        stats.avgAttendance != null ? new Paragraph({ children: [new TextRun({ text: 'נוכחות ממוצעת: ', bold: true }), new TextRun(`${stats.avgAttendance}%`)] }) : null,
+
+        new Paragraph({ text: 'סיכום התקופה', heading: HeadingLevel.HEADING_2, spacing: { before: 300, after: 100 } }),
+        new Paragraph({ children: [new TextRun(summary || '')], spacing: { after: 200 } }),
+
+        ...(highlights.length ? [
+          new Paragraph({ text: 'הישגים מרכזיים', heading: HeadingLevel.HEADING_2, spacing: { before: 300, after: 100 } }),
+          ...highlights.map(h => new Paragraph({ children: [new TextRun(`• ${h}`)], spacing: { after: 60 } })),
+        ] : []),
+
+        ...(challenges.length ? [
+          new Paragraph({ text: 'נקודות לשיפור', heading: HeadingLevel.HEADING_2, spacing: { before: 300, after: 100 } }),
+          ...challenges.map(c => new Paragraph({ children: [new TextRun(`• ${c}`)], spacing: { after: 60 } })),
+        ] : []),
+
+        ...(classAchievements.length ? [
+          new Paragraph({ text: 'מצטייני הכיתה', heading: HeadingLevel.HEADING_2, spacing: { before: 300, after: 100 } }),
+          ...classAchievements.map(a => new Paragraph({ children: [new TextRun(`★ ${a}`)], spacing: { after: 60 } })),
+        ] : []),
+
+        ...(subjectSummaries.length ? [
+          new Paragraph({ text: 'סיכום לפי מקצועות', heading: HeadingLevel.HEADING_2, spacing: { before: 300, after: 100 } }),
+          new Table({
+            width: { size: 100, type: WidthType.PERCENTAGE },
+            rows: [
+              new TableRow({
+                children: ['מקצוע', 'נושאים', 'ציון', 'הערות'].map(h =>
+                  new TableCell({ children: [new Paragraph({ children: [new TextRun({ text: h, bold: true })] })], shading: { fill: 'ede9fe' } })
+                ),
+              }),
+              ...subjectSummaries.map(s => new TableRow({
+                children: [
+                  new TableCell({ children: [new Paragraph(s.subject || '')] }),
+                  new TableCell({ children: [new Paragraph(s.topics || '—')] }),
+                  new TableCell({ children: [new Paragraph(s.score != null ? `${s.score}%` : '—')] }),
+                  new TableCell({ children: [new Paragraph(s.note || '')] }),
+                ],
+              })),
+            ],
+          }),
+        ] : []),
+
+        ...(recommendation ? [
+          new Paragraph({ text: 'המלצות להמשך', heading: HeadingLevel.HEADING_2, spacing: { before: 300, after: 100 } }),
+          new Paragraph({ children: [new TextRun(recommendation)], spacing: { after: 200 } }),
+        ] : []),
+
+        new Paragraph({ text: 'הופק על ידי ClassManager Pro', alignment: AlignmentType.CENTER, spacing: { before: 400 } }),
+      ].filter(Boolean),
+    }],
+  });
+
+  const blob = await Packer.toBlob(doc);
+  saveAs(blob, `דוח_${periodLabel}_${className || 'כיתה'}.docx`);
+}
+
 export async function createStudentReportWordDoc(student, grades, tasks, teacherName, period) {
   const avgScore = grades.length
     ? Math.round(grades.reduce((s, g) => s + (g.score / (g.max_score || 100)) * 100, 0) / grades.length)
