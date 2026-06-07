@@ -5,7 +5,7 @@ import {
   LayoutGrid, Users, BookOpen, Settings, ChevronRight,
   CalendarCheck, GraduationCap, Library, Trophy, Wrench,
   Contact, FileText, Layers, Mic, ClipboardList, ClipboardCheck,
-  Music, Eye, MoreHorizontal
+  Music, Eye, MoreHorizontal, Clock, FolderOpen, UserCircle
 } from 'lucide-react';
 import { loadBranding } from '@/lib/branding';
 import {
@@ -175,34 +175,77 @@ export default function AppLayout({ children }) {
       {/* More Drawer */}
       <Drawer open={moreOpen} onOpenChange={setMoreOpen}>
         <DrawerContent className="pb-[env(safe-area-inset-bottom)]" dir="rtl">
-          <DrawerHeader className="text-right pb-2">
+          <DrawerHeader className="text-right pb-2 border-b border-border">
             <DrawerTitle className="text-base font-bold">כל הכלים</DrawerTitle>
           </DrawerHeader>
-          <div className="grid grid-cols-4 gap-1 px-4 pb-6">
-            {MORE_NAV.map(({ path, icon: Icon, label }) => {
-              const active = location.pathname === path;
-              const navLabel = branding.nav_labels?.[path] || label;
-              return (
-                <button
-                  key={path}
-                  onClick={() => handleMoreNavClick(path)}
-                  className={cn(
-                    'flex flex-col items-center justify-center gap-1.5 rounded-xl p-3 min-h-[72px] transition-colors select-none',
-                    active
-                      ? 'bg-primary/10 text-primary'
-                      : 'hover:bg-accent text-muted-foreground hover:text-foreground'
-                  )}
-                >
-                  <div className={cn(
-                    'w-10 h-10 rounded-xl flex items-center justify-center',
-                    active ? 'bg-primary text-primary-foreground' : 'bg-secondary'
-                  )}>
-                    <Icon className="w-5 h-5" />
-                  </div>
-                  <span className="text-[11px] font-medium text-center leading-tight">{navLabel}</span>
-                </button>
-              );
-            })}
+
+          <div className="overflow-y-auto max-h-[70vh] px-4 pt-3 pb-6 space-y-5">
+
+            {/* Quick Access */}
+            <section>
+              <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mb-2 text-right">גישה מהירה</p>
+              <div className="grid grid-cols-3 gap-2">
+                {[
+                  { path: '/curriculum', icon: Clock,       label: 'מערכת שעות' },
+                  { path: '/library',    icon: FolderOpen,  label: 'ספריית קבצים' },
+                  { path: '/settings',   icon: UserCircle,  label: 'פרופיל והגדרות' },
+                ].map(({ path, icon: Icon, label }) => {
+                  const active = location.pathname === path;
+                  return (
+                    <button
+                      key={path}
+                      onClick={() => handleMoreNavClick(path)}
+                      className={cn(
+                        'flex flex-col items-center justify-center gap-2 rounded-2xl p-3 min-h-[76px] border transition-colors select-none',
+                        active
+                          ? 'bg-primary/10 border-primary/30 text-primary'
+                          : 'bg-secondary/50 border-transparent hover:bg-accent text-foreground'
+                      )}
+                    >
+                      <div className={cn(
+                        'w-10 h-10 rounded-xl flex items-center justify-center',
+                        active ? 'bg-primary text-primary-foreground' : 'bg-background shadow-sm'
+                      )}>
+                        <Icon className="w-5 h-5" />
+                      </div>
+                      <span className="text-[11px] font-semibold text-center leading-tight">{label}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </section>
+
+            {/* All Tools */}
+            <section>
+              <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mb-2 text-right">כלי ניהול</p>
+              <div className="grid grid-cols-4 gap-1">
+                {MORE_NAV.map(({ path, icon: Icon, label }) => {
+                  const active = location.pathname === path;
+                  const navLabel = branding.nav_labels?.[path] || label;
+                  return (
+                    <button
+                      key={path}
+                      onClick={() => handleMoreNavClick(path)}
+                      className={cn(
+                        'flex flex-col items-center justify-center gap-1.5 rounded-xl p-2.5 min-h-[68px] transition-colors select-none',
+                        active
+                          ? 'bg-primary/10 text-primary'
+                          : 'hover:bg-accent text-muted-foreground hover:text-foreground'
+                      )}
+                    >
+                      <div className={cn(
+                        'w-9 h-9 rounded-xl flex items-center justify-center',
+                        active ? 'bg-primary text-primary-foreground' : 'bg-secondary'
+                      )}>
+                        <Icon className="w-4 h-4" />
+                      </div>
+                      <span className="text-[10px] font-medium text-center leading-tight">{navLabel}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </section>
+
           </div>
         </DrawerContent>
       </Drawer>
