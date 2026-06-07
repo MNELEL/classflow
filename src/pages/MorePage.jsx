@@ -4,10 +4,11 @@ import { cn } from '@/lib/utils';
 import {
   CalendarCheck, GraduationCap, Trophy, Wrench,
   Contact, FileText, Layers, Mic, ClipboardList, ClipboardCheck,
-  Music, Eye, Clock, FolderOpen, UserCircle, Settings, ChevronLeft
+  Music, Eye, Clock, FolderOpen, UserCircle, Settings, ChevronLeft, BarChart2
 } from 'lucide-react';
 
 const QUICK_ACCESS = [
+  { path: '/analytics',  icon: BarChart2,   label: 'ניתוח ציונים',   desc: 'גרפים, נושאים ומגמות',      color: 'bg-violet-50 text-violet-600' },
   { path: '/curriculum', icon: Clock,       label: 'מערכת שעות',     desc: 'תכנון שבועי ויעדי לימוד',   color: 'bg-indigo-50 text-indigo-600' },
   { path: '/library',    icon: FolderOpen,  label: 'ספריית קבצים',   desc: 'חומרי הוראה ומשאבים',       color: 'bg-blue-50 text-blue-600' },
   { path: '/settings',   icon: UserCircle,  label: 'פרופיל והגדרות', desc: 'מיתוג, תצוגה ועוד',         color: 'bg-slate-50 text-slate-600' },

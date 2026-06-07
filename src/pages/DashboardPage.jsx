@@ -6,7 +6,7 @@ import PullToRefreshIndicator from '@/components/ui/PullToRefreshIndicator';
 import AppLayout from '@/components/layout/AppLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Users, LayoutGrid, AlertTriangle, CheckCircle2, TrendingUp, FileDown, FileSpreadsheet, Printer, Sparkles, Map } from 'lucide-react';
+import { Users, LayoutGrid, AlertTriangle, CheckCircle2, TrendingUp, FileDown, FileSpreadsheet, Printer, Sparkles, Map, BarChart2 } from 'lucide-react';
 import TasksAlert from '@/components/dashboard/TasksAlert';
 import AbsenceAlert from '@/components/dashboard/AbsenceAlert';
 import AcademicCalendar from '@/components/dashboard/AcademicCalendar';
@@ -353,6 +353,11 @@ export default function DashboardPage() {
           <Button variant="outline" asChild>
             <Link to="/students">
               <Users className="w-4 h-4 ml-1" /> נהל תלמידים
+            </Link>
+          </Button>
+          <Button variant="outline" asChild>
+            <Link to="/analytics">
+              <BarChart2 className="w-4 h-4 ml-1" /> ניתוח ציונים
             </Link>
           </Button>
           {savedSeats && savedArrangement && (
