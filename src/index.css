@@ -108,10 +108,20 @@
   --sar: env(safe-area-inset-right, 0px);
 }
 
-/* Tap target polish */
+/* Tap target polish — 44×44px minimum on touch devices */
 button, a, [role="button"] {
   user-select: none;
   -webkit-user-select: none;
+}
+@media (pointer: coarse) {
+  button, a[href], [role="button"] {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  /* Badge and label text: ensure ≥14px on mobile */
+  .text-xs { font-size: 0.8125rem; } /* 13px → 13px, override below for critical */
+  label, .label-text { font-size: 0.875rem; } /* 14px */
+  input, select, textarea { font-size: 1rem !important; } /* prevent iOS zoom on focus */
 }
 
 .seat-card {

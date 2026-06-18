@@ -112,19 +112,19 @@ export default function StudentForm({ student, students, onSave, onCancel }) {
       {/* Name & group */}
       <div className="grid grid-cols-2 gap-3">
         <div>
-          <Label className="text-xs">שם התלמיד *</Label>
-          <Input value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} placeholder="שם מלא" className="mt-1" />
+          <Label className="text-sm">שם התלמיד *</Label>
+          <Input value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} placeholder="שם מלא" className="mt-1 h-11 text-base" />
         </div>
         <div>
-          <Label className="text-xs">קבוצה כללית</Label>
-          <Input value={form.group} onChange={e => setForm(f => ({ ...f, group: e.target.value }))} placeholder="שם קבוצה" className="mt-1" />
+          <Label className="text-sm">קבוצה כללית</Label>
+          <Input value={form.group} onChange={e => setForm(f => ({ ...f, group: e.target.value }))} placeholder="שם קבוצה" className="mt-1 h-11 text-base" />
         </div>
       </div>
 
       {/* Learning group */}
       <div>
-        <Label className="text-xs">🧩 קבוצת לימוד</Label>
-        <Input value={form.learning_group} onChange={e => setForm(f => ({ ...f, learning_group: e.target.value }))} placeholder="הקלד שם קבוצה..." className="mt-1" list="groups-datalist" />
+        <Label className="text-sm">🧩 קבוצת לימוד</Label>
+        <Input value={form.learning_group} onChange={e => setForm(f => ({ ...f, learning_group: e.target.value }))} placeholder="הקלד שם קבוצה..." className="mt-1 h-11 text-base" list="groups-datalist" />
         {existingGroups.length > 0 && (
           <datalist id="groups-datalist">
             {existingGroups.map(g => <option key={g.id} value={g.name} />)}
@@ -135,7 +135,7 @@ export default function StudentForm({ student, students, onSave, onCancel }) {
             {existingGroups.map(g => (
               <button key={g.id} type="button"
                 onClick={() => setForm(f => ({ ...f, learning_group: f.learning_group === g.name ? '' : g.name }))}
-                className={`text-[10px] px-2 py-0.5 rounded-full font-medium border transition-colors ${form.learning_group === g.name ? 'bg-primary text-primary-foreground border-primary' : `${getGroupTypeColor(g.type)} border-transparent`}`}>
+                className={`text-xs px-3 py-1.5 min-h-[36px] rounded-full font-medium border transition-colors ${form.learning_group === g.name ? 'bg-primary text-primary-foreground border-primary' : `${getGroupTypeColor(g.type)} border-transparent`}`}>
                 {g.name}
               </button>
             ))}
@@ -145,11 +145,11 @@ export default function StudentForm({ student, students, onSave, onCancel }) {
 
       {/* Academic level */}
       <div>
-        <Label className="text-xs mb-1.5 block">📊 רמה אקדמית</Label>
-        <div className="flex flex-wrap gap-1.5">
+        <Label className="text-sm mb-2 block">📊 רמה אקדמית</Label>
+        <div className="flex flex-wrap gap-2">
           {ACADEMIC_LEVEL_OPTIONS.map(opt => (
             <button key={opt.value} type="button" onClick={() => setForm(f => ({ ...f, academic_level: opt.value }))}
-              className={`px-3 py-1 rounded-full text-xs border transition-colors ${form.academic_level === opt.value ? 'bg-primary text-primary-foreground border-primary' : 'bg-muted border-border hover:border-primary/50'}`}>
+              className={`px-3 py-2 min-h-[36px] rounded-full text-sm border transition-colors ${form.academic_level === opt.value ? 'bg-primary text-primary-foreground border-primary' : 'bg-muted border-border hover:border-primary/50'}`}>
               {opt.label}
             </button>
           ))}
@@ -158,11 +158,11 @@ export default function StudentForm({ student, students, onSave, onCancel }) {
 
       {/* Traits */}
       <div>
-        <Label className="text-xs mb-1.5 block">🏷️ תכונות התנהגותיות</Label>
-        <div className="flex flex-wrap gap-1.5">
+        <Label className="text-sm mb-2 block">🏷️ תכונות התנהגותיות</Label>
+        <div className="flex flex-wrap gap-2">
           {TRAIT_OPTIONS.map(opt => (
             <button key={opt.value} type="button" onClick={() => toggleTrait(opt.value)}
-              className={`px-2.5 py-1 rounded-full text-xs border transition-colors ${form.traits.includes(opt.value) ? 'bg-primary text-primary-foreground border-primary' : 'bg-muted border-border hover:border-primary/50'}`}>
+              className={`px-3 py-2 min-h-[36px] rounded-full text-sm border transition-colors ${form.traits.includes(opt.value) ? 'bg-primary text-primary-foreground border-primary' : 'bg-muted border-border hover:border-primary/50'}`}>
               {opt.label}
             </button>
           ))}
@@ -171,29 +171,29 @@ export default function StudentForm({ student, students, onSave, onCancel }) {
 
       {/* Achievements */}
       <div>
-        <Label className="text-xs">🌟 הצלחות וקישורים</Label>
-        <Input value={form.achievements} onChange={e => setForm(f => ({ ...f, achievements: e.target.value }))} placeholder="הישגים, קישורים לעבודות, הצלחות בולטות..." className="mt-1" />
+        <Label className="text-sm">🌟 הצלחות וקישורים</Label>
+        <Input value={form.achievements} onChange={e => setForm(f => ({ ...f, achievements: e.target.value }))} placeholder="הישגים, קישורים לעבודות, הצלחות בולטות..." className="mt-1 h-11 text-base" />
       </div>
 
       {/* Physical preferences */}
       <div className="grid grid-cols-3 gap-3">
         <div>
-          <Label className="text-xs">גובה</Label>
+          <Label className="text-sm">גובה</Label>
           <MobileSelect value={form.height} onValueChange={v => setForm(f => ({ ...f, height: v }))} options={HEIGHT_OPTIONS} label="גובה" />
         </div>
         <div>
-          <Label className="text-xs">העדפת שורה</Label>
+          <Label className="text-sm">העדפת שורה</Label>
           <MobileSelect value={form.row_preference} onValueChange={v => setForm(f => ({ ...f, row_preference: v }))} options={ROW_PREF_OPTIONS} label="העדפת שורה" />
         </div>
         <div>
-          <Label className="text-xs">העדפת צד</Label>
+          <Label className="text-sm">העדפת צד</Label>
           <MobileSelect value={form.side_preference} onValueChange={v => setForm(f => ({ ...f, side_preference: v }))} options={SIDE_PREF_OPTIONS} label="העדפת צד" />
         </div>
       </div>
 
       {/* Physical constraints */}
       <div>
-        <Label className="text-xs mb-1.5 block">📍 אילוצים פיזיים כפויים</Label>
+        <Label className="text-sm mb-2 block">📍 אילוצים פיזיים כפויים</Label>
         <div className="grid grid-cols-2 gap-3 bg-accent/30 rounded-xl p-3">
           <div>
             <Label className="text-[10px] text-muted-foreground mb-1 block">שורה קבועה</Label>
@@ -205,7 +205,7 @@ export default function StudentForm({ student, students, onSave, onCancel }) {
           </div>
           <div className="col-span-2">
             <button type="button" onClick={() => setForm(f => ({ ...f, avoid_edges: !f.avoid_edges }))}
-              className={`flex items-center gap-2 px-3 py-2 rounded-lg border text-xs transition-colors w-full justify-center ${form.avoid_edges ? 'bg-primary/10 border-primary text-primary' : 'border-border hover:border-primary/30'}`}>
+              className={`flex items-center gap-2 px-3 py-2 min-h-[44px] rounded-lg border text-sm transition-colors w-full justify-center ${form.avoid_edges ? 'bg-primary/10 border-primary text-primary' : 'border-border hover:border-primary/30'}`}>
               {form.avoid_edges ? '✅' : '⬜'} הימנע מקצוות הכיתה
             </button>
           </div>
@@ -214,11 +214,11 @@ export default function StudentForm({ student, students, onSave, onCancel }) {
 
       {/* Special needs */}
       <div>
-        <Label className="text-xs">צרכים מיוחדים</Label>
-        <div className="flex flex-wrap gap-2 mt-1">
+        <Label className="text-sm">צרכים מיוחדים</Label>
+        <div className="flex flex-wrap gap-2 mt-1.5">
           {SPECIAL_NEEDS_OPTIONS.map(opt => (
             <button key={opt.value} type="button" onClick={() => toggleNeed(opt.value)}
-              className={`px-3 py-1 rounded-full text-xs border transition-colors ${form.special_needs.includes(opt.value) ? 'bg-primary text-primary-foreground border-primary' : 'bg-muted border-border hover:border-primary/50'}`}>
+              className={`px-3 py-2 min-h-[36px] rounded-full text-sm border transition-colors ${form.special_needs.includes(opt.value) ? 'bg-primary text-primary-foreground border-primary' : 'bg-muted border-border hover:border-primary/50'}`}>
               {opt.label}
             </button>
           ))}
@@ -247,13 +247,13 @@ export default function StudentForm({ student, students, onSave, onCancel }) {
       </div>
 
       <div>
-        <Label className="text-xs">הערות</Label>
-        <Input value={form.notes} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))} placeholder="הערות נוספות..." className="mt-1" />
+        <Label className="text-sm">הערות</Label>
+        <Input value={form.notes} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))} placeholder="הערות נוספות..." className="mt-1 h-11 text-base" />
       </div>
 
       <div className="flex gap-2 pt-2">
-        <Button onClick={handleSave} className="flex-1">שמור</Button>
-        <Button variant="outline" onClick={onCancel} className="flex-1">ביטול</Button>
+        <Button onClick={handleSave} className="flex-1 h-11 text-base">שמור</Button>
+        <Button variant="outline" onClick={onCancel} className="flex-1 h-11 text-base">ביטול</Button>
       </div>
     </div>
   );
@@ -262,11 +262,11 @@ export default function StudentForm({ student, students, onSave, onCancel }) {
 function RelationPicker({ label, field, value, students, onToggle, activeClass }) {
   return (
     <div>
-      <Label className="text-xs">{label}</Label>
-      <div className="flex flex-wrap gap-1.5 mt-1 max-h-24 overflow-y-auto">
+      <Label className="text-sm">{label}</Label>
+      <div className="flex flex-wrap gap-2 mt-1.5 max-h-32 overflow-y-auto">
         {students.map(s => (
           <button key={s.id} type="button" onClick={() => onToggle(field, s.id)}
-            className={`px-2 py-0.5 rounded-full text-xs border transition-colors ${value.includes(s.id) ? activeClass : 'bg-muted border-border hover:border-primary/50'}`}>
+            className={`px-3 py-1.5 min-h-[36px] rounded-full text-sm border transition-colors ${value.includes(s.id) ? activeClass : 'bg-muted border-border hover:border-primary/50'}`}>
             {s.name}
           </button>
         ))}

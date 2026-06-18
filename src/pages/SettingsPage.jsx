@@ -53,6 +53,8 @@ export default function SettingsPage() {
     onSuccess: () => qc.invalidateQueries({ queryKey: ['categories'] }),
   });
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [deleteConfirmText, setDeleteConfirmText] = useState('');
+  const [isDeleting, setIsDeleting] = useState(false);
   const [settings, setSettings] = useState({
     color_palette: 'indigo',
     theme: 'light',
@@ -295,22 +297,66 @@ export default function SettingsPage() {
           <DialogHeader>
             <DialogTitle className="text-destructive">מחיקת חשבון</DialogTitle>
             <DialogDescription>
-              פעולה זו בלתי הפיכה. כל הנתונים שלך, כולל תלמידים וסידורי ישיבה, יימחקו לצמיתות.
+              פעולה זו בלתי הפיכה. כל הנתונים שלך, כולל תלמידים וסידורי ישיבה, יימחקו לצמיתות מהשרת.
             </DialogDescription>
           </DialogHeader>
+          <div className="py-2">
+            <Label className="text-sm mb-2 block">הקלד <strong>מחק</strong> לאישור:</Label>
+            <Input
+              value={deleteConfirmText}
+              onChange={e => setDeleteConfirmText(e.target.value)}
+              placeholder="מחק"
+              className="text-base h-11"
+              autoComplete="off"
+            />
+          </div>
           <DialogFooter className="flex-row-reverse gap-2 sm:gap-0">
             <Button variant="outline" onClick={() => setShowDeleteDialog(false)}>
               ביטול
             </Button>
             <Button
               variant="destructive"
-              onClick={() => {
-                localStorage.clear();
-                toast.success('החשבון נמחק. להתראות!');
-                setShowDeleteDialog(false);
+              disabled={deleteConfirmText !== 'מחק' || isDeleting}
+              onClick={async () => {
+                setIsDeleting(true);
+                try {
+                  // Delete all user data from the database
+                  const [students, grades, attendance, rewards, seating, history, homework, library, contacts, portfolio, tasks, bulletins, campaigns, curriculumWeeks, lessonPlans, worksheets, sharedLessons] = await Promise.allSettled([
+                    base44.entities.Student.list(),
+                    base44.entities.Grade.list(),
+                    base44.entities.Attendance.list(),
+                    base44.entities.Reward.list(),
+                    base44.entities.SeatingArrangement.list(),
+                    base44.entities.SeatHistory.list(),
+                    base44.entities.HomeworkAssignment.list(),
+                    base44.entities.LibraryItem.list(),
+                    base44.entities.ParentContact.list(),
+                    base44.entities.StudentPortfolioItem.list(),
+                    base44.entities.Task.list(),
+                    base44.entities.WeeklyBulletin.list(),
+                    base44.entities.Campaign.list(),
+                    base44.entities.CurriculumWeek.list(),
+                    base44.entities.LessonPlan.list(),
+                    base44.entities.Worksheet.list(),
+                    base44.entities.SharedLesson.list(),
+                  ]);
+                  const allRecords = [students, grades, attendance, rewards, seating, history, homework, library, contacts, portfolio, tasks, bulletins, campaigns, curriculumWeeks, lessonPlans, worksheets, sharedLessons];
+                  const entityNames = ['Student','Grade','Attendance','Reward','SeatingArrangement','SeatHistory','HomeworkAssignment','LibraryItem','ParentContact','StudentPortfolioItem','Task','WeeklyBulletin','Campaign','CurriculumWeek','LessonPlan','Worksheet','SharedLesson'];
+                  for (let i = 0; i < allRecords.length; i++) {
+                    if (allRecords[i].status === 'fulfilled') {
+                      await Promise.allSettled(allRecords[i].value.map(r => base44.entities[entityNames[i]].delete(r.id)));
+                    }
+                  }
+                  localStorage.clear();
+                  toast.success('כל הנתונים נמחקו. מתנתק...');
+                  setTimeout(() => base44.auth.logout('/login'), 1500);
+                } catch (err) {
+                  toast.error('שגיאה במחיקת הנתונים');
+                  setIsDeleting(false);
+                }
               }}
             >
-              <Trash2 className="w-4 h-4 ml-1" /> אישור מחיקה
+              {isDeleting ? 'מוחק...' : <><Trash2 className="w-4 h-4 ml-1" /> אישור מחיקה</>}
             </Button>
           </DialogFooter>
         </DialogContent>
