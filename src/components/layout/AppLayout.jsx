@@ -8,12 +8,12 @@ import {
 import { loadBranding } from '@/lib/branding';
 
 
-// Primary 5 nav items (always visible)
+// Primary 4 nav items (always visible) + "More"
 const PRIMARY_NAV = [
-  { path: '/', icon: BookOpen, label: 'ראשי' },
-  { path: '/seating', icon: LayoutGrid, label: 'סידור' },
-  { path: '/students', icon: Users, label: 'תלמידים' },
-  { path: '/library', icon: Library, label: 'ספרייה' },
+  { path: '/',         icon: BookOpen,    label: 'דשבורד' },
+  { path: '/seating',  icon: LayoutGrid,  label: 'סידור'  },
+  { path: '/students', icon: Users,       label: 'תלמידים'},
+  { path: '/library',  icon: Library,     label: 'ספרייה' },
 ];
 
 
