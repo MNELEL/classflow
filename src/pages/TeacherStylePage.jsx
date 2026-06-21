@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useRef } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import AppLayout from '@/components/layout/AppLayout';
@@ -9,14 +9,14 @@ import { Progress } from '@/components/ui/progress';
 import { Separator } from '@/components/ui/separator';
 import {
   Brain, RefreshCw, Trash2, CheckCircle2, Sparkles,
-  BookOpen, Mic, FileText, AlertCircle, ChevronDown, ChevronUp,
+  BookOpen, Mic, FileText, AlertCircle, Upload, X,
   Zap, Target, MessageSquare, Layers, Quote
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   extractStyleFromLibrary, loadStyleProfile,
-  clearStyleProfile, saveStyleProfile
+  clearStyleProfile
 } from '@/lib/teacherStyle';
 
 const SOURCE_TYPE_LABELS = {
@@ -76,6 +76,9 @@ export default function TeacherStylePage() {
   const [progress, setProgress] = useState(0);
   const [progressLabel, setProgressLabel] = useState('');
   const [expandedSection, setExpandedSection] = useState('writing');
+  const [uploadedFiles, setUploadedFiles] = useState([]); // [{name, content}]
+  const [uploadLoading, setUploadLoading] = useState(false);
+  const fileInputRef = useRef();
 
   const { data: libraryItems = [] } = useQuery({
     queryKey: ['library'],
@@ -86,15 +89,68 @@ export default function TeacherStylePage() {
   const readyItems = libraryItems.filter(i => !i.is_archived && i.ai_status === 'ready' && getItemContent(i).length > 80);
   const totalItems = libraryItems.filter(i => !i.is_archived).length;
 
+  // Combine library items + manually uploaded file content for analysis
+  const allSourceItems = [
+    ...libraryItems,
+    // inject uploaded files as virtual library items
+    ...uploadedFiles.map((f, i) => ({
+      id: `upload_${i}`,
+      title: f.name,
+      transcript: f.content,
+      ai_summary: null,
+      ai_key_points: [],
+      ai_status: 'ready',
+      source_type: 'word_doc',
+      is_archived: false,
+    }))
+  ];
+
+  async function handleFileUpload(e) {
+    const files = Array.from(e.target.files || []);
+    if (!files.length) return;
+    setUploadLoading(true);
+    const results = [];
+    for (const file of files) {
+      try {
+        setProgressLabel(`מעלה ${file.name}...`);
+        const { file_url } = await base44.integrations.Core.UploadFile({ file });
+        setProgressLabel(`מחלץ טקסט מ-${file.name}...`);
+        const extracted = await base44.integrations.Core.ExtractDataFromUploadedFile({
+          file_url,
+          json_schema: {
+            type: 'object',
+            properties: {
+              full_text: { type: 'string', description: 'All text content from the document' }
+            }
+          }
+        });
+        const content = extracted?.output?.full_text || '';
+        if (content.length > 50) {
+          results.push({ name: file.name, content });
+          toast.success(`${file.name} הועלה בהצלחה`);
+        } else {
+          toast.error(`לא ניתן לחלץ טקסט מ-${file.name}`);
+        }
+      } catch {
+        toast.error(`שגיאה בהעלאת ${file.name}`);
+      }
+    }
+    setUploadedFiles(prev => [...prev, ...results]);
+    setUploadLoading(false);
+    setProgressLabel('');
+    e.target.value = '';
+  }
+
   async function handleLearnStyle() {
-    if (richItems.length === 0) {
-      toast.error('אין חומרים עם תוכן בספרייה — העלה קבצים ועבד אותם עם AI קודם');
+    const hasContent = richItems.length > 0 || uploadedFiles.length > 0;
+    if (!hasContent) {
+      toast.error('העלה קבצים או הוסף חומרים לספרייה קודם');
       return;
     }
     setLoading(true);
     setProgress(0);
     try {
-      const result = await extractStyleFromLibrary(libraryItems, (label, pct) => {
+      const result = await extractStyleFromLibrary(allSourceItems, (label, pct) => {
         setProgressLabel(label);
         setProgress(pct);
       });
@@ -114,6 +170,8 @@ export default function TeacherStylePage() {
     setProfile(null);
     toast.success('פרופיל הסגנון נמחק');
   }
+
+  const totalForAnalysis = richItems.length + uploadedFiles.length;
 
   const sections = [
     { id: 'writing',   label: 'סגנון כתיבה', icon: MessageSquare },
@@ -179,12 +237,59 @@ export default function TeacherStylePage() {
               </div>
             )}
 
-            {richItems.length === 0 && (
+            {richItems.length === 0 && uploadedFiles.length === 0 && (
               <div className="flex items-start gap-2 p-3 bg-amber-50 dark:bg-amber-900/20 rounded-xl border border-amber-200 dark:border-amber-800 text-xs text-amber-700 dark:text-amber-300">
                 <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
-                <span>העלה חומרים לספרייה (קבצי PDF, Word, הקלטות שיעור) ועבד אותם עם AI — ואז לחץ "למד סגנון"</span>
+                <span>העלה קבצים ישירות למטה, או הוסף חומרים לספרייה ועבד אותם עם AI</span>
               </div>
             )}
+          </CardContent>
+        </Card>
+
+        {/* Direct file upload */}
+        <Card>
+          <CardHeader className="pb-2 pt-4 px-4">
+            <CardTitle className="text-sm font-semibold flex items-center gap-2">
+              <Upload className="w-4 h-4 text-primary" />
+              העלה מסמכים ישירות לניתוח
+              <Badge variant="secondary" className="text-xs font-normal">מבחנים, עבודות, דפי עבודה</Badge>
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="px-4 pb-4 space-y-2">
+            <p className="text-xs text-muted-foreground">העלה קבצים שכתבת (PDF, Word, תמונות) — הם ינותחו ישירות ללא צורך בעיבוד מוקדם</p>
+            <input
+              ref={fileInputRef}
+              type="file"
+              multiple
+              accept=".pdf,.doc,.docx,.txt,.png,.jpg,.jpeg"
+              className="hidden"
+              onChange={handleFileUpload}
+            />
+            {uploadedFiles.length > 0 && (
+              <div className="flex flex-wrap gap-1.5">
+                {uploadedFiles.map((f, i) => (
+                  <div key={i} className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-primary/5 border border-primary/20 text-xs">
+                    <FileText className="w-3 h-3 text-primary" />
+                    <span className="truncate max-w-[120px]">{f.name}</span>
+                    <button onClick={() => setUploadedFiles(prev => prev.filter((_, j) => j !== i))} className="text-muted-foreground hover:text-destructive">
+                      <X className="w-3 h-3" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+            <Button
+              variant="outline"
+              size="sm"
+              className="w-full gap-2"
+              onClick={() => fileInputRef.current?.click()}
+              disabled={uploadLoading}
+            >
+              {uploadLoading
+                ? <><Brain className="w-3.5 h-3.5 animate-pulse" /> {progressLabel || 'מעלה...'}</>
+                : <><Upload className="w-3.5 h-3.5" /> בחר קבצים להעלאה</>
+              }
+            </Button>
           </CardContent>
         </Card>
 
@@ -204,10 +309,10 @@ export default function TeacherStylePage() {
           </Card>
         ) : (
           <div className="flex gap-2">
-            <Button className="flex-1 gap-2" onClick={handleLearnStyle} disabled={richItems.length === 0}>
+            <Button className="flex-1 gap-2" onClick={handleLearnStyle} disabled={totalForAnalysis === 0}>
               {profile
-                ? <><RefreshCw className="w-4 h-4" /> עדכן פרופיל ({richItems.length} חומרים)</>
-                : <><Brain className="w-4 h-4" /> למד את הסגנון שלי ({richItems.length} חומרים)</>
+                ? <><RefreshCw className="w-4 h-4" /> עדכן פרופיל ({totalForAnalysis} חומרים)</>
+                : <><Brain className="w-4 h-4" /> למד את הסגנון שלי ({totalForAnalysis} חומרים)</>
               }
             </Button>
             {profile && (
