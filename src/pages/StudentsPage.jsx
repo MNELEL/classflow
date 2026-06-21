@@ -74,7 +74,7 @@ export default function StudentsPage() {
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['students'] });
-      toast.success('תלמיד נשמר בהצלחה');
+      toast.success('התלמיד נשמר בהצלחה');
     },
   });
 
@@ -91,7 +91,7 @@ export default function StudentsPage() {
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['students'] });
-      toast.success('תלמיד נמחק');
+      toast.success('התלמיד נמחק');
     },
   });
 
@@ -102,7 +102,7 @@ export default function StudentsPage() {
    * 3. Update each student with resolved friends / avoid arrays
    */
   async function handleImport(preview, prefsData, isAI = false) {
-    toast('מייבא תלמידים...');
+    toast('מייבאים תלמידים...');
     try {
       if (isAI) {
         // AI import: fields are already resolved by name, need to link by name after creation
@@ -162,7 +162,7 @@ export default function StudentsPage() {
         toast.success(`יובאו ${created.length} תלמידים בהצלחה!`);
       }
     } catch (err) {
-      toast.error('שגיאה בייבוא — ' + (err?.message || 'נסה שוב'));
+      toast.error('שגיאה בייבוא — ' + (err?.message || 'נסו שוב'));
     }
   }
 

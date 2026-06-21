@@ -35,7 +35,7 @@ export default function GradeManagementPage() {
             <GraduationCap className="w-5 h-5 text-primary" />
             <h1 className="text-2xl font-bold">ניהול ציונים</h1>
           </div>
-          <p className="text-muted-foreground text-sm">הזנת ציונים חכמה, שאילתות AI, ודוחות מפורטים</p>
+          <p className="text-muted-foreground text-sm">הזנת ציונים חכמה, שאילתות AI ודוחות מפורטים</p>
           <div className="flex gap-2 mt-3 flex-wrap">
             <Button size="sm" onClick={() => navigate('/exam-scanner')} className="gap-1.5 text-xs">
               <Camera className="w-3.5 h-3.5" /> סרוק מבחן (AI)
@@ -64,13 +64,13 @@ export default function GradeManagementPage() {
         <Tabs defaultValue="input" dir="rtl">
           <TabsList className="w-full mb-5 grid grid-cols-3">
             <TabsTrigger value="input" className="gap-1.5 text-xs">
-              <Sparkles className="w-3.5 h-3.5" /> הזנת ציונים AI
+              <Sparkles className="w-3.5 h-3.5" /> הזנת ציונים עם AI
             </TabsTrigger>
             <TabsTrigger value="query" className="gap-1.5 text-xs">
-              <MessageSquare className="w-3.5 h-3.5" /> שאילתות חופשיות
+              <MessageSquare className="w-3.5 h-3.5" /> שאילתות בשפה חופשית
             </TabsTrigger>
             <TabsTrigger value="reports" className="gap-1.5 text-xs">
-              <FileBarChart2 className="w-3.5 h-3.5" /> דוחות וסיכומים
+              <FileBarChart2 className="w-3.5 h-3.5" /> דוחות כיתתיים
             </TabsTrigger>
           </TabsList>
 

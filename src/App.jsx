@@ -34,6 +34,8 @@ const StudentViewPage      = lazy(() => import('./pages/StudentViewPage'));
 const MorePage             = lazy(() => import('./pages/MorePage'));
 const AnalyticsPage        = lazy(() => import('./pages/AnalyticsPage'));
 const TeacherStylePage     = lazy(() => import('./pages/TeacherStylePage'));
+const TeacherLogin         = lazy(() => import('./pages/TeacherLogin'));
+const TeacherDashboard     = lazy(() => import('./pages/TeacherDashboard'));
 const StudentProfilePage   = lazy(() => import('./pages/StudentProfilePage'));
 const WeeklySchedulePage   = lazy(() => import('./pages/WeeklySchedulePage'));
 const BellSchedulePage     = lazy(() => import('./pages/BellSchedulePage'));
@@ -110,6 +112,8 @@ function AnimatedRoutes() {
               <Route path="/exams" element={<ExamsPage />} />
               <Route path="/events" element={<EventsPage />} />
               <Route path="/daily-summary" element={<DailySummaryPage />} />
+<Route path="/teacher-login" element={<TeacherLogin />} />
+<Route path="/teacher-dashboard" element={<TeacherDashboard />} />
             </Route>
 
             <Route path="*" element={<PageNotFound />} />

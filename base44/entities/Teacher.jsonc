@@ -1,0 +1,76 @@
+{
+  "name": "Teacher",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string",
+      "description": "\u05de\u05d6\u05d4\u05d4 \u05d4\u05de\u05e9\u05ea\u05de\u05e9 \u05e9\u05dc \u05d4\u05de\u05d5\u05e8\u05d4"
+    },
+    "full_name": {
+      "type": "string",
+      "description": "\u05e9\u05dd \u05d4\u05de\u05d5\u05e8\u05d4 \u05d4\u05de\u05dc\u05d0"
+    },
+    "email": {
+      "type": "string",
+      "description": "\u05d0\u05d9\u05de\u05d9\u05d9\u05dc \u05e9\u05dc \u05d4\u05de\u05d5\u05e8\u05d4"
+    },
+    "access_code": {
+      "type": "string",
+      "description": "\u05e7\u05d5\u05d3 \u05d2\u05d9\u05e9\u05d4 \u05d0\u05d9\u05e9\u05d9 \u05dc\u05db\u05d9\u05ea\u05d4"
+    },
+    "subject": {
+      "type": "string",
+      "description": "\u05de\u05e7\u05e6\u05d5\u05e2 \u05e2\u05d9\u05e7\u05e8\u05d9"
+    },
+    "phone": {
+      "type": "string",
+      "description": "\u05de\u05e1\u05e4\u05e8 \u05d8\u05dc\u05e4\u05d5\u05df"
+    },
+    "is_active": {
+      "type": "boolean",
+      "default": true,
+      "description": "\u05d4\u05d0\u05dd \u05d4\u05de\u05d5\u05e8\u05d4 \u05e4\u05e2\u05d9\u05dc"
+    }
+  },
+  "required": [
+    "user_id",
+    "full_name",
+    "access_code"
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": {
+      "$or": [
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "created_by_id": "{{user.id}}"
+        }
+      ]
+    },
+    "update": {
+      "$or": [
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "created_by_id": "{{user.id}}"
+        }
+      ]
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

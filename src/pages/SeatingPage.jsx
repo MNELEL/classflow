@@ -252,11 +252,11 @@ ${overrideLines ? `\nהעדפות ייבוא נוספות:\n${overrideLines}` : 
       setSeats(sorted);
       const placedCount = sorted.filter(s => s.student_id).length;
       const total = students.filter(s => s.is_active !== false).length;
-      toast.success(`סידור הושלם! שובצו ${placedCount} מתוך ${total} תלמידים`);
+      toast.success(`הסידור הושלם! שובצו ${placedCount} מתוך ${total} תלמידים`);
     } catch (err) {
       const sorted = smartSort(seats, students);
       setSeats(sorted);
-      toast.success('סידור חכם הושלם!');
+      toast.success('הסידור החכם הושלם!');
     }
     setIsLoading(false);
   }
@@ -302,7 +302,7 @@ ${overrideLines ? `\nהעדפות ייבוא נוספות:\n${overrideLines}` : 
     }));
     const sorted = smartSort(seatsWithFixed, studentsWithPref);
     setSeats(sorted);
-    toast.success('סידור מהיר הושלם!');
+    toast.success('הסידור המהיר הושלם!');
   }
 
   function handleClearAll() {
