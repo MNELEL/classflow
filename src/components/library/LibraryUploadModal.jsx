@@ -8,8 +8,9 @@ import { Badge } from '@/components/ui/badge';
 import { base44 } from '@/api/base44Client';
 import { useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
-import { Loader2, Upload, X, Check, Link2, Globe, FileText, Mic, Video, Image, Music, File, Plus } from 'lucide-react';
+import { Loader2, Upload, X, Check, Link2, Globe, FileText, Mic, Video, Image, Music, File, Plus, CloudIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import GoogleDrivePicker from '@/components/library/GoogleDrivePicker';
 
 const CATEGORIES = ['גמרא', 'הלכה', 'חומש', 'נ"ך', 'תפילה', 'מחשבת ישראל', 'מדעים', 'מתמטיקה', 'שפה', 'אחר'];
 
@@ -83,7 +84,8 @@ export default function LibraryUploadModal({ open, onClose }) {
   const qc = useQueryClient();
   const fileInputRef = useRef(null);
   const dropZoneRef = useRef(null);
-  const [tab, setTab] = useState('files'); // 'files' | 'link' | 'text' | 'search'
+  const [tab, setTab] = useState('files'); // 'files' | 'link' | 'text' | 'search' | 'drive'
+  const [drivePickerOpen, setDrivePickerOpen] = useState(false);
   const [files, setFiles] = useState([]); // [{file, sourceType, title}]
   const [linkUrl, setLinkUrl] = useState('');
   const [linkType, setLinkType] = useState('youtube_link');
@@ -286,6 +288,7 @@ export default function LibraryUploadModal({ open, onClose }) {
         <div className="flex gap-1 bg-muted rounded-lg p-1">
           {[
             { id: 'files', icon: '📁', label: 'קבצים' },
+            { id: 'drive', icon: '☁️', label: 'Drive' },
             { id: 'link', icon: '🔗', label: 'קישור' },
             { id: 'text', icon: '✍️', label: 'טקסט' },
             { id: 'search', icon: '🔍', label: 'חיפוש' },
@@ -367,6 +370,42 @@ export default function LibraryUploadModal({ open, onClose }) {
                 ))}
               </div>
             )}
+          </div>
+        )}
+
+        {/* DRIVE TAB */}
+        {tab === 'drive' && (
+          <div className="flex flex-col items-center justify-center py-8 gap-4 text-center">
+            <div className="w-16 h-16 rounded-2xl bg-blue-50 flex items-center justify-center">
+              <CloudIcon className="w-8 h-8 text-blue-500" />
+            </div>
+            <div>
+              <p className="font-semibold text-foreground">ייבוא מ-Google Drive</p>
+              <p className="text-sm text-muted-foreground mt-1">בחר קובץ מהדרייב שלך והוסף אותו לספרייה</p>
+            </div>
+            <Button onClick={() => setDrivePickerOpen(true)} className="gap-2">
+              <CloudIcon className="w-4 h-4" /> פתח את Google Drive
+            </Button>
+            <GoogleDrivePicker
+              open={drivePickerOpen}
+              onClose={() => setDrivePickerOpen(false)}
+              onImport={async (fileData) => {
+                const item = await base44.entities.LibraryItem.create({
+                  ...fileData,
+                  category: category || null,
+                  subject: subject || null,
+                  ai_status: 'pending',
+                  generated_artifacts: [],
+                  lesson_log: [],
+                  is_favorite: false,
+                  is_archived: false,
+                });
+                analyzeItem(item, qc);
+                qc.invalidateQueries({ queryKey: ['library'] });
+                reset();
+                onClose();
+              }}
+            />
           </div>
         )}
 
