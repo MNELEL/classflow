@@ -13,12 +13,13 @@ import LibraryItemDetail from '@/components/library/LibraryItemDetail';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Plus, Search, BookOpen, Loader2, Library, Sparkles, BookOpenCheck, ListMusic, CalendarDays, BarChart2, Layers, Settings2, Bot, ExternalLink, Star, HardDrive } from 'lucide-react';
+import { Plus, Search, BookOpen, Loader2, Library, Sparkles, BookOpenCheck, ListMusic, CalendarDays, BarChart2, Layers, Settings2, Bot, ExternalLink, Star, HardDrive, Download } from 'lucide-react';
 import MultiSourceGenerator from '@/components/library/MultiSourceGenerator';
 import AIProviderSettings from '@/components/library/AIProviderSettings';
 import LibrarySearch from '@/components/library/LibrarySearch';
 import ExternalSourceSearch from '@/components/library/ExternalSourceSearch';
 import GoogleDrivePanel from '@/components/library/GoogleDrivePanel';
+import ImportFromSourceModal from '@/components/library/ImportFromSourceModal';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const SOURCE_LABELS = {
@@ -40,6 +41,7 @@ export default function LibraryPage() {
   const [playlistIds, setPlaylistIds] = useState([]);
   const [showPlaylist, setShowPlaylist] = useState(false);
   const [showAISettings, setShowAISettings] = useState(false);
+  const [showImportModal, setShowImportModal] = useState(false);
 
   const { data: items = [], isLoading } = useQuery({
     queryKey: ['library'],
@@ -303,7 +305,19 @@ export default function LibraryPage() {
           </TabsContent>
 
           <TabsContent value="external" className="mt-0">
-            <ExternalSourceSearch />
+            <div className="space-y-3">
+              {/* Import direct button */}
+              <div className="flex items-center justify-between bg-gradient-to-l from-amber-50 to-orange-50 dark:from-amber-950/20 dark:to-orange-950/20 border border-amber-200 dark:border-amber-800 rounded-2xl px-4 py-3">
+                <div>
+                  <p className="font-bold text-sm">ייבוא ישיר ממאגרים</p>
+                  <p className="text-xs text-muted-foreground">ייבא תכנים מפורטל הדף היומי, קול הלשון ועוד לספריה שלך</p>
+                </div>
+                <Button size="sm" className="gap-1.5 shrink-0" onClick={() => setShowImportModal(true)}>
+                  <Download className="w-4 h-4" /> ייבא
+                </Button>
+              </div>
+              <ExternalSourceSearch />
+            </div>
           </TabsContent>
 
           <TabsContent value="generate" className="mt-0">
@@ -329,6 +343,7 @@ export default function LibraryPage() {
 
         <LibraryUploadModal open={showUpload} onClose={() => setShowUpload(false)} />
         <AIProviderSettings open={showAISettings} onClose={() => setShowAISettings(false)} />
+        <ImportFromSourceModal open={showImportModal} onClose={() => setShowImportModal(false)} />
 
         <AnimatePresence>
           {selectedItemId && (
