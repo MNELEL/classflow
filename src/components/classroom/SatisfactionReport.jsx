@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { getStudentSeat, isAdjacent, getDistance } from '@/lib/seatingUtils';
+import { getStudentSeat, isAdjacent, getDistance, calcSatisfactionDetailed } from '@/lib/seatingUtils';
 
 function scoreStudent(student, mySeat, seats, students) {
   const details = [];
@@ -43,39 +43,45 @@ function scoreStudent(student, mySeat, seats, students) {
     details.push({ label: 'לא בקצה', ok });
   }
 
-  // Friends nearby
+  // Friends nearby (adjacent=✅, dist≤3=⚡, else=❌)
   if (student.friends?.length > 0) {
     for (const fid of student.friends) {
       const friendSeat = getStudentSeat(seats, fid);
       const friendName = students.find(s => s.id === fid)?.name || fid;
       total++;
-      const ok = friendSeat && isAdjacent(mySeat, friendSeat);
-      if (ok) satisfied++;
-      details.push({ label: `ליד ${friendName}`, ok });
+      if (!friendSeat) { details.push({ label: `ליד ${friendName}`, ok: false }); continue; }
+      const d = getDistance(mySeat, friendSeat);
+      const ok = d <= 1 ? true : d <= 3 ? null : false; // null = partial
+      if (ok === true) satisfied++;
+      details.push({ label: `ליד ${friendName}${ok === null ? ' (קרוב)' : ''}`, ok });
     }
   }
 
-  // Avoid conflicts
+  // Avoid conflicts (dist>2=✅, dist=2=⚡, adj=❌)
   if (student.avoid?.length > 0) {
     for (const aid of student.avoid) {
       const avoidSeat = getStudentSeat(seats, aid);
       const avoidName = students.find(s => s.id === aid)?.name || aid;
       total++;
-      const ok = !avoidSeat || !isAdjacent(mySeat, avoidSeat);
-      if (ok) satisfied++;
-      details.push({ label: `לא ליד ${avoidName}`, ok });
+      if (!avoidSeat) { satisfied++; details.push({ label: `לא ליד ${avoidName}`, ok: true }); continue; }
+      const d = getDistance(mySeat, avoidSeat);
+      const ok = d > 2 ? true : d === 2 ? null : false;
+      if (ok === true) satisfied++;
+      details.push({ label: `לא ליד ${avoidName}${ok === null ? ' (קרוב)' : ''}`, ok });
     }
   }
 
-  // Separate
+  // Separate (far=✅, medium=⚡, close=❌)
   if (student.separate?.length > 0) {
     for (const sid of student.separate) {
       const sepSeat = getStudentSeat(seats, sid);
       const sepName = students.find(s => s.id === sid)?.name || sid;
       total++;
-      const ok = !sepSeat || getDistance(mySeat, sepSeat) >= 3;
-      if (ok) satisfied++;
-      details.push({ label: `מרוחק מ-${sepName}`, ok });
+      if (!sepSeat) { satisfied++; details.push({ label: `מרוחק מ-${sepName}`, ok: true }); continue; }
+      const d = getDistance(mySeat, sepSeat);
+      const ok = d >= 4 ? true : d >= 3 ? null : false;
+      if (ok === true) satisfied++;
+      details.push({ label: `מרוחק מ-${sepName}${ok === null ? ' (בינוני)' : ''}`, ok });
     }
   }
 
@@ -103,14 +109,11 @@ export default function SatisfactionReport({ seats, students }) {
     [seatedStudents, seats, students]
   );
 
-  const overall = useMemo(() => {
-    const totalConst = reports.reduce((s, r) => s + r.total, 0);
-    const totalSat = reports.reduce((s, r) => s + r.satisfied, 0);
-    return totalConst === 0 ? 100 : Math.round((totalSat / totalConst) * 100);
-  }, [reports]);
+  const overallDetail = useMemo(() => calcSatisfactionDetailed(seats, students), [seats, students]);
+  const overall = overallDetail.pct;
 
   const color = overall >= 80 ? 'text-green-600' : overall >= 50 ? 'text-yellow-600' : 'text-red-600';
-  const bgColor = overall >= 80 ? 'bg-green-50 border-green-200' : overall >= 50 ? 'bg-yellow-50 border-yellow-200' : 'bg-red-50 border-red-200';
+  const bgColor = overall >= 80 ? 'bg-green-50 border-green-200 dark:bg-green-900/20 dark:border-green-800' : overall >= 50 ? 'bg-yellow-50 border-yellow-200 dark:bg-yellow-900/20 dark:border-yellow-800' : 'bg-red-50 border-red-200 dark:bg-red-900/20 dark:border-red-800';
 
   return (
     <div className="space-y-4" dir="rtl">
@@ -118,9 +121,20 @@ export default function SatisfactionReport({ seats, students }) {
       <div className={`rounded-xl border p-4 text-center ${bgColor}`}>
         <p className="text-xs text-muted-foreground mb-1">ניקוד כולל לסידור</p>
         <p className={`text-4xl font-bold ${color}`}>{overall}<span className="text-lg">%</span></p>
-        <p className="text-xs text-muted-foreground mt-1">
-          {reports.reduce((s, r) => s + r.satisfied, 0)} מתוך {reports.reduce((s, r) => s + r.total, 0)} תנאים מתקיימים
-        </p>
+        {overallDetail.total > 0 && (
+          <div className="flex items-center justify-center gap-3 mt-2 text-xs">
+            <span className="text-green-600 font-medium">✅ {overallDetail.satisfied} מלאים</span>
+            <span className="text-amber-500 font-medium">⚡ {overallDetail.partial} חלקיים</span>
+            <span className="text-red-500 font-medium">❌ {overallDetail.violated} מופרים</span>
+          </div>
+        )}
+        <div className="mt-2 h-2 bg-muted rounded-full overflow-hidden flex">
+          {overallDetail.total > 0 && <>
+            <div className="bg-green-500 h-full transition-all" style={{ width: `${(overallDetail.satisfied / overallDetail.total) * 100}%` }} />
+            <div className="bg-amber-400 h-full transition-all" style={{ width: `${(overallDetail.partial / overallDetail.total) * 100}%` }} />
+            <div className="bg-red-400 h-full transition-all" style={{ width: `${(overallDetail.violated / overallDetail.total) * 100}%` }} />
+          </>}
+        </div>
       </div>
 
       {reports.length === 0 && (
@@ -145,14 +159,10 @@ export default function SatisfactionReport({ seats, students }) {
               {details.length === 0 && <p className="text-xs text-muted-foreground">אין תנאים מוגדרים</p>}
               {details.map((d, i) => (
                 <div key={i} className="flex items-center gap-2 text-xs">
-                  {d.ok === null ? (
-                    <span className="text-amber-500">📌</span>
-                  ) : d.ok ? (
-                    <span className="text-green-500">✓</span>
-                  ) : (
-                    <span className="text-red-500">✗</span>
-                  )}
-                  <span className={d.ok === false ? 'text-red-700' : d.ok === true ? 'text-green-700' : 'text-amber-700'}>{d.label}</span>
+                  {d.ok === true  ? <span className="text-green-500">✅</span>
+                  : d.ok === false ? <span className="text-red-500">❌</span>
+                  : <span className="text-amber-500">⚡</span>}
+                  <span className={d.ok === false ? 'text-red-700 dark:text-red-400' : d.ok === true ? 'text-green-700 dark:text-green-400' : 'text-amber-600 dark:text-amber-400'}>{d.label}</span>
                 </div>
               ))}
             </div>

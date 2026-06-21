@@ -38,61 +38,78 @@ export function isAdjacent(seat1, seat2) {
   return getDistance(seat1, seat2) === 1;
 }
 
-// Calculate satisfaction score 0-100
+// Calculate satisfaction score 0-100 with partial credit (ported from class-manager v3)
+// Returns a number 0-100. Also exposed as calcSatisfactionDetailed for breakdown UI.
 export function calcSatisfactionScore(seats, students) {
-  if (!students || students.length === 0) return 100;
-  let total = 0, count = 0;
+  const { pct } = calcSatisfactionDetailed(seats, students);
+  return pct;
+}
 
+export function calcSatisfactionDetailed(seats, students) {
+  if (!students || students.length === 0) return { pct: 100, satisfied: 0, partial: 0, violated: 0, total: 0 };
+
+  let satisfied = 0, partial = 0, violated = 0, total = 0;
   const seatedStudents = students.filter(s => getStudentSeat(seats, s.id));
+  const totalRows = seats.length ? Math.max(...seats.map(s => s.row)) + 1 : 1;
+  const totalCols = seats.length ? Math.max(...seats.map(s => s.col)) + 1 : 1;
+  const maxDist = totalRows + totalCols - 2;
 
   for (const student of seatedStudents) {
     const mySeat = getStudentSeat(seats, student.id);
     if (!mySeat) continue;
 
-    // Friends nearby
-    if (student.friends && student.friends.length > 0) {
-      const friendSeats = student.friends
-        .map(fid => getStudentSeat(seats, fid))
-        .filter(Boolean);
-      const hasNearFriend = friendSeats.some(fs => isAdjacent(mySeat, fs));
-      total += hasNearFriend ? 1 : 0;
-      count++;
+    // Friends nearby: adjacent=satisfied, dist≤3=partial, else=violated
+    for (const fid of (student.friends || [])) {
+      const fs = getStudentSeat(seats, fid);
+      if (!fs) continue;
+      total++;
+      const d = getDistance(mySeat, fs);
+      if (d <= 1) satisfied++;
+      else if (d <= 3) partial++;
+      else violated++;
     }
 
-    // Avoid conflicts
-    if (student.avoid && student.avoid.length > 0) {
-      const avoidSeats = student.avoid
-        .map(aid => getStudentSeat(seats, aid))
-        .filter(Boolean);
-      const hasConflict = avoidSeats.some(as => isAdjacent(mySeat, as));
-      total += hasConflict ? 0 : 1;
-      count++;
+    // Avoid: dist>2=satisfied, dist=2=partial, adj=violated
+    for (const aid of (student.avoid || [])) {
+      const as = getStudentSeat(seats, aid);
+      if (!as) continue;
+      total++;
+      const d = getDistance(mySeat, as);
+      if (d > 2) satisfied++;
+      else if (d === 2) partial++;
+      else violated++;
     }
 
-    // Separate (distance)
-    if (student.separate && student.separate.length > 0) {
-      const sepSeats = student.separate
-        .map(sid => getStudentSeat(seats, sid))
-        .filter(Boolean);
-      const tooClose = sepSeats.some(ss => getDistance(mySeat, ss) < 3);
-      total += tooClose ? 0 : 1;
-      count++;
+    // Separate: far=satisfied, medium=partial, close=violated
+    for (const sid of (student.separate || [])) {
+      const ss = getStudentSeat(seats, sid);
+      if (!ss) continue;
+      total++;
+      const d = getDistance(mySeat, ss);
+      if (d >= maxDist * 0.6) satisfied++;
+      else if (d >= maxDist * 0.3) partial++;
+      else violated++;
     }
 
     // Row preference
     if (student.row_preference && student.row_preference !== 'none') {
-      const totalRows = Math.max(...seats.map(s => s.row)) + 1;
+      total++;
       const isGood =
         (student.row_preference === 'front' && mySeat.row === 0) ||
         (student.row_preference === 'middle' && Math.abs(mySeat.row - Math.floor(totalRows / 2)) <= 1) ||
         (student.row_preference === 'back' && mySeat.row === totalRows - 1);
-      total += isGood ? 1 : 0;
-      count++;
+      const isPartial =
+        (student.row_preference === 'front' && mySeat.row <= 1) ||
+        (student.row_preference === 'back' && mySeat.row >= totalRows - 2);
+      if (isGood) satisfied++;
+      else if (isPartial) partial++;
+      else violated++;
     }
   }
 
-  if (count === 0) return 100;
-  return Math.round((total / count) * 100);
+  if (total === 0) return { pct: 100, satisfied: 0, partial: 0, violated: 0, total: 0 };
+  const pct = Math.round(((satisfied + partial * 0.5) / total) * 100);
+  return { pct, satisfied, partial, violated, total };
 }
 
 /**
