@@ -1,0 +1,79 @@
+{
+  "name": "Exam",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string",
+      "description": "\u05e9\u05dd \u05d4\u05de\u05d1\u05d7\u05df"
+    },
+    "subject": {
+      "type": "string"
+    },
+    "date": {
+      "type": "string",
+      "format": "date"
+    },
+    "max_score": {
+      "type": "number",
+      "default": 100
+    },
+    "duration_minutes": {
+      "type": "number"
+    },
+    "topics": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "\u05e0\u05d5\u05e9\u05d0\u05d9 \u05d4\u05de\u05d1\u05d7\u05df"
+    },
+    "student_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "scores": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "student_id": {
+            "type": "string"
+          },
+          "student_name": {
+            "type": "string"
+          },
+          "score": {
+            "type": "number"
+          },
+          "graded_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "note": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "scheduled",
+        "in_progress",
+        "graded",
+        "published"
+      ],
+      "default": "scheduled"
+    },
+    "notes": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "title",
+    "subject",
+    "date"
+  ]
+}

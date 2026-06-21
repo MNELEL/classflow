@@ -1,0 +1,59 @@
+{
+  "name": "SchoolEvent",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "trip",
+        "assembly",
+        "holiday",
+        "meeting",
+        "exam",
+        "deadline",
+        "celebration",
+        "other"
+      ],
+      "default": "other"
+    },
+    "start_date": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "end_date": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "location": {
+      "type": "string"
+    },
+    "participants": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "\u05de\u05d6\u05d4\u05d9 \u05ea\u05dc\u05de\u05d9\u05d3\u05d9\u05dd/\u05db\u05d9\u05ea\u05d5\u05ea"
+    },
+    "color": {
+      "type": "string"
+    },
+    "is_recurring": {
+      "type": "boolean",
+      "default": false
+    },
+    "reminder_sent": {
+      "type": "boolean",
+      "default": false
+    }
+  },
+  "required": [
+    "title",
+    "start_date"
+  ]
+}

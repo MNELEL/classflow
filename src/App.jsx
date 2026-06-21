@@ -4,7 +4,7 @@ import { QueryClientProvider } from '@tanstack/react-query'
 import { queryClientInstance } from '@/lib/query-client'
 import { BrowserRouter as Router, Route, Routes, useLocation, Navigate } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
-import { useEffect, lazy, Suspense } from 'react';
+import { useEffect, useState, lazy, Suspense } from 'react';
 import PageNotFound from './lib/PageNotFound';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
@@ -38,6 +38,13 @@ const StudentProfilePage   = lazy(() => import('./pages/StudentProfilePage'));
 const WeeklySchedulePage   = lazy(() => import('./pages/WeeklySchedulePage'));
 const BellSchedulePage     = lazy(() => import('./pages/BellSchedulePage'));
 const StudyPlanGeneratorPage = lazy(() => import('./pages/StudyPlanGeneratorPage'));
+const RafflePage            = lazy(() => import('./pages/RafflePage'));
+const FastFeedbackPage      = lazy(() => import('./pages/FastFeedbackPage'));
+const BehaviorTimelinePage  = lazy(() => import('./pages/BehaviorTimelinePage'));
+const ExamsPage             = lazy(() => import('./pages/ExamsPage'));
+const EventsPage            = lazy(() => import('./pages/EventsPage'));
+const DailySummaryPage      = lazy(() => import('./pages/DailySummaryPage'));
+const OnboardingModal       = lazy(() => import('./components/onboarding/OnboardingModal'));
 const Login                = lazy(() => import('./pages/Login'));
 const Register             = lazy(() => import('./pages/Register'));
 const ForgotPassword       = lazy(() => import('./pages/ForgotPassword'));
@@ -97,6 +104,12 @@ function AnimatedRoutes() {
               <Route path="/weekly-schedule" element={<WeeklySchedulePage />} />
               <Route path="/bell-schedule" element={<BellSchedulePage />} />
               <Route path="/study-plan-generator" element={<StudyPlanGeneratorPage />} />
+              <Route path="/raffle" element={<RafflePage />} />
+              <Route path="/fast-feedback" element={<FastFeedbackPage />} />
+              <Route path="/behavior-timeline" element={<BehaviorTimelinePage />} />
+              <Route path="/exams" element={<ExamsPage />} />
+              <Route path="/events" element={<EventsPage />} />
+              <Route path="/daily-summary" element={<DailySummaryPage />} />
             </Route>
 
             <Route path="*" element={<PageNotFound />} />
@@ -108,7 +121,14 @@ function AnimatedRoutes() {
 }
 
 const AuthenticatedApp = () => {
-  const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
+  const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin, user } = useAuth();
+  const [showOnboarding, setShowOnboarding] = useState(false);
+
+  useEffect(() => {
+    if (user && !localStorage.getItem('classflow_onboarding_done')) {
+      setShowOnboarding(true);
+    }
+  }, [user]);
 
   useEffect(() => {
     const mq = window.matchMedia('(prefers-color-scheme: dark)');
@@ -137,7 +157,14 @@ const AuthenticatedApp = () => {
     if (authError.type === 'auth_required') { navigateToLogin(); return null; }
   }
 
-  return <AnimatedRoutes />;
+  return (
+    <>
+      <AnimatedRoutes />
+      <Suspense fallback={null}>
+        <OnboardingModal open={showOnboarding} onClose={() => setShowOnboarding(false)} />
+      </Suspense>
+    </>
+  );
 };
 
 function App() {
