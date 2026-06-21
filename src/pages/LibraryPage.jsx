@@ -121,6 +121,9 @@ export default function LibraryPage() {
             <TabsTrigger value="coverage" className="gap-1 text-xs">
               <BarChart2 className="w-3.5 h-3.5" /> כיסוי
             </TabsTrigger>
+            <TabsTrigger value="drive" className="gap-1 text-xs">
+              <HardDrive className="w-3.5 h-3.5" /> Drive
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="library" className="space-y-4 mt-0">
@@ -317,6 +320,10 @@ export default function LibraryPage() {
 
           <TabsContent value="coverage" className="mt-0">
             <CoverageTracker />
+          </TabsContent>
+
+          <TabsContent value="drive" className="mt-0">
+            <GoogleDrivePanel onImported={() => {}} />
           </TabsContent>
         </Tabs>
 
