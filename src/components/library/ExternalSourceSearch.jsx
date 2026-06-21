@@ -3,19 +3,37 @@ import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Search, Sparkles, Loader2, Plus, ExternalLink, BookOpen, FileText } from 'lucide-react';
+import { Search, Sparkles, Loader2, Plus, ExternalLink, BookOpen, FileText, Link2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import ReactMarkdown from 'react-markdown';
 
 const SOURCES = [
-  { value: 'general', label: '🌐 חיפוש כללי' },
-  { value: 'gemara', label: '📜 דפי גמרא ומקורות' },
-  { value: 'ministry', label: '📚 משרד החינוך' },
-  { value: 'cet', label: '🖥️ מט"ח (CET)' },
-  { value: 'davidson', label: '✡️ מכון דוידסון' },
+  { value: 'general',   label: '🌐 חיפוש כללי' },
+  { value: 'gemara',    label: '📜 דפי גמרא ומקורות' },
+  { value: 'ministry',  label: '📚 משרד החינוך' },
+  { value: 'cet',       label: '🖥️ מט"ח (CET)' },
+  { value: 'davidson',  label: '✡️ מכון דוידסון' },
+  { value: 'daf_yomi',  label: '📖 פורטל הדף היומי' },
+  { value: 'kol_halashon', label: '🎙️ קול הלשון' },
+  { value: 'kol_hadaf',    label: '📻 קול הדף' },
+  { value: 'dirshu',       label: '🏫 דירשו' },
 ];
+
+const SOURCE_URLS = {
+  daf_yomi:    'https://daf-yomi.com',
+  kol_halashon:'https://www.kolhalashon.com',
+  kol_hadaf:   'https://www.kolhadadf.com',
+  dirshu:      'https://www.dirshu.com',
+};
+
+const SOURCE_DESCRIPTIONS = {
+  daf_yomi:    'פורטל הדף היומי — שיעורים, סיכומים, דפי עזר, מילון ארמי-עברי, מאגר שיעורי שמע ווידאו לכל דפי הגמרא',
+  kol_halashon:'קול הלשון — ספריית שיעורי תורה שמע/וידאו ענקית מגדולי ישראל',
+  kol_hadaf:   'קול הדף — שיעורי הדף היומי מהרב וואלבה ורבנים נוספים',
+  dirshu:      'דירשו — חומרי עזר לדף היומי, חזרות, בחנים ועלוני חידושים',
+};
 
 const OUTPUT_TYPES = [
   { value: 'lesson_plan', label: '📐 מערך שיעור' },
@@ -45,14 +63,17 @@ export default function ExternalSourceSearch() {
     setSelectedResults([]);
 
     const sourceLabel = SOURCES.find(s => s.value === source)?.label || source;
+    const siteUrl = SOURCE_URLS[source] || '';
+    const siteDesc = SOURCE_DESCRIPTIONS[source] || '';
     const res = await base44.integrations.Core.InvokeLLM({
-      prompt: `חפש חומרי לימוד בנושא: "${query}" מהמקור: ${sourceLabel}.
+      prompt: `חפש חומרי לימוד בנושא: "${query}" מהמקור: ${sourceLabel}${siteDesc ? ` (${siteDesc})` : ''}.
+      ${siteUrl ? `אתר: ${siteUrl}` : ''}
       ${gradeLevel ? `שכבת גיל: ${gradeLevel}` : ''}
       
       החזר 5 תוצאות רלוונטיות עם:
       - כותרת
       - תיאור קצר (2-3 משפטים)
-      - קישור משוער (URL אמיתי אם ידוע, אחרת null)
+      - קישור אמיתי לדף הרלוונטי באתר (אם ידוע — השתמש בדפוס ה-URL האמיתי של האתר, אחרת null)
       - תוכן עיקרי / ציטוט מרכזי
       - מילות מפתח
       
@@ -139,6 +160,29 @@ ${content}
             <h3 className="font-bold text-sm">מאגרים חיצוניים</h3>
             <p className="text-xs text-muted-foreground">חפש חומרים ויצור מהם מערכי שיעור ודפי עבודה</p>
           </div>
+        </div>
+
+        {/* Quick links to Jewish repositories */}
+        <div className="flex flex-wrap gap-1.5 mb-3">
+          {[
+            { label: 'פורטל הדף היומי', url: 'https://daf-yomi.com', value: 'daf_yomi' },
+            { label: 'קול הלשון', url: 'https://www.kolhalashon.com', value: 'kol_halashon' },
+            { label: 'קול הדף', url: 'https://www.kolhadadf.com', value: 'kol_hadaf' },
+            { label: 'דירשו', url: 'https://www.dirshu.com', value: 'dirshu' },
+          ].map(site => (
+            <div key={site.value} className="flex items-center gap-0.5">
+              <button
+                onClick={() => setSource(site.value)}
+                className={`text-xs px-2 py-1 rounded-lg border transition-all ${source === site.value ? 'bg-primary text-primary-foreground border-primary' : 'bg-white dark:bg-card border-border hover:border-primary/50'}`}
+              >
+                {site.label}
+              </button>
+              <a href={site.url} target="_blank" rel="noopener noreferrer"
+                className="text-muted-foreground hover:text-primary transition-colors p-1">
+                <Link2 className="w-3 h-3" />
+              </a>
+            </div>
+          ))}
         </div>
 
         {/* Inputs */}
