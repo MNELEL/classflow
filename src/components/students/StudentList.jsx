@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Edit2, Trash2, Plus, Eye, Volume2, Zap, CheckSquare, TrendingUp, FolderOpen } from 'lucide-react';
+import { Edit2, Trash2, Plus, Eye, Volume2, Zap, CheckSquare, TrendingUp, FolderOpen, User } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { useNavigate } from 'react-router-dom';
 import StudentForm from './StudentForm';
 import TaskManager from './TaskManager';
 import GradeManager from './GradeManager';
@@ -25,6 +26,7 @@ const LEVEL_CONFIG = {
 };
 
 export default function StudentList({ students, onSave, onDelete }) {
+  const navigate = useNavigate();
   const [editing, setEditing] = useState(null);
   const [adding, setAdding] = useState(false);
   const [taskStudent, setTaskStudent] = useState(null);
@@ -73,6 +75,9 @@ export default function StudentList({ students, onSave, onDelete }) {
                     </div>
                   </div>
                   <div className="flex gap-1 opacity-60 group-hover:opacity-100 transition-opacity shrink-0">
+                    <Button size="icon" variant="ghost" className="h-7 w-7" title="פרופיל תלמיד" onClick={() => navigate(`/students/${student.id}`)}>
+                      <User className="w-3.5 h-3.5 text-primary" />
+                    </Button>
                     <Button size="icon" variant="ghost" className="h-7 w-7" title="משימות" onClick={() => setTaskStudent(student)}>
                       <CheckSquare className="w-3.5 h-3.5" />
                     </Button>
