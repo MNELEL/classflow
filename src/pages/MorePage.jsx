@@ -5,7 +5,7 @@ import {
   CalendarCheck, GraduationCap, Trophy, Wrench,
   Contact, FileText, Layers, Mic, ClipboardCheck,
   Music, Eye, Clock, UserCircle, ChevronLeft, BarChart2, Brain,
-  BookOpen, Home, Bell, BookMarked, Shuffle, Zap, GitBranch, CalendarDays, Sparkles
+  BookOpen, Home, Bell, BookMarked, Shuffle, Zap, GitBranch, CalendarDays, Sparkles, Shield, Icon
 } from 'lucide-react';
 import AppLayout from '@/components/layout/AppLayout';
 
@@ -38,6 +38,7 @@ const ROWS = [
   { path: '/fast-feedback',        icon: Zap,         label: 'משוב מהיר',         desc: 'שלח משוב מיידי לתלמיד',            color: 'bg-yellow-100 text-yellow-600 dark:bg-yellow-900/30 dark:text-yellow-400'},
   { path: '/raffle',               icon: Shuffle,     label: 'הגרלות',            desc: 'הגרל תלמיד, קבוצות או סדר אקראי',   color: 'bg-fuchsia-100 text-fuchsia-600 dark:bg-fuchsia-900/30 dark:text-fuchsia-400'},
   { path: '/daily-summary',        icon: Sparkles,    label: 'סיכום יומי',        desc: 'AI מחולל סיכום היום והמלצות',      color: 'bg-purple-100 text-purple-600 dark:bg-purple-900/30 dark:text-purple-400'},
+  { path: '/admin',                icon: Shield,      label: 'לוח בקרה - מנהל',  desc: 'ניהול כיתות ומורים',              color: 'bg-primary/10 text-primary'     },
   { path: '/settings',             icon: UserCircle,  label: 'פרופיל והגדרות',   desc: 'מיתוג, תצוגה ועוד',                color: 'bg-slate-100 text-slate-600 dark:bg-slate-900/30 dark:text-slate-400'     },
 ];
 
