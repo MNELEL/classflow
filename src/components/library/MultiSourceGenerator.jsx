@@ -15,6 +15,8 @@ import {
 } from 'lucide-react';
 import ExportModal from './ExportModal';
 import AIProviderSettings from './AIProviderSettings';
+import TeacherStylePanel from './TeacherStylePanel';
+import { loadStyleProfile, buildStyleInstruction } from '@/lib/teacherStyle';
 import { motion, AnimatePresence } from 'framer-motion';
 import ReactMarkdown from 'react-markdown';
 import { toast } from 'sonner';
@@ -89,19 +91,19 @@ const SOURCE_ICON = {
   word_doc: '📝', external_link: '🔗',
 };
 
-function buildPrompt(outputType, selectedItems, opts) {
+function buildPrompt(outputType, selectedItems, opts, styleInstruction = '') {
   const titles = selectedItems.map(i => `- ${i.title} (${i.subject || ''})`).join('\n');
   const content = selectedItems.map(i =>
     [i.transcript, i.ai_summary, ...(i.ai_key_points || [])].filter(Boolean).join('\n')
   ).join('\n\n---\n\n').slice(0, 6000);
 
-  const base = `אתה מורה מנוסה. צור חומר לימוד בעברית איכותי ומותאם תלמיד.
+  const base = `${styleInstruction ? styleInstruction + '\n\n' : ''}אתה מורה מנוסה. צור חומר לימוד בעברית איכותי המבוסס אך ורק על החומרים שסופקו — אל תמציא עובדות, נושאים, או שאלות שאינם מופיעים בחומר.
 
 חומרי מקור (${selectedItems.length} פריטים):
 ${titles}
 
 תוכן מהחומרים:
-${content || '(סכם את הנושאים לפי הכותרות)'}
+${content || '(אין תמלול — השתמש בכותרות בלבד)'}
 
 פרטים:
 - שכבת גיל: ${opts.grade}
@@ -280,13 +282,15 @@ export default function MultiSourceGenerator() {
     setGenerating(true);
     setResult(null);
     try {
+      const styleProfile = loadStyleProfile();
+      const styleInstruction = buildStyleInstruction(styleProfile);
       let prompt;
       if (reviewMode) {
         const titles = selectedItems.map(i => `- ${i.title}`).join('\n');
         const content = selectedItems.map(i =>
           [i.transcript, i.ai_summary, ...(i.ai_key_points || [])].filter(Boolean).join('\n')
         ).join('\n\n---\n\n').slice(0, 6000);
-        prompt = `אתה מורה מנוסה. בצע ניתוח עמוק של החומרים הלימודיים הבאים וצור חומר חזרה מקיף.
+        prompt = `${styleInstruction ? styleInstruction + '\n\n' : ''}אתה מורה מנוסה. בצע ניתוח עמוק של החומרים הלימודיים הבאים וצור חומר חזרה מקיף המבוסס אך ורק על החומרים שסופקו.
 
 חומרים שנלמדו:
 ${titles}
@@ -310,7 +314,7 @@ ${content || '(ניתח לפי הכותרות)'}
 שכבת גיל: ${grade} | רמת קושי: ${difficulty}
 ${extraInstructions ? `הוראות נוספות: ${extraInstructions}` : ''}`;
       } else {
-        prompt = buildPrompt(outputType, selectedItems, { grade, difficulty, count, extraInstructions });
+        prompt = buildPrompt(outputType, selectedItems, { grade, difficulty, count, extraInstructions }, styleInstruction);
       }
 
       const res = await base44.integrations.Core.InvokeLLM({
@@ -360,6 +364,9 @@ ${extraInstructions ? `הוראות נוספות: ${extraInstructions}` : ''}`;
           <Settings2 className="w-3.5 h-3.5" /> AI
         </Button>
       </div>
+
+      {/* Teacher style panel */}
+      <TeacherStylePanel />
 
       {/* Review mode toggle */}
       <div className="flex gap-2">

@@ -9,7 +9,9 @@ import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from 'sonner';
-import { Sparkles, Printer, Save, Star, StarOff, Trash2, ChevronDown, ChevronUp, BookOpen } from 'lucide-react';
+import { Sparkles, Printer, Save, Star, StarOff, Trash2, ChevronDown, ChevronUp, BookOpen, Brain } from 'lucide-react';
+import { loadStyleProfile, buildStyleInstruction } from '@/lib/teacherStyle';
+import TeacherStylePanel from '@/components/library/TeacherStylePanel';
 import { motion } from 'framer-motion';
 import ReactMarkdown from 'react-markdown';
 
@@ -44,14 +46,18 @@ export default function WorksheetGeneratorPage() {
     if (!form.subject || !form.topic) { toast.error('יש למלא מקצוע ונושא'); return; }
     setGenerating(true);
     try {
+      const styleProfile = loadStyleProfile();
+      const styleInstruction = buildStyleInstruction(styleProfile);
       const res = await base44.integrations.Core.InvokeLLM({
-        prompt: `צור דף עבודה בעברית לתלמידים.
+        prompt: `${styleInstruction ? styleInstruction + '\n\n' : ''}צור דף עבודה בעברית לתלמידים בנושא המבוקש בלבד.
 מקצוע: ${form.subject}
 נושא: ${form.topic}
 שכבת גיל: ${form.grade_level}
 רמת קושי: ${form.difficulty}
 מספר שאלות: ${form.num_questions}
 סוגי שאלות: ${form.question_types.join(', ')}
+
+חשוב: כל השאלות חייבות להתייחס ישירות לנושא "${form.topic}" ב${form.subject}. אל תיצור שאלות על נושאים אחרים.
 
 החזר אובייקט JSON עם:
 - title: כותרת לדף העבודה
@@ -160,6 +166,9 @@ export default function WorksheetGeneratorPage() {
             <p className="text-xs text-muted-foreground">יצירת דפי עבודה מותאמים אישית עם AI</p>
           </div>
         </div>
+
+        {/* Teacher style */}
+        <TeacherStylePanel />
 
         {/* Generator form */}
         <Card>

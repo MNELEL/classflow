@@ -9,6 +9,7 @@ import { Loader2, Sparkles } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
+import { loadStyleProfile, buildStyleInstruction } from '@/lib/teacherStyle';
 
 const ARTIFACT_TYPES = [
   { id: 'lesson_summary',            label: 'סיכום שיעור',            icon: '📋' },
@@ -51,8 +52,11 @@ export default function ArtifactGenerator({ open, onClose, item }) {
         ...(item.ai_key_points || [])
       ].filter(Boolean).join('\n\n');
 
+      const styleProfile = loadStyleProfile();
+      const styleInstruction = buildStyleInstruction(styleProfile);
+
       const result = await base44.integrations.Core.InvokeLLM({
-        prompt: `בהתבסס על חומר הלימוד הבא:
+        prompt: `${styleInstruction ? styleInstruction + '\n\n' : ''}בהתבסס על חומר הלימוד הבא בלבד (אל תמציא מידע שאינו בחומר):
 כותרת: ${item.title}
 נושא: ${item.subject || item.category || ''}
 תוכן: ${content.slice(0, 3000)}
@@ -60,7 +64,7 @@ export default function ArtifactGenerator({ open, onClose, item }) {
 ${prompt}
 ${additionalInstructions ? `הוראות נוספות: ${additionalInstructions}` : ''}
 
-כתוב בעברית. השתמש ב-Markdown לעיצוב.`,
+כתוב בעברית. השתמש ב-Markdown לעיצוב. כל השאלות והתוכן חייבים להיות מבוססים על החומר שסופק בלבד.`,
         response_json_schema: {
           type: "object",
           properties: { content: { type: "string" } }
