@@ -35,6 +35,7 @@ const MorePage             = lazy(() => import('./pages/MorePage'));
 const AnalyticsPage        = lazy(() => import('./pages/AnalyticsPage'));
 const TeacherStylePage     = lazy(() => import('./pages/TeacherStylePage'));
 const StudentProfilePage   = lazy(() => import('./pages/StudentProfilePage'));
+const WeeklySchedulePage   = lazy(() => import('./pages/WeeklySchedulePage'));
 const Login                = lazy(() => import('./pages/Login'));
 const Register             = lazy(() => import('./pages/Register'));
 const ForgotPassword       = lazy(() => import('./pages/ForgotPassword'));
@@ -91,6 +92,7 @@ function AnimatedRoutes() {
               <Route path="/analytics" element={<AnalyticsPage />} />
               <Route path="/teacher-style" element={<TeacherStylePage />} />
               <Route path="/students/:id" element={<StudentProfilePage />} />
+              <Route path="/weekly-schedule" element={<WeeklySchedulePage />} />
             </Route>
 
             <Route path="*" element={<PageNotFound />} />

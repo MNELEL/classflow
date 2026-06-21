@@ -23,6 +23,7 @@ const TOP_TILES = [
 const ROWS = [
   { path: '/teacher-style',   icon: Brain,      label: 'סגנון הוראה שלי', desc: 'AI לומד את הסגנון הייחודי שלך',  color: 'bg-primary/10 text-primary'                                         },
   { path: '/analytics',       icon: BarChart2,  label: 'ניתוח ציונים',    desc: 'גרפים, נושאים ומגמות',            color: 'bg-violet-100 text-violet-600 dark:bg-violet-900/30 dark:text-violet-400' },
+  { path: '/weekly-schedule', icon: Clock,      label: 'לוח שבועי',       desc: 'מערכי שיעור לפי ימים ושעות',      color: 'bg-indigo-100 text-indigo-600 dark:bg-indigo-900/30 dark:text-indigo-400' },
   { path: '/curriculum',      icon: Clock,      label: 'מערכת שעות',      desc: 'תכנון שבועי ויעדי לימוד',         color: 'bg-indigo-100 text-indigo-600 dark:bg-indigo-900/30 dark:text-indigo-400' },
   { path: '/question-bank',   icon: Layers,     label: 'בנק שאלות',       desc: 'שאלות לפי נושא ורמה',            color: 'bg-pink-100 text-pink-600 dark:bg-pink-900/30 dark:text-pink-400'         },
   { path: '/lesson-analyzer', icon: Mic,        label: 'ניתוח שיעורים',   desc: 'סיכום, תמלול וחומרי לימוד',      color: 'bg-rose-100 text-rose-600 dark:bg-rose-900/30 dark:text-rose-400'         },
