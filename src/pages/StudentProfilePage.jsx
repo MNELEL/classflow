@@ -13,8 +13,9 @@ import {
 import {
   CalendarCheck, TrendingUp, FileText, MessageSquare,
   ChevronLeft, ExternalLink, AlertCircle, Loader2,
-  CheckCircle2, XCircle, Clock, Star, FolderOpen, BookOpen
+  CheckCircle2, XCircle, Clock, Star, FolderOpen, BookOpen, ListTodo
 } from 'lucide-react';
+import StudentTaskList from '@/components/students/StudentTaskList';
 import { format, parseISO, subMonths } from 'date-fns';
 import { he } from 'date-fns/locale';
 
@@ -201,9 +202,10 @@ export default function StudentProfilePage() {
 
         {/* Tabs */}
         <Tabs defaultValue="grades" dir="rtl">
-          <TabsList className="w-full grid grid-cols-4 h-9">
+          <TabsList className="w-full grid grid-cols-5 h-9">
             <TabsTrigger value="grades" className="text-xs">ציונים</TabsTrigger>
             <TabsTrigger value="attendance" className="text-xs">נוכחות</TabsTrigger>
+            <TabsTrigger value="tasks" className="text-xs">משימות</TabsTrigger>
             <TabsTrigger value="notes" className="text-xs">הערות</TabsTrigger>
             <TabsTrigger value="files" className="text-xs">קבצים</TabsTrigger>
           </TabsList>
@@ -277,6 +279,11 @@ export default function StudentProfilePage() {
                 })}
               </div>
             )}
+          </TabsContent>
+
+          {/* ── Tasks ── */}
+          <TabsContent value="tasks" className="mt-3">
+            <StudentTaskList studentId={id} />
           </TabsContent>
 
           {/* ── Notes / contacts ── */}
