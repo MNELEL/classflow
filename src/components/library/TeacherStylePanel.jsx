@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
+import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
-import { Loader2, Brain, RefreshCw, Trash2, ChevronDown, ChevronUp, CheckCircle2 } from 'lucide-react';
+import { Loader2, Brain, RefreshCw, Trash2, ChevronDown, ChevronUp, CheckCircle2, ExternalLink } from 'lucide-react';
 import { toast } from 'sonner';
 import { extractStyleFromLibrary, loadStyleProfile, clearStyleProfile } from '@/lib/teacherStyle';
 
@@ -140,6 +141,10 @@ export default function TeacherStylePanel() {
           💡 הוסף חומרים לספרייה ועבד אותם עם AI — המערכת תלמד את הסגנון שלך אוטומטית
         </p>
       )}
+      <Link to="/teacher-style" className="flex items-center justify-center gap-1 text-xs text-primary hover:underline py-0.5">
+        <ExternalLink className="w-3 h-3" />
+        פרופיל סגנון מלא
+      </Link>
     </div>
   );
 }
