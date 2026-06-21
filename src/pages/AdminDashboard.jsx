@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '@/lib/AuthContext';
 import AppLayout from '@/components/layout/AppLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -26,6 +27,9 @@ const generateAccessCode = () => {
 export default function AdminDashboard() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const { user } = useAuth();
+
+  // All hooks must be called unconditionally at the top
   const [showTeacherForm, setShowTeacherForm] = useState(false);
   const [showClassroomForm, setShowClassroomForm] = useState(false);
   const [copiedId, setCopiedId] = useState(null);
@@ -115,6 +119,43 @@ export default function AdminDashboard() {
       toast.success('סטטוס המורה עודכן');
     },
   });
+
+  // Security check - only admins can access
+  useEffect(() => {
+    if (user && user.role !== 'admin') {
+      toast.error('אין לך הרשאה לגשת לדף זה');
+      navigate('/');
+    }
+  }, [user, navigate]);
+
+  // Early return for non-admin users (after all hooks are called)
+  if (user && user.role !== 'admin') {
+    return (
+      <AppLayout>
+        <div className="p-5 max-w-6xl mx-auto" dir="rtl">
+          <div className="flex flex-col items-center justify-center py-20 gap-4">
+            <Shield className="w-16 h-16 text-muted-foreground/20" />
+            <h2 className="text-xl font-bold">אין הרשאה</h2>
+            <p className="text-muted-foreground text-sm">דף זה נגיש למנהלי מערכת בלבד</p>
+            <Button onClick={() => navigate('/')}>חזור לדף הבית</Button>
+          </div>
+        </div>
+      </AppLayout>
+    );
+  }
+
+  // Loading state
+  if (!user) {
+    return (
+      <AppLayout>
+        <div className="p-5 max-w-6xl mx-auto" dir="rtl">
+          <div className="flex items-center justify-center py-20">
+            <div className="w-8 h-8 border-4 border-primary/20 border-t-primary rounded-full animate-spin" />
+          </div>
+        </div>
+      </AppLayout>
+    );
+  }
 
   const handleCopyCode = (code, id) => {
     navigator.clipboard.writeText(code);
