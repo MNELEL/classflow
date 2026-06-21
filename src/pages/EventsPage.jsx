@@ -38,12 +38,12 @@ export default function EventsPage() {
 
   async function createEvent() {
     if (!form.title || !form.start_date) {
-      toast.error('מלא כותרת ותאריך');
+      toast.error('מלאו כותרת ותאריך');
       return;
     }
     await base44.entities.SchoolEvent.create(form);
     qc.invalidateQueries({ queryKey: ['school-events'] });
-    toast.success('אירוע נוצר!');
+    toast.success('האירוע נוצר!');
     setShowForm(false);
     setForm({ title: '', description: '', type: 'other', start_date: '', end_date: '', location: '', color: '#3b82f6' });
   }
@@ -51,7 +51,7 @@ export default function EventsPage() {
   async function deleteEvent(id) {
     await base44.entities.SchoolEvent.delete(id);
     qc.invalidateQueries({ queryKey: ['school-events'] });
-    toast.success('נמחק');
+    toast.success('נמחק בהצלחה');
   }
 
   function daysUntil(date) {
@@ -185,7 +185,7 @@ export default function EventsPage() {
                 <label className="text-xs text-muted-foreground mb-1 block">תיאור</label>
                 <Input value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} placeholder="פרטים נוספים..." className="text-sm" />
               </div>
-              <Button onClick={createEvent} className="w-full">צור אירוע</Button>
+              <Button onClick={createEvent} className="w-full">צרו אירוע</Button>
             </div>
           </DialogContent>
         </Dialog>

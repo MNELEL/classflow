@@ -59,7 +59,7 @@ export default function BehaviorTimelinePage() {
 
   async function save() {
     if (!form.student_id || !form.description) {
-      toast.error('בחר תלמיד וכתוב תיאור');
+      toast.error('בחרו תלמיד וכתבו תיאור');
       return;
     }
     await base44.entities.BehaviorEvent.create({
@@ -68,7 +68,7 @@ export default function BehaviorTimelinePage() {
       date: new Date().toISOString(),
     });
     qc.invalidateQueries({ queryKey: ['behavior-events'] });
-    toast.success('אירוע נוסף!');
+    toast.success('האירוע נוסף!');
     setShowForm(false);
     setForm({ student_id: '', type: 'positive', category: 'behavior', description: '', severity: 'low', action_taken: '', follow_up: false });
   }
@@ -186,7 +186,7 @@ export default function BehaviorTimelinePage() {
             <DialogHeader><DialogTitle>אירוע התנהגות חדש</DialogTitle></DialogHeader>
             <div className="space-y-3">
               <Select value={form.student_id} onValueChange={v => setForm(f => ({ ...f, student_id: v }))}>
-                <SelectTrigger className="h-9 text-sm"><SelectValue placeholder="בחר תלמיד..." /></SelectTrigger>
+                <SelectTrigger className="h-9 text-sm"><SelectValue placeholder="בחרו תלמיד..." /></SelectTrigger>
                 <SelectContent>
                   {activeStudents.map(s => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}
                 </SelectContent>
@@ -238,7 +238,7 @@ export default function BehaviorTimelinePage() {
                 נדרש מעקב
               </label>
 
-              <Button onClick={save} className="w-full">שמור אירוע</Button>
+              <Button onClick={save} className="w-full">שמרו אירוע</Button>
             </div>
           </DialogContent>
         </Dialog>

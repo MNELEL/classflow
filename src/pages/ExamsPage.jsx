@@ -35,7 +35,7 @@ export default function ExamsPage() {
 
   async function createExam() {
     if (!form.title || !form.subject || !form.date) {
-      toast.error('מלא את כל השדות');
+      toast.error('מלאו את כל השדות');
       return;
     }
     await base44.entities.Exam.create({
@@ -45,7 +45,7 @@ export default function ExamsPage() {
       status: 'scheduled',
     });
     qc.invalidateQueries({ queryKey: ['exams'] });
-    toast.success('מבחן נוצר!');
+    toast.success('המבחן נוצר!');
     setShowForm(false);
     setForm({ title: '', subject: '', date: '', max_score: 100, duration_minutes: 45, topics: [], notes: '' });
   }
@@ -198,7 +198,7 @@ export default function ExamsPage() {
             <DialogHeader>
               <DialogTitle className="text-base">בדיקה: {gradingExam?.title}</DialogTitle>
             </DialogHeader>
-            <p className="text-xs text-muted-foreground mb-2">הזן ציון מתוך {gradingExam?.max_score} • {activeStudents.length} תלמידים</p>
+            <p className="text-xs text-muted-foreground mb-2">הזינו ציון מתוך {gradingExam?.max_score} • {activeStudents.length} תלמידים</p>
             <div className="space-y-1.5">
               {activeStudents.map(s => (
                 <div key={s.id} className="flex items-center gap-2 p-2 bg-muted/30 rounded-xl">
@@ -211,7 +211,7 @@ export default function ExamsPage() {
               ))}
             </div>
             <Button onClick={saveGrades} className="w-full gap-2 mt-2">
-              <Save className="w-4 h-4" /> שמור ציונים
+              <Save className="w-4 h-4" /> שמרו ציונים
             </Button>
           </DialogContent>
         </Dialog>

@@ -61,7 +61,7 @@ export default function FastFeedbackPage() {
 
   async function send() {
     if (!selectedStudent || !emoji) {
-      toast.error('בחר תלמיד ואימוג׳י');
+      toast.error('בחרו תלמיד ואימוג׳י');
       return;
     }
     await base44.entities.FastFeedback.create({
@@ -73,7 +73,7 @@ export default function FastFeedbackPage() {
       date: new Date().toISOString(),
     });
     qc.invalidateQueries({ queryKey: ['fast-feedbacks'] });
-    toast.success(`${emoji} נשלח ל${selectedStudent.name}!`);
+    toast.success(`${emoji} נשלח אל${selectedStudent.name}!`);
     setSelectedStudent(null);
     setEmoji('🌟');
     setMessage('');
@@ -89,7 +89,7 @@ export default function FastFeedbackPage() {
           </div>
           <div>
             <h1 className="font-bold text-lg">משוב מהיר</h1>
-            <p className="text-xs text-muted-foreground">שלח משוב מיידי לתלמיד</p>
+            <p className="text-xs text-muted-foreground">שלחו משוב מיידי לתלמיד</p>
           </div>
         </div>
 
@@ -135,7 +135,7 @@ export default function FastFeedbackPage() {
             </>
           ) : (
             <>
-              <span className="text-sm text-muted-foreground">בחר תלמיד</span>
+              <span className="text-sm text-muted-foreground">בחרו תלמיד</span>
               <Search className="w-4 h-4 text-muted-foreground" />
             </>
           )}
@@ -172,13 +172,13 @@ export default function FastFeedbackPage() {
 
         {/* Send */}
         <Button onClick={send} disabled={!selectedStudent} className="w-full gap-2 h-12" size="lg">
-          <Send className="w-4 h-4" /> שלח משוב
+          <Send className="w-4 h-4" /> שלחו משוב
         </Button>
 
         {/* Student picker dialog */}
         <Dialog open={showStudentPicker} onOpenChange={setShowStudentPicker}>
           <DialogContent dir="rtl" className="max-w-sm max-h-[80vh]">
-            <DialogHeader><DialogTitle>בחר תלמיד</DialogTitle></DialogHeader>
+            <DialogHeader><DialogTitle>בחרו תלמיד</DialogTitle></DialogHeader>
             <Input value={search} onChange={e => setSearch(e.target.value)} placeholder="חיפוש..." className="mb-2" />
             <div className="space-y-1 max-h-96 overflow-y-auto">
               {filtered.map(s => (

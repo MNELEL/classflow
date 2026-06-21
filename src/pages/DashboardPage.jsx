@@ -136,7 +136,7 @@ export default function DashboardPage() {
               מדריך חכם
             </Button>
           </div>
-          <p className="text-muted-foreground text-sm">מצב הכיתה שלך במבט אחד</p>
+          <p className="text-muted-foreground text-sm">מצב הכיתה במבט אחד</p>
         </motion.div>
 
         {/* Daily Briefing */}

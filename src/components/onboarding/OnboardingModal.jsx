@@ -10,7 +10,7 @@ import { toast } from 'sonner';
 const STORAGE_KEY = 'classflow_onboarding_done';
 
 const STEPS = [
-  { id: 'welcome', icon: Sparkles, title: 'ברוכים הבאים ל-ClassFlow! 🎓', desc: 'מערכת חכמה לניהול כיתה. בואי נגדיר את החשבון שלך ב-4 צעדים פשוטים.', color: 'from-violet-500 to-purple-500' },
+  { id: 'welcome', icon: Sparkles, title: 'ברוכים הבאים ל-ClassFlow! 🎓', desc: 'מערכת חכמה לניהול כיתה. בואו נגדיר את החשבון שלכם ב-4 צעדים פשוטים.', color: 'from-violet-500 to-purple-500' },
   { id: 'profile', icon: Users, title: 'הפרטים שלך', desc: 'כדי שהתלמידים וההורים יכירו אותך', color: 'from-blue-500 to-cyan-500' },
   { id: 'class', icon: MapPin, title: 'הכיתה שלך', desc: 'מידע בסיסי על הכיתה', color: 'from-emerald-500 to-teal-500' },
   { id: 'goals', icon: Target, title: 'המטרות שלך', desc: 'מה הכי חשוב לך השנה?', color: 'from-amber-500 to-orange-500' },
@@ -118,7 +118,7 @@ export default function OnboardingModal({ open, onClose, forceShow }) {
                       <span className="bg-card rounded-xl p-2">🔔 התראות</span>
                     </div>
                   </div>
-                  <Button onClick={next} className="w-full h-11">בואי נתחיל!</Button>
+                  <Button onClick={next} className="w-full h-11">בואו נתחיל!</Button>
                 </div>
               )}
 
@@ -167,7 +167,7 @@ export default function OnboardingModal({ open, onClose, forceShow }) {
                     ))}
                   </div>
                   <Button onClick={next} disabled={data.goals.length === 0} className="w-full h-11">
-                    {data.goals.length > 0 ? `המשך (${data.goals.length} נבחרו)` : 'בחר לפחות אחד'}
+                    {data.goals.length > 0 ? `המשך (${data.goals.length} נבחרו)` : 'בחרו לפחות אחד'}
                   </Button>
                 </div>
               )}
@@ -181,7 +181,7 @@ export default function OnboardingModal({ open, onClose, forceShow }) {
                     <p className="text-xs">🎯 {data.goals.length} תחומי מיקוד</p>
                   </div>
                   <Button onClick={finish} className="w-full h-12 gap-2" size="lg">
-                    <Rocket className="w-5 h-5" /> התחל עכשיו!
+                    <Rocket className="w-5 h-5" /> התחילו עכשיו!
                   </Button>
                 </div>
               )}

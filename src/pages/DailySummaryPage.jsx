@@ -123,7 +123,7 @@ export default function DailySummaryPage() {
         {/* Generate button */}
         <Button onClick={generate} disabled={loading} className="w-full gap-2 h-12" size="lg">
           {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : summary ? <RefreshCw className="w-4 h-4" /> : <Sparkles className="w-5 h-5" />}
-          {loading ? 'מחולל סיכום...' : summary ? 'חדש סיכום' : 'חולל סיכום יומי עם AI'}
+          {loading ? 'מחוללים סיכום...' : summary ? 'חדשו סיכום' : 'חוללו סיכום יומי עם AI'}
         </Button>
 
         {/* Summary */}

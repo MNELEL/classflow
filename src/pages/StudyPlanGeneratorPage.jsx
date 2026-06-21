@@ -200,7 +200,7 @@ ${form.teaching_style ? `סגנון הוראה: ${form.teaching_style}` : ''}
 
           <Button className="w-full gap-2" onClick={generate} disabled={generating || !form.subject || !form.grade_level}>
             {generating ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
-            {generating ? 'מחולל תוכנית...' : 'צור תוכנית לימוד עם AI'}
+            {generating ? 'מחולל תוכנית...' : 'צרו תוכנית לימוד עם AI'}
           </Button>
         </div>
 

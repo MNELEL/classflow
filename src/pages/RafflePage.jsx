@@ -276,13 +276,13 @@ export default function RafflePage() {
         {/* Exclude modal */}
         <Dialog open={showExclude} onOpenChange={setShowExclude}>
           <DialogContent dir="rtl" className="max-w-sm max-h-[80vh] overflow-y-auto">
-            <DialogHeader><DialogTitle>בחר תלמידים להדרה</DialogTitle></DialogHeader>
+            <DialogHeader><DialogTitle>בחרו תלמידים להדרה</DialogTitle></DialogHeader>
             <div className="space-y-1.5">
               {activeStudents.map(s => (
                 <button key={s.id} onClick={() => toggleExclude(s.id)}
                   className={`w-full flex items-center justify-between p-2.5 rounded-xl border transition-colors ${excluded.includes(s.id) ? 'border-destructive bg-destructive/5' : 'border-border hover:bg-accent'}`}>
                   <span className="text-sm">{s.name}</span>
-                  {excluded.includes(s.id) ? <X className="w-4 h-4 text-destructive" /> : <span className="text-xs text-muted-foreground">הכלל</span>}
+                  {excluded.includes(s.id) ? <X className="w-4 h-4 text-destructive" /> : <span className="text-xs text-muted-foreground">הכל</span>}
                 </button>
               ))}
             </div>
