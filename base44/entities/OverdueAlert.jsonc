@@ -1,0 +1,39 @@
+{
+  "name": "OverdueAlert",
+  "type": "object",
+  "properties": {
+    "task_id": {
+      "type": "string"
+    },
+    "student_id": {
+      "type": "string"
+    },
+    "student_name": {
+      "type": "string"
+    },
+    "task_title": {
+      "type": "string"
+    },
+    "due_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "days_overdue": {
+      "type": "number"
+    },
+    "is_read": {
+      "type": "boolean",
+      "default": false
+    },
+    "alerted_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "task_id",
+    "student_id",
+    "task_title",
+    "due_date"
+  ]
+}

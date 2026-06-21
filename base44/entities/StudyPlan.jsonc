@@ -1,0 +1,63 @@
+{
+  "name": "StudyPlan",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string",
+      "description": "\u05e9\u05dd \u05d4\u05ea\u05d5\u05db\u05e0\u05d9\u05ea"
+    },
+    "subject": {
+      "type": "string"
+    },
+    "grade_level": {
+      "type": "string"
+    },
+    "start_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "end_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "weeks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "week_num": {
+            "type": "number"
+          },
+          "topic": {
+            "type": "string"
+          },
+          "goals": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "resources": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "assessments": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "total_weeks": {
+      "type": "number"
+    },
+    "notes": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "title",
+    "subject"
+  ]
+}

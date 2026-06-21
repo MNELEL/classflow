@@ -6,6 +6,7 @@ import {
   Library, MoreHorizontal
 } from 'lucide-react';
 import { loadBranding } from '@/lib/branding';
+import OverdueAlertsPanel from '@/components/alerts/OverdueAlertsPanel';
 
 
 // Primary 4 nav items (always visible) + "More"
@@ -91,17 +92,20 @@ export default function AppLayout({ children }) {
 
           <span className="font-semibold text-base tracking-tight flex-1 text-center">{isDashboard ? 'ClassFlow' : title}</span>
 
-          {location.pathname !== '/settings' ? (
-            <Link
-              to="/settings"
-              className="min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg hover:bg-accent transition-colors select-none"
-              aria-label="הגדרות"
-            >
-              <Settings className="w-5 h-5 text-muted-foreground" />
-            </Link>
-          ) : (
-            <div className="w-11" />
-          )}
+          <div className="flex items-center gap-1 relative">
+            <OverdueAlertsPanel />
+            {location.pathname !== '/settings' ? (
+              <Link
+                to="/settings"
+                className="min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg hover:bg-accent transition-colors select-none"
+                aria-label="הגדרות"
+              >
+                <Settings className="w-5 h-5 text-muted-foreground" />
+              </Link>
+            ) : (
+              <div className="w-11" />
+            )}
+          </div>
         </div>
       </header>
 
