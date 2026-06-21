@@ -181,6 +181,7 @@ export default function SeatingPage() {
           `  - ${o.student_name}: ${[o.row_preference && `שורה=${o.row_preference}`, o.side_preference && `צד=${o.side_preference}`, o.friends?.length && `חברים=[${o.friends.join(',')}]`, o.avoid?.length && `להרחיק=[${o.avoid.join(',')}]`, o.custom_condition].filter(Boolean).join(', ')}`
         ).join('\n');
         const customCondLines = customConditions.length > 0 ? `\nתנאים מיוחדים נוספים:\n${customConditions.map(c => `- ${c}`).join('\n')}` : '';
+        const teacherInstructionsLine = teacherInstructions.trim() ? `\n\n⭐ הוראות מיוחדות מהמורה (עדיפות גבוהה, חובה למלא):\n${teacherInstructions.trim()}` : '';
         const atLeastOneLine = atLeastOneSatisfied ? '\n⚠️ חשוב: כל תלמיד חייב לקבל לפחות דרישה אחת מתוך ההעדפות שלו (מיקום / חבר בסמוך).' : '';
 
         // Build per-student custom conditions from entity field
@@ -192,7 +193,7 @@ export default function SeatingPage() {
 
 תלמידים:
 ${activeStudents.map(s => `- ${s.name}: גובה=${s.height||'בינוני'}, שורה=${s.row_preference||'אין'}, צרכים=[${(s.special_needs||[]).join(',')}], חברים=[${(s.friends||[]).map(fid=>students.find(x=>x.id===fid)?.name||'').filter(Boolean).join(',')}], להרחיק=[${(s.avoid||[]).map(fid=>students.find(x=>x.id===fid)?.name||'').filter(Boolean).join(',')}], שורה_קבועה=${s.permanent_row||'אין'}${s.custom_conditions ? `, תנאים="${s.custom_conditions}"` : ''}`).join('\n')}
-${overrideLines ? `\nהעדפות ייבוא נוספות:\n${overrideLines}` : ''}${customCondsSection}${customCondLines}${atLeastOneLine}
+${overrideLines ? `\nהעדפות ייבוא נוספות:\n${overrideLines}` : ''}${customCondsSection}${customCondLines}${atLeastOneLine}${teacherInstructionsLine}
 
 שבץ את כל ${activeStudents.length} התלמידים. חובה להחזיר assignment לכל תלמיד. כל מושב (row,col) יכול להכיל תלמיד אחד בלבד. row ו-col הם 0-based.`,
           response_json_schema: {
@@ -263,6 +264,7 @@ ${overrideLines ? `\nהעדפות ייבוא נוספות:\n${overrideLines}` : 
   const [quickSortPref, setQuickSortPref] = useState('none');
   const [atLeastOneSatisfied, setAtLeastOneSatisfied] = useState(false);
   const [customConditions, setCustomConditions] = useState([]);
+  const [teacherInstructions, setTeacherInstructions] = useState('');
   const [showSatisfactionReport, setShowSatisfactionReport] = useState(false);
 
   function handleImportPreferences(mappings) {
@@ -413,6 +415,8 @@ ${overrideLines ? `\nהעדפות ייבוא נוספות:\n${overrideLines}` : 
         atLeastOneSatisfied={atLeastOneSatisfied}
         onToggleAtLeastOne={() => setAtLeastOneSatisfied(v => !v)}
         onImportPreferences={handleImportPreferences}
+        teacherInstructions={teacherInstructions}
+        onTeacherInstructionsChange={setTeacherInstructions}
       />
       <ConflictHelper
         seats={seats}

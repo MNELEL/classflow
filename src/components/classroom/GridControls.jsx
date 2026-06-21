@@ -28,8 +28,10 @@ export default function GridControls({
   onUndo, onRedo, canUndo, canRedo,
   atLeastOneSatisfied, onToggleAtLeastOne,
   onImportPreferences,
+  teacherInstructions, onTeacherInstructionsChange,
 }) {
   const [showImport, setShowImport] = useState(false);
+  const [showInstructions, setShowInstructions] = useState(false);
 
   return (
     <div className="bg-card border border-border rounded-xl p-4 space-y-3">
@@ -105,6 +107,27 @@ export default function GridControls({
           <CheckSquare className="w-3.5 h-3.5 shrink-0" />
           <span>ערובה: לפחות דרישה אחת לכל תלמיד</span>
         </button>
+
+        {/* Teacher free-text instructions (from ClassPro GeminiSeatingOptimizer) */}
+        <div>
+          <button
+            onClick={() => setShowInstructions(v => !v)}
+            className="w-full flex items-center justify-between text-[11px] text-muted-foreground hover:text-foreground transition-colors mb-1"
+          >
+            <span className="font-medium">📝 הוראות מיוחדות לסידור</span>
+            <span>{showInstructions ? '▲' : '▼'}</span>
+          </button>
+          {showInstructions && (
+            <textarea
+              value={teacherInstructions}
+              onChange={e => onTeacherInstructionsChange(e.target.value)}
+              placeholder="לדוגמה: שים את דניאל ואיילה רחוק אחד מהשני. תלמידי קבוצת מצוינים יחד בצד שמאל..."
+              rows={3}
+              className="w-full text-xs border border-border rounded-lg px-2 py-1.5 bg-background text-foreground resize-none focus:outline-none focus:ring-1 focus:ring-primary/40 placeholder:text-muted-foreground/60"
+              dir="rtl"
+            />
+          )}
+        </div>
 
         <Button
           className="w-full bg-primary"
