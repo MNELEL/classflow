@@ -14,6 +14,7 @@ import SmartGuide from '@/components/dashboard/SmartGuide';
 import DailyBriefing from '@/components/dashboard/DailyBriefing';
 import StudyProgressTracker from '@/components/dashboard/StudyProgressTracker';
 import WeeklyActivitySummary from '@/components/dashboard/WeeklyActivitySummary';
+import StudentDataHub from '@/components/dashboard/StudentDataHub';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { calcSatisfactionScore } from '@/lib/seatingUtils';
@@ -31,6 +32,8 @@ export default function DashboardPage() {
   const { data: attendance = [] } = useQuery({ queryKey: ['attendance'], queryFn: () => base44.entities.Attendance.list('-date', 100) });
   const { data: libraryItems = [] } = useQuery({ queryKey: ['library'], queryFn: () => base44.entities.LibraryItem.list('-created_date', 50) });
   const { data: rewards = [] } = useQuery({ queryKey: ['rewards'], queryFn: () => base44.entities.Reward.list('-date', 200) });
+  const { data: homework = [] } = useQuery({ queryKey: ['homework'], queryFn: () => base44.entities.HomeworkAssignment.list('-due_date', 50) });
+  const { data: behaviorEvents = [] } = useQuery({ queryKey: ['behavior'], queryFn: () => base44.entities.BehaviorEvent.list('-date', 200) });
 
   const handleRefresh = useCallback(async () => { await refetch(); }, [refetch]);
   const { containerRef, pullY, refreshing } = usePullToRefresh(handleRefresh);
@@ -141,6 +144,15 @@ export default function DashboardPage() {
 
         {/* Daily Briefing */}
         <DailyBriefing students={students} />
+
+        {/* Student Data Hub - Centralized student data with weekly progress */}
+        <StudentDataHub 
+          students={students} 
+          grades={grades} 
+          attendance={attendance} 
+          homework={homework}
+          behaviorEvents={behaviorEvents}
+        />
 
         {/* Stats grid */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
