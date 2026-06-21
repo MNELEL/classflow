@@ -1,6 +1,6 @@
 @import url('https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -8,82 +8,78 @@
 
 @layer base {
   :root {
-    /* ── Modern Academic Light Theme ── */
-    /* Warm white background — clean, paper-like */
-    --background: 40 30% 97%;
-    --foreground: 224 40% 10%;
+    /* ── ClassFlow — Deep Teal × Slate Premium Theme ── */
+    --background: 210 25% 97%;
+    --foreground: 213 40% 10%;
 
-    /* Cards: pure white with warmth */
     --card: 0 0% 100%;
-    --card-foreground: 224 40% 10%;
+    --card-foreground: 213 40% 10%;
     --popover: 0 0% 100%;
-    --popover-foreground: 224 40% 10%;
+    --popover-foreground: 213 40% 10%;
 
-    /* Teal-Indigo primary — academic & modern */
-    --primary: 237 70% 55%;
+    /* Deep teal primary */
+    --primary: 192 80% 32%;
     --primary-foreground: 0 0% 100%;
 
-    /* Warm light grey secondary */
-    --secondary: 220 18% 94%;
-    --secondary-foreground: 224 30% 22%;
-    --muted: 220 16% 92%;
-    --muted-foreground: 220 10% 48%;
+    --secondary: 210 20% 93%;
+    --secondary-foreground: 213 28% 22%;
+    --muted: 210 18% 91%;
+    --muted-foreground: 213 12% 46%;
 
-    /* Soft indigo accent */
-    --accent: 237 75% 96%;
-    --accent-foreground: 237 70% 42%;
+    /* Soft teal accent */
+    --accent: 192 60% 93%;
+    --accent-foreground: 192 80% 26%;
 
-    --destructive: 4 82% 56%;
+    --destructive: 4 80% 54%;
     --destructive-foreground: 0 0% 100%;
-    --success: 158 64% 38%;
+    --success: 160 60% 36%;
     --success-foreground: 0 0% 100%;
-    --warning: 36 90% 50%;
+    --warning: 38 88% 48%;
     --warning-foreground: 0 0% 100%;
 
-    --border: 220 16% 88%;
-    --input: 220 16% 90%;
-    --ring: 237 70% 55%;
-    --radius: 0.75rem;
+    --border: 210 18% 87%;
+    --input: 210 18% 89%;
+    --ring: 192 80% 32%;
+    --radius: 0.875rem;
 
-    /* Sidebar: crisp white, minimal */
-    --sidebar-background: 0 0% 100%;
-    --sidebar-foreground: 224 30% 20%;
-    --sidebar-primary: 237 70% 55%;
+    --sidebar-background: 213 38% 8%;
+    --sidebar-foreground: 210 20% 88%;
+    --sidebar-primary: 192 70% 52%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 237 75% 96%;
-    --sidebar-accent-foreground: 237 70% 40%;
-    --sidebar-border: 220 16% 90%;
-    --sidebar-ring: 237 70% 55%;
+    --sidebar-accent: 213 32% 14%;
+    --sidebar-accent-foreground: 210 20% 88%;
+    --sidebar-border: 213 32% 14%;
+    --sidebar-ring: 192 70% 52%;
   }
 
   .dark {
-    --background: 224 28% 8%;
-    --foreground: 220 18% 93%;
-    --card: 224 26% 11%;
-    --card-foreground: 220 18% 93%;
-    --popover: 224 26% 11%;
-    --popover-foreground: 220 18% 93%;
-    --primary: 237 72% 66%;
+    --background: 213 35% 7%;
+    --foreground: 210 20% 92%;
+    --card: 213 32% 10%;
+    --card-foreground: 210 20% 92%;
+    --popover: 213 32% 10%;
+    --popover-foreground: 210 20% 92%;
+    --primary: 192 70% 48%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 224 22% 16%;
-    --secondary-foreground: 220 18% 86%;
-    --muted: 224 22% 15%;
-    --muted-foreground: 220 12% 54%;
-    --accent: 237 50% 20%;
-    --accent-foreground: 237 72% 78%;
-    --destructive: 4 70% 52%;
+    --secondary: 213 26% 15%;
+    --secondary-foreground: 210 18% 84%;
+    --muted: 213 26% 13%;
+    --muted-foreground: 210 12% 52%;
+    --accent: 192 48% 18%;
+    --accent-foreground: 192 70% 72%;
+    --destructive: 4 68% 50%;
     --destructive-foreground: 0 0% 100%;
-    --border: 224 22% 18%;
-    --input: 224 22% 18%;
-    --ring: 237 72% 66%;
-    --sidebar-background: 224 28% 6%;
-    --sidebar-foreground: 220 18% 80%;
-    --sidebar-primary: 237 72% 66%;
+    --border: 213 26% 17%;
+    --input: 213 26% 17%;
+    --ring: 192 70% 48%;
+    --sidebar-background: 213 40% 5%;
+    --sidebar-foreground: 210 18% 78%;
+    --sidebar-primary: 192 70% 52%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 224 26% 13%;
-    --sidebar-accent-foreground: 220 18% 86%;
-    --sidebar-border: 224 26% 15%;
-    --sidebar-ring: 237 72% 66%;
+    --sidebar-accent: 213 32% 12%;
+    --sidebar-accent-foreground: 210 18% 84%;
+    --sidebar-border: 213 32% 13%;
+    --sidebar-ring: 192 70% 52%;
   }
 }
 
@@ -93,7 +89,7 @@
   }
   body {
     @apply bg-background text-foreground;
-    font-family: 'Plus Jakarta Sans', 'Heebo', sans-serif;
+    font-family: 'DM Sans', 'Heebo', sans-serif;
     direction: rtl;
     overscroll-behavior: none;
     -webkit-tap-highlight-color: transparent;
@@ -191,5 +187,17 @@ button, a, [role="button"] {
 
 /* Gradient background for header/hero areas */
 .bg-academic-gradient {
-  background: linear-gradient(135deg, hsl(237 70% 55% / 0.08) 0%, hsl(40 30% 97%) 60%);
+  background: linear-gradient(135deg, hsl(192 80% 32% / 0.07) 0%, hsl(210 25% 97%) 60%);
+}
+
+/* ClassFlow premium nav bar */
+.nav-premium {
+  background: linear-gradient(180deg, hsl(213 38% 8% / 0.97) 0%, hsl(213 38% 6% / 0.98) 100%);
+  border-top: 1px solid hsl(213 32% 14%);
+}
+
+/* Luxury card elevation */
+.card-luxury {
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 8px 24px rgba(0, 120, 130, 0.06);
+  border: 1px solid hsl(210 18% 91%);
 }

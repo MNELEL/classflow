@@ -63,7 +63,7 @@ export default function AppLayout({ children }) {
     <div className="min-h-screen bg-background flex flex-col" dir="rtl">
       {/* Top Header */}
       <header
-        className="bg-white/90 backdrop-blur-md border-b border-border flex items-center justify-between sticky top-0 z-50 shadow-sm"
+        className="bg-white/95 backdrop-blur-xl border-b border-border/60 flex items-center justify-between sticky top-0 z-50 shadow-[0_1px_12px_rgba(0,120,130,0.06)]"
         style={{ paddingTop: 'env(safe-area-inset-top)', paddingLeft: 'env(safe-area-inset-left)', paddingRight: 'env(safe-area-inset-right)' }}
       >
         <div className="flex items-center gap-2 px-4 py-3 w-full">
@@ -77,15 +77,19 @@ export default function AppLayout({ children }) {
             </button>
           ) : (
             branding.logo_url ? (
-              <img src={branding.logo_url} alt="לוגו" className="w-8 h-8 object-contain rounded-lg shrink-0" />
+              <img src={branding.logo_url} alt="לוגו" className="w-8 h-8 object-contain rounded-xl shrink-0" />
             ) : (
-              <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center shrink-0">
-                <BookOpen className="w-4 h-4 text-primary-foreground" />
+              <div className="w-8 h-8 rounded-xl shrink-0 overflow-hidden">
+                <img
+                  src="https://media.base44.com/images/public/69efc0a68bae1b1d07582eda/ec7fc8c0a_generated_image.png"
+                  alt="ClassFlow"
+                  className="w-full h-full object-cover"
+                />
               </div>
             )
           )}
 
-          <span className="font-bold text-base tracking-tight flex-1 text-center">{title}</span>
+          <span className="font-semibold text-base tracking-tight flex-1 text-center">{isDashboard ? 'ClassFlow' : title}</span>
 
           {location.pathname !== '/settings' ? (
             <Link
@@ -109,9 +113,9 @@ export default function AppLayout({ children }) {
         {children}
       </main>
 
-      {/* Bottom Navigation Bar — 5 items only */}
+      {/* Bottom Navigation Bar — dark premium */}
       <nav
-        className="fixed bottom-0 inset-x-0 z-50 bg-white/95 backdrop-blur-md border-t border-border flex items-stretch shadow-[0_-1px_12px_rgba(99,102,241,0.07)]"
+        className="fixed bottom-0 inset-x-0 z-50 nav-premium flex items-stretch"
         style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
       >
         {PRIMARY_NAV.map(({ path, icon: Icon, label }) => {
@@ -123,28 +127,42 @@ export default function AppLayout({ children }) {
               to={path}
               onClick={(e) => handleNavClick(e, path)}
               className={cn(
-                'flex-1 flex flex-col items-center justify-center gap-0.5 min-h-[56px] min-w-[44px] py-2 select-none transition-colors',
-                active ? 'text-primary' : 'text-muted-foreground hover:text-foreground'
+                'flex-1 flex flex-col items-center justify-center gap-0.5 min-h-[56px] min-w-[44px] py-2 select-none transition-all duration-200',
+                active
+                  ? 'text-[hsl(192,70%,60%)]'
+                  : 'text-[hsl(210,14%,50%)] hover:text-[hsl(210,14%,72%)]'
               )}
             >
-              <Icon className={cn('w-5 h-5', active && 'scale-110 transition-transform')} />
-              <span className="text-[10px] font-medium">{navLabel}</span>
+              <div className={cn(
+                'w-9 h-7 flex items-center justify-center rounded-xl transition-all duration-200',
+                active ? 'bg-[hsl(192,80%,32%,0.25)]' : ''
+              )}>
+                <Icon className={cn('w-5 h-5 transition-transform duration-200', active && 'scale-110')} />
+              </div>
+              <span className={cn('text-[10px] font-medium transition-all', active ? 'opacity-100' : 'opacity-60')}>{navLabel}</span>
             </Link>
           );
         })}
 
-        {/* More button — navigates to /more page */}
+        {/* More button */}
         <Link
           to="/more"
           onClick={(e) => handleNavClick(e, '/more')}
           className={cn(
-            'flex-1 flex flex-col items-center justify-center gap-0.5 min-h-[56px] min-w-[44px] py-2 select-none transition-colors',
-            (isMoreActive || location.pathname === '/more') ? 'text-primary' : 'text-muted-foreground hover:text-foreground'
+            'flex-1 flex flex-col items-center justify-center gap-0.5 min-h-[56px] min-w-[44px] py-2 select-none transition-all duration-200',
+            (isMoreActive || location.pathname === '/more')
+              ? 'text-[hsl(192,70%,60%)]'
+              : 'text-[hsl(210,14%,50%)] hover:text-[hsl(210,14%,72%)]'
           )}
           aria-label="עוד"
         >
-          <MoreHorizontal className={cn('w-5 h-5', (isMoreActive || location.pathname === '/more') && 'scale-110 transition-transform')} />
-          <span className="text-[10px] font-medium">עוד</span>
+          <div className={cn(
+            'w-9 h-7 flex items-center justify-center rounded-xl transition-all duration-200',
+            (isMoreActive || location.pathname === '/more') ? 'bg-[hsl(192,80%,32%,0.25)]' : ''
+          )}>
+            <MoreHorizontal className={cn('w-5 h-5 transition-transform duration-200', (isMoreActive || location.pathname === '/more') && 'scale-110')} />
+          </div>
+          <span className={cn('text-[10px] font-medium transition-all', (isMoreActive || location.pathname === '/more') ? 'opacity-100' : 'opacity-60')}>עוד</span>
         </Link>
       </nav>
     </div>

@@ -1,21 +1,21 @@
 {
-  "name": "ClassManager Pro",
-  "short_name": "כיתה",
-  "description": "ניהול כיתה חכם למורה המודרני",
+  "name": "ClassFlow",
+  "short_name": "ClassFlow",
+  "description": "ClassFlow — ניהול כיתה חכם למורים",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#3730a3",
-  "theme_color": "#4f46e5",
+  "background_color": "#0c1e28",
+  "theme_color": "#0a7a85",
   "orientation": "portrait",
   "icons": [
     {
-      "src": "https://media.base44.com/images/public/69efc0a68bae1b1d07582eda/980c8d55c_generated_image.png",
+      "src": "https://media.base44.com/images/public/69efc0a68bae1b1d07582eda/ec7fc8c0a_generated_image.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "https://media.base44.com/images/public/69efc0a68bae1b1d07582eda/980c8d55c_generated_image.png",
+      "src": "https://media.base44.com/images/public/69efc0a68bae1b1d07582eda/ec7fc8c0a_generated_image.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
