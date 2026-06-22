@@ -14,6 +14,7 @@ import AppLayout from '@/components/layout/AppLayout';
 const TOP_TILES = [
   { path: '/attendance',   icon: CalendarCheck, label: 'נוכחות',       color: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400' },
   { path: '/grades',       icon: GraduationCap, label: 'ציונים',       color: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'             },
+  { path: '/tasks-hub',    icon: ClipboardCheck,label: 'ריכוז משימות',  color: 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-400'     },
   { path: '/homework',     icon: ClipboardCheck,label: 'שיעורי בית',   color: 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400'     },
   { path: '/gamification', icon: Trophy,        label: 'גמיפיקציה',    color: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400'     },
   { path: '/worksheets',   icon: FileText,      label: 'דפי עבודה',    color: 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400'     },

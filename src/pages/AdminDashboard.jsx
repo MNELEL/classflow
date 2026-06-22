@@ -10,10 +10,13 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import {
   Users, BookOpen, Plus, Copy, Check, Trash2, Edit,
-  Shield, Key, School, Mail, Phone, UserCheck, UserX
+  Shield, Key, School, Mail, Phone, UserCheck, UserX,
+  Stethoscope, X
 } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
+import TeacherNotesEditor from '@/components/admin/TeacherNotesEditor';
+import TeacherMeetingManager from '@/components/admin/TeacherMeetingManager';
 
 const generateAccessCode = () => {
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
@@ -39,6 +42,7 @@ export default function AdminDashboard() {
   const [newClassroom, setNewClassroom] = useState({
     name: '', grade_level: '', school: '', year: new Date().getFullYear().toString(), notes: ''
   });
+  const [selectedTeacherForDetail, setSelectedTeacherForDetail] = useState(null);
 
   const { data: teachers = [], isLoading: loadingTeachers } = useQuery({
     queryKey: ['teachers'],
@@ -48,6 +52,22 @@ export default function AdminDashboard() {
   const { data: classrooms = [], isLoading: loadingClassrooms } = useQuery({
     queryKey: ['classrooms'],
     queryFn: () => base44.entities.Classroom.list(),
+  });
+  const { data: allStudents = [] } = useQuery({
+    queryKey: ['students'],
+    queryFn: () => base44.entities.Student.filter({ is_active: true }),
+  });
+  const { data: allTasks = [] } = useQuery({
+    queryKey: ['tasks-all'],
+    queryFn: () => base44.entities.Task.list('-created_date', 200),
+  });
+  const { data: allGrades = [] } = useQuery({
+    queryKey: ['grades-all'],
+    queryFn: () => base44.entities.Grade.list('-created_date', 200),
+  });
+  const { data: allBehavior = [] } = useQuery({
+    queryKey: ['behavior-all'],
+    queryFn: () => base44.entities.BehaviorEvent.list('-created_date', 200),
   });
 
   const createTeacherMutation = useMutation({
@@ -343,6 +363,14 @@ export default function AdminDashboard() {
                         <Button
                           size="sm"
                           variant="outline"
+                          onClick={() => setSelectedTeacherForDetail(teacher)}
+                          className="h-8 text-xs gap-1"
+                        >
+                          <Stethoscope className="w-3.5 h-3.5" /> ניהול
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
                           onClick={() => toggleTeacherStatusMutation.mutate({
                             teacherId: teacher.id,
                             currentStatus: teacher.is_active !== false
@@ -507,6 +535,96 @@ export default function AdminDashboard() {
             </motion.div>
           </div>
         )}
+
+        {/* Teacher Detail Modal */}
+        <AnimatePresence>
+          {selectedTeacherForDetail && (
+            <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={() => setSelectedTeacherForDetail(null)}>
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                className="bg-card rounded-xl border border-border w-full max-w-lg max-h-[85vh] overflow-y-auto"
+                onClick={e => e.stopPropagation()}
+              >
+                <div className="flex items-center justify-between p-4 border-b border-border sticky top-0 bg-card z-10">
+                  <div className="flex items-center gap-2">
+                    <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center">
+                      <Users className="w-4 h-4 text-primary" />
+                    </div>
+                    <div>
+                      <p className="font-bold text-sm">{selectedTeacherForDetail.full_name}</p>
+                      <p className="text-[11px] text-muted-foreground">{selectedTeacherForDetail.subject || 'ללא מקצוע'}</p>
+                    </div>
+                  </div>
+                  <button onClick={() => setSelectedTeacherForDetail(null)} className="p-1.5 hover:bg-accent rounded-lg">
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+
+                <div className="p-4 space-y-4">
+                  {/* Teacher's classes */}
+                  <div>
+                    <p className="text-xs font-bold text-muted-foreground uppercase mb-1.5">כיתות של המורה</p>
+                    {classrooms.filter(c => c.teacher_id === selectedTeacherForDetail.id).length === 0 ? (
+                      <p className="text-xs text-muted-foreground">לא שויכו כיתות</p>
+                    ) : (
+                      <div className="flex flex-wrap gap-1.5">
+                        {classrooms.filter(c => c.teacher_id === selectedTeacherForDetail.id).map(c => (
+                          <Badge key={c.id} variant="outline" className="text-xs">{c.name}</Badge>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Stats */}
+                  {(() => {
+                    const teacherClassIds = classrooms.filter(c => c.teacher_id === selectedTeacherForDetail.id).map(c => c.id);
+                    const teacherStudentIds = classrooms.filter(c => c.teacher_id === selectedTeacherForDetail.id).flatMap(c => c.student_ids || []);
+                    const teacherStudents = allStudents.filter(s => teacherStudentIds.includes(s.id));
+                    const teacherTasks = allTasks.filter(t => teacherStudentIds.includes(t.student_id));
+                    const teacherGrades = allGrades.filter(g => teacherStudentIds.includes(g.student_id));
+                    const teacherBehavior = allBehavior.filter(e => teacherStudentIds.includes(e.student_id));
+                    return (
+                      <div className="grid grid-cols-4 gap-2">
+                        <div className="bg-muted/30 rounded-lg p-2 text-center">
+                          <p className="text-lg font-bold text-blue-600">{teacherStudents.length}</p>
+                          <p className="text-[10px] text-muted-foreground">תלמידים</p>
+                        </div>
+                        <div className="bg-muted/30 rounded-lg p-2 text-center">
+                          <p className="text-lg font-bold text-amber-600">{teacherTasks.length}</p>
+                          <p className="text-[10px] text-muted-foreground">משימות</p>
+                        </div>
+                        <div className="bg-muted/30 rounded-lg p-2 text-center">
+                          <p className="text-lg font-bold text-emerald-600">{teacherGrades.length}</p>
+                          <p className="text-[10px] text-muted-foreground">ציונים</p>
+                        </div>
+                        <div className="bg-muted/30 rounded-lg p-2 text-center">
+                          <p className="text-lg font-bold text-purple-600">{teacherBehavior.length}</p>
+                          <p className="text-[10px] text-muted-foreground">אירועים</p>
+                        </div>
+                      </div>
+                    );
+                  })()}
+
+                  {/* Notes editor */}
+                  <TeacherNotesEditor
+                    teacher={selectedTeacherForDetail}
+                    students={allStudents}
+                    tasks={allTasks}
+                    grades={allGrades}
+                    behaviorEvents={allBehavior}
+                  />
+
+                  {/* Meeting manager */}
+                  <div className="border-t border-border/60 pt-3">
+                    <TeacherMeetingManager teacher={selectedTeacherForDetail} />
+                  </div>
+                </div>
+              </motion.div>
+            </div>
+          )}
+        </AnimatePresence>
 
         {/* Classroom Form Modal */}
         {showClassroomForm && (
