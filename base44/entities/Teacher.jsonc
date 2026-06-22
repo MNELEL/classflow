@@ -59,7 +59,7 @@
           }
         },
         {
-          "created_by_id": "{{user.id}}"
+          "data.user_id": "{{user.id}}"
         }
       ]
     },
@@ -71,7 +71,7 @@
           }
         },
         {
-          "created_by_id": "{{user.id}}"
+          "data.user_id": "{{user.id}}"
         }
       ]
     },
