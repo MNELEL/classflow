@@ -247,8 +247,14 @@ export default function StudentForm({ student, students, onSave, onCancel }) {
       </div>
 
       <div>
-        <Label className="text-sm">הערות</Label>
-        <Input value={form.notes} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))} placeholder="הערות נוספות..." className="mt-1 h-11 text-base" />
+        <Label className="text-sm">📝 הערות חופשיות / התרשמות</Label>
+        <textarea
+          value={form.notes}
+          onChange={e => setForm(f => ({ ...f, notes: e.target.value }))}
+          placeholder="דגשים אישיים, התרשמות מהתקדמות התלמיד, נקודות למעקב, הערות פדגוגיות..."
+          className="w-full mt-1 border border-input bg-transparent rounded-md px-3 py-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring min-h-[100px] resize-y"
+        />
+        <p className="text-[10px] text-muted-foreground mt-1">הערות אלה נשמרות לאורך זמן ומוצגות בפרופיל התלמיד</p>
       </div>
 
       <div className="flex gap-2 pt-2">

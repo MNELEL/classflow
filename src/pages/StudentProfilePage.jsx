@@ -288,6 +288,15 @@ export default function StudentProfilePage() {
 
           {/* ── Notes / contacts ── */}
           <TabsContent value="notes" className="mt-3 space-y-2">
+            {student.notes && (
+              <div className="bg-primary/5 border border-primary/20 rounded-xl px-3.5 py-3">
+                <div className="flex items-center gap-2 mb-1">
+                  <FileText className="w-3.5 h-3.5 text-primary" />
+                  <span className="text-xs font-semibold text-primary">הערות חופשיות / התרשמות</span>
+                </div>
+                <p className="text-sm text-foreground whitespace-pre-wrap leading-relaxed">{student.notes}</p>
+              </div>
+            )}
             {student.achievements && (
               <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-xl px-3.5 py-3">
                 <div className="flex items-center gap-2 mb-1">
@@ -325,7 +334,7 @@ export default function StudentProfilePage() {
               </div>
             )}
 
-            {!student.achievements && !student.custom_conditions && myContacts.length === 0 && (
+            {!student.notes && !student.achievements && !student.custom_conditions && myContacts.length === 0 && (
               <div className="text-center py-8 text-muted-foreground text-sm">אין הערות או תקשורת רשומה</div>
             )}
           </TabsContent>
