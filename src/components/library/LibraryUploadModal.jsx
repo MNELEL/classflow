@@ -39,13 +39,25 @@ function sourceTypeIcon(type) {
 async function analyzeItem(item, qc) {
   try {
     await base44.entities.LibraryItem.update(item.id, { ai_status: 'processing' });
+
+    // Auto-transcribe audio files if no transcript exists
+    let transcript = item.transcript || '';
+    if (!transcript && (item.source_type === 'audio_file' || item.source_type === 'audio_recording' || item.source_type === 'video_file') && item.file_url) {
+      try {
+        transcript = await base44.integrations.Core.TranscribeAudio({ audio_url: item.file_url });
+        await base44.entities.LibraryItem.update(item.id, { transcript });
+      } catch {
+        // transcription failed - continue without transcript
+      }
+    }
+
     const result = await base44.integrations.Core.InvokeLLM({
       prompt: `נתח את החומר הלימודי הבא ותחזיר JSON בלבד:
 כותרת: "${item.title}"
 סוג: "${item.source_type}"
 קטגוריה: "${item.category || 'לא ידוע'}"
 נושא: "${item.subject || 'לא ידוע'}"
-טקסט/תוכן: "${(item.transcript || '').slice(0, 3000)}"
+טקסט/תוכן: "${transcript.slice(0, 3000)}"
 
 בצע ניתוח מעמיק:
 - זהה את הנושא הלימודי המרכזי
@@ -75,6 +87,7 @@ async function analyzeItem(item, qc) {
       ai_suggested_tags: result.suggestedTags,
     });
     qc.invalidateQueries({ queryKey: ['library'] });
+    qc.invalidateQueries({ queryKey: ['library-item', item.id] });
   } catch {
     await base44.entities.LibraryItem.update(item.id, { ai_status: 'error' });
   }

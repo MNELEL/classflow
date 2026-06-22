@@ -7,7 +7,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import ReactMarkdown from 'react-markdown';
-import { X, Sparkles, Loader2, Plus, Trash2, Printer, Heart, Edit2, Check, BookOpen, Layers, GraduationCap, Star } from 'lucide-react';
+import { X, Sparkles, Loader2, Plus, Trash2, Printer, Heart, Edit2, Check, BookOpen, Layers, GraduationCap, Star, Copy } from 'lucide-react';
 import { toast } from 'sonner';
 import ArtifactGenerator from './ArtifactGenerator';
 import { motion } from 'framer-motion';
@@ -174,8 +174,16 @@ export default function LibraryItemDetail({ itemId, onClose }) {
             )}
             {item.transcript && (
               <div>
-                <p className="text-xs font-medium text-muted-foreground mb-2">תוכן / תמלול</p>
-                <div className="bg-muted/40 rounded-xl p-3 text-sm leading-relaxed max-h-64 overflow-y-auto">{item.transcript}</div>
+                <div className="flex items-center justify-between mb-2">
+                  <p className="text-xs font-medium text-muted-foreground">תוכן / תמלול מלא</p>
+                  <button
+                    onClick={() => { navigator.clipboard.writeText(item.transcript); toast.success('התמלול הועתק!'); }}
+                    className="text-xs text-primary hover:underline flex items-center gap-1"
+                  >
+                    <Copy className="w-3 h-3" /> העתק
+                  </button>
+                </div>
+                <div className="bg-muted/40 rounded-xl p-3 text-sm leading-relaxed max-h-[500px] overflow-y-auto whitespace-pre-wrap">{item.transcript}</div>
               </div>
             )}
           </TabsContent>

@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import {
   BookOpen, HelpCircle, ChevronDown, ChevronUp, Trash2,
-  Library, Printer, Loader2, FileAudio, Tag, Layers, Link2, CheckCircle2
+  Library, Printer, Loader2, FileAudio, Tag, Layers, Link2, CheckCircle2, FileText, Copy
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
@@ -48,9 +48,15 @@ function AnalysisCard({ item, onDelete, onSaveToLibrary, savingId, categories, l
   const [selectedCategory, setSelectedCategory] = useState(item.category || '');
   const [selectedPlan, setSelectedPlan] = useState('');
   const [savingLink, setSavingLink] = useState(false);
+  const [showTranscript, setShowTranscript] = useState(false);
   const queryClient = useQueryClient();
 
   const toggle = (s) => setOpenSection(prev => prev === s ? null : s);
+
+  const handleCopyTranscript = () => {
+    navigator.clipboard.writeText(item.transcript || '');
+    toast.success('התמלול הועתק!');
+  };
 
   async function handleSaveLink() {
     setSavingLink(true);
@@ -127,6 +133,68 @@ function AnalysisCard({ item, onDelete, onSaveToLibrary, savingId, categories, l
             </div>
           </div>
         </div>
+
+        {/* Full transcript + summary button */}
+        {item.transcript && (
+          <button
+            onClick={() => setShowTranscript(true)}
+            className="w-full flex items-center justify-between p-3 rounded-xl bg-amber-50 hover:bg-amber-100 active:bg-amber-200 transition-colors text-right min-h-[48px] mt-3"
+          >
+            <div className="flex items-center gap-2">
+              <FileText className="w-4 h-4 text-amber-600" />
+              <span className="text-sm font-semibold text-amber-800">תמלול מלא וסיכום</span>
+              <Badge className="bg-amber-100 text-amber-700 text-[10px] border-0">{item.transcript.length} תווים</Badge>
+            </div>
+            <ChevronDown className="w-4 h-4 text-amber-600" />
+          </button>
+        )}
+
+        {/* Full transcript modal */}
+        {showTranscript && (
+          <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={() => setShowTranscript(false)}>
+            <div className="bg-card rounded-xl border border-border w-full max-w-2xl max-h-[80vh] flex flex-col" onClick={e => e.stopPropagation()}>
+              <div className="flex items-center justify-between p-4 border-b border-border">
+                <div className="flex items-center gap-2">
+                  <FileText className="w-5 h-5 text-amber-600" />
+                  <h3 className="font-bold text-sm">תמלול מלא וסיכום — {item.title}</h3>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Button size="sm" variant="outline" className="text-xs gap-1" onClick={handleCopyTranscript}>
+                    <Copy className="w-3.5 h-3.5" /> העתק תמלול
+                  </Button>
+                  <Button size="sm" variant="ghost" onClick={() => setShowTranscript(false)}>סגור</Button>
+                </div>
+              </div>
+              <div className="overflow-y-auto p-4 space-y-4">
+                {/* Summary section */}
+                {item.ai_summary_sections?.length > 0 && (
+                  <div>
+                    <p className="text-xs font-bold text-blue-700 mb-2 flex items-center gap-1.5">
+                      <BookOpen className="w-3.5 h-3.5" /> סיכום בראשי פרקים
+                    </p>
+                    <div className="space-y-2">
+                      {item.ai_summary_sections.map((sec, i) => (
+                        <div key={i} className="bg-blue-50/50 rounded-lg p-3 border border-blue-100">
+                          <p className="text-sm font-semibold text-blue-800">{sec.heading}</p>
+                          <p className="text-xs text-muted-foreground leading-relaxed mt-1">{sec.content}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                {/* Full transcript */}
+                <div>
+                  <p className="text-xs font-bold text-amber-700 mb-2 flex items-center gap-1.5">
+                    <FileText className="w-3.5 h-3.5" /> תמלול מלא של השיעור
+                  </p>
+                  <div className="bg-amber-50/50 rounded-lg p-3 border border-amber-100 text-sm leading-relaxed whitespace-pre-wrap">
+                    {item.transcript}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
 
         <AnimatePresence>
           {linking && (
