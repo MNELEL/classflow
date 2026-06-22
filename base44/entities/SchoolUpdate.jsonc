@@ -1,0 +1,96 @@
+{
+  "name": "SchoolUpdate",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string",
+      "description": "\u05db\u05d5\u05ea\u05e8\u05ea \u05d4\u05e2\u05d3\u05db\u05d5\u05df"
+    },
+    "content": {
+      "type": "string",
+      "description": "\u05ea\u05d5\u05db\u05df \u05d4\u05e2\u05d3\u05db\u05d5\u05df"
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "announcement",
+        "event",
+        "reminder",
+        "policy",
+        "general"
+      ],
+      "default": "announcement",
+      "description": "\u05e1\u05d5\u05d2 \u05e2\u05d3\u05db\u05d5\u05df"
+    },
+    "priority": {
+      "type": "string",
+      "enum": [
+        "low",
+        "normal",
+        "high",
+        "urgent"
+      ],
+      "default": "normal",
+      "description": "\u05e2\u05d3\u05d9\u05e4\u05d5\u05ea"
+    },
+    "target_audience": {
+      "type": "string",
+      "enum": [
+        "all",
+        "teachers",
+        "parents"
+      ],
+      "default": "teachers",
+      "description": "\u05e7\u05d4\u05dc \u05d9\u05e2\u05d3"
+    },
+    "is_active": {
+      "type": "boolean",
+      "default": true,
+      "description": "\u05d4\u05d0\u05dd \u05d4\u05e2\u05d3\u05db\u05d5\u05df \u05e4\u05e2\u05d9\u05dc"
+    },
+    "expires_at": {
+      "type": "string",
+      "format": "date",
+      "description": "\u05ea\u05d0\u05e8\u05d9\u05da \u05ea\u05e4\u05d5\u05d2\u05d4 (\u05d0\u05d5\u05e4\u05e6\u05d9\u05d5\u05e0\u05dc\u05d9)"
+    },
+    "author_name": {
+      "type": "string",
+      "description": "\u05e9\u05dd \u05d4\u05de\u05e4\u05e8\u05e1\u05dd"
+    }
+  },
+  "required": [
+    "title",
+    "content"
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": {
+      "$or": [
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "user"
+          }
+        }
+      ]
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

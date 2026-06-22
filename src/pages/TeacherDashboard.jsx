@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { toast } from 'sonner';
+import SchoolUpdatesFeed from '@/components/teacher/SchoolUpdatesFeed';
 
 export default function TeacherDashboard() {
   const navigate = useNavigate();
@@ -246,19 +247,14 @@ export default function TeacherDashboard() {
           </div>
         </motion.div>
 
-        {/* Recent Activity Placeholder */}
-        <motion.div 
-          initial={{ opacity: 0, y: 10 }} 
+        {/* School Updates */}
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
           className="mt-6"
         >
-          <h2 className="text-lg font-bold mb-3">פעילות אחרונה</h2>
-          <Card>
-            <CardContent className="p-6 text-center text-muted-foreground">
-              <p>אין פעילות לאחרונה</p>
-            </CardContent>
-          </Card>
+          <SchoolUpdatesFeed />
         </motion.div>
       </div>
     </AppLayout>

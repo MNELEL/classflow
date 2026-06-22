@@ -7,6 +7,7 @@ import AppLayout from '@/components/layout/AppLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Users, LayoutGrid, AlertTriangle, CheckCircle2, TrendingUp, FileDown, FileSpreadsheet, Printer, Sparkles, Map, BarChart2 } from 'lucide-react';
+import GlobalSyncButton from '@/components/common/GlobalSyncButton';
 import TasksAlert from '@/components/dashboard/TasksAlert';
 import AbsenceAlert from '@/components/dashboard/AbsenceAlert';
 import AcademicCalendar from '@/components/dashboard/AcademicCalendar';
@@ -134,10 +135,13 @@ export default function DashboardPage() {
               <Sparkles className="w-5 h-5 text-primary" />
               <h1 className="text-2xl font-bold">סקירה כללית</h1>
             </div>
-            <Button size="sm" variant="outline" onClick={() => setShowGuide(true)} className="gap-1.5 text-xs">
-              <Map className="w-3.5 h-3.5" />
-              מדריך חכם
-            </Button>
+            <div className="flex items-center gap-1.5">
+              <GlobalSyncButton size="sm" className="gap-1.5 text-xs" />
+              <Button size="sm" variant="outline" onClick={() => setShowGuide(true)} className="gap-1.5 text-xs">
+                <Map className="w-3.5 h-3.5" />
+                מדריך חכם
+              </Button>
+            </div>
           </div>
           <p className="text-muted-foreground text-sm">מצב הכיתה במבט אחד</p>
         </motion.div>
