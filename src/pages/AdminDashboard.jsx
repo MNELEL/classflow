@@ -11,7 +11,7 @@ import { Badge } from '@/components/ui/badge';
 import {
   Users, BookOpen, Plus, Copy, Check, Trash2, Edit,
   Shield, Key, School, Mail, Phone, UserCheck, UserX,
-  Stethoscope, X
+  Stethoscope, X, Brain
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
@@ -285,6 +285,9 @@ export default function AdminDashboard() {
           </Button>
           <Button onClick={() => setShowClassroomForm(true)} variant="outline" className="flex-1">
             <BookOpen className="w-4 h-4 ml-1" /> צור כיתה חדשה
+          </Button>
+          <Button onClick={() => navigate('/teacher-insights')} variant="outline" className="flex-1">
+            <Brain className="w-4 h-4 ml-1" /> ניתוח מורים
           </Button>
         </div>
 
