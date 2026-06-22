@@ -3,14 +3,21 @@ import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Sparkles, Users, MapPin, GraduationCap, Target, ArrowLeft, Check, Rocket } from 'lucide-react';
+import { Sparkles, Users, MapPin, GraduationCap, Target, ArrowLeft, Check, Rocket, Building2, BookOpen, Shield } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { toast } from 'sonner';
 
 const STORAGE_KEY = 'classflow_onboarding_done';
 
+const PRINCIPAL_TYPES = [
+  { id: 'school_principal', label: 'מנהל בית ספר', icon: Building2, desc: 'מוסד חינוכי כללי' },
+  { id: 'talmud_torah_principal', label: 'מנהל תלמוד תורה', icon: BookOpen, desc: 'מוסד תורני' },
+  { id: 'teacher', label: 'מורה / מחנך', icon: Users, desc: 'ניהול כיתה בודדת' },
+];
+
 const STEPS = [
-  { id: 'welcome', icon: Sparkles, title: 'ברוכים הבאים ל-ClassFlow! 🎓', desc: 'מערכת חכמה לניהול כיתה. בואו נגדיר את החשבון שלכם ב-4 צעדים פשוטים.', color: 'from-violet-500 to-purple-500' },
+  { id: 'welcome', icon: Sparkles, title: 'ברוכים הבאים ל-ClassFlow! 🎓', desc: 'מערכת חכמה לניהול כיתה. בואו נגדיר את החשבון שלכם ב-5 צעדים פשוטים.', color: 'from-violet-500 to-purple-500' },
+  { id: 'role', icon: Shield, title: 'מה התפקיד שלך?', desc: 'נתאים את המערכת לסוג המוסד שלך', color: 'from-indigo-500 to-blue-500' },
   { id: 'profile', icon: Users, title: 'הפרטים שלך', desc: 'כדי שהתלמידים וההורים יכירו אותך', color: 'from-blue-500 to-cyan-500' },
   { id: 'class', icon: MapPin, title: 'הכיתה שלך', desc: 'מידע בסיסי על הכיתה', color: 'from-emerald-500 to-teal-500' },
   { id: 'goals', icon: Target, title: 'המטרות שלך', desc: 'מה הכי חשוב לך השנה?', color: 'from-amber-500 to-orange-500' },
@@ -31,7 +38,7 @@ const GOAL_OPTIONS = [
 export default function OnboardingModal({ open, onClose, forceShow }) {
   const navigate = useNavigate();
   const [step, setStep] = useState(0);
-  const [data, setData] = useState({ teacherName: '', className: '', school: '', subject: '', gradeLevel: '', goals: [] });
+  const [data, setData] = useState({ principalType: '', teacherName: '', className: '', school: '', subject: '', gradeLevel: '', goals: [] });
 
   useEffect(() => {
     if (open) {
@@ -52,6 +59,7 @@ export default function OnboardingModal({ open, onClose, forceShow }) {
     try {
       // Save to user metadata
       await base44.auth.updateMe({
+        principal_type: data.principalType,
         teacher_name: data.teacherName,
         class_name: data.className,
         school: data.school,
@@ -124,6 +132,31 @@ export default function OnboardingModal({ open, onClose, forceShow }) {
 
               {step === 1 && (
                 <div className="space-y-3">
+                  <div className="space-y-2">
+                    {PRINCIPAL_TYPES.map(pt => {
+                      const PtIcon = pt.icon;
+                      const selected = data.principalType === pt.id;
+                      return (
+                        <button key={pt.id} onClick={() => setData(d => ({ ...d, principalType: pt.id }))}
+                          className={`w-full p-3 rounded-xl border-2 text-right transition-all flex items-center gap-3 ${selected ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/30'}`}>
+                          <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${selected ? 'bg-primary text-primary-foreground' : 'bg-muted'}`}>
+                            <PtIcon className="w-5 h-5" />
+                          </div>
+                          <div className="flex-1">
+                            <p className="text-sm font-semibold">{pt.label}</p>
+                            <p className="text-xs text-muted-foreground">{pt.desc}</p>
+                          </div>
+                          {selected && <Check className="w-4 h-4 text-primary" />}
+                        </button>
+                      );
+                    })}
+                  </div>
+                  <Button onClick={next} disabled={!data.principalType} className="w-full h-11">המשך</Button>
+                </div>
+              )}
+
+              {step === 2 && (
+                <div className="space-y-3">
                   <div>
                     <label className="text-xs text-muted-foreground mb-1 block">השם שלך</label>
                     <Input value={data.teacherName} onChange={e => setData(d => ({ ...d, teacherName: e.target.value }))} placeholder="הרב / המורה..." className="h-11" />
@@ -136,7 +169,7 @@ export default function OnboardingModal({ open, onClose, forceShow }) {
                 </div>
               )}
 
-              {step === 2 && (
+              {step === 3 && (
                 <div className="space-y-3">
                   <div>
                     <label className="text-xs text-muted-foreground mb-1 block">שם הכיתה</label>
@@ -154,7 +187,7 @@ export default function OnboardingModal({ open, onClose, forceShow }) {
                 </div>
               )}
 
-              {step === 3 && (
+              {step === 4 && (
                 <div className="space-y-3">
                   <div className="grid grid-cols-2 gap-2">
                     {GOAL_OPTIONS.map(g => (
@@ -172,10 +205,11 @@ export default function OnboardingModal({ open, onClose, forceShow }) {
                 </div>
               )}
 
-              {step === 4 && (
+              {step === 5 && (
                 <div className="space-y-3">
                   <div className="bg-gradient-to-br from-pink-50 to-rose-50 dark:from-pink-950/20 dark:to-rose-950/20 border border-pink-200 dark:border-pink-800 rounded-2xl p-4 text-center space-y-2">
                     <p className="text-sm font-semibold">סיכום:</p>
+                    <p className="text-xs">👤 {PRINCIPAL_TYPES.find(p => p.id === data.principalType)?.label || ''}</p>
                     <p className="text-xs">👋 {data.teacherName} • {data.subject}</p>
                     <p className="text-xs">🏫 {data.className} • {data.school}</p>
                     <p className="text-xs">🎯 {data.goals.length} תחומי מיקוד</p>

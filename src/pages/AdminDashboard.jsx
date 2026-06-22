@@ -140,6 +140,20 @@ export default function AdminDashboard() {
     },
   });
 
+  const inviteTeacherMutation = useMutation({
+    mutationFn: async (teacher) => {
+      const loginUrl = `${window.location.origin}/teacher-login`;
+      const body = `שלום ${teacher.full_name},\n\nהוזמנת להצטרף ל-ClassFlow — מערכת ניהול הכיתה.\n\nקוד הגישה האישי שלך: ${teacher.access_code}\n\nכניסה למערכת: ${loginUrl}\n\nבהצלחה!`;
+      return base44.integrations.Core.SendEmail({
+        to: teacher.email,
+        subject: 'הזמנה ל-ClassFlow — קוד הגישה שלך',
+        body,
+      });
+    },
+    onSuccess: () => toast.success('ההזמנה נשלחה באימייל!'),
+    onError: (e) => toast.error('שגיאה בשליחה: ' + e.message),
+  });
+
   // Security check - only admins can access
   useEffect(() => {
     if (user && user.role !== 'admin') {
@@ -360,6 +374,18 @@ export default function AdminDashboard() {
                         </div>
 
                         {/* Actions */}
+                        {teacher.email && (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => inviteTeacherMutation.mutate(teacher)}
+                            disabled={inviteTeacherMutation.isPending}
+                            className="h-8 text-xs gap-1"
+                            title="שלח הזמנה באימייל"
+                          >
+                            <Mail className="w-3.5 h-3.5" /> הזמן
+                          </Button>
+                        )}
                         <Button
                           size="sm"
                           variant="outline"
