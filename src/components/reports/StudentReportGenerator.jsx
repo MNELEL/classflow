@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { FileDown, MessageCircle, Mail, Loader2, User, TrendingUp, CheckSquare, Star } from 'lucide-react';
+import { FileDown, MessageCircle, Mail, Loader2, User, TrendingUp, CheckSquare, Star, Sparkles, CalendarCheck, FileText } from 'lucide-react';
 import { toast } from 'sonner';
 import { format, parseISO } from 'date-fns';
 import { he } from 'date-fns/locale';
@@ -223,6 +223,54 @@ export default function StudentReportGenerator({ students }) {
     queryFn: () => base44.entities.Task.filter({ student_id: selectedStudentId }),
     enabled: !!selectedStudentId,
   });
+  const { data: attendance = [] } = useQuery({
+    queryKey: ['attendance', selectedStudentId],
+    queryFn: () => base44.entities.Attendance.filter({ student_id: selectedStudentId }),
+    enabled: !!selectedStudentId,
+  });
+  const [aiSummary, setAiSummary] = useState('');
+  const [generatingAI, setGeneratingAI] = useState(false);
+
+  async function handleGenerateAISummary() {
+    if (!student) return;
+    setGeneratingAI(true);
+    try {
+      const avgScore = grades.length
+        ? Math.round(grades.reduce((s, g) => s + (g.score / (g.max_score || 100)) * 100, 0) / grades.length)
+        : null;
+      const presentCount = attendance.filter(a => a.status === 'present').length;
+      const attendanceRate = attendance.length ? Math.round((presentCount / attendance.length) * 100) : null;
+      const doneTasks = tasks.filter(t => t.status === 'done').length;
+
+      const res = await base44.integrations.Core.InvokeLLM({
+        prompt: `אתה מחנך מומחה. כתוב סיכום פדגוגי אישי לדוח התקדמות של תלמיד.
+
+נתוני התלמיד:
+שם: ${student.name}
+רמה אקדמית: ${LEVEL_LABELS[student.academic_level] || 'בינוני'}
+תכונות: ${(student.traits || []).map(t => TRAIT_LABELS[t] || t).join(', ') || 'לא תועדו'}
+הישגים: ${student.achievements || '—'}
+הערות מורה: ${student.notes || '—'}
+
+נתונים מספריים:
+- ציונים: ${grades.length} רשומות${avgScore !== null ? `, ממוצע ${avgScore}%` : ''}
+- נוכחות: ${attendanceRate !== null ? `${attendanceRate}% (${presentCount}/${attendance.length})` : 'לא תועדה'}
+- משימות: ${doneTasks}/${tasks.length} הושלמו
+
+כתוב סיכום אישי בעברית בלבד (3-4 משפטים) הכולל:
+1. התרשמות כללית מהתקדמות התלמיד
+2. נקודות חוזק
+3. תחומים לשיפור
+4. המלצה פדגוגית אחת`,
+      });
+      setAiSummary(res);
+      toast.success('סיכום AI הופק!');
+    } catch {
+      toast.error('שגיאה ביצירת סיכום AI');
+    } finally {
+      setGeneratingAI(false);
+    }
+  }
 
   function openPrintWindow() {
     if (!student) return;
@@ -346,11 +394,16 @@ export default function StudentReportGenerator({ students }) {
                   {student.name}
                   <Badge variant="outline" className="text-xs mr-auto">{LEVEL_LABELS[student.academic_level] || '—'}</Badge>
                 </div>
-                <div className="grid grid-cols-3 gap-2 text-center">
+                <div className="grid grid-cols-4 gap-2 text-center">
                   <div className="bg-card rounded-lg p-2 border border-border/60">
                     <TrendingUp className="w-3.5 h-3.5 text-primary mx-auto mb-0.5" />
                     <p className="text-lg font-bold">{grades.length}</p>
                     <p className="text-[10px] text-muted-foreground">ציונים</p>
+                  </div>
+                  <div className="bg-card rounded-lg p-2 border border-border/60">
+                    <CalendarCheck className="w-3.5 h-3.5 text-emerald-600 mx-auto mb-0.5" />
+                    <p className="text-lg font-bold">{attendance.length ? `${Math.round(attendance.filter(a=>a.status==='present').length/attendance.length*100)}%` : '—'}</p>
+                    <p className="text-[10px] text-muted-foreground">נוכחות</p>
                   </div>
                   <div className="bg-card rounded-lg p-2 border border-border/60">
                     <CheckSquare className="w-3.5 h-3.5 text-emerald-600 mx-auto mb-0.5" />
@@ -363,6 +416,41 @@ export default function StudentReportGenerator({ students }) {
                     <p className="text-[10px] text-muted-foreground">תכונות</p>
                   </div>
                 </div>
+
+                {/* Teacher notes */}
+                {student.notes && (
+                  <div className="bg-primary/5 border border-primary/20 rounded-lg p-2.5">
+                    <div className="flex items-center gap-1.5 mb-1">
+                      <FileText className="w-3 h-3 text-primary" />
+                      <span className="text-[10px] font-bold text-primary">הערות מורה</span>
+                    </div>
+                    <p className="text-xs text-foreground leading-relaxed">{student.notes}</p>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* AI Summary generator */}
+            {student && (
+              <div className="space-y-2">
+                <Button
+                  variant="outline"
+                  className="w-full gap-2 border-violet-300 text-violet-700 hover:bg-violet-50 dark:border-violet-700 dark:text-violet-400"
+                  onClick={handleGenerateAISummary}
+                  disabled={generatingAI}
+                >
+                  {generatingAI ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
+                  {generatingAI ? 'מייצר סיכום AI...' : 'צור סיכום פדגוגי עם AI'}
+                </Button>
+                {aiSummary && (
+                  <div className="bg-violet-50 dark:bg-violet-900/20 border border-violet-200 dark:border-violet-800 rounded-xl p-3">
+                    <div className="flex items-center gap-1.5 mb-1.5">
+                      <Sparkles className="w-3.5 h-3.5 text-violet-600" />
+                      <span className="text-xs font-bold text-violet-700 dark:text-violet-300">סיכום פדגוגי</span>
+                    </div>
+                    <p className="text-xs text-foreground leading-relaxed whitespace-pre-wrap">{aiSummary}</p>
+                  </div>
+                )}
               </div>
             )}
 

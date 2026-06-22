@@ -52,6 +52,7 @@ const Register             = lazy(() => import('./pages/Register'));
 const ForgotPassword       = lazy(() => import('./pages/ForgotPassword'));
 const ResetPassword        = lazy(() => import('./pages/ResetPassword'));
 const AdminDashboard       = lazy(() => import('./pages/AdminDashboard'));
+const GeneratorsPage       = lazy(() => import('./pages/GeneratorsPage'));
 
 const pageVariants = {
   initial: { opacity: 0, x: 20 },
@@ -114,6 +115,7 @@ function AnimatedRoutes() {
               <Route path="/events" element={<EventsPage />} />
               <Route path="/daily-summary" element={<DailySummaryPage />} />
 <Route path="/admin" element={<AdminDashboard />} />
+<Route path="/generators" element={<GeneratorsPage />} />
 <Route path="/teacher-login" element={<TeacherLogin />} />
 <Route path="/teacher-dashboard" element={<TeacherDashboard />} />
             </Route>
