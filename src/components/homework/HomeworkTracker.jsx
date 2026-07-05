@@ -152,7 +152,25 @@ export default function HomeworkTracker({ students }) {
       );
       return base44.entities.HomeworkAssignment.update(assignment.id, { submissions: updated });
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['homework'] }),
+    onMutate: async ({ assignment, studentId }) => {
+      await qc.cancelQueries({ queryKey: ['homework'] });
+      const previous = qc.getQueryData(['homework']);
+      qc.setQueryData(['homework'], (old = []) =>
+        old.map(a => a.id === assignment.id ? {
+          ...a,
+          submissions: a.submissions.map(s =>
+            s.student_id === studentId
+              ? { ...s, submitted: !s.submitted, submitted_at: !s.submitted ? new Date().toISOString() : null }
+              : s
+          )
+        } : a)
+      );
+      return { previous };
+    },
+    onError: (_err, _vars, ctx) => {
+      if (ctx?.previous) qc.setQueryData(['homework'], ctx.previous);
+    },
+    onSettled: () => qc.invalidateQueries({ queryKey: ['homework'] }),
   });
 
   const deleteMutation = useMutation({

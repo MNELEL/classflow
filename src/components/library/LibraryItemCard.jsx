@@ -50,7 +50,7 @@ export default function LibraryItemCard({ item, onClick }) {
           )}
         </div>
         <div className="flex items-center gap-1">
-          <button onClick={e => { e.stopPropagation(); setShowShare(true); }} aria-label="שתף"
+          <button onClick={e => { e.stopPropagation(); setShowShare(true); }} aria-label="שתף חומר לימוד"
             className="text-muted-foreground hover:text-primary transition-colors p-1.5 rounded">
             <Share2 className="w-3.5 h-3.5" />
           </button>

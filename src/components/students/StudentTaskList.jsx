@@ -52,7 +52,18 @@ export default function StudentTaskList({ studentId }) {
 
   const updateTask = useMutation({
     mutationFn: ({ id, data }) => base44.entities.Task.update(id, data),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['tasks', studentId] }),
+    onMutate: async ({ id, data }) => {
+      await qc.cancelQueries({ queryKey: ['tasks', studentId] });
+      const previous = qc.getQueryData(['tasks', studentId]);
+      qc.setQueryData(['tasks', studentId], (old = []) =>
+        old.map(t => t.id === id ? { ...t, ...data } : t)
+      );
+      return { previous };
+    },
+    onError: (_err, _vars, ctx) => {
+      if (ctx?.previous) qc.setQueryData(['tasks', studentId], ctx.previous);
+    },
+    onSettled: () => qc.invalidateQueries({ queryKey: ['tasks', studentId] }),
   });
 
   const deleteTask = useMutation({

@@ -306,7 +306,7 @@ export default function LibraryItemDetail({ itemId, onClose }) {
       {item && (
         <div className="p-4 border-t border-border">
           <Button variant="outline" size="sm" className="text-destructive hover:text-destructive text-xs gap-1"
-            aria-label="מחק חומר" onClick={() => deleteMutation.mutate()}>
+            aria-label="מחק חומר לימוד" onClick={() => deleteMutation.mutate()}>
             <Trash2 className="w-3.5 h-3.5" /> מחק חומר
           </Button>
         </div>
