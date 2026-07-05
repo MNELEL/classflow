@@ -59,6 +59,7 @@ const TasksHubPage          = lazy(() => import('./pages/TasksHubPage'));
 const AdminGeneratorsPage   = lazy(() => import('./pages/AdminGeneratorsPage'));
 const TeacherInsightsPage   = lazy(() => import('./pages/TeacherInsightsPage'));
 const IngestPage            = lazy(() => import('./pages/IngestPage'));
+const TeachingStyleDashboard = lazy(() => import('./pages/TeachingStyleDashboard'));
 
 const pageVariants = {
   initial: { opacity: 0, x: 20 },
@@ -127,6 +128,7 @@ function AnimatedRoutes() {
 <Route path="/admin-generators" element={<AdminGeneratorsPage />} />
 <Route path="/teacher-insights" element={<TeacherInsightsPage />} />
 <Route path="/ingest" element={<IngestPage />} />
+<Route path="/teaching-style-dashboard" element={<TeachingStyleDashboard />} />
 <Route path="/teacher-login" element={<TeacherLogin />} />
 <Route path="/teacher-dashboard" element={<TeacherDashboard />} />
             </Route>

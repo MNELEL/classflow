@@ -44,6 +44,7 @@ const ROWS = [
   { path: '/daily-summary',        icon: Sparkles,    label: 'סיכום יומי',        desc: 'AI מחולל סיכום היום והמלצות',      color: 'bg-purple-100 text-purple-600 dark:bg-purple-900/30 dark:text-purple-400'},
   { path: '/admin-generators',     icon: Sparkles,    label: 'מרכז מחוללים - מנהל', desc: 'סיכומים, משימות ועדכונים כלליים',  color: 'bg-violet-100 text-violet-600 dark:bg-violet-900/30 dark:text-violet-400', adminOnly: true },
   { path: '/admin',                icon: Shield,      label: 'לוח בקרה - מנהל',  desc: 'ניהול כיתות ומורים',              color: 'bg-primary/10 text-primary', adminOnly: true },
+  { path: '/teaching-style-dashboard', icon: Brain,    label: 'ניתוח מצטבר',       desc: 'סגנונות הוראה ותובנות לפגישות',  color: 'bg-violet-100 text-violet-600 dark:bg-violet-900/30 dark:text-violet-400', adminOnly: true },
   { path: '/teacher-insights',     icon: Brain,       label: 'ניתוח מורים',       desc: 'סגנון הוראה ותדריכי פגישות',     color: 'bg-violet-100 text-violet-600 dark:bg-violet-900/30 dark:text-violet-400', adminOnly: true },
   { path: '/settings',             icon: UserCircle,  label: 'פרופיל והגדרות',   desc: 'מיתוג, תצוגה ועוד',                color: 'bg-slate-100 text-slate-600 dark:bg-slate-900/30 dark:text-slate-400'     },
 ];
