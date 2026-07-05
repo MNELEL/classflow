@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useIsMobile } from '@/hooks/use-mobile';
 import { base44 } from '@/api/base44Client';
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 import { Button } from '@/components/ui/button';
@@ -186,6 +187,7 @@ function OverviewTable({ allPlans, classes, libraryItems, weekKey }) {
 
 // ─── Main Component ───────────────────────────────────────────────────────────
 export default function WeeklyPlannerBoard() {
+  const isMobile = useIsMobile();
   const [weekStart, setWeekStart] = useState(() => getWeekStart());
   const [classes, setClasses] = useState(loadClasses);
   const [activeClass, setActiveClass] = useState(() => loadClasses()[0]);
@@ -197,6 +199,7 @@ export default function WeeklyPlannerBoard() {
   const [viewMode, setViewMode] = useState('edit'); // 'edit' | 'overview'
   const [noteModal, setNoteModal] = useState(null); // { slot, day, hour }
   const [noteText, setNoteText] = useState('');
+  const [showLibrary, setShowLibrary] = useState(false);
 
   const qc = useQueryClient();
   const weekKey = format(weekStart, 'yyyy-MM-dd');
@@ -426,10 +429,17 @@ export default function WeeklyPlannerBoard() {
 
         {/* ── Edit mode: side-by-side library + timetable grid ──────────────── */}
         {viewMode === 'edit' && (
-          <div className="flex gap-3 overflow-x-auto pb-4 -mx-1 px-1">
+          <div className="flex flex-col sm:flex-row gap-3 pb-4">
 
-            {/* Library panel */}
-            <div className="w-40 shrink-0 flex flex-col gap-2">
+            {/* Mobile library toggle */}
+            {isMobile && (
+              <Button size="sm" variant="outline" className="gap-1.5 self-start" onClick={() => setShowLibrary(v => !v)}>
+                📚 ספרייה ({filteredLibrary.length}) {showLibrary ? '▲' : '▼'}
+              </Button>
+            )}
+
+            {/* Library panel — hidden on mobile by default, shown when toggled */}
+            <div className={`w-full sm:w-40 shrink-0 flex flex-col gap-2 ${isMobile && !showLibrary ? 'hidden' : ''}`}>
               <div className="text-xs font-semibold text-muted-foreground flex items-center gap-1">
                 📚 ספרייה <span className="opacity-50">({filteredLibrary.length})</span>
               </div>
@@ -452,8 +462,8 @@ export default function WeeklyPlannerBoard() {
             </div>
 
             {/* ── Timetable grid ────────────────────────────────────────────── */}
-            <div className="flex-1 min-w-0 w-full overflow-x-auto">
-              <div className="min-w-[480px]">
+            <div className="flex-1 min-w-0 w-full overflow-x-auto" style={{ WebkitOverflowScrolling: 'touch' }}>
+              <div className="min-w-[320px]">
                 {/* Header row */}
                 <div className="grid gap-px mb-px" style={{ gridTemplateColumns: `36px repeat(${DAYS.length}, 1fr)` }}>
                   <div /> {/* hour label column */}

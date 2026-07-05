@@ -271,7 +271,7 @@ export default function LibraryPage() {
                             : 'bg-card border-border text-muted-foreground hover:border-primary'
                         }`}
                         title="הוסף לרשימת השמעה"
-                        aria-label="הוסף לרשימת השמעה"
+                        aria-label={playlistIds.includes(item.id) ? 'הסר מרשימת השמעה' : 'הוסף לרשימת השמעה'}
                       >
                         <ListMusic className="w-3 h-3" />
                       </button>

@@ -124,6 +124,7 @@ export default function BavaKammaTracker() {
                       <button
                         key={daf}
                         onClick={() => toggleDaf(daf)}
+                        aria-label={`דף ${daf} - ${done ? 'הוסף' : 'סמן'}`}
                         className={`w-8 h-7 rounded text-[11px] font-medium border transition-all ${
                           done
                             ? 'bg-amber-500 border-amber-500 text-white shadow-sm'
@@ -144,6 +145,7 @@ export default function BavaKammaTracker() {
             <span className="text-[10px] text-muted-foreground">סה"כ: {TOTAL_DAFIM} דפים</span>
             <button
               onClick={() => { setCompleted([]); saveProgress([]); }}
+              aria-label="אפס מעקב בבא קמא"
               className="text-[10px] text-destructive hover:underline"
             >
               איפוס

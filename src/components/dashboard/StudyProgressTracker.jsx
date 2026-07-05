@@ -102,7 +102,7 @@ export default function StudyProgressTracker() {
             מעקב התקדמות לימוד
             <Badge className="bg-primary/10 text-primary border-0 text-[10px]">{trackers.length} מעקבים</Badge>
           </CardTitle>
-          <Button size="sm" variant="ghost" className="h-7 px-2 gap-1 text-xs" onClick={() => setShowAdd(v => !v)}>
+          <Button size="sm" variant="ghost" className="h-7 px-2 gap-1 text-xs" aria-label="הוסף מעקב חדש" onClick={() => setShowAdd(v => !v)}>
             <Plus className="w-3.5 h-3.5" /> הוסף
           </Button>
         </div>
@@ -197,6 +197,7 @@ export default function StudyProgressTracker() {
                         <button
                           key={item}
                           onClick={() => toggleItem(tracker.id, item)}
+                          aria-label={`${item} - ${done ? 'הוסף' : 'סמן כהושלם'}`}
                           className={`min-w-[32px] px-1.5 h-7 rounded text-[11px] font-medium border transition-all ${
                             done
                               ? `${col.btn_on} shadow-sm`

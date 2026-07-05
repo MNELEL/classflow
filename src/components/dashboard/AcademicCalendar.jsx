@@ -202,6 +202,7 @@ export default function AcademicCalendar() {
                   <button
                     key={key}
                     onClick={() => setSelectedDay(isSelected ? null : day)}
+                    aria-label={`${dayStr} - ${format(day, 'd MMMM')}`}
                     className={`relative flex flex-col items-center justify-start pt-1 pb-1 min-h-[40px] rounded-lg text-xs transition-colors
                       ${isSelected ? 'bg-primary text-primary-foreground' : today ? 'bg-primary/10 text-primary font-bold' : 'hover:bg-accent'}
                       ${!isSameMonth(day, currentMonth) ? 'opacity-30' : ''}
