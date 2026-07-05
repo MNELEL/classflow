@@ -191,13 +191,13 @@ export default function GridControls({
       {/* Export */}
       <div className="border-t border-border pt-3 space-y-1.5">
         <p className="text-[10px] text-muted-foreground font-semibold uppercase tracking-wider">ייצוא</p>
-        <Button variant="outline" size="sm" className="w-full gap-1.5" onClick={() => exportToPDF(seats, students, rows, cols)}>
+        <Button variant="outline" size="sm" className="w-full gap-1.5" aria-label="ייצוא PDF" onClick={() => exportToPDF(seats, students, rows, cols)}>
           <FileDown className="w-3.5 h-3.5" /> ייצוא PDF
         </Button>
-        <Button variant="outline" size="sm" className="w-full gap-1.5" onClick={() => exportToExcel(seats, students, rows, cols)}>
+        <Button variant="outline" size="sm" className="w-full gap-1.5" aria-label="ייצוא Excel" onClick={() => exportToExcel(seats, students, rows, cols)}>
           <FileSpreadsheet className="w-3.5 h-3.5" /> ייצוא Excel
         </Button>
-        <Button variant="outline" size="sm" className="w-full gap-1.5" onClick={() => printSeating(seats, students, rows, cols)}>
+        <Button variant="outline" size="sm" className="w-full gap-1.5" aria-label="הדפסה" onClick={() => printSeating(seats, students, rows, cols)}>
           <Printer className="w-3.5 h-3.5" /> הדפסה
         </Button>
         <Button variant="outline" size="sm" className="w-full gap-1.5" onClick={() => printCleanSeating(seats, students, rows, cols)}>

@@ -1,12 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { base44 } from '@/api/base44Client';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient, useMutation } from '@tanstack/react-query';
 import AppLayout from '@/components/layout/AppLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { MobileSelect, SelectItem } from '@/components/ui/MobileSelect';
 import { toast } from 'sonner';
 import { Plus, Bell, Trash2, Play, Pause, Clock, Music, ToggleLeft, ToggleRight, Volume2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -177,9 +177,24 @@ export default function BellSchedulePage() {
     toast.success('נמחק');
   }
 
-  async function toggleActive(bell) {
-    await base44.entities.BellSchedule.update(bell.id, { is_active: !bell.is_active });
-    qc.invalidateQueries({ queryKey: ['bells'] });
+  const toggleMutation = useMutation({
+    mutationFn: ({ bell }) => base44.entities.BellSchedule.update(bell.id, { is_active: !bell.is_active }),
+    onMutate: async ({ bell }) => {
+      await qc.cancelQueries({ queryKey: ['bells'] });
+      const previous = qc.getQueryData(['bells']);
+      qc.setQueryData(['bells'], (old = []) =>
+        old.map(b => b.id === bell.id ? { ...b, is_active: !b.is_active } : b)
+      );
+      return { previous };
+    },
+    onError: (_err, _vars, ctx) => {
+      if (ctx?.previous) qc.setQueryData(['bells'], ctx.previous);
+    },
+    onSettled: () => qc.invalidateQueries({ queryKey: ['bells'] }),
+  });
+
+  function toggleActive(bell) {
+    toggleMutation.mutate({ bell });
   }
 
   function openEdit(bell) {
@@ -319,14 +334,9 @@ export default function BellSchedulePage() {
               <div>
                 <label className="text-xs text-muted-foreground mb-1 block">סוג צלצול</label>
                 <div className="flex gap-2">
-                  <Select value={form.sound_type} onValueChange={v => setForm(f => ({ ...f, sound_type: v }))}>
-                    <SelectTrigger className="h-9 text-sm flex-1">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {SOUNDS.map(s => <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>)}
-                    </SelectContent>
-                  </Select>
+                  <MobileSelect value={form.sound_type} onValueChange={v => setForm(f => ({ ...f, sound_type: v }))} className="h-9 text-sm flex-1">
+                    {SOUNDS.map(s => <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>)}
+                  </MobileSelect>
                   <Button size="icon" variant="outline" className="h-9 w-9 shrink-0" onClick={() => playSound(form.sound_type)}>
                     <Volume2 className="w-4 h-4" />
                   </Button>

@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { base44 } from '@/api/base44Client';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient, useMutation } from '@tanstack/react-query';
 import AppLayout from '@/components/layout/AppLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -57,17 +57,34 @@ export default function BehaviorTimelinePage() {
     return g;
   }, [filtered]);
 
-  async function save() {
+  const createMutation = useMutation({
+    mutationFn: (newEvent) => base44.entities.BehaviorEvent.create(newEvent),
+    onMutate: async (newEvent) => {
+      await qc.cancelQueries({ queryKey: ['behavior-events'] });
+      const previous = qc.getQueryData(['behavior-events']);
+      qc.setQueryData(['behavior-events'], (old = []) => [
+        { ...newEvent, id: `opt-${Date.now()}` },
+        ...old,
+      ]);
+      return { previous };
+    },
+    onError: (_err, _vars, ctx) => {
+      if (ctx?.previous) qc.setQueryData(['behavior-events'], ctx.previous);
+    },
+    onSettled: () => qc.invalidateQueries({ queryKey: ['behavior-events'] }),
+  });
+
+  function save() {
     if (!form.student_id || !form.description) {
       toast.error('בחרו תלמיד וכתבו תיאור');
       return;
     }
-    await base44.entities.BehaviorEvent.create({
+    const payload = {
       ...form,
       student_name: studentMap[form.student_id] || '',
       date: new Date().toISOString(),
-    });
-    qc.invalidateQueries({ queryKey: ['behavior-events'] });
+    };
+    createMutation.mutate(payload);
     toast.success('האירוע נוסף!');
     setShowForm(false);
     setForm({ student_id: '', type: 'positive', category: 'behavior', description: '', severity: 'low', action_taken: '', follow_up: false });

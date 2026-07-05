@@ -4,7 +4,7 @@ import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { MobileSelect, SelectItem } from '@/components/ui/MobileSelect';
 import { Loader2, Sparkles, FileDown, MessageCircle, Mail, Printer } from 'lucide-react';
 import { toast } from 'sonner';
 import { format, subWeeks, subMonths, startOfMonth, endOfMonth, startOfYear, endOfYear } from 'date-fns';
@@ -374,21 +374,15 @@ ${context}
         <div className="grid grid-cols-2 gap-3">
           <div>
             <Label className="text-xs text-muted-foreground mb-1 block">סוג הדוח</Label>
-            <Select value={period} onValueChange={setPeriod}>
-              <SelectTrigger><SelectValue /></SelectTrigger>
-              <SelectContent>
-                {PERIOD_OPTIONS.map(p => <SelectItem key={p.value} value={p.value}>{p.label}</SelectItem>)}
-              </SelectContent>
-            </Select>
+            <MobileSelect value={period} onValueChange={setPeriod} className="h-9 text-sm">
+              {PERIOD_OPTIONS.map(p => <SelectItem key={p.value} value={p.value}>{p.label}</SelectItem>)}
+            </MobileSelect>
           </div>
           <div>
             <Label className="text-xs text-muted-foreground mb-1 block">מיועד ל</Label>
-            <Select value={audience} onValueChange={setAudience}>
-              <SelectTrigger><SelectValue /></SelectTrigger>
-              <SelectContent>
-                {AUDIENCE_OPTIONS.map(a => <SelectItem key={a.value} value={a.value}>{a.label}</SelectItem>)}
-              </SelectContent>
-            </Select>
+            <MobileSelect value={audience} onValueChange={setAudience} className="h-9 text-sm">
+              {AUDIENCE_OPTIONS.map(a => <SelectItem key={a.value} value={a.value}>{a.label}</SelectItem>)}
+            </MobileSelect>
           </div>
         </div>
 

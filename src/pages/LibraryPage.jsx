@@ -12,7 +12,7 @@ import LibraryUploadModal from '@/components/library/LibraryUploadModal';
 import LibraryItemDetail from '@/components/library/LibraryItemDetail';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { MobileSelect, SelectItem } from '@/components/ui/MobileSelect';
 import { Plus, Search, BookOpen, Loader2, Library, Sparkles, BookOpenCheck, ListMusic, CalendarDays, BarChart2, Layers, Settings2, Bot, ExternalLink, Star, HardDrive, Download } from 'lucide-react';
 import MultiSourceGenerator from '@/components/library/MultiSourceGenerator';
 import AIProviderSettings from '@/components/library/AIProviderSettings';
@@ -182,52 +182,37 @@ export default function LibraryPage() {
 
             {/* Filters row 1 */}
             <div className="flex gap-2 overflow-x-auto pb-1">
-              <Select value={filterType} onValueChange={setFilterType}>
-                <SelectTrigger className="h-8 text-xs min-w-[110px]"><SelectValue placeholder="סוג..." /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">כל הסוגים</SelectItem>
-                  {Object.entries(SOURCE_LABELS).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}
-                </SelectContent>
-              </Select>
+              <MobileSelect value={filterType} onValueChange={setFilterType} placeholder="סוג..." className="h-8 text-xs min-w-[110px]">
+                <SelectItem value="all">כל הסוגים</SelectItem>
+                {Object.entries(SOURCE_LABELS).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}
+              </MobileSelect>
 
               {subjects.length > 0 && (
-                <Select value={filterSubject} onValueChange={setFilterSubject}>
-                  <SelectTrigger className="h-8 text-xs min-w-[110px]"><SelectValue placeholder="נושא..." /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">כל הנושאים</SelectItem>
-                    {subjects.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
-                  </SelectContent>
-                </Select>
+                <MobileSelect value={filterSubject} onValueChange={setFilterSubject} placeholder="נושא..." className="h-8 text-xs min-w-[110px]">
+                  <SelectItem value="all">כל הנושאים</SelectItem>
+                  {subjects.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+                </MobileSelect>
               )}
 
               {categories.length > 0 && (
-                <Select value={filterCategory} onValueChange={setFilterCategory}>
-                  <SelectTrigger className="h-8 text-xs min-w-[110px]"><SelectValue placeholder="קטגוריה..." /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">כל הקטגוריות</SelectItem>
-                    {categories.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
-                  </SelectContent>
-                </Select>
+                <MobileSelect value={filterCategory} onValueChange={setFilterCategory} placeholder="קטגוריה..." className="h-8 text-xs min-w-[110px]">
+                  <SelectItem value="all">כל הקטגוריות</SelectItem>
+                  {categories.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                </MobileSelect>
               )}
 
-              <Select value={filterDifficulty} onValueChange={setFilterDifficulty}>
-                <SelectTrigger className="h-8 text-xs min-w-[90px]"><SelectValue placeholder="קושי..." /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">כל הרמות</SelectItem>
-                  <SelectItem value="קל">🟢 קל</SelectItem>
-                  <SelectItem value="בינוני">🟡 בינוני</SelectItem>
-                  <SelectItem value="קשה">🔴 קשה</SelectItem>
-                </SelectContent>
-              </Select>
+              <MobileSelect value={filterDifficulty} onValueChange={setFilterDifficulty} placeholder="קושי..." className="h-8 text-xs min-w-[90px]">
+                <SelectItem value="all">כל הרמות</SelectItem>
+                <SelectItem value="קל">🟢 קל</SelectItem>
+                <SelectItem value="בינוני">🟡 בינוני</SelectItem>
+                <SelectItem value="קשה">🔴 קשה</SelectItem>
+              </MobileSelect>
 
-              <Select value={filterAI} onValueChange={setFilterAI}>
-                <SelectTrigger className="h-8 text-xs min-w-[90px]"><SelectValue placeholder="AI..." /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">כל הסטטוסים</SelectItem>
-                  <SelectItem value="ready">✅ נותחו</SelectItem>
-                  <SelectItem value="pending">⏳ ממתינים</SelectItem>
-                </SelectContent>
-              </Select>
+              <MobileSelect value={filterAI} onValueChange={setFilterAI} placeholder="AI..." className="h-8 text-xs min-w-[90px]">
+                <SelectItem value="all">כל הסטטוסים</SelectItem>
+                <SelectItem value="ready">✅ נותחו</SelectItem>
+                <SelectItem value="pending">⏳ ממתינים</SelectItem>
+              </MobileSelect>
 
               <button onClick={() => setShowFavOnly(v => !v)}
                 className={`h-8 px-3 rounded-lg border text-xs transition-colors whitespace-nowrap flex items-center gap-1 ${showFavOnly ? 'bg-pink-50 border-pink-300 text-pink-600 dark:bg-pink-900/20 dark:border-pink-800 dark:text-pink-400' : 'border-border text-muted-foreground hover:border-pink-300'}`}>

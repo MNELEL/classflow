@@ -422,7 +422,7 @@ export default function WeeklyPlannerBoard() {
 
         {/* ── Edit mode: side-by-side library + timetable grid ──────────────── */}
         {viewMode === 'edit' && (
-          <div className="flex gap-3 overflow-x-auto pb-4">
+          <div className="flex gap-3 overflow-x-auto pb-4 -mx-1 px-1">
 
             {/* Library panel */}
             <div className="w-40 shrink-0 flex flex-col gap-2">
@@ -448,8 +448,8 @@ export default function WeeklyPlannerBoard() {
             </div>
 
             {/* ── Timetable grid ────────────────────────────────────────────── */}
-            <div className="flex-1 min-w-0 overflow-x-auto">
-              <div className="min-w-[520px]">
+            <div className="flex-1 min-w-0 w-full overflow-x-auto">
+              <div className="min-w-[480px]">
                 {/* Header row */}
                 <div className="grid gap-px mb-px" style={{ gridTemplateColumns: `36px repeat(${DAYS.length}, 1fr)` }}>
                   <div /> {/* hour label column */}

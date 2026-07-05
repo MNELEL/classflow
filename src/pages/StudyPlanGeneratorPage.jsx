@@ -4,7 +4,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import AppLayout from '@/components/layout/AppLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { MobileSelect, SelectItem } from '@/components/ui/MobileSelect';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { toast } from 'sonner';
@@ -151,17 +151,15 @@ ${form.teaching_style ? `סגנון הוראה: ${form.teaching_style}` : ''}
           <div className="grid grid-cols-2 gap-2">
             <div>
               <label className="text-xs text-muted-foreground mb-1 block">מקצוע *</label>
-              <Select value={form.subject} onValueChange={v => setForm(f => ({ ...f, subject: v }))}>
-                <SelectTrigger className="h-9 text-sm"><SelectValue placeholder="בחר מקצוע..." /></SelectTrigger>
-                <SelectContent>{SUBJECTS.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
-              </Select>
+              <MobileSelect value={form.subject} onValueChange={v => setForm(f => ({ ...f, subject: v }))} placeholder="בחר מקצוע..." className="h-9 text-sm">
+                {SUBJECTS.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+              </MobileSelect>
             </div>
             <div>
               <label className="text-xs text-muted-foreground mb-1 block">כיתה *</label>
-              <Select value={form.grade_level} onValueChange={v => setForm(f => ({ ...f, grade_level: v }))}>
-                <SelectTrigger className="h-9 text-sm"><SelectValue placeholder="בחר כיתה..." /></SelectTrigger>
-                <SelectContent>{GRADE_LEVELS.map(g => <SelectItem key={g} value={g}>{g}</SelectItem>)}</SelectContent>
-              </Select>
+              <MobileSelect value={form.grade_level} onValueChange={v => setForm(f => ({ ...f, grade_level: v }))} placeholder="בחר כיתה..." className="h-9 text-sm">
+                {GRADE_LEVELS.map(g => <SelectItem key={g} value={g}>{g}</SelectItem>)}
+              </MobileSelect>
             </div>
           </div>
           <div className="grid grid-cols-2 gap-2">
@@ -171,12 +169,9 @@ ${form.teaching_style ? `סגנון הוראה: ${form.teaching_style}` : ''}
             </div>
             <div>
               <label className="text-xs text-muted-foreground mb-1 block">מספר שבועות</label>
-              <Select value={String(form.total_weeks)} onValueChange={v => setForm(f => ({ ...f, total_weeks: Number(v) }))}>
-                <SelectTrigger className="h-9 text-sm"><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  {[4,6,8,10,12,16,20,30,36].map(n => <SelectItem key={n} value={String(n)}>{n} שבועות</SelectItem>)}
-                </SelectContent>
-              </Select>
+              <MobileSelect value={String(form.total_weeks)} onValueChange={v => setForm(f => ({ ...f, total_weeks: Number(v) }))} className="h-9 text-sm">
+                {[4,6,8,10,12,16,20,30,36].map(n => <SelectItem key={n} value={String(n)}>{n} שבועות</SelectItem>)}
+              </MobileSelect>
             </div>
           </div>
           <div className="grid grid-cols-2 gap-2">

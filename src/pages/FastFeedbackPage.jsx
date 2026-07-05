@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient, useMutation } from '@tanstack/react-query';
 import AppLayout from '@/components/layout/AppLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -59,20 +59,37 @@ export default function FastFeedbackPage() {
   const activeStudents = students.filter(s => s.is_active !== false);
   const filtered = activeStudents.filter(s => s.name?.includes(search));
 
-  async function send() {
+  const sendMutation = useMutation({
+    mutationFn: (newFeedback) => base44.entities.FastFeedback.create(newFeedback),
+    onMutate: async (newFeedback) => {
+      await qc.cancelQueries({ queryKey: ['fast-feedbacks'] });
+      const previous = qc.getQueryData(['fast-feedbacks']);
+      qc.setQueryData(['fast-feedbacks'], (old = []) => [
+        { ...newFeedback, id: `opt-${Date.now()}`, student_id: selectedStudent?.id, student_name: selectedStudent?.name },
+        ...old,
+      ]);
+      return { previous };
+    },
+    onError: (_err, _vars, ctx) => {
+      if (ctx?.previous) qc.setQueryData(['fast-feedbacks'], ctx.previous);
+    },
+    onSettled: () => qc.invalidateQueries({ queryKey: ['fast-feedbacks'] }),
+  });
+
+  function send() {
     if (!selectedStudent || !emoji) {
       toast.error('בחרו תלמיד ואימוג׳י');
       return;
     }
-    await base44.entities.FastFeedback.create({
+    const payload = {
       student_id: selectedStudent.id,
       student_name: selectedStudent.name,
       emoji,
       category,
       message: message || '',
       date: new Date().toISOString(),
-    });
-    qc.invalidateQueries({ queryKey: ['fast-feedbacks'] });
+    };
+    sendMutation.mutate(payload);
     toast.success(`${emoji} נשלח אל${selectedStudent.name}!`);
     setSelectedStudent(null);
     setEmoji('🌟');
