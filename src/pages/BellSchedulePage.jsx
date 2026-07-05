@@ -398,16 +398,16 @@ function BellCard({ bell, onEdit, onDelete, onToggle, onPreview, inactive }) {
         </div>
       </div>
       <div className="flex items-center gap-1 shrink-0">
-        <button onClick={onPreview} className="w-8 h-8 rounded-xl hover:bg-accent flex items-center justify-center transition-colors">
+        <button onClick={onPreview} aria-label="השמע צלצול" className="w-8 h-8 rounded-xl hover:bg-accent flex items-center justify-center transition-colors">
           <Play className="w-3.5 h-3.5 text-primary" />
         </button>
-        <button onClick={() => onToggle(bell)} className="w-8 h-8 rounded-xl hover:bg-accent flex items-center justify-center transition-colors">
+        <button onClick={() => onToggle(bell)} aria-label={bell.is_active ? 'השבת צלצול' : 'הפעל צלצול'} className="w-8 h-8 rounded-xl hover:bg-accent flex items-center justify-center transition-colors">
           {bell.is_active ? <ToggleRight className="w-4 h-4 text-green-500" /> : <ToggleLeft className="w-4 h-4 text-muted-foreground" />}
         </button>
-        <button onClick={() => onEdit(bell)} className="w-8 h-8 rounded-xl hover:bg-accent flex items-center justify-center transition-colors">
+        <button onClick={() => onEdit(bell)} aria-label="ערוך צלצול" className="w-8 h-8 rounded-xl hover:bg-accent flex items-center justify-center transition-colors">
           <Music className="w-3.5 h-3.5 text-muted-foreground" />
         </button>
-        <button onClick={() => onDelete(bell.id)} className="w-8 h-8 rounded-xl hover:bg-destructive/10 flex items-center justify-center transition-colors">
+        <button onClick={() => onDelete(bell.id)} aria-label="מחק צלצול" className="w-8 h-8 rounded-xl hover:bg-destructive/10 flex items-center justify-center transition-colors">
           <Trash2 className="w-3.5 h-3.5 text-destructive" />
         </button>
       </div>

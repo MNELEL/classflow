@@ -108,7 +108,10 @@ export default function AppLayout({ children }) {
         <div className="flex items-center gap-2 px-4 py-3 w-full">
           {!isDashboard ? (
             <button
-              onClick={() => navigate(-1)}
+              onClick={() => {
+                if (window.history.length > 1) navigate(-1);
+                else navigate('/');
+              }}
               className="min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg hover:bg-accent transition-colors select-none"
               aria-label="חזור"
             >

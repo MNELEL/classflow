@@ -140,6 +140,10 @@ button, a, [role="button"] {
     opacity: 1 !important;
     visibility: visible !important;
   }
+  :focus-visible {
+    outline: 3px solid hsl(var(--primary));
+    outline-offset: 3px;
+  }
 }
 
 .seat-card {

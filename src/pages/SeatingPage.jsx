@@ -464,7 +464,7 @@ ${overrideLines ? `\nהעדפות ייבוא נוספות:\n${overrideLines}` : 
 
   return (
     <AppLayout>
-      <div className="flex h-[calc(100vh-57px-64px)] relative" dir="rtl">
+      <div className="flex relative" style={{ height: 'calc(100vh - 57px - 64px - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px))' }} dir="rtl">
 
         {/* Desktop: fixed sidebars */}
         <div className="hidden md:flex w-52 border-l border-border bg-card overflow-y-auto shrink-0 flex-col">
