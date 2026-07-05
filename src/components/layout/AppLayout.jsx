@@ -3,18 +3,19 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import {
   LayoutGrid, Users, BookOpen, Settings, ChevronRight,
-  Library, MoreHorizontal
+  Library, Wrench, Grid3x3
 } from 'lucide-react';
 import { loadBranding } from '@/lib/branding';
 import OverdueAlertsPanel from '@/components/alerts/OverdueAlertsPanel';
 
 
-// Primary 4 nav items (always visible) + "More"
+// 5 bottom nav tabs — all other routes accessible via /more
 const PRIMARY_NAV = [
   { path: '/',         icon: BookOpen,    label: 'דשבורד' },
-  { path: '/seating',  icon: LayoutGrid,  label: 'סידור'  },
   { path: '/students', icon: Users,       label: 'תלמידים'},
   { path: '/library',  icon: Library,     label: 'ספרייה' },
+  { path: '/toolkit',  icon: Wrench,      label: 'כלים'   },
+  { path: '/more',     icon: Grid3x3,     label: 'עוד'    },
 ];
 
 
@@ -32,7 +33,7 @@ export default function AppLayout({ children }) {
   const NAV_PATHS = [...PRIMARY_NAV.map(n => n.path), '/more'];
 
   function getCurrentTabRoot(pathname) {
-    for (const p of PRIMARY_NAV.map(n => n.path)) {
+    for (const p of PRIMARY_NAV.filter(n => n.path !== '/more').map(n => n.path)) {
       if (p === '/') {
         if (pathname === '/') return '/';
       } else if (pathname === p || pathname.startsWith(p + '/')) {
@@ -92,8 +93,8 @@ export default function AppLayout({ children }) {
   const isDashboard = location.pathname === '/';
   const title = branding.page_titles?.[location.pathname] || branding.school_name || 'ClassManager Pro';
 
-  // Check if current path is in the "more" section
-  const MORE_PATHS = ['/attendance','/grades','/gamification','/toolkit','/parents','/worksheets','/question-bank','/lesson-analyzer','/curriculum','/homework','/sound-board','/student-view'];
+  // Check if current path is in the "more" section (any route not in the 4 primary tabs)
+  const MORE_PATHS = ['/seating','/attendance','/grades','/gamification','/parents','/worksheets','/question-bank','/lesson-analyzer','/curriculum','/homework','/sound-board','/student-view','/reports','/analytics','/events','/exams','/fast-feedback','/behavior-timeline','/weekly-schedule','/bell-schedule','/study-plan-generator','/raffle','/daily-summary','/exam-scanner','/more'];
   const isMoreActive = MORE_PATHS.includes(location.pathname);
 
   return (
@@ -153,13 +154,15 @@ export default function AppLayout({ children }) {
         {children}
       </main>
 
-      {/* Bottom Navigation Bar — dark premium */}
+      {/* Bottom Navigation Bar — 5 tabs */}
       <nav
-        className="fixed bottom-0 inset-x-0 z-50 nav-premium flex items-stretch"
+        className="fixed bottom-0 inset-x-0 z-50 flex items-stretch backdrop-blur-md bg-background/95 border-t border-border"
         style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
       >
         {PRIMARY_NAV.map(({ path, icon: Icon, label }) => {
-          const active = location.pathname === path;
+          const active = path === '/more'
+            ? (isMoreActive || location.pathname === '/more')
+            : location.pathname === path;
           const navLabel = branding.nav_labels?.[path] || label;
           return (
             <Link
@@ -169,41 +172,20 @@ export default function AppLayout({ children }) {
               className={cn(
                 'flex-1 flex flex-col items-center justify-center gap-0.5 min-h-[56px] min-w-[44px] py-2 select-none transition-all duration-200',
                 active
-                  ? 'text-[hsl(192,70%,60%)]'
-                  : 'text-[hsl(210,14%,50%)] hover:text-[hsl(210,14%,72%)]'
+                  ? 'text-primary'
+                  : 'text-muted-foreground hover:text-foreground'
               )}
             >
               <div className={cn(
                 'w-9 h-7 flex items-center justify-center rounded-xl transition-all duration-200',
-                active ? 'bg-[hsl(192,80%,32%,0.25)]' : ''
+                active ? 'bg-primary/15' : ''
               )}>
                 <Icon className={cn('w-5 h-5 transition-transform duration-200', active && 'scale-110')} />
               </div>
-              <span className={cn('text-[10px] font-medium transition-all', active ? 'opacity-100' : 'opacity-60')}>{navLabel}</span>
+              <span className={cn('text-xs font-medium transition-all', active ? 'opacity-100' : 'opacity-70')}>{navLabel}</span>
             </Link>
           );
         })}
-
-        {/* More button */}
-        <Link
-          to="/more"
-          onClick={(e) => handleNavClick(e, '/more')}
-          className={cn(
-            'flex-1 flex flex-col items-center justify-center gap-0.5 min-h-[56px] min-w-[44px] py-2 select-none transition-all duration-200',
-            (isMoreActive || location.pathname === '/more')
-              ? 'text-[hsl(192,70%,60%)]'
-              : 'text-[hsl(210,14%,50%)] hover:text-[hsl(210,14%,72%)]'
-          )}
-          aria-label="עוד"
-        >
-          <div className={cn(
-            'w-9 h-7 flex items-center justify-center rounded-xl transition-all duration-200',
-            (isMoreActive || location.pathname === '/more') ? 'bg-[hsl(192,80%,32%,0.25)]' : ''
-          )}>
-            <MoreHorizontal className={cn('w-5 h-5 transition-transform duration-200', (isMoreActive || location.pathname === '/more') && 'scale-110')} />
-          </div>
-          <span className={cn('text-[10px] font-medium transition-all', (isMoreActive || location.pathname === '/more') ? 'opacity-100' : 'opacity-60')}>עוד</span>
-        </Link>
       </nav>
     </div>
   );

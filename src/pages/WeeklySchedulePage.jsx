@@ -7,7 +7,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Badge } from '@/components/ui/badge';
 import { Plus, ChevronRight, ChevronLeft, Clock, BookOpen, Trash2, X } from 'lucide-react';
 import { toast } from 'sonner';
-import moment from 'moment';
+import { addWeeks, addDays, startOfWeek, format, isSameDay } from 'date-fns';
 import SmartBellTimer from '@/components/schedule/SmartBellTimer';
 import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from '@/components/ui/select';
 
@@ -43,10 +43,8 @@ function getSubjectColor(subject, subjectMap) {
 }
 
 function getWeekStart(date) {
-  const d = moment(date);
-  // Week starts Sunday
-  const day = d.day();
-  return d.subtract(day, 'days').startOf('day');
+  // Week starts Sunday (weekStartsOn: 0)
+  return startOfWeek(date, { weekStartsOn: 0 });
 }
 
 // ── Add Lesson Dialog ──
@@ -195,14 +193,14 @@ export default function WeeklySchedulePage() {
   const [addDialog, setAddDialog] = useState({ open: false, day: null, hour: null });
   const [mobileDay, setMobileDay] = useState(0);
 
-  const weekStart = useMemo(() => getWeekStart(moment().add(weekOffset, 'weeks')), [weekOffset]);
+  const weekStart = useMemo(() => getWeekStart(addWeeks(new Date(), weekOffset)), [weekOffset]);
   const weekLabel = useMemo(() => {
-    const end = weekStart.clone().add(4, 'days');
-    return `${weekStart.format('D/M')} – ${end.format('D/M/YYYY')}`;
+    const end = addDays(weekStart, 4);
+    return `${format(weekStart, 'd/M')} – ${format(end, 'd/M/yyyy')}`;
   }, [weekStart]);
 
   // Load WeeklyPlan for current week
-  const weekKey = weekStart.format('YYYY-MM-DD');
+  const weekKey = format(weekStart, 'yyyy-MM-dd');
   const { data: plans = [] } = useQuery({
     queryKey: ['weekly-plans', weekKey],
     queryFn: () => base44.entities.WeeklyPlan.filter({ week_start: weekKey }),
@@ -346,8 +344,8 @@ export default function WeeklySchedulePage() {
         {/* Mobile day selector chips */}
         <div className="md:hidden flex gap-1.5 px-4 py-2 overflow-x-auto no-scrollbar">
           {DAYS.map((d, i) => {
-            const date = weekStart.clone().add(i, 'days');
-            const isToday = date.isSame(moment(), 'day');
+            const date = addDays(weekStart, i);
+            const isToday = isSameDay(date, new Date());
             const isActive = mobileDay === i;
             return (
               <button
@@ -362,7 +360,7 @@ export default function WeeklySchedulePage() {
                 }`}
               >
                 {d.label}
-                <span className={`block text-[10px] font-normal ${isActive ? 'text-primary-foreground/70' : ''}`}>{date.format('D/M')}</span>
+                <span className={`block text-[11px] font-normal ${isActive ? 'text-primary-foreground/70' : ''}`}>{format(date, 'd/M')}</span>
               </button>
             );
           })}
@@ -372,8 +370,8 @@ export default function WeeklySchedulePage() {
         <div className="md:hidden px-2 pb-6">
           {(() => {
             const day = DAYS[mobileDay];
-            const date = weekStart.clone().add(mobileDay, 'days');
-            const isToday = date.isSame(moment(), 'day');
+            const date = addDays(weekStart, mobileDay);
+            const isToday = isSameDay(date, new Date());
             return (
               <>
                 <div className="flex items-center justify-between gap-2 mb-2">
@@ -382,7 +380,7 @@ export default function WeeklySchedulePage() {
                     <ChevronRight className="w-4 h-4" />
                   </button>
                   <div className={`text-center py-1 px-4 rounded-xl text-sm font-bold ${isToday ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'}`}>
-                    {day.label} · {date.format('D/M')}
+                    {day.label} · {format(date, 'd/M')}
                   </div>
                   <button onClick={() => setMobileDay(d => Math.min(DAYS.length - 1, d + 1))} disabled={mobileDay === DAYS.length - 1}
                     className="w-8 h-8 rounded-lg border border-border flex items-center justify-center disabled:opacity-30">
@@ -434,12 +432,12 @@ export default function WeeklySchedulePage() {
             <div className="grid gap-1 mt-3 mb-1" style={{ gridTemplateColumns: '48px repeat(5, 1fr)' }}>
               <div />
               {DAYS.map((d, i) => {
-                const date = weekStart.clone().add(i, 'days');
-                const isToday = date.isSame(moment(), 'day');
+                const date = addDays(weekStart, i);
+                const isToday = isSameDay(date, new Date());
                 return (
                   <div key={d.key} className={`text-center py-2 rounded-xl text-xs font-bold ${isToday ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'}`}>
                     <div>{d.label}</div>
-                    <div className={`text-[10px] font-normal mt-0.5 ${isToday ? 'text-primary-foreground/70' : 'text-muted-foreground/60'}`}>{date.format('D/M')}</div>
+                    <div className={`text-[11px] font-normal mt-0.5 ${isToday ? 'text-primary-foreground/70' : 'text-muted-foreground/60'}`}>{format(date, 'd/M')}</div>
                   </div>
                 );
               })}

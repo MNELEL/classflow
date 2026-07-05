@@ -31,7 +31,7 @@ const SeatCard = memo(function SeatCard({
         onClick={() => onClick && onClick(seat)}
       >
         <Ban className="w-4 h-4 text-orange-400" />
-        <span className="text-[9px] text-orange-500 font-medium mt-0.5 text-center">{BLOCK_ICONS[seat.block_reason] || '⚠️'}</span>
+        <span className="text-[11px] text-orange-500 font-medium mt-0.5 text-center">{BLOCK_ICONS[seat.block_reason] || '⚠️'}</span>
       </motion.div>
     );
   }
