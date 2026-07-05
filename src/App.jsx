@@ -53,6 +53,8 @@ const Login                = lazy(() => import('./pages/Login'));
 const Register             = lazy(() => import('./pages/Register'));
 const ForgotPassword       = lazy(() => import('./pages/ForgotPassword'));
 const ResetPassword        = lazy(() => import('./pages/ResetPassword'));
+const About                = lazy(() => import('./pages/About'));
+const Contact               = lazy(() => import('./pages/Contact'));
 const AdminDashboard       = lazy(() => import('./pages/AdminDashboard'));
 const GeneratorsPage       = lazy(() => import('./pages/GeneratorsPage'));
 const TasksHubPage          = lazy(() => import('./pages/TasksHubPage'));
@@ -85,6 +87,8 @@ function AnimatedRoutes() {
             <Route path="/register" element={<Register />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="/reset-password" element={<ResetPassword />} />
+            <Route path="/about" element={<About />} />
+            <Route path="/contact" element={<Contact />} />
 
             {/* Protected app routes */}
             <Route element={<ProtectedRoute unauthenticatedElement={<Navigate to="/login" replace />} />}>
