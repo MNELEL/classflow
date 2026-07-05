@@ -108,29 +108,29 @@ export default function LibraryPage() {
       <div ref={containerRef} className="relative p-4 space-y-4">
         <PullToRefreshIndicator pullY={pullY} refreshing={refreshing} />
         <Tabs defaultValue="library">
-          <TabsList className="w-full mb-2 grid grid-cols-8">
-            <TabsTrigger value="library" className="gap-1 text-xs">
+          <TabsList className="w-full mb-2 flex overflow-x-auto no-scrollbar gap-1">
+            <TabsTrigger value="library" className="gap-1 text-xs shrink-0 px-3">
               <Library className="w-3.5 h-3.5" /> ספרייה
             </TabsTrigger>
-            <TabsTrigger value="search" className="gap-1 text-xs">
+            <TabsTrigger value="search" className="gap-1 text-xs shrink-0 px-3">
               <Bot className="w-3.5 h-3.5" /> AI
             </TabsTrigger>
-            <TabsTrigger value="external" className="gap-1 text-xs">
-              <ExternalLink className="w-3.5 h-3.5" /> מאגרים
-            </TabsTrigger>
-            <TabsTrigger value="generate" className="gap-1 text-xs">
+            <TabsTrigger value="generate" className="gap-1 text-xs shrink-0 px-3">
               <Layers className="w-3.5 h-3.5" /> יצירה
             </TabsTrigger>
-            <TabsTrigger value="planning" className="gap-1 text-xs">
+            <TabsTrigger value="planning" className="gap-1 text-xs shrink-0 px-3">
               <BookOpenCheck className="w-3.5 h-3.5" /> מערכים
             </TabsTrigger>
-            <TabsTrigger value="weekly" className="gap-1 text-xs">
+            <TabsTrigger value="external" className="gap-1 text-xs shrink-0 px-3">
+              <ExternalLink className="w-3.5 h-3.5" /> מאגרים
+            </TabsTrigger>
+            <TabsTrigger value="weekly" className="gap-1 text-xs shrink-0 px-3">
               <CalendarDays className="w-3.5 h-3.5" /> שבועי
             </TabsTrigger>
-            <TabsTrigger value="coverage" className="gap-1 text-xs">
+            <TabsTrigger value="coverage" className="gap-1 text-xs shrink-0 px-3">
               <BarChart2 className="w-3.5 h-3.5" /> כיסוי
             </TabsTrigger>
-            <TabsTrigger value="drive" className="gap-1 text-xs">
+            <TabsTrigger value="drive" className="gap-1 text-xs shrink-0 px-3">
               <HardDrive className="w-3.5 h-3.5" /> Drive
             </TabsTrigger>
           </TabsList>

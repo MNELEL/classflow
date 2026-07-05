@@ -111,7 +111,7 @@ function CellChip({ slot, libItem, idx, onRemove, onNote }) {
     <Draggable draggableId={slot.id} index={idx}>
       {(p, snap) => (
         <div ref={p.innerRef} {...p.draggableProps}
-          className={`rounded border text-[10px] px-1 py-0.5 select-none group flex items-center gap-0.5
+          className={`rounded border text-[11px] px-1 py-0.5 select-none group flex items-center gap-0.5
             ${TYPE_BG[libItem?.source_type] || TYPE_BG_DEFAULT}
             ${snap.isDragging ? 'shadow-xl ring-2 ring-primary/50' : ''}`}>
           <span {...p.dragHandleProps} className="cursor-grab shrink-0 opacity-0 group-hover:opacity-60">
@@ -119,7 +119,7 @@ function CellChip({ slot, libItem, idx, onRemove, onNote }) {
           </span>
           <span className="shrink-0">{SOURCE_ICON[libItem?.source_type] || '📁'}</span>
           <span className="truncate flex-1 font-medium">{libItem?.title || '—'}</span>
-          {slot.notes && <span className="text-[9px] opacity-60 truncate max-w-[40px]">💬</span>}
+          {slot.notes && <span className="text-[10px] opacity-60 truncate max-w-[40px]">💬</span>}
           <button onClick={() => onNote(slot)} className="opacity-0 group-hover:opacity-60 hover:!opacity-100 shrink-0">
             <StickyNote className="w-2.5 h-2.5" />
           </button>

@@ -78,21 +78,21 @@ export default function LibraryItemDetail({ itemId, onClose }) {
 
       {/* Header */}
       <div className="flex items-center gap-3 px-4 py-3 border-b border-border bg-card">
-        <Button size="icon" variant="ghost" onClick={onClose}><X className="w-4 h-4" /></Button>
+        <Button size="icon" variant="ghost" aria-label="סגור" onClick={onClose}><X className="w-4 h-4" /></Button>
         {isLoading ? <div className="h-5 w-32 bg-muted animate-pulse rounded" /> : (
           <div className="flex-1 flex items-center gap-2">
             <span className="text-xl">{SOURCE_ICONS[item?.source_type] || '📎'}</span>
             {editingTitle ? (
               <div className="flex gap-1 flex-1">
                 <Input value={titleDraft} onChange={e => setTitleDraft(e.target.value)} className="h-8 text-sm flex-1" autoFocus />
-                <Button size="icon" variant="ghost" className="h-8 w-8" onClick={() => { applyAiSuggestion('title', titleDraft); setEditingTitle(false); }}>
+                <Button size="icon" variant="ghost" className="h-8 w-8" aria-label="שמור כותרת" onClick={() => { applyAiSuggestion('title', titleDraft); setEditingTitle(false); }}>
                   <Check className="w-3.5 h-3.5" />
                 </Button>
               </div>
             ) : (
               <p className="font-semibold text-sm flex-1 line-clamp-1">{item?.ai_suggested_title || item?.title}</p>
             )}
-            <Button size="icon" variant="ghost" className="h-8 w-8" onClick={() => { setTitleDraft(item?.title || ''); setEditingTitle(true); }}>
+            <Button size="icon" variant="ghost" className="h-8 w-8" aria-label="עריכת כותרת" onClick={() => { setTitleDraft(item?.title || ''); setEditingTitle(true); }}>
               <Edit2 className="w-3.5 h-3.5" />
             </Button>
           </div>
@@ -121,6 +121,7 @@ export default function LibraryItemDetail({ itemId, onClose }) {
           </Button>
           <button
             onClick={() => updateMutation.mutate({ is_favorite: !item.is_favorite })}
+            aria-label={item.is_favorite ? 'הסר ממועדפים' : 'הוסף למועדפים'}
             className={`h-7 px-2.5 rounded-md border text-xs flex items-center gap-1 transition-colors whitespace-nowrap ${
               item.is_favorite
                 ? 'bg-pink-50 border-pink-300 text-pink-600 dark:bg-pink-900/20 dark:border-pink-700 dark:text-pink-400'
@@ -179,6 +180,7 @@ export default function LibraryItemDetail({ itemId, onClose }) {
                   <p className="text-xs font-medium text-muted-foreground">תוכן / תמלול מלא</p>
                   <button
                     onClick={() => { navigator.clipboard.writeText(item.transcript); toast.success('התמלול הועתק!'); }}
+                    aria-label="העתק תמלול"
                     className="text-xs text-primary hover:underline flex items-center gap-1"
                   >
                     <Copy className="w-3 h-3" /> העתק
@@ -265,7 +267,7 @@ export default function LibraryItemDetail({ itemId, onClose }) {
                   className={`p-2.5 rounded-xl border cursor-pointer transition-all text-xs ${selectedArtifact?.id === art.id ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/40'}`}>
                   <div className="flex items-center justify-between">
                     <span>{ARTIFACT_ICONS[art.type] || '📄'}</span>
-                    <button onClick={e => { e.stopPropagation(); deleteArtifact(art.id); }}
+                    <button onClick={e => { e.stopPropagation(); deleteArtifact(art.id); }} aria-label="מחק חומר"
                       className="text-destructive/50 hover:text-destructive">
                       <Trash2 className="w-3 h-3" />
                     </button>
@@ -282,7 +284,7 @@ export default function LibraryItemDetail({ itemId, onClose }) {
             {selectedArtifact ? (
               <div className="flex-1 overflow-y-auto">
                 <div className="flex justify-end mb-2 gap-1">
-                  <Button size="sm" variant="outline" className="text-xs gap-1" onClick={() => window.print()}>
+                  <Button size="sm" variant="outline" className="text-xs gap-1" aria-label="הדפס" onClick={() => window.print()}>
                     <Printer className="w-3.5 h-3.5" /> הדפס
                   </Button>
                 </div>
@@ -304,7 +306,7 @@ export default function LibraryItemDetail({ itemId, onClose }) {
       {item && (
         <div className="p-4 border-t border-border">
           <Button variant="outline" size="sm" className="text-destructive hover:text-destructive text-xs gap-1"
-            onClick={() => deleteMutation.mutate()}>
+            aria-label="מחק חומר" onClick={() => deleteMutation.mutate()}>
             <Trash2 className="w-3.5 h-3.5" /> מחק חומר
           </Button>
         </div>

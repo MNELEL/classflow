@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 // Bava Kamma daf list (2a–119b)
 const BK_DAFIM = [];
@@ -65,41 +66,41 @@ export default function TractateSelector({ value, onChange, onInsertText }) {
           <p className="text-xs font-bold text-amber-800">בחר מסכת ודפים</p>
 
           {/* Tractate select */}
-          <select
+          <Select
             value={selectedTractate.tractate}
-            onChange={e => setSelectedTractate(TRACTATE_SUGGESTIONS.find(t => t.tractate === e.target.value) || TRACTATE_SUGGESTIONS[0])}
-            className="w-full text-xs border border-border rounded-lg px-2 py-1.5 bg-background"
+            onValueChange={v => setSelectedTractate(TRACTATE_SUGGESTIONS.find(t => t.tractate === v) || TRACTATE_SUGGESTIONS[0])}
           >
-            {TRACTATE_SUGGESTIONS.map(t => (
-              <option key={t.tractate} value={t.tractate}>{t.tractate}</option>
-            ))}
-          </select>
+            <SelectTrigger className="w-full text-xs h-9 border border-border rounded-lg bg-background"><SelectValue /></SelectTrigger>
+            <SelectContent>
+              {TRACTATE_SUGGESTIONS.map(t => (
+                <SelectItem key={t.tractate} value={t.tractate}>{t.tractate}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
 
           {/* Daf range */}
           <div className="grid grid-cols-2 gap-2">
             <div>
               <label className="text-[11px] text-muted-foreground mb-1 block">מדף</label>
-              <select
-                value={fromDaf}
-                onChange={e => setFromDaf(e.target.value)}
-                className="w-full text-xs border border-border rounded-lg px-2 py-1.5 bg-background"
-              >
-                <option value="">בחר...</option>
-                {dafList.map(d => <option key={d} value={d}>{d}</option>)}
-              </select>
+              <Select value={fromDaf || '_none'} onValueChange={v => setFromDaf(v === '_none' ? '' : v)}>
+                <SelectTrigger className="w-full text-xs h-9 border border-border rounded-lg bg-background"><SelectValue placeholder="בחר..." /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="_none">בחר...</SelectItem>
+                  {dafList.map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}
+                </SelectContent>
+              </Select>
             </div>
             <div>
               <label className="text-[11px] text-muted-foreground mb-1 block">עד דף (אופציונלי)</label>
-              <select
-                value={toDaf}
-                onChange={e => setToDaf(e.target.value)}
-                className="w-full text-xs border border-border rounded-lg px-2 py-1.5 bg-background"
-              >
-                <option value="">אחד בלבד</option>
-                {dafList.filter((_, i) => dafList.indexOf(fromDaf) >= 0 ? i > dafList.indexOf(fromDaf) : true).map(d => (
-                  <option key={d} value={d}>{d}</option>
-                ))}
-              </select>
+              <Select value={toDaf || '_none'} onValueChange={v => setToDaf(v === '_none' ? '' : v)}>
+                <SelectTrigger className="w-full text-xs h-9 border border-border rounded-lg bg-background"><SelectValue placeholder="אחד בלבד" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="_none">אחד בלבד</SelectItem>
+                  {dafList.filter((_, i) => dafList.indexOf(fromDaf) >= 0 ? i > dafList.indexOf(fromDaf) : true).map(d => (
+                    <SelectItem key={d} value={d}>{d}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
           </div>
 

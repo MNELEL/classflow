@@ -82,6 +82,8 @@ const SeatCard = memo(function SeatCard({
       onClick={() => onClick && onClick(seat)}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
+      role="button"
+      aria-label={student ? `מושב: ${student.name}` : seat.is_locked ? 'מושב נעול' : 'מושב ריק'}
     >
       {showNumbers && (
         <span className="absolute top-0.5 right-1 text-[8px] text-muted-foreground/60 font-mono">{seatNumber}</span>

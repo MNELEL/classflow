@@ -39,7 +39,7 @@ function Section({ color, icon, title, count, link, linkLabel, children }) {
         <div className="flex items-center gap-2">
           <span className={iconColors[color]}>{icon}</span>
           <span className="text-sm font-semibold">{title}</span>
-          {count > 0 && <Badge className={`text-[10px] h-4 px-1.5 ${badgeColors[color]}`}>{count}</Badge>}
+          {count > 0 && <Badge className={`text-xs h-4 px-1.5 ${badgeColors[color]}`}>{count}</Badge>}
         </div>
         {link && (
           <Link to={link} className="flex items-center gap-0.5 text-[11px] text-muted-foreground hover:text-foreground transition-colors">
@@ -157,7 +157,7 @@ export default function DailyBriefing({ students = [] }) {
             {todayTasks.slice(0, 3).map(t => (
               <Row key={t.id} className="bg-orange-100/50 dark:bg-orange-900/20">
                 <span className="font-medium truncate max-w-[70%]">{studentMap[t.student_id]?.name || '—'}: {t.title}</span>
-                <Badge variant="outline" className="text-[9px] h-4 px-1 shrink-0">{t.subject || t.priority}</Badge>
+                <Badge variant="outline" className="text-[10px] h-4 px-1 shrink-0">{t.subject || t.priority}</Badge>
               </Row>
             ))}
             {(todayTasks.length + overdueTasks.length) > 5 && (
@@ -178,13 +178,13 @@ export default function DailyBriefing({ students = [] }) {
                 <span className="font-medium truncate max-w-[70%]">
                   💬 {s.student_name}: "{s.parent_comment?.slice(0, 40)}{s.parent_comment?.length > 40 ? '...' : ''}"
                 </span>
-                <Badge className="bg-blue-200 text-blue-800 border-0 text-[9px] h-4 px-1 shrink-0">הערה חדשה</Badge>
+                <Badge className="bg-blue-200 text-blue-800 border-0 text-xs h-4 px-1 shrink-0">הערה חדשה</Badge>
               </Row>
             ))}
             {pendingFollowUps.slice(0, 2).map(c => (
               <Row key={c.id} className="bg-blue-100/50 dark:bg-blue-900/20">
                 <span className="font-medium truncate max-w-[70%]">📞 {studentMap[c.student_id]?.name || c.parent_name}: {c.summary?.slice(0, 35)}...</span>
-                <Badge className="bg-amber-100 text-amber-800 border-0 text-[9px] h-4 px-1 shrink-0">ממתין למעקב</Badge>
+                <Badge className="bg-amber-100 text-amber-800 border-0 text-xs h-4 px-1 shrink-0">ממתין למעקב</Badge>
               </Row>
             ))}
             {unviewedShared.length > 0 && (

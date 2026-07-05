@@ -34,7 +34,7 @@ export default function Leaderboard({ students, pointsMap, kioskMode = false }) 
                 <p className="text-2xl">{MEDALS[rank]}</p>
                 <p className={`font-bold ${kioskMode ? 'text-lg' : 'text-sm'}`}>{s.name}</p>
                 <p className={`text-primary font-black ${kioskMode ? 'text-2xl' : 'text-base'}`}>{s.total}</p>
-                <p className="text-xs text-muted-foreground">נקודות</p>
+                <p className="text-xs text-muted-foreground">נק'</p>
               </div>
               <div className={`w-20 ${PODIUM_HEIGHTS[rank]} ${PODIUM_BG[rank]} rounded-t-xl flex items-end justify-center pb-2`}>
                 <span className={`font-black text-white ${kioskMode ? 'text-2xl' : 'text-lg'}`}>{rank + 1}</span>

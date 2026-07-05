@@ -193,6 +193,7 @@ export default function WeeklySchedulePage() {
   const qc = useQueryClient();
   const [weekOffset, setWeekOffset] = useState(0);
   const [addDialog, setAddDialog] = useState({ open: false, day: null, hour: null });
+  const [mobileDay, setMobileDay] = useState(0);
 
   const weekStart = useMemo(() => getWeekStart(moment().add(weekOffset, 'weeks')), [weekOffset]);
   const weekLabel = useMemo(() => {
@@ -342,8 +343,91 @@ export default function WeeklySchedulePage() {
           )}
         </div>
 
-        {/* Grid */}
-        <div className="overflow-x-auto">
+        {/* Mobile day selector chips */}
+        <div className="md:hidden flex gap-1.5 px-4 py-2 overflow-x-auto no-scrollbar">
+          {DAYS.map((d, i) => {
+            const date = weekStart.clone().add(i, 'days');
+            const isToday = date.isSame(moment(), 'day');
+            const isActive = mobileDay === i;
+            return (
+              <button
+                key={d.key}
+                onClick={() => setMobileDay(i)}
+                className={`shrink-0 px-3 py-1.5 rounded-xl text-xs font-bold transition-colors ${
+                  isActive
+                    ? 'bg-primary text-primary-foreground'
+                    : isToday
+                      ? 'bg-primary/10 text-primary border border-primary/30'
+                      : 'bg-muted text-muted-foreground'
+                }`}
+              >
+                {d.label}
+                <span className={`block text-[10px] font-normal ${isActive ? 'text-primary-foreground/70' : ''}`}>{date.format('D/M')}</span>
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Mobile single-day view */}
+        <div className="md:hidden px-2 pb-6">
+          {(() => {
+            const day = DAYS[mobileDay];
+            const date = weekStart.clone().add(mobileDay, 'days');
+            const isToday = date.isSame(moment(), 'day');
+            return (
+              <>
+                <div className="flex items-center justify-between gap-2 mb-2">
+                  <button onClick={() => setMobileDay(d => Math.max(0, d - 1))} disabled={mobileDay === 0}
+                    className="w-8 h-8 rounded-lg border border-border flex items-center justify-center disabled:opacity-30">
+                    <ChevronRight className="w-4 h-4" />
+                  </button>
+                  <div className={`text-center py-1 px-4 rounded-xl text-sm font-bold ${isToday ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'}`}>
+                    {day.label} · {date.format('D/M')}
+                  </div>
+                  <button onClick={() => setMobileDay(d => Math.min(DAYS.length - 1, d + 1))} disabled={mobileDay === DAYS.length - 1}
+                    className="w-8 h-8 rounded-lg border border-border flex items-center justify-center disabled:opacity-30">
+                    <ChevronLeft className="w-4 h-4" />
+                  </button>
+                </div>
+                {HOURS.map(hour => {
+                  const lessons = lessonMap[day.key]?.[hour.value] || [];
+                  return (
+                    <div key={hour.value} className="flex gap-1 mb-1">
+                      <div className="w-12 shrink-0 flex items-start justify-center pt-2">
+                        <span className="text-[11px] text-muted-foreground font-medium">{hour.label}</span>
+                      </div>
+                      <div
+                        className="flex-1 min-h-[56px] rounded-xl border border-border/50 bg-card/60 p-1 flex flex-col gap-1 cursor-pointer hover:border-primary/30 hover:bg-accent/20 transition-colors"
+                        onClick={(e) => {
+                          if (e.target.closest('[data-no-cell]')) return;
+                          setAddDialog({ open: true, day: day.key, hour: hour.value });
+                        }}
+                      >
+                        {lessons.map(lesson => {
+                          const color = getSubjectColor(lesson.subject || '', subjectColorMap);
+                          const libItem = lesson.library_item_id ? libraryItems.find(l => l.id === lesson.library_item_id) : null;
+                          return (
+                            <div key={lesson.id} data-no-cell>
+                              <LessonCard
+                                lesson={lesson}
+                                color={color}
+                                libraryItem={libItem}
+                                onDelete={() => handleDeleteLesson(day.key, lesson.id)}
+                              />
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  );
+                })}
+              </>
+            );
+          })()}
+        </div>
+
+        {/* Desktop full grid */}
+        <div className="hidden md:block overflow-x-auto">
           <div className="min-w-[640px] px-2 pb-6">
 
             {/* Day headers */}

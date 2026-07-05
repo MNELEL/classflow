@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Play, Square, Zap, ChevronDown } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
 
 const CLASSROOM_EVENTS = [
@@ -95,16 +96,15 @@ export default function EventSoundMapper() {
                   <p className="text-[10px] text-muted-foreground">{event.description}</p>
                 </div>
 
-                <select
-                  value={assignedId || ''}
-                  onChange={e => handleMap(event.key, e.target.value)}
-                  className="text-[11px] border border-border rounded-md px-1.5 py-1 bg-background text-foreground max-w-[120px] truncate"
-                >
-                  <option value="">— ללא צליל —</option>
-                  {sounds.map(s => (
-                    <option key={s.id} value={s.id}>{s.title}</option>
-                  ))}
-                </select>
+                <Select value={assignedId || '_none'} onValueChange={v => handleMap(event.key, v === '_none' ? '' : v)}>
+                  <SelectTrigger className="text-[11px] border border-border rounded-md h-8 bg-background max-w-[120px]"><SelectValue placeholder="— ללא צליל —" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="_none">— ללא צליל —</SelectItem>
+                    {sounds.map(s => (
+                      <SelectItem key={s.id} value={s.id}>{s.title}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
 
                 <button
                   onClick={() => assignedId ? (isPlaying ? stopAll() : triggerEvent(event.key)) : null}
