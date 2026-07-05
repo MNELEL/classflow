@@ -1,15 +1,14 @@
 import React, { useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
+import { useAuth } from '@/lib/AuthContext';
 import AppLayout from '@/components/layout/AppLayout';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { ClipboardList, ChevronDown, ChevronUp, AlertCircle, CheckCircle2, Clock, Users } from 'lucide-react';
+import { ClipboardList, ChevronDown, ChevronUp, AlertCircle, CheckCircle2, Clock, Users, Loader2, BookOpen, ListTodo } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { format, parseISO, differenceInCalendarDays } from 'date-fns';
 import { he } from 'date-fns/locale';
-import { toast } from 'sonner';
 
 const STATUS_LABELS = { pending: 'ממתין', in_progress: 'בביצוע', done: 'הושלם' };
 const STATUS_ICONS = { pending: Clock, in_progress: Clock, done: CheckCircle2 };
@@ -20,10 +19,11 @@ const STATUS_COLORS = {
 };
 
 export default function TasksHubPage() {
+  const { user } = useAuth();
   const [expandedClass, setExpandedClass] = useState(null);
-  const [filter, setFilter] = useState('all'); // all | pending | overdue
+  const [filter, setFilter] = useState('all'); // all | pending | in_progress | done | overdue
 
-  const { data: classrooms = [] } = useQuery({
+  const { data: classrooms = [], isLoading: loadingClasses } = useQuery({
     queryKey: ['classrooms'],
     queryFn: () => base44.entities.Classroom.list(),
   });
@@ -40,39 +40,44 @@ export default function TasksHubPage() {
     queryFn: () => base44.entities.Task.list('-created_date', 200),
   });
 
-  // Map students to classrooms
-  const studentToClass = useMemo(() => {
-    const map = {};
-    classrooms.forEach(c => {
-      (c.student_ids || []).forEach(sid => { map[sid] = c.id; });
-    });
-    return map;
-  }, [classrooms]);
+  // Filter classrooms: regular teachers see only their own; admin sees all
+  const visibleClassrooms = useMemo(() => {
+    if (!user) return [];
+    if (user.role === 'admin') return classrooms.filter(c => c.is_active !== false);
+    return classrooms.filter(c => c.teacher_id === user.id && c.is_active !== false);
+  }, [classrooms, user]);
 
   // Group homework + tasks by classroom
   const classData = useMemo(() => {
     const today = new Date();
-    return classrooms.map(classroom => {
+    return visibleClassrooms.map(classroom => {
       const classStudentIds = (classroom.student_ids || []);
       const classStudents = students.filter(s => classStudentIds.includes(s.id));
 
-      // Homework assigned to this class's students
       const classHomework = homework.filter(hw => {
         if (!hw.student_ids || hw.student_ids.length === 0) return false;
         return hw.student_ids.some(sid => classStudentIds.includes(sid));
       });
 
-      // Tasks assigned to this class's students
       const classTasks = tasks.filter(t => {
         if (!t.student_id) return false;
         return classStudentIds.includes(t.student_id);
       });
 
-      // Calculate pending counts
-      const pendingHomework = classHomework.filter(hw => {
-        return hw.submissions?.some(sub => !sub.submitted) || hw.status !== 'done';
-      });
+      // Status breakdown for tasks
+      const taskStatusBreakdown = {
+        pending: classTasks.filter(t => t.status === 'pending').length,
+        in_progress: classTasks.filter(t => t.status === 'in_progress').length,
+        done: classTasks.filter(t => t.status === 'done').length,
+      };
+
+      // Homework submission stats
+      const hwSubmitted = classHomework.reduce((sum, hw) => sum + (hw.submissions?.filter(s => s.submitted).length || 0), 0);
+      const hwTotal = classHomework.reduce((sum, hw) => sum + (hw.submissions?.length || hw.student_ids?.length || 0), 0);
+
       const pendingTasks = classTasks.filter(t => t.status !== 'done');
+      const pendingHomework = classHomework.filter(hw => hw.submissions?.some(sub => !sub.submitted));
+
       const overdueTasks = classTasks.filter(t => {
         if (t.status === 'done' || !t.due_date) return false;
         return differenceInCalendarDays(parseISO(t.due_date), today) < 0;
@@ -88,21 +93,38 @@ export default function TasksHubPage() {
         studentCount: classStudents.length,
         homework: classHomework,
         tasks: classTasks,
+        taskStatusBreakdown,
+        hwSubmitted,
+        hwTotal,
         pendingCount: pendingHomework.length + pendingTasks.length,
         overdueCount: overdueTasks.length + overdueHomework.length,
-        doneCount: classTasks.filter(t => t.status === 'done').length,
+        doneCount: taskStatusBreakdown.done,
+        totalCount: classTasks.length + classHomework.length,
       };
     }).filter(cd => cd.studentCount > 0 || cd.homework.length > 0 || cd.tasks.length > 0);
-  }, [classrooms, students, homework, tasks]);
+  }, [visibleClassrooms, students, homework, tasks]);
 
   const filteredClasses = useMemo(() => {
     if (filter === 'pending') return classData.filter(c => c.pendingCount > 0);
+    if (filter === 'in_progress') return classData.filter(c => c.taskStatusBreakdown.in_progress > 0);
+    if (filter === 'done') return classData.filter(c => c.pendingCount === 0 && c.overdueCount === 0 && c.totalCount > 0);
     if (filter === 'overdue') return classData.filter(c => c.overdueCount > 0);
     return classData;
   }, [classData, filter]);
 
   const totalPending = classData.reduce((s, c) => s + c.pendingCount, 0);
   const totalOverdue = classData.reduce((s, c) => s + c.overdueCount, 0);
+  const totalDone = classData.reduce((s, c) => s + c.doneCount, 0);
+
+  if (loadingClasses) {
+    return (
+      <AppLayout>
+        <div className="flex items-center justify-center h-full">
+          <Loader2 className="w-6 h-6 animate-spin text-primary" />
+        </div>
+      </AppLayout>
+    );
+  }
 
   return (
     <AppLayout>
@@ -114,44 +136,54 @@ export default function TasksHubPage() {
               <ClipboardList className="w-5 h-5 text-indigo-600" />
             </div>
             <div className="flex-1">
-              <h1 className="font-bold text-lg">ריכוז משימות לפי כיתה</h1>
-              <p className="text-xs text-muted-foreground">מה מחכה לטיפול בכל קבוצה</p>
+              <h1 className="font-bold text-lg">לוח בקרת משימות</h1>
+              <p className="text-xs text-muted-foreground">
+                {user?.role === 'admin' ? 'כל הכיתות' : 'הכיתות שלך'} · מה מחכה לטיפול בכל קבוצה
+              </p>
             </div>
           </div>
 
           {/* Summary stats */}
-          <div className="grid grid-cols-3 gap-2">
+          <div className="grid grid-cols-4 gap-2">
             <Card className="border-border/60">
-              <CardContent className="p-3 text-center">
-                <p className="text-2xl font-bold text-indigo-600">{classData.length}</p>
-                <p className="text-[10px] text-muted-foreground">כיתות פעילות</p>
+              <CardContent className="p-2.5 text-center">
+                <p className="text-xl font-bold text-indigo-600">{classData.length}</p>
+                <p className="text-[9px] text-muted-foreground">כיתות</p>
               </CardContent>
             </Card>
             <Card className="border-border/60">
-              <CardContent className="p-3 text-center">
-                <p className="text-2xl font-bold text-amber-600">{totalPending}</p>
-                <p className="text-[10px] text-muted-foreground">ממתינות לטיפול</p>
+              <CardContent className="p-2.5 text-center">
+                <p className="text-xl font-bold text-amber-600">{totalPending}</p>
+                <p className="text-[9px] text-muted-foreground">ממתינות</p>
               </CardContent>
             </Card>
             <Card className="border-border/60">
-              <CardContent className="p-3 text-center">
-                <p className="text-2xl font-bold text-red-600">{totalOverdue}</p>
-                <p className="text-[10px] text-muted-foreground">באיחור</p>
+              <CardContent className="p-2.5 text-center">
+                <p className="text-xl font-bold text-red-600">{totalOverdue}</p>
+                <p className="text-[9px] text-muted-foreground">באיחור</p>
+              </CardContent>
+            </Card>
+            <Card className="border-border/60">
+              <CardContent className="p-2.5 text-center">
+                <p className="text-xl font-bold text-emerald-600">{totalDone}</p>
+                <p className="text-[9px] text-muted-foreground">הושלמו</p>
               </CardContent>
             </Card>
           </div>
 
-          {/* Filter */}
-          <div className="flex gap-1 bg-muted/50 rounded-lg p-1">
+          {/* Filter tabs */}
+          <div className="flex gap-1 bg-muted/50 rounded-lg p-1 overflow-x-auto no-scrollbar">
             {[
               { value: 'all', label: 'הכל' },
               { value: 'pending', label: 'ממתינות' },
+              { value: 'in_progress', label: 'בביצוע' },
               { value: 'overdue', label: 'באיחור' },
+              { value: 'done', label: 'הושלמו' },
             ].map(f => (
               <button
                 key={f.value}
                 onClick={() => setFilter(f.value)}
-                className={`flex-1 py-1.5 rounded-md text-xs font-medium transition-all ${filter === f.value ? 'bg-card shadow text-foreground' : 'text-muted-foreground'}`}
+                className={`flex-1 min-w-fit px-3 py-1.5 rounded-md text-xs font-medium transition-all whitespace-nowrap ${filter === f.value ? 'bg-card shadow text-foreground' : 'text-muted-foreground'}`}
               >
                 {f.label}
               </button>
@@ -166,8 +198,15 @@ export default function TasksHubPage() {
             </div>
           ) : (
             <div className="space-y-2">
-              {filteredClasses.map(({ classroom, studentCount, homework, tasks, pendingCount, overdueCount, doneCount }) => {
+              {filteredClasses.map(({ classroom, studentCount, homework, tasks, taskStatusBreakdown, hwSubmitted, hwTotal, pendingCount, overdueCount, doneCount, totalCount }) => {
                 const isExpanded = expandedClass === classroom.id;
+                const taskTotal = tasks.length;
+                const statusPct = taskTotal > 0 ? {
+                  pending: (taskStatusBreakdown.pending / taskTotal) * 100,
+                  in_progress: (taskStatusBreakdown.in_progress / taskTotal) * 100,
+                  done: (taskStatusBreakdown.done / taskTotal) * 100,
+                } : { pending: 0, in_progress: 0, done: 0 };
+
                 return (
                   <Card key={classroom.id} className="border-border/60 overflow-hidden">
                     <button
@@ -182,24 +221,43 @@ export default function TasksHubPage() {
                         <p className="text-[11px] text-muted-foreground">
                           {studentCount} תלמידים{classroom.teacher_name ? ` · ${classroom.teacher_name}` : ''}
                         </p>
+                        {/* Status bar */}
+                        {taskTotal > 0 && (
+                          <div className="flex h-1.5 rounded-full overflow-hidden mt-1.5 gap-0.5">
+                            {statusPct.pending > 0 && <div className="bg-amber-400" style={{ width: `${statusPct.pending}%` }} />}
+                            {statusPct.in_progress > 0 && <div className="bg-blue-400" style={{ width: `${statusPct.in_progress}%` }} />}
+                            {statusPct.done > 0 && <div className="bg-emerald-400" style={{ width: `${statusPct.done}%` }} />}
+                          </div>
+                        )}
                       </div>
-                      <div className="flex items-center gap-1.5 shrink-0">
-                        {overdueCount > 0 && (
-                          <Badge className="bg-red-100 text-red-700 border-0 text-[10px] gap-1">
-                            <AlertCircle className="w-3 h-3" /> {overdueCount}
-                          </Badge>
-                        )}
-                        {pendingCount > 0 && (
-                          <Badge className="bg-amber-100 text-amber-700 border-0 text-[10px]">{pendingCount} ממתינות</Badge>
-                        )}
-                        {pendingCount === 0 && overdueCount === 0 && (
-                          <Badge className="bg-emerald-100 text-emerald-700 border-0 text-[10px] gap-1">
-                            <CheckCircle2 className="w-3 h-3" /> מעודכן
-                          </Badge>
-                        )}
+                      <div className="flex flex-col items-end gap-1 shrink-0">
+                        <div className="flex items-center gap-1">
+                          {overdueCount > 0 && (
+                            <Badge className="bg-red-100 text-red-700 border-0 text-[10px] gap-0.5">
+                              <AlertCircle className="w-3 h-3" /> {overdueCount}
+                            </Badge>
+                          )}
+                          {pendingCount > 0 && (
+                            <Badge className="bg-amber-100 text-amber-700 border-0 text-[10px]">{pendingCount}</Badge>
+                          )}
+                          {pendingCount === 0 && overdueCount === 0 && totalCount > 0 && (
+                            <Badge className="bg-emerald-100 text-emerald-700 border-0 text-[10px] gap-0.5">
+                              <CheckCircle2 className="w-3 h-3" /> מעודכן
+                            </Badge>
+                          )}
+                        </div>
                         {isExpanded ? <ChevronUp className="w-4 h-4 text-muted-foreground" /> : <ChevronDown className="w-4 h-4 text-muted-foreground" />}
                       </div>
                     </button>
+
+                    {/* Mini status legend (always visible when tasks exist) */}
+                    {taskTotal > 0 && !isExpanded && (
+                      <div className="flex items-center gap-3 px-3 pb-2 text-[10px] text-muted-foreground">
+                        <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-amber-400" /> {taskStatusBreakdown.pending} ממתינות</span>
+                        <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-blue-400" /> {taskStatusBreakdown.in_progress} בביצוע</span>
+                        <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-emerald-400" /> {taskStatusBreakdown.done} הושלמו</span>
+                      </div>
+                    )}
 
                     <AnimatePresence>
                       {isExpanded && (
@@ -213,7 +271,10 @@ export default function TasksHubPage() {
                             {/* Homework section */}
                             {homework.length > 0 && (
                               <div>
-                                <p className="text-[11px] font-bold text-muted-foreground uppercase mb-1.5">שיעורי בית</p>
+                                <div className="flex items-center gap-1.5 mb-1.5">
+                                  <BookOpen className="w-3.5 h-3.5 text-orange-500" />
+                                  <p className="text-[11px] font-bold text-muted-foreground">שיעורי בית · {hwSubmitted}/{hwTotal} הגישו</p>
+                                </div>
                                 <div className="space-y-1.5">
                                   {homework.map(hw => {
                                     const submitted = hw.submissions?.filter(s => s.submitted).length || 0;
@@ -240,7 +301,10 @@ export default function TasksHubPage() {
                             {/* Tasks section */}
                             {tasks.length > 0 && (
                               <div>
-                                <p className="text-[11px] font-bold text-muted-foreground uppercase mb-1.5">משימות</p>
+                                <div className="flex items-center gap-1.5 mb-1.5">
+                                  <ListTodo className="w-3.5 h-3.5 text-indigo-500" />
+                                  <p className="text-[11px] font-bold text-muted-foreground">משימות · {tasks.length}</p>
+                                </div>
                                 <div className="space-y-1.5">
                                   {tasks.map(t => {
                                     const StatusIcon = STATUS_ICONS[t.status] || Clock;
