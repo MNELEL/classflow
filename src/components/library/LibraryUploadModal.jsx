@@ -289,7 +289,7 @@ export default function LibraryUploadModal({ open, onClose }) {
 
   return (
     <Dialog open={open} onOpenChange={() => { if (!uploading) { reset(); onClose(); } }}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto" dir="rtl">
+      <DialogContent className="max-w-[95vw] sm:max-w-2xl max-h-[90vh] overflow-y-auto" dir="rtl">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Upload className="w-5 h-5 text-primary" />

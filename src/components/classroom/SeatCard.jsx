@@ -86,15 +86,15 @@ const SeatCard = memo(function SeatCard({
       aria-label={student ? `מושב: ${student.name}` : seat.is_locked ? 'מושב נעול' : 'מושב ריק'}
     >
       {showNumbers && (
-        <span className="absolute top-0.5 right-1 text-[8px] text-muted-foreground/60 font-mono">{seatNumber}</span>
+        <span aria-hidden="true" className="absolute top-0.5 right-1 text-[8px] text-muted-foreground/60 font-mono">{seatNumber}</span>
       )}
       {seat.is_locked && teacherView && (
-        <span className="absolute top-0.5 left-1 text-yellow-500/80">
+        <span aria-hidden="true" className="absolute top-0.5 left-1 text-yellow-500/80">
           <Lock className="w-2.5 h-2.5" />
         </span>
       )}
       {seat.fixed_seat_number && teacherView && (
-        <span className="absolute bottom-0.5 left-1 text-[8px] text-blue-500/80 font-bold">#{seat.fixed_seat_number}</span>
+        <span aria-hidden="true" className="absolute bottom-0.5 left-1 text-[8px] text-blue-500/80 font-bold">#{seat.fixed_seat_number}</span>
       )}
 
       <AnimatePresence mode="wait">
@@ -143,6 +143,7 @@ const SeatCard = memo(function SeatCard({
       {/* Status badges */}
       {physicalViolation && (
         <motion.span
+          aria-hidden="true"
           initial={{ scale: 0 }} animate={{ scale: 1 }}
           className="absolute -top-1.5 -right-1.5 bg-purple-500 text-white rounded-full w-4 h-4 flex items-center justify-center shadow-sm"
           title="הפרת אילוץ פיזי"
@@ -152,6 +153,7 @@ const SeatCard = memo(function SeatCard({
       )}
       {conflictType === 'conflict' && (
         <motion.span
+          aria-hidden="true"
           initial={{ scale: 0 }} animate={{ scale: 1 }}
           className="absolute -top-1.5 -left-1.5 bg-red-500 text-white rounded-full w-4 h-4 flex items-center justify-center shadow-sm"
         >
@@ -160,6 +162,7 @@ const SeatCard = memo(function SeatCard({
       )}
       {conflictType === 'good' && (
         <motion.span
+          aria-hidden="true"
           initial={{ scale: 0 }} animate={{ scale: 1 }}
           className="absolute -top-1.5 -left-1.5 bg-emerald-500 text-white rounded-full w-4 h-4 flex items-center justify-center shadow-sm"
         >

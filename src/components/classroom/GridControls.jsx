@@ -61,17 +61,17 @@ export default function GridControls({
         <div>
           <label className="text-[11px] text-muted-foreground mb-1 block">שורות</label>
           <div className="flex items-center gap-1">
-            <Button size="icon" variant="outline" className="h-7 w-7 text-xs" onClick={() => onRowsChange(Math.max(1, rows - 1))}>−</Button>
+            <Button size="icon" variant="outline" className="h-7 w-7 text-xs" aria-label="הפחת שורות" onClick={() => onRowsChange(Math.max(1, rows - 1))}>−</Button>
             <span className="w-6 text-center text-sm font-medium">{rows}</span>
-            <Button size="icon" variant="outline" className="h-7 w-7 text-xs" onClick={() => onRowsChange(rows + 1)}>+</Button>
+            <Button size="icon" variant="outline" className="h-7 w-7 text-xs" aria-label="הוסף שורה" onClick={() => onRowsChange(rows + 1)}>+</Button>
           </div>
         </div>
         <div>
           <label className="text-[11px] text-muted-foreground mb-1 block">טורים</label>
           <div className="flex items-center gap-1">
-            <Button size="icon" variant="outline" className="h-7 w-7 text-xs" onClick={() => onColsChange(Math.max(1, cols - 1))}>−</Button>
+            <Button size="icon" variant="outline" className="h-7 w-7 text-xs" aria-label="הפחת טורים" onClick={() => onColsChange(Math.max(1, cols - 1))}>−</Button>
             <span className="w-6 text-center text-sm font-medium">{cols}</span>
-            <Button size="icon" variant="outline" className="h-7 w-7 text-xs" onClick={() => onColsChange(cols + 1)}>+</Button>
+            <Button size="icon" variant="outline" className="h-7 w-7 text-xs" aria-label="הוסף טור" onClick={() => onColsChange(cols + 1)}>+</Button>
           </div>
         </div>
       </div>

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import SeatCard from './SeatCard';
 import BoardLabelEditor from './BoardLabelEditor';
 import { detectConflicts, detectPhysicalViolation, getSeatAt } from '@/lib/seatingUtils';
@@ -10,6 +10,15 @@ export default function ClassroomGrid({ seats, students, rows, cols, showNumbers
   const [boardLabel, setBoardLabel] = useState(() => {
     try { return localStorage.getItem(BOARD_LABEL_KEY) || 'לוח המורה'; } catch { return 'לוח המורה'; }
   });
+  const [gridZoom, setGridZoom] = useState(1);
+
+  useEffect(() => {
+    if (cols > 7 || rows > 6) {
+      setGridZoom(Math.min(1, (window.innerWidth - 48) / (cols * 70)));
+    } else {
+      setGridZoom(1);
+    }
+  }, [cols, rows]);
 
   function handleBoardLabelSave(val) {
     setBoardLabel(val);
@@ -43,7 +52,8 @@ export default function ClassroomGrid({ seats, students, rows, cols, showNumbers
       </div>
 
       {/* Row labels + grid */}
-      <div className="flex gap-2 items-start">
+      <div className="overflow-x-auto w-full" style={{ WebkitOverflowScrolling: 'touch' }}>
+      <div className="flex gap-2 items-start" style={{ zoom: gridZoom }}>
         {/* Row numbers */}
         <div className="flex flex-col gap-2 pt-0.5" style={{ minWidth: '18px' }}>
           {Array.from({ length: rows }).map((_, r) => (
@@ -116,6 +126,7 @@ export default function ClassroomGrid({ seats, students, rows, cols, showNumbers
             })
           )}
         </div>
+      </div>
       </div>
     </div>
   );

@@ -7,9 +7,6 @@ import { Sparkles, Loader2, Printer, ChevronDown, ChevronUp, FileDown } from 'lu
 import { toast } from 'sonner';
 import { motion } from 'framer-motion';
 import { format } from 'date-fns';
-import html2canvas from 'html2canvas';
-import jsPDF from 'jspdf';
-
 export default function BulletinGenerator() {
   const qc = useQueryClient();
   const [startDate, setStartDate] = useState('');
@@ -26,6 +23,10 @@ export default function BulletinGenerator() {
   async function generatePDF() {
     if (!bulletin) { toast.error('צור ניוזלטר לפני ייצוא PDF'); return; }
     
+    const [{ default: jsPDF }, { default: html2canvas }] = await Promise.all([
+      import('jspdf'),
+      import('html2canvas'),
+    ]);
     const doc = new jsPDF({ direction: 'rtl', unit: 'mm', format: 'a4' });
     const canvas = await html2canvas(document.getElementById('classpro-a4-canvas'), { scale: 2, useCORS: true });
     const imgData = canvas.toDataURL('image/png');
