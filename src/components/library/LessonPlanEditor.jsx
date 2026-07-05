@@ -9,6 +9,7 @@ import {
   BookOpen, FileText, Target, Sparkles, X, ChevronDown, ChevronUp
 } from 'lucide-react';
 import { toast } from 'sonner';
+import SlidesExportButton from './SlidesExportButton';
 
 
 const BLOCK_TYPES = ['פתיחה', 'מטרות', 'הוראה ישירה', 'תרגול', 'דיון', 'סיכום', 'הערכה'];
@@ -202,6 +203,7 @@ export default function LessonPlanEditor({ planId, onBack }) {
           <ChevronRight className="w-5 h-5" />
         </button>
         <h2 className="font-bold flex-1 text-sm">{isNew ? 'מערך שיעור חדש' : 'עריכת מערך שיעור'}</h2>
+        <SlidesExportButton plan={form} planId={planId} disabled={isNew} />
         <Button size="sm" onClick={save} disabled={saving} className="gap-1">
           {saving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Save className="w-3.5 h-3.5" />}
           שמור
