@@ -222,10 +222,19 @@ export default function WeeklyPlannerBoard() {
         ? base44.entities.WeeklyPlan.update(existing.id, payload)
         : base44.entities.WeeklyPlan.create(payload);
     },
-    onSuccess: () => {
+    onSuccess: (_data, vars) => {
       qc.invalidateQueries({ queryKey: ['weekly-plans'] });
       setDirty(false);
       toast.success('השבוע נשמר ✓');
+      // Auto-sync to Google Drive (non-blocking)
+      base44.functions.invoke('driveFiles', {
+        action: 'savePlan',
+        weekKey,
+        className: vars.title,
+        planData: vars.days,
+      }).then(res => {
+        if (res.data?.fileId) toast.message('☁️ סונכרן עם Google Drive');
+      }).catch(() => {/* Drive not connected — silently skip */});
     },
   });
 
