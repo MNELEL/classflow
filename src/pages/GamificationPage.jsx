@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import AppLayout from '@/components/layout/AppLayout';
@@ -14,6 +14,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Plus, Trophy, Star, Maximize2, Minimize2, Trash2, Loader2, Users, Lightbulb } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
+import { usePullToRefresh } from '@/hooks/usePullToRefresh';
+import PullToRefreshIndicator from '@/components/ui/PullToRefreshIndicator';
 import { format } from 'date-fns';
 
 const TABS = [
@@ -37,6 +39,9 @@ export default function GamificationPage() {
   const { data: students = [] } = useQuery({ queryKey: ['students'], queryFn: () => base44.entities.Student.filter({ is_active: true }) });
   const { data: rewards = [], isLoading: loadingRewards } = useQuery({ queryKey: ['rewards'], queryFn: () => base44.entities.Reward.list('-date', 200) });
   const { data: campaigns = [] } = useQuery({ queryKey: ['campaigns'], queryFn: () => base44.entities.Campaign.list('-created_date') });
+
+  const handleRefresh = useCallback(async () => { await Promise.all([qc.invalidateQueries({ queryKey: ['rewards'] }), qc.invalidateQueries({ queryKey: ['campaigns'] })]); }, [qc]);
+  const { containerRef, pullY, refreshing } = usePullToRefresh(handleRefresh);
 
   const pointsMap = useMemo(() => {
     const map = {};
@@ -103,7 +108,8 @@ export default function GamificationPage() {
 
   return (
     <AppLayout>
-      <div className="p-4 space-y-4">
+      <div ref={containerRef} className="relative p-4 space-y-4">
+        <PullToRefreshIndicator pullY={pullY} refreshing={refreshing} />
         {/* Header */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">

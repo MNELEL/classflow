@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import React, { useState, useCallback } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import AppLayout from '@/components/layout/AppLayout';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -7,6 +7,8 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Users, GraduationCap, CalendarCheck, BookOpen, Star, Share2, TrendingUp } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { usePullToRefresh } from '@/hooks/usePullToRefresh';
+import PullToRefreshIndicator from '@/components/ui/PullToRefreshIndicator';
 import StudentReportPDF from '@/components/parents/StudentReportPDF';
 import SharedLessonsPanel from '@/components/parents/SharedLessonsPanel';
 
@@ -22,6 +24,10 @@ export default function ParentPortalPage() {
   const { data: rewards = [] } = useQuery({ queryKey: ['rewards'], queryFn: () => base44.entities.Reward.list('-date', 50) });
   const { data: bulletins = [] } = useQuery({ queryKey: ['bulletins'], queryFn: () => base44.entities.WeeklyBulletin.list('-created_date', 5) });
 
+  const qc = useQueryClient();
+  const handleRefresh = useCallback(async () => { await Promise.all([qc.invalidateQueries({ queryKey: ['grades'] }), qc.invalidateQueries({ queryKey: ['attendance'] }), qc.invalidateQueries({ queryKey: ['rewards'] }), qc.invalidateQueries({ queryKey: ['bulletins'] })]); }, [qc]);
+  const { containerRef, pullY, refreshing } = usePullToRefresh(handleRefresh);
+
   const student = students.find(s => s.id === selectedId);
   const sGrades = grades.filter(g => g.student_id === selectedId);
   const sAttendance = attendance.filter(a => a.student_id === selectedId);
@@ -29,7 +35,8 @@ export default function ParentPortalPage() {
 
   return (
     <AppLayout>
-      <div className="p-4 max-w-lg mx-auto space-y-4 overflow-y-auto h-full pb-8" dir="rtl">
+      <div ref={containerRef} className="relative p-4 max-w-lg mx-auto space-y-4 overflow-y-auto h-full pb-8" dir="rtl">
+        <PullToRefreshIndicator pullY={pullY} refreshing={refreshing} />
         <div className="flex items-center gap-2 mb-2">
           <div className="w-9 h-9 bg-blue-100 dark:bg-blue-900/30 rounded-xl flex items-center justify-center text-xl">👨‍👩‍👧</div>
           <div>

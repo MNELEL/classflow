@@ -1,5 +1,5 @@
-import React from 'react';
-import { useQuery } from '@tanstack/react-query';
+import React, { useCallback } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import AppLayout from '@/components/layout/AppLayout';
 import HomeworkTracker from '@/components/homework/HomeworkTracker';
@@ -7,6 +7,8 @@ import AcademicCalendar from '@/components/homework/AcademicCalendar';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ClipboardCheck, Calendar } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { usePullToRefresh } from '@/hooks/usePullToRefresh';
+import PullToRefreshIndicator from '@/components/ui/PullToRefreshIndicator';
 
 export default function HomeworkPage() {
   const { data: students = [] } = useQuery({
@@ -14,9 +16,14 @@ export default function HomeworkPage() {
     queryFn: () => base44.entities.Student.filter({ is_active: true }),
   });
 
+  const qc = useQueryClient();
+  const handleRefresh = useCallback(async () => { await qc.invalidateQueries({ queryKey: ['homework'] }); }, [qc]);
+  const { containerRef, pullY, refreshing } = usePullToRefresh(handleRefresh);
+
   return (
     <AppLayout>
-      <div className="p-4 max-w-2xl mx-auto overflow-y-auto h-full pb-8" dir="rtl">
+      <div ref={containerRef} className="relative p-4 max-w-2xl mx-auto overflow-y-auto h-full pb-8" dir="rtl">
+        <PullToRefreshIndicator pullY={pullY} refreshing={refreshing} />
         <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="flex items-center gap-3 mb-5">
           <div className="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center">
             <ClipboardCheck className="w-5 h-5 text-blue-600" />

@@ -163,6 +163,7 @@ export default function AttendanceManager({ students }) {
                     <button
                       key={key}
                       onClick={() => upsertMutation.mutate({ studentId: student.id, status: key })}
+                      aria-label={cfg.label}
                       title={cfg.label}
                       className={cn(
                         'w-8 h-8 rounded-lg flex items-center justify-center transition-colors border-2',

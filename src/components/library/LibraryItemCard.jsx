@@ -50,11 +50,11 @@ export default function LibraryItemCard({ item, onClick }) {
           )}
         </div>
         <div className="flex items-center gap-1">
-          <button onClick={e => { e.stopPropagation(); setShowShare(true); }}
+          <button onClick={e => { e.stopPropagation(); setShowShare(true); }} aria-label="שתף"
             className="text-muted-foreground hover:text-primary transition-colors p-1 rounded">
             <Share2 className="w-3.5 h-3.5" />
           </button>
-          <button onClick={e => { e.stopPropagation(); favMutation.mutate(); }}
+          <button onClick={e => { e.stopPropagation(); favMutation.mutate(); }} aria-label={item.is_favorite ? 'הסר ממועדפים' : 'הוסף למועדפים'}
             className="text-muted-foreground hover:text-pink-500 transition-colors">
             {item.is_favorite ? <Heart className="w-4 h-4 fill-pink-500 text-pink-500" /> : <Heart className="w-4 h-4" />}
           </button>

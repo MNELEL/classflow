@@ -75,22 +75,22 @@ export default function StudentList({ students, onSave, onDelete }) {
                     </div>
                   </div>
                   <div className="flex gap-1 opacity-60 group-hover:opacity-100 transition-opacity shrink-0">
-                    <Button size="icon" variant="ghost" className="h-7 w-7" title="פרופיל תלמיד" onClick={() => navigate(`/students/${student.id}`)}>
+                    <Button size="icon" variant="ghost" className="h-7 w-7" aria-label="פרופיל תלמיד" title="פרופיל תלמיד" onClick={() => navigate(`/students/${student.id}`)}>
                       <User className="w-3.5 h-3.5 text-primary" />
                     </Button>
-                    <Button size="icon" variant="ghost" className="h-7 w-7" title="משימות" onClick={() => setTaskStudent(student)}>
+                    <Button size="icon" variant="ghost" className="h-7 w-7" aria-label="משימות" title="משימות" onClick={() => setTaskStudent(student)}>
                       <CheckSquare className="w-3.5 h-3.5" />
                     </Button>
-                    <Button size="icon" variant="ghost" className="h-7 w-7" title="ציונים" onClick={() => setGradeStudent(student)}>
+                    <Button size="icon" variant="ghost" className="h-7 w-7" aria-label="ציונים" title="ציונים" onClick={() => setGradeStudent(student)}>
                       <TrendingUp className="w-3.5 h-3.5" />
                     </Button>
-                    <Button size="icon" variant="ghost" className="h-7 w-7" title="תיק אישי" onClick={() => setPortfolioStudent(portfolioStudent?.id === student.id ? null : student)}>
+                    <Button size="icon" variant="ghost" className="h-7 w-7" aria-label="תיק אישי" title="תיק אישי" onClick={() => setPortfolioStudent(portfolioStudent?.id === student.id ? null : student)}>
                       <FolderOpen className={`w-3.5 h-3.5 ${portfolioStudent?.id === student.id ? 'text-primary' : ''}`} />
                     </Button>
-                    <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => setEditing(student)}>
+                    <Button size="icon" variant="ghost" className="h-7 w-7" aria-label="עריכת תלמיד" onClick={() => setEditing(student)}>
                       <Edit2 className="w-3.5 h-3.5" />
                     </Button>
-                    <Button size="icon" variant="ghost" className="h-7 w-7 text-destructive/60 hover:text-destructive" onClick={() => onDelete(student.id)}>
+                    <Button size="icon" variant="ghost" className="h-7 w-7 text-destructive/60 hover:text-destructive" aria-label="מחיקת תלמיד" onClick={() => onDelete(student.id)}>
                       <Trash2 className="w-3.5 h-3.5" />
                     </Button>
                   </div>

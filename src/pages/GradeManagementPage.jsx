@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import CsvImportModal, { exportToCSV } from '@/components/data/CsvImportModal';
 import { toast } from 'sonner';
@@ -12,6 +12,8 @@ import { Sparkles, MessageSquare, FileBarChart2, GraduationCap, FileUp, FileDown
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { motion } from 'framer-motion';
+import { usePullToRefresh } from '@/hooks/usePullToRefresh';
+import PullToRefreshIndicator from '@/components/ui/PullToRefreshIndicator';
 
 export default function GradeManagementPage() {
   const qc = useQueryClient();
@@ -27,9 +29,13 @@ export default function GradeManagementPage() {
     queryFn: () => base44.entities.Grade.list(),
   });
 
+  const handleRefresh = useCallback(async () => { await refetchGrades(); }, [refetchGrades]);
+  const { containerRef, pullY, refreshing } = usePullToRefresh(handleRefresh);
+
   return (
     <AppLayout>
-      <div className="p-4 max-w-3xl mx-auto overflow-y-auto h-full" dir="rtl">
+      <div ref={containerRef} className="relative p-4 max-w-3xl mx-auto overflow-y-auto h-full" dir="rtl">
+        <PullToRefreshIndicator pullY={pullY} refreshing={refreshing} />
         <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="mb-6">
           <div className="flex items-center gap-2 mb-1">
             <GraduationCap className="w-5 h-5 text-primary" />

@@ -192,8 +192,8 @@ button, a, [role="button"] {
 
 /* ClassFlow premium nav bar */
 .nav-premium {
-  background: linear-gradient(180deg, hsl(213 38% 8% / 0.97) 0%, hsl(213 38% 6% / 0.98) 100%);
-  border-top: 1px solid hsl(213 32% 14%);
+  background: hsl(var(--sidebar-background) / 0.97);
+  border-top: 1px solid hsl(var(--sidebar-border));
 }
 
 /* Luxury card elevation */

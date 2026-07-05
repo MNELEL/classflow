@@ -1,17 +1,22 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import AppLayout from '@/components/layout/AppLayout';
 import AttendanceManager from '@/components/attendance/AttendanceManager';
 import AttendanceChart from '@/components/attendance/AttendanceChart';
+import { usePullToRefresh } from '@/hooks/usePullToRefresh';
+import PullToRefreshIndicator from '@/components/ui/PullToRefreshIndicator';
 import { motion } from 'framer-motion';
 import { CalendarCheck } from 'lucide-react';
 
 export default function AttendancePage() {
-  const { data: students = [], isLoading } = useQuery({
+  const { data: students = [], isLoading, refetch } = useQuery({
     queryKey: ['students'],
     queryFn: () => base44.entities.Student.list(),
   });
+  const { data: attendance = [], refetch: refetchAttendance } = useQuery({ queryKey: ['attendance'], queryFn: () => base44.entities.Attendance.list() });
+  const handleRefresh = useCallback(async () => { await Promise.all([refetch(), refetchAttendance()]); }, [refetch, refetchAttendance]);
+  const { containerRef, pullY, refreshing } = usePullToRefresh(handleRefresh);
 
   if (isLoading) {
     return (
@@ -25,7 +30,8 @@ export default function AttendancePage() {
 
   return (
     <AppLayout>
-      <div className="p-5 max-w-2xl mx-auto overflow-y-auto no-scrollbar h-full space-y-5" dir="rtl">
+      <div ref={containerRef} className="relative p-5 max-w-2xl mx-auto overflow-y-auto no-scrollbar h-full space-y-5" dir="rtl">
+        <PullToRefreshIndicator pullY={pullY} refreshing={refreshing} />
         <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="flex items-center gap-2">
           <CalendarCheck className="w-6 h-6 text-primary" />
           <div>

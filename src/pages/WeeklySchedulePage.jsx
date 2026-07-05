@@ -9,6 +9,7 @@ import { Plus, ChevronRight, ChevronLeft, Clock, BookOpen, Trash2, X } from 'luc
 import { toast } from 'sonner';
 import moment from 'moment';
 import SmartBellTimer from '@/components/schedule/SmartBellTimer';
+import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from '@/components/ui/select';
 
 const DAYS = [
   { key: 'sun', label: 'ראשון' },
@@ -82,17 +83,21 @@ function AddLessonDialog({ open, onClose, defaultDay, defaultHour, onSave, libra
           <div className="grid grid-cols-2 gap-2">
             <div>
               <label className="text-xs text-muted-foreground block mb-1">יום</label>
-              <select value={form.day} onChange={e => setForm(f => ({ ...f, day: e.target.value }))}
-                className="w-full text-sm border border-border rounded-lg px-2 py-1.5 bg-background">
-                {DAYS.map(d => <option key={d.key} value={d.key}>{d.label}</option>)}
-              </select>
+              <Select value={form.day} onValueChange={v => setForm(f => ({ ...f, day: v }))}>
+                <SelectTrigger className="w-full text-sm border border-border rounded-lg h-9 bg-background"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {DAYS.map(d => <SelectItem key={d.key} value={d.key}>{d.label}</SelectItem>)}
+                </SelectContent>
+              </Select>
             </div>
             <div>
               <label className="text-xs text-muted-foreground block mb-1">שעה</label>
-              <select value={form.hour} onChange={e => setForm(f => ({ ...f, hour: Number(e.target.value) }))}
-                className="w-full text-sm border border-border rounded-lg px-2 py-1.5 bg-background">
-                {HOURS.map(h => <option key={h.value} value={h.value}>{h.label}</option>)}
-              </select>
+              <Select value={String(form.hour)} onValueChange={v => setForm(f => ({ ...f, hour: Number(v) }))}>
+                <SelectTrigger className="w-full text-sm border border-border rounded-lg h-9 bg-background"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {HOURS.map(h => <SelectItem key={h.value} value={String(h.value)}>{h.label}</SelectItem>)}
+                </SelectContent>
+              </Select>
             </div>
           </div>
 
@@ -125,11 +130,13 @@ function AddLessonDialog({ open, onClose, defaultDay, defaultHour, onSave, libra
           {libraryItems?.length > 0 && (
             <div>
               <label className="text-xs text-muted-foreground block mb-1">קישור לפריט ספרייה (אופציונלי)</label>
-              <select value={form.library_item_id} onChange={e => setForm(f => ({ ...f, library_item_id: e.target.value }))}
-                className="w-full text-sm border border-border rounded-lg px-2 py-1.5 bg-background">
-                <option value="">— בחר פריט —</option>
-                {libraryItems.map(item => <option key={item.id} value={item.id}>{item.title}</option>)}
-              </select>
+              <Select value={form.library_item_id || '_none'} onValueChange={v => setForm(f => ({ ...f, library_item_id: v === '_none' ? '' : v }))}>
+                <SelectTrigger className="w-full text-sm border border-border rounded-lg h-9 bg-background"><SelectValue placeholder="— בחר פריט —" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="_none">— בחר פריט —</SelectItem>
+                  {libraryItems.map(item => <SelectItem key={item.id} value={item.id}>{item.title}</SelectItem>)}
+                </SelectContent>
+              </Select>
             </div>
           )}
 

@@ -1,10 +1,10 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import LessonPlanningTab from '@/components/library/LessonPlanningTab';
 import PlaylistPanel from '@/components/library/PlaylistPanel';
 import WeeklyPlannerBoard from '@/components/library/WeeklyPlannerBoard';
 import CoverageTracker from '@/components/library/CoverageTracker';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import AppLayout from '@/components/layout/AppLayout';
 import LibraryItemCard from '@/components/library/LibraryItemCard';
@@ -21,6 +21,8 @@ import ExternalSourceSearch from '@/components/library/ExternalSourceSearch';
 import GoogleDrivePanel from '@/components/library/GoogleDrivePanel';
 import ImportFromSourceModal from '@/components/library/ImportFromSourceModal';
 import { motion, AnimatePresence } from 'framer-motion';
+import { usePullToRefresh } from '@/hooks/usePullToRefresh';
+import PullToRefreshIndicator from '@/components/ui/PullToRefreshIndicator';
 
 const SOURCE_LABELS = {
   audio_recording: '🎙️ הקלטות', audio_file: '🎵 אודיו', pdf: '📄 PDF',
@@ -48,6 +50,10 @@ export default function LibraryPage() {
     queryFn: () => base44.entities.LibraryItem.list('-created_date', 100),
     refetchInterval: (query) => query.state.data?.some(i => i.ai_status === 'processing') ? 4000 : false,
   });
+
+  const qc = useQueryClient();
+  const handleRefresh = useCallback(async () => { await qc.invalidateQueries({ queryKey: ['library'] }); }, [qc]);
+  const { containerRef, pullY, refreshing } = usePullToRefresh(handleRefresh);
 
   const pendingCount = items.filter(i => i.ai_status === 'pending').length;
 
@@ -99,7 +105,8 @@ export default function LibraryPage() {
 
   return (
     <AppLayout>
-      <div className="p-4 space-y-4">
+      <div ref={containerRef} className="relative p-4 space-y-4">
+        <PullToRefreshIndicator pullY={pullY} refreshing={refreshing} />
         <Tabs defaultValue="library">
           <TabsList className="w-full mb-2 grid grid-cols-8">
             <TabsTrigger value="library" className="gap-1 text-xs">
