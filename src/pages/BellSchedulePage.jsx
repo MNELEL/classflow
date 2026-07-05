@@ -156,19 +156,39 @@ export default function BellSchedulePage() {
     return () => clearInterval(timerRef.current);
   }, [bells]);
 
-  async function save() {
+  const saveMutation = useMutation({
+    mutationFn: async ({ form, editing }) => {
+      if (editing) {
+        await base44.entities.BellSchedule.update(editing, form);
+        return 'updated';
+      } else {
+        await base44.entities.BellSchedule.create(form);
+        return 'created';
+      }
+    },
+    onMutate: async ({ form, editing }) => {
+      await qc.cancelQueries({ queryKey: ['bells'] });
+      const previous = qc.getQueryData(['bells']);
+      if (editing) {
+        qc.setQueryData(['bells'], (old = []) => old.map(b => b.id === editing ? { ...b, ...form } : b));
+      } else {
+        qc.setQueryData(['bells'], (old = []) => [...old, { ...form, id: `opt-${Date.now()}` }]);
+      }
+      return { previous };
+    },
+    onError: (_err, _vars, ctx) => { if (ctx?.previous) qc.setQueryData(['bells'], ctx.previous); },
+    onSettled: () => qc.invalidateQueries({ queryKey: ['bells'] }),
+    onSuccess: (_data, { editing }) => {
+      toast.success(editing ? 'עודכן!' : 'נוסף!');
+      setShowForm(false);
+      setForm(DEFAULT_FORM);
+      setEditing(null);
+    },
+  });
+
+  function save() {
     if (!form.name || !form.time) return;
-    if (editing) {
-      await base44.entities.BellSchedule.update(editing, form);
-      toast.success('עודכן!');
-    } else {
-      await base44.entities.BellSchedule.create(form);
-      toast.success('נוסף!');
-    }
-    qc.invalidateQueries({ queryKey: ['bells'] });
-    setShowForm(false);
-    setForm(DEFAULT_FORM);
-    setEditing(null);
+    saveMutation.mutate({ form, editing });
   }
 
   async function deleteBell(id) {
@@ -362,7 +382,7 @@ export default function BellSchedulePage() {
               </div>
 
               <div className="flex gap-2 pt-1">
-                <Button className="flex-1" onClick={save}>שמור</Button>
+                <Button className="flex-1" onClick={save} disabled={saveMutation.isPending}>שמור</Button>
                 <Button variant="outline" onClick={() => setShowForm(false)}>ביטול</Button>
               </div>
             </div>

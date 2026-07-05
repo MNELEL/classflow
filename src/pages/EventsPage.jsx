@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { base44 } from '@/api/base44Client';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import AppLayout from '@/components/layout/AppLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -35,16 +35,29 @@ export default function EventsPage() {
   const upcoming = events.filter(e => new Date(e.start_date) >= now);
   const past = events.filter(e => new Date(e.start_date) < now);
 
-  async function createEvent() {
+  const createEventMutation = useMutation({
+    mutationFn: (data) => base44.entities.SchoolEvent.create(data),
+    onMutate: async (newEvent) => {
+      await qc.cancelQueries({ queryKey: ['school-events'] });
+      const previous = qc.getQueryData(['school-events']);
+      qc.setQueryData(['school-events'], (old = []) => [...old, { ...newEvent, id: `opt-${Date.now()}` }]);
+      return { previous };
+    },
+    onError: (_err, _vars, ctx) => { if (ctx?.previous) qc.setQueryData(['school-events'], ctx.previous); },
+    onSettled: () => qc.invalidateQueries({ queryKey: ['school-events'] }),
+    onSuccess: () => {
+      toast.success('האירוע נוצר!');
+      setShowForm(false);
+      setForm({ title: '', description: '', type: 'other', start_date: '', end_date: '', location: '', color: '#3b82f6' });
+    },
+  });
+
+  function handleCreateEvent() {
     if (!form.title || !form.start_date) {
       toast.error('מלאו כותרת ותאריך');
       return;
     }
-    await base44.entities.SchoolEvent.create(form);
-    qc.invalidateQueries({ queryKey: ['school-events'] });
-    toast.success('האירוע נוצר!');
-    setShowForm(false);
-    setForm({ title: '', description: '', type: 'other', start_date: '', end_date: '', location: '', color: '#3b82f6' });
+    createEventMutation.mutate(form);
   }
 
   async function deleteEvent(id) {
@@ -184,7 +197,7 @@ export default function EventsPage() {
                 <label className="text-xs text-muted-foreground mb-1 block">תיאור</label>
                 <Input value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} placeholder="פרטים נוספים..." className="text-sm" />
               </div>
-              <Button onClick={createEvent} className="w-full">צרו אירוע</Button>
+              <Button onClick={handleCreateEvent} className="w-full" disabled={createEventMutation.isPending}>צרו אירוע</Button>
             </div>
           </DialogContent>
         </Dialog>

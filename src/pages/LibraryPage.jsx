@@ -9,7 +9,6 @@ import { base44 } from '@/api/base44Client';
 import AppLayout from '@/components/layout/AppLayout';
 import LibraryItemCard from '@/components/library/LibraryItemCard';
 import LibraryUploadModal from '@/components/library/LibraryUploadModal';
-import LibraryItemDetail from '@/components/library/LibraryItemDetail';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { MobileSelect, SelectItem } from '@/components/ui/MobileSelect';
@@ -21,6 +20,7 @@ import ExternalSourceSearch from '@/components/library/ExternalSourceSearch';
 import GoogleDrivePanel from '@/components/library/GoogleDrivePanel';
 import ImportFromSourceModal from '@/components/library/ImportFromSourceModal';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
 import { usePullToRefresh } from '@/hooks/usePullToRefresh';
 import PullToRefreshIndicator from '@/components/ui/PullToRefreshIndicator';
 
@@ -32,7 +32,7 @@ const SOURCE_LABELS = {
 
 export default function LibraryPage() {
   const [showUpload, setShowUpload] = useState(false);
-  const [selectedItemId, setSelectedItemId] = useState(null);
+  const navigate = useNavigate();
   const [search, setSearch] = useState('');
   const [filterType, setFilterType] = useState('all');
   const [filterCategory, setFilterCategory] = useState('all');
@@ -261,7 +261,7 @@ export default function LibraryPage() {
                   {filtered.map((item, i) => (
                     <motion.div key={item.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: i * 0.04 }} className="relative">
-                      <LibraryItemCard item={item} onClick={() => setSelectedItemId(item.id)} />
+                      <LibraryItemCard item={item} onClick={() => navigate('/library/' + item.id)} />
                       {/* Playlist toggle button */}
                       <button
                         onClick={(e) => { e.stopPropagation(); togglePlaylist(item.id); }}
@@ -338,11 +338,6 @@ export default function LibraryPage() {
         <AIProviderSettings open={showAISettings} onClose={() => setShowAISettings(false)} />
         <ImportFromSourceModal open={showImportModal} onClose={() => setShowImportModal(false)} />
 
-        <AnimatePresence>
-          {selectedItemId && (
-            <LibraryItemDetail itemId={selectedItemId} onClose={() => setSelectedItemId(null)} />
-          )}
-        </AnimatePresence>
       </div>
 
       {/* Playlist Panel */}

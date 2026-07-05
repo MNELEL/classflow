@@ -183,6 +183,7 @@ export default function GridControls({
         size="sm"
         className="w-full"
         onClick={onToggleNumbers}
+        aria-label="הצג/הסתר מספרים"
       >
         {showNumbers ? <EyeOff className="w-4 h-4 ml-1" /> : <Hash className="w-4 h-4 ml-1" />}
         {showNumbers ? 'הסתר מספרים' : 'הצג מספרים'}
@@ -200,7 +201,7 @@ export default function GridControls({
         <Button variant="outline" size="sm" className="w-full gap-1.5" aria-label="הדפסה" onClick={() => printSeating(seats, students, rows, cols)}>
           <Printer className="w-3.5 h-3.5" /> הדפסה
         </Button>
-        <Button variant="outline" size="sm" className="w-full gap-1.5" onClick={() => printCleanSeating(seats, students, rows, cols)}>
+        <Button variant="outline" size="sm" className="w-full gap-1.5" aria-label="הדפסה נקייה" onClick={() => printCleanSeating(seats, students, rows, cols)}>
           <ClipboardList className="w-3.5 h-3.5" /> הדפסה נקייה
         </Button>
       </div>

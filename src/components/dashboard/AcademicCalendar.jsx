@@ -167,11 +167,11 @@ export default function AcademicCalendar() {
           <>
             {/* Month navigation */}
             <div className="flex items-center justify-between mb-3">
-              <button onClick={() => setCurrentMonth(m => subMonths(m, 1))} className="p-1 rounded-lg hover:bg-accent transition-colors">
+              <button onClick={() => setCurrentMonth(m => subMonths(m, 1))} aria-label="חודש קודם" className="p-1 rounded-lg hover:bg-accent transition-colors">
                 <ChevronRight className="w-4 h-4" />
               </button>
               <span className="text-sm font-semibold">{hebMonthLabel}</span>
-              <button onClick={() => setCurrentMonth(m => addMonths(m, 1))} className="p-1 rounded-lg hover:bg-accent transition-colors">
+              <button onClick={() => setCurrentMonth(m => addMonths(m, 1))} aria-label="חודש הבא" className="p-1 rounded-lg hover:bg-accent transition-colors">
                 <ChevronLeft className="w-4 h-4" />
               </button>
             </div>

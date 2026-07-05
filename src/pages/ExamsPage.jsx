@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { base44 } from '@/api/base44Client';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import AppLayout from '@/components/layout/AppLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -32,21 +32,34 @@ export default function ExamsPage() {
     published: { label: 'פורסם', color: 'text-violet-600', bg: 'bg-violet-100 dark:bg-violet-900/30' },
   };
 
-  async function createExam() {
+  const createExamMutation = useMutation({
+    mutationFn: (data) => base44.entities.Exam.create(data),
+    onMutate: async (newExam) => {
+      await qc.cancelQueries({ queryKey: ['exams'] });
+      const previous = qc.getQueryData(['exams']);
+      qc.setQueryData(['exams'], (old = []) => [...old, { ...newExam, id: `opt-${Date.now()}` }]);
+      return { previous };
+    },
+    onError: (_err, _vars, ctx) => { if (ctx?.previous) qc.setQueryData(['exams'], ctx.previous); },
+    onSettled: () => qc.invalidateQueries({ queryKey: ['exams'] }),
+    onSuccess: () => {
+      toast.success('המבחן נוצר!');
+      setShowForm(false);
+      setForm({ title: '', subject: '', date: '', max_score: 100, duration_minutes: 45, topics: [], notes: '' });
+    },
+  });
+
+  function handleCreateExam() {
     if (!form.title || !form.subject || !form.date) {
       toast.error('מלאו את כל השדות');
       return;
     }
-    await base44.entities.Exam.create({
+    createExamMutation.mutate({
       ...form,
       student_ids: activeStudents.map(s => s.id),
       scores: [],
       status: 'scheduled',
     });
-    qc.invalidateQueries({ queryKey: ['exams'] });
-    toast.success('המבחן נוצר!');
-    setShowForm(false);
-    setForm({ title: '', subject: '', date: '', max_score: 100, duration_minutes: 45, topics: [], notes: '' });
   }
 
   async function saveGrades() {
@@ -186,7 +199,7 @@ export default function ExamsPage() {
                   </div>
                 )}
               </div>
-              <Button onClick={createExam} className="w-full">צור מבחן</Button>
+              <Button onClick={handleCreateExam} className="w-full" disabled={createExamMutation.isPending}>צור מבחן</Button>
             </div>
           </DialogContent>
         </Dialog>

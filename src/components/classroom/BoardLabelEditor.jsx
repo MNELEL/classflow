@@ -23,6 +23,7 @@ export default function BoardLabelEditor({ label, onSave }) {
         onClick={() => setEditing(true)}
         className="group flex items-center gap-1.5 px-4 py-1.5 rounded-xl bg-primary/10 border border-primary/30 text-primary font-bold text-sm hover:bg-primary/20 transition-colors"
         title="לחץ לעריכה"
+        aria-label="ערוך כותרת לוח"
       >
         📋 {label}
         <Pencil className="w-3 h-3 opacity-0 group-hover:opacity-60 transition-opacity" />
