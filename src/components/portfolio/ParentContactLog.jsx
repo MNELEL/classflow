@@ -4,7 +4,7 @@ import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { MobileSelect, SelectItem } from '@/components/ui/MobileSelect';
 import { Badge } from '@/components/ui/badge';
 import { Plus, Trash2, Phone, Users, MessageSquare, Mail, StickyNote, Loader2, Bell } from 'lucide-react';
 import { toast } from 'sonner';
@@ -90,22 +90,16 @@ export default function ParentContactLog({ studentId, studentName }) {
           <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }}
             className="bg-muted/40 border border-border/60 rounded-xl p-3 space-y-2 overflow-hidden">
             <div className="grid grid-cols-2 gap-2">
-              <Select value={form.type} onValueChange={v => setForm(p => ({ ...p, type: v }))}>
-                <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  {Object.entries(TYPE_CONFIG).map(([k, v]) => <SelectItem key={k} value={k}>{v.label}</SelectItem>)}
-                </SelectContent>
-              </Select>
+              <MobileSelect value={form.type} onValueChange={v => setForm(p => ({ ...p, type: v }))} className="h-8 text-xs">
+                {Object.entries(TYPE_CONFIG).map(([k, v]) => <SelectItem key={k} value={k}>{v.label}</SelectItem>)}
+              </MobileSelect>
               <Input type="date" value={form.date} onChange={e => setForm(p => ({ ...p, date: e.target.value }))} className="h-8 text-xs" />
               <Input placeholder="שם ההורה" value={form.parent_name} onChange={e => setForm(p => ({ ...p, parent_name: e.target.value }))} className="h-8 text-xs" />
-              <Select value={form.initiated_by} onValueChange={v => setForm(p => ({ ...p, initiated_by: v }))}>
-                <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="teacher">יוזם: מורה</SelectItem>
-                  <SelectItem value="parent">יוזם: הורה</SelectItem>
-                  <SelectItem value="school">יוזם: בית ספר</SelectItem>
-                </SelectContent>
-              </Select>
+              <MobileSelect value={form.initiated_by} onValueChange={v => setForm(p => ({ ...p, initiated_by: v }))} className="h-8 text-xs">
+                <SelectItem value="teacher">יוזם: מורה</SelectItem>
+                <SelectItem value="parent">יוזם: הורה</SelectItem>
+                <SelectItem value="school">יוזם: בית ספר</SelectItem>
+              </MobileSelect>
             </div>
             <Textarea
               placeholder="סיכום השיחה/פגישה *"

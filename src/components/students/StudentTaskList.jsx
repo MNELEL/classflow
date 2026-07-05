@@ -4,7 +4,7 @@ import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { MobileSelect, SelectItem } from '@/components/ui/MobileSelect';
 import {
   CheckCircle2, Circle, Plus, Trash2, Calendar, AlertCircle,
   CheckCheck, Clock, TrendingUp, Loader2
@@ -146,17 +146,12 @@ export default function StudentTaskList({ studentId }) {
 
       {/* Toolbar */}
       <div className="flex items-center gap-2">
-        <Select value={filterStatus} onValueChange={setFilterStatus}>
-          <SelectTrigger className="h-8 text-xs flex-1">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">כל המשימות ({total})</SelectItem>
-            <SelectItem value="pending">ממתינות</SelectItem>
-            <SelectItem value="in_progress">בביצוע</SelectItem>
-            <SelectItem value="done">הושלמו</SelectItem>
-          </SelectContent>
-        </Select>
+        <MobileSelect value={filterStatus} onValueChange={setFilterStatus} className="h-8 text-xs flex-1">
+          <SelectItem value="all">כל המשימות ({total})</SelectItem>
+          <SelectItem value="pending">ממתינות</SelectItem>
+          <SelectItem value="in_progress">בביצוע</SelectItem>
+          <SelectItem value="done">הושלמו</SelectItem>
+        </MobileSelect>
         <Button size="sm" onClick={() => setShowForm(v => !v)} className="gap-1 shrink-0">
           <Plus className="w-3.5 h-3.5" /> משימה
         </Button>
@@ -188,16 +183,11 @@ export default function StudentTaskList({ studentId }) {
             />
           </div>
           <div className="flex items-center gap-2">
-            <Select value={priority} onValueChange={setPriority}>
-              <SelectTrigger className="h-8 text-xs flex-1">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="low">⚪ נמוכה</SelectItem>
-                <SelectItem value="medium">🔵 בינונית</SelectItem>
-                <SelectItem value="high">🔴 דחופה</SelectItem>
-              </SelectContent>
-            </Select>
+            <MobileSelect value={priority} onValueChange={setPriority} className="h-8 text-xs flex-1">
+              <SelectItem value="low">⚪ נמוכה</SelectItem>
+              <SelectItem value="medium">🔵 בינונית</SelectItem>
+              <SelectItem value="high">🔴 דחופה</SelectItem>
+            </MobileSelect>
             <Button size="sm" onClick={handleCreate} disabled={!title.trim() || createTask.isPending} className="flex-1">
               {createTask.isPending ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : 'הוסף'}
             </Button>

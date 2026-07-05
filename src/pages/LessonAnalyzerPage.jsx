@@ -7,7 +7,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Mic, Upload, FileAudio, Loader2, Plus, CheckCircle2, Layers, AlignRight } from 'lucide-react';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { MobileSelect, SelectItem } from '@/components/ui/MobileSelect';
 import { toast } from 'sonner';
 import LessonSummaryHub from '@/components/lessonanalyzer/LessonSummaryHub.jsx';
 import SummaryTaskBoard from '@/components/lessonanalyzer/SummaryTaskBoard.jsx';
@@ -204,9 +204,7 @@ export default function LessonAnalyzerPage() {
                 <label className="text-xs font-semibold text-muted-foreground flex items-center gap-1.5">
                   <AlignRight className="w-3.5 h-3.5" /> רמת פירוט לסיכום
                 </label>
-                <Select value={detailLevel} onValueChange={setDetailLevel} disabled={isProcessing}>
-                  <SelectTrigger className="h-11 text-base"><SelectValue /></SelectTrigger>
-                  <SelectContent>
+                <MobileSelect value={detailLevel} onValueChange={setDetailLevel} disabled={isProcessing} className="h-11 text-base">
                     {Object.entries(DETAIL_LEVELS).map(([key, cfg]) => (
                       <SelectItem key={key} value={key}>
                         <div className="flex flex-col">
@@ -215,8 +213,7 @@ export default function LessonAnalyzerPage() {
                         </div>
                       </SelectItem>
                     ))}
-                  </SelectContent>
-                </Select>
+                </MobileSelect>
               </div>
 
               {/* File drop */}

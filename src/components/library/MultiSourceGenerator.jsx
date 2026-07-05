@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { MobileSelect, SelectItem } from '@/components/ui/MobileSelect';
 import { Card, CardContent } from '@/components/ui/card';
 import {
   Sparkles, Search, X, Check, BookOpen, FileText, Layers,
@@ -470,17 +470,15 @@ ${extraInstructions ? `הוראות נוספות: ${extraInstructions}` : ''}`;
           <div className="grid grid-cols-3 gap-2">
             <div>
               <Label className="text-xs mb-1 block">שכבה</Label>
-              <Select value={grade} onValueChange={setGrade}>
-                <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
-                <SelectContent>{GRADE_LEVELS.map(g => <SelectItem key={g} value={g}>{g}</SelectItem>)}</SelectContent>
-              </Select>
+              <MobileSelect value={grade} onValueChange={setGrade} className="h-8 text-xs">
+                {GRADE_LEVELS.map(g => <SelectItem key={g} value={g}>{g}</SelectItem>)}
+              </MobileSelect>
             </div>
             <div>
               <Label className="text-xs mb-1 block">רמה</Label>
-              <Select value={difficulty} onValueChange={setDifficulty}>
-                <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
-                <SelectContent>{DIFFICULTIES.map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}</SelectContent>
-              </Select>
+              <MobileSelect value={difficulty} onValueChange={setDifficulty} className="h-8 text-xs">
+                {DIFFICULTIES.map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}
+              </MobileSelect>
             </div>
             <div>
               <Label className="text-xs mb-1 block">כמות ({count})</Label>

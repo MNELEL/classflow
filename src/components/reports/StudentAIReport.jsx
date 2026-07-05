@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { MobileSelect, SelectItem } from '@/components/ui/MobileSelect';
 import { Sparkles, Loader2, Printer, Copy, Check } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import { toast } from 'sonner';
@@ -81,14 +81,11 @@ ${student.achievements ? `הישגים: ${student.achievements}` : ''}
   return (
     <div className="space-y-4" dir="rtl">
       <div className="flex gap-2">
-        <Select value={selectedId} onValueChange={setSelectedId}>
-          <SelectTrigger className="flex-1 text-sm"><SelectValue placeholder="בחר תלמיד..." /></SelectTrigger>
-          <SelectContent>
-            {students.filter(s => s.is_active !== false).map(s => (
-              <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        <MobileSelect value={selectedId} onValueChange={setSelectedId} placeholder="בחר תלמיד..." className="flex-1 text-sm">
+          {students.filter(s => s.is_active !== false).map(s => (
+            <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>
+          ))}
+        </MobileSelect>
         <Button onClick={generateReport} disabled={!selectedId || generating} className="gap-1 shrink-0">
           {generating ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
           {generating ? 'מייצר...' : 'צור דוח AI'}

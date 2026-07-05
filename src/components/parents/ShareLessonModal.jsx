@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { MobileSelect, SelectItem } from '@/components/ui/MobileSelect';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Share2, Eye, EyeOff, MessageSquare, CheckCircle2, Loader2, Send } from 'lucide-react';
 import { toast } from 'sonner';
@@ -57,16 +57,11 @@ export default function ShareLessonModal({ item, students, open, onClose }) {
           {/* Share to new student */}
           {availableStudents.length > 0 && (
             <div className="flex gap-2">
-              <Select value={selectedStudentId} onValueChange={setSelectedStudentId}>
-                <SelectTrigger className="h-9 text-sm flex-1">
-                  <SelectValue placeholder="בחר תלמיד לשיתוף..." />
-                </SelectTrigger>
-                <SelectContent>
-                  {availableStudents.map(s => (
-                    <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <MobileSelect value={selectedStudentId} onValueChange={setSelectedStudentId} placeholder="בחר תלמיד לשיתוף..." className="h-9 text-sm flex-1">
+                {availableStudents.map(s => (
+                  <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>
+                ))}
+              </MobileSelect>
               <Button
                 size="sm"
                 className="h-9 gap-1.5"

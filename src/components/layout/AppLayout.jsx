@@ -3,7 +3,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import {
   LayoutGrid, Users, BookOpen, Settings, ChevronRight,
-  Library, Wrench, Grid3x3
+  Library, Wrench, Grid3x3, CalendarCheck
 } from 'lucide-react';
 import { loadBranding } from '@/lib/branding';
 import OverdueAlertsPanel from '@/components/alerts/OverdueAlertsPanel';
@@ -11,11 +11,11 @@ import OverdueAlertsPanel from '@/components/alerts/OverdueAlertsPanel';
 
 // 5 bottom nav tabs — all other routes accessible via /more
 const PRIMARY_NAV = [
-  { path: '/',         icon: BookOpen,    label: 'דשבורד' },
-  { path: '/students', icon: Users,       label: 'תלמידים'},
-  { path: '/library',  icon: Library,     label: 'ספרייה' },
-  { path: '/toolkit',  icon: Wrench,      label: 'כלים'   },
-  { path: '/more',     icon: Grid3x3,     label: 'עוד'    },
+  { path: '/',           icon: BookOpen,      label: 'דשבורד'  },
+  { path: '/students',   icon: Users,         label: 'תלמידים' },
+  { path: '/attendance', icon: CalendarCheck, label: 'נוכחות'  },
+  { path: '/library',    icon: Library,       label: 'ספרייה'   },
+  { path: '/more',       icon: Grid3x3,       label: 'עוד'      },
 ];
 
 
@@ -94,7 +94,7 @@ export default function AppLayout({ children }) {
   const title = branding.page_titles?.[location.pathname] || branding.school_name || 'ClassManager Pro';
 
   // Check if current path is in the "more" section (any route not in the 4 primary tabs)
-  const MORE_PATHS = ['/seating','/attendance','/grades','/gamification','/parents','/worksheets','/question-bank','/lesson-analyzer','/curriculum','/homework','/sound-board','/student-view','/reports','/analytics','/events','/exams','/fast-feedback','/behavior-timeline','/weekly-schedule','/bell-schedule','/study-plan-generator','/raffle','/daily-summary','/exam-scanner','/more'];
+  const MORE_PATHS = ['/seating','/toolkit','/grades','/gamification','/parents','/worksheets','/question-bank','/lesson-analyzer','/curriculum','/homework','/sound-board','/student-view','/reports','/analytics','/events','/exams','/fast-feedback','/behavior-timeline','/weekly-schedule','/bell-schedule','/study-plan-generator','/raffle','/daily-summary','/exam-scanner','/more'];
   const isMoreActive = MORE_PATHS.includes(location.pathname);
 
   return (
@@ -182,7 +182,7 @@ export default function AppLayout({ children }) {
               )}>
                 <Icon className={cn('w-5 h-5 transition-transform duration-200', active && 'scale-110')} />
               </div>
-              <span className={cn('text-xs font-medium transition-all', active ? 'opacity-100' : 'opacity-70')}>{navLabel}</span>
+              <span className={cn('text-[11px] md:text-xs font-medium transition-all', active ? 'opacity-100' : 'opacity-70')}>{navLabel}</span>
             </Link>
           );
         })}

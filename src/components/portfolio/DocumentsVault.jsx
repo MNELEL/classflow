@@ -4,7 +4,7 @@ import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { MobileSelect, SelectItem } from '@/components/ui/MobileSelect';
 import { Upload, FileText, Image, Trash2, ExternalLink, Plus, Loader2, FolderOpen, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -78,17 +78,12 @@ export default function DocumentsVault({ studentId }) {
     <div className="space-y-3" dir="rtl">
       {/* Actions bar */}
       <div className="flex gap-2 items-center">
-        <Select value={filterType} onValueChange={setFilterType}>
-          <SelectTrigger className="h-8 text-xs flex-1">
-            <SelectValue placeholder="סנן לפי סוג..." />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">הכל</SelectItem>
-            {Object.entries(TYPE_CONFIG).map(([k, v]) => (
-              <SelectItem key={k} value={k}>{v.icon} {v.label}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        <MobileSelect value={filterType} onValueChange={setFilterType} placeholder="סנן לפי סוג..." className="h-8 text-xs flex-1">
+          <SelectItem value="all">הכל</SelectItem>
+          {Object.entries(TYPE_CONFIG).map(([k, v]) => (
+            <SelectItem key={k} value={k}>{v.icon} {v.label}</SelectItem>
+          ))}
+        </MobileSelect>
         <Button size="sm" variant="outline" onClick={() => fileInputRef.current?.click()} className="gap-1 text-xs">
           <Upload className="w-3.5 h-3.5" /> העלה קובץ
         </Button>
@@ -114,12 +109,9 @@ export default function DocumentsVault({ studentId }) {
               <div className="col-span-2">
                 <Input placeholder="כותרת *" value={form.title} onChange={e => setForm(p => ({ ...p, title: e.target.value }))} className="h-8 text-sm" />
               </div>
-              <Select value={form.type} onValueChange={v => setForm(p => ({ ...p, type: v }))}>
-                <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  {Object.entries(TYPE_CONFIG).map(([k, v]) => <SelectItem key={k} value={k}>{v.label}</SelectItem>)}
-                </SelectContent>
-              </Select>
+              <MobileSelect value={form.type} onValueChange={v => setForm(p => ({ ...p, type: v }))} className="h-8 text-xs">
+                {Object.entries(TYPE_CONFIG).map(([k, v]) => <SelectItem key={k} value={k}>{v.label}</SelectItem>)}
+              </MobileSelect>
               <Input placeholder="שנת לימודים" value={form.academic_year} onChange={e => setForm(p => ({ ...p, academic_year: e.target.value }))} className="h-8 text-xs" />
               <Input placeholder="תיאור (אופציונלי)" value={form.description} onChange={e => setForm(p => ({ ...p, description: e.target.value }))} className="h-8 text-xs col-span-2" />
               <Input type="date" value={form.date} onChange={e => setForm(p => ({ ...p, date: e.target.value }))} className="h-8 text-xs" />

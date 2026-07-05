@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
+import { MobileSelect, SelectItem } from '@/components/ui/MobileSelect';
 import { Sparkles, Mic, MicOff, Check, X, Loader2, Edit2, Save, AlertCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -271,19 +272,20 @@ function DraftCard({ card, students, isEditing, isSaving, onEdit, onUpdate, onRe
           <div className="grid grid-cols-2 gap-2">
             <div>
               <label className="text-xs text-muted-foreground mb-1 block">תלמיד</label>
-              <select
-                className="w-full border border-border rounded-md px-2 py-1.5 bg-background text-sm"
+              <MobileSelect
                 value={card.student_id || ''}
-                onChange={e => {
-                  const s = students.find(s => s.id === e.target.value);
-                  onUpdate('student_id', e.target.value);
+                onValueChange={(val) => {
+                  const s = students.find(st => st.id === val);
+                  onUpdate('student_id', val);
                   onUpdate('student_name', s?.name || '');
                   onUpdate('unmatched', !s);
                 }}
+                placeholder="בחר תלמיד..."
+                className="text-sm"
               >
-                <option value="">בחר תלמיד...</option>
-                {students.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
-              </select>
+                <SelectItem value={null}>בחר תלמיד...</SelectItem>
+                {students.map(s => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}
+              </MobileSelect>
             </div>
             <div>
               <label className="text-xs text-muted-foreground mb-1 block">מקצוע</label>

@@ -4,7 +4,7 @@ import { base44 } from '@/api/base44Client';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { MobileSelect, SelectItem } from '@/components/ui/MobileSelect';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { FileDown, MessageCircle, Mail, Loader2, User, TrendingUp, CheckSquare, Star, Sparkles, CalendarCheck, FileText } from 'lucide-react';
@@ -353,30 +353,20 @@ export default function StudentReportGenerator({ students }) {
             {/* Student selector */}
             <div>
               <Label className="text-xs font-semibold mb-1.5 block">בחר תלמיד</Label>
-              <Select value={selectedStudentId} onValueChange={setSelectedStudentId}>
-                <SelectTrigger>
-                  <SelectValue placeholder="בחר תלמיד..." />
-                </SelectTrigger>
-                <SelectContent>
-                  {students.filter(s => s.is_active !== false).map(s => (
-                    <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <MobileSelect value={selectedStudentId} onValueChange={setSelectedStudentId} placeholder="בחר תלמיד...">
+                {students.filter(s => s.is_active !== false).map(s => (
+                  <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>
+                ))}
+              </MobileSelect>
             </div>
 
             {/* Period */}
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <Label className="text-xs font-semibold mb-1.5 block">תקופה</Label>
-                <Select value={period} onValueChange={setPeriod}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {PERIODS.map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}
-                  </SelectContent>
-                </Select>
+                <MobileSelect value={period} onValueChange={setPeriod}>
+                  {PERIODS.map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}
+                </MobileSelect>
               </div>
               <div>
                 <Label className="text-xs font-semibold mb-1.5 block">שם המורה (אופציונלי)</Label>

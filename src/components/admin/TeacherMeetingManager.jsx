@@ -4,7 +4,7 @@ import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { MobileSelect, SelectItem } from '@/components/ui/MobileSelect';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Loader2, Plus, Calendar, Trash2, ChevronDown, ChevronUp } from 'lucide-react';
@@ -102,12 +102,9 @@ export default function TeacherMeetingManager({ teacher }) {
                 </div>
                 <div>
                   <Label className="text-[10px] mb-1 block">סוג פגישה</Label>
-                  <Select value={form.type} onValueChange={v => setForm({ ...form, type: v })}>
-                    <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      {Object.entries(TYPE_LABELS).map(([v, l]) => <SelectItem key={v} value={v}>{l}</SelectItem>)}
-                    </SelectContent>
-                  </Select>
+                  <MobileSelect value={form.type} onValueChange={v => setForm({ ...form, type: v })} className="h-8 text-xs">
+                    {Object.entries(TYPE_LABELS).map(([v, l]) => <SelectItem key={v} value={v}>{l}</SelectItem>)}
+                  </MobileSelect>
                 </div>
               </div>
               <div>

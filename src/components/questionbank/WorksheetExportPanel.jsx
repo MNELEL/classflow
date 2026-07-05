@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { MobileSelect, SelectItem } from '@/components/ui/MobileSelect';
 import { Badge } from '@/components/ui/badge';
 import { Printer, ChevronDown, ChevronRight, Sparkles, Image, Save, RotateCcw, Upload } from 'lucide-react';
 import { toast } from 'sonner';
@@ -261,22 +261,16 @@ export default function WorksheetExportPanel({ selectedQuestions, allQuestions, 
                   <Sparkles className="w-3 h-3" /> הוסף שאלות לפי נושא ורמה
                 </p>
                 <div className="flex gap-2 flex-wrap">
-                  <Select value={filterSubject} onValueChange={setFilterSubject}>
-                    <SelectTrigger className="h-8 text-xs flex-1 min-w-[110px]"><SelectValue placeholder="כל המקצועות" /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">כל המקצועות</SelectItem>
-                      {subjects.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
-                    </SelectContent>
-                  </Select>
-                  <Select value={filterDiff} onValueChange={setFilterDiff}>
-                    <SelectTrigger className="h-8 text-xs w-28"><SelectValue placeholder="כל הרמות" /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">כל הרמות</SelectItem>
-                      <SelectItem value="קל">🟢 קל</SelectItem>
-                      <SelectItem value="בינוני">🟡 בינוני</SelectItem>
-                      <SelectItem value="קשה">🔴 קשה</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  <MobileSelect value={filterSubject} onValueChange={setFilterSubject} placeholder="כל המקצועות" className="h-8 text-xs flex-1 min-w-[110px]">
+                    <SelectItem value="all">כל המקצועות</SelectItem>
+                    {subjects.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+                  </MobileSelect>
+                  <MobileSelect value={filterDiff} onValueChange={setFilterDiff} placeholder="כל הרמות" className="h-8 text-xs w-28">
+                    <SelectItem value="all">כל הרמות</SelectItem>
+                    <SelectItem value="קל">🟢 קל</SelectItem>
+                    <SelectItem value="בינוני">🟡 בינוני</SelectItem>
+                    <SelectItem value="קשה">🔴 קשה</SelectItem>
+                  </MobileSelect>
                   <Button size="sm" variant="outline" className="h-8 text-xs gap-1" onClick={() => { onSelectByFilter({ subject: filterSubject, difficulty: filterDiff }); toast.success('שאלות נוספו'); }}>
                     + הוסף
                   </Button>
