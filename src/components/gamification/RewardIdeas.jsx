@@ -92,7 +92,8 @@ export default function RewardIdeas({ students = [], onQuickReward }) {
                   className="flex items-center justify-between bg-card border border-border/60 rounded-xl px-3 py-2 group">
                   <p className="text-sm flex-1">{idea}</p>
                   <button onClick={() => copyIdea(idea)}
-                    className="opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-primary ml-2">
+                    aria-label={`העתק: ${idea}`}
+                    className="opacity-0 group-hover:opacity-100 touch-show transition-opacity text-muted-foreground hover:text-primary ml-2">
                     {copied === idea ? <Check className="w-3.5 h-3.5 text-green-500" /> : <Copy className="w-3.5 h-3.5" />}
                   </button>
                 </motion.div>
