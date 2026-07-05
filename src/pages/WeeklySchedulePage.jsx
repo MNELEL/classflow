@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Plus, ChevronRight, ChevronLeft, Clock, BookOpen, Trash2, X } from 'lucide-react';
 import { toast } from 'sonner';
 import moment from 'moment';
+import SmartBellTimer from '@/components/schedule/SmartBellTimer';
 
 const DAYS = [
   { key: 'sun', label: 'ראשון' },
@@ -296,6 +297,10 @@ export default function WeeklySchedulePage() {
 
         {/* Header */}
         <div className="sticky top-0 z-20 bg-background/95 backdrop-blur border-b border-border px-4 py-3">
+          {/* Smart bell timer */}
+          <div className="mb-3">
+            <SmartBellTimer />
+          </div>
           <div className="flex items-center justify-between gap-2">
             <div>
               <h1 className="text-base font-bold">לוח שבועי</h1>
