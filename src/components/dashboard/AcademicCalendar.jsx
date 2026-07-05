@@ -150,6 +150,7 @@ export default function AcademicCalendar() {
               key={tab.id}
               role="tab"
               aria-selected={activeTab === tab.id}
+              tabIndex={activeTab === tab.id ? 0 : -1}
               onClick={() => setActiveTab(tab.id)}
               className={`flex-1 text-[11px] font-medium py-1 rounded-md transition-colors ${
                 activeTab === tab.id ? 'bg-white dark:bg-card shadow-sm text-foreground' : 'text-muted-foreground'

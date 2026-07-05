@@ -129,7 +129,7 @@ export default function GamificationPage() {
         {/* Tabs */}
         <div role="tablist" className="flex gap-1 bg-muted/50 rounded-xl p-1 overflow-x-auto">
           {TABS.map(([id, label]) => (
-            <button key={id} role="tab" aria-selected={tab === id} onClick={() => setTab(id)}
+            <button key={id} role="tab" aria-selected={tab === id} tabIndex={tab === id ? 0 : -1} onClick={() => setTab(id)}
               className={`flex-shrink-0 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${tab === id ? 'bg-card shadow text-foreground' : 'text-muted-foreground hover:text-foreground'}`}>
               {label}
             </button>

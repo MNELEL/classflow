@@ -75,25 +75,25 @@ export default function StudentList({ students, onSave, onDelete }) {
                     </div>
                   </div>
                   <div className="flex gap-1 opacity-60 md:opacity-60 md:group-hover:opacity-100 touch-show transition-opacity shrink-0">
-                    <Button size="icon" variant="ghost" className="h-7 w-7" aria-label="פרופיל תלמיד" title="פרופיל תלמיד" onClick={() => navigate(`/students/${student.id}`)}>
-                      <User className="w-3.5 h-3.5 text-primary" />
-                    </Button>
-                    <Button size="icon" variant="ghost" className="h-7 w-7" aria-label="משימות" title="משימות" onClick={() => setTaskStudent(student)}>
-                      <CheckSquare className="w-3.5 h-3.5" />
-                    </Button>
-                    <Button size="icon" variant="ghost" className="h-7 w-7" aria-label="ציונים" title="ציונים" onClick={() => setGradeStudent(student)}>
-                      <TrendingUp className="w-3.5 h-3.5" />
-                    </Button>
-                    <Button size="icon" variant="ghost" className="h-7 w-7" aria-label="תיק אישי" title="תיק אישי" onClick={() => setPortfolioStudent(portfolioStudent?.id === student.id ? null : student)}>
-                      <FolderOpen className={`w-3.5 h-3.5 ${portfolioStudent?.id === student.id ? 'text-primary' : ''}`} />
-                    </Button>
-                    <Button size="icon" variant="ghost" className="h-7 w-7" aria-label="עריכת תלמיד" onClick={() => setEditing(student)}>
-                      <Edit2 className="w-3.5 h-3.5" />
-                    </Button>
-                    <Button size="icon" variant="ghost" className="h-7 w-7 text-destructive/60 hover:text-destructive" aria-label="מחיקת תלמיד" onClick={() => onDelete(student.id)}>
-                      <Trash2 className="w-3.5 h-3.5" />
-                    </Button>
-                  </div>
+                     <Button size="icon" variant="ghost" className="h-7 w-7 min-h-[44px] min-w-[44px]" aria-label="פרופיל תלמיד" title="פרופיל תלמיד" onClick={() => navigate(`/students/${student.id}`)}>
+                       <User className="w-3.5 h-3.5 text-primary" />
+                     </Button>
+                     <Button size="icon" variant="ghost" className="h-7 w-7 min-h-[44px] min-w-[44px]" aria-label="משימות" title="משימות" onClick={() => setTaskStudent(student)}>
+                       <CheckSquare className="w-3.5 h-3.5" />
+                     </Button>
+                     <Button size="icon" variant="ghost" className="h-7 w-7 min-h-[44px] min-w-[44px]" aria-label="ציונים" title="ציונים" onClick={() => setGradeStudent(student)}>
+                       <TrendingUp className="w-3.5 h-3.5" />
+                     </Button>
+                     <Button size="icon" variant="ghost" className="h-7 w-7 min-h-[44px] min-w-[44px]" aria-label="תיק אישי" title="תיק אישי" onClick={() => setPortfolioStudent(portfolioStudent?.id === student.id ? null : student)}>
+                       <FolderOpen className={`w-3.5 h-3.5 ${portfolioStudent?.id === student.id ? 'text-primary' : ''}`} />
+                     </Button>
+                     <Button size="icon" variant="ghost" className="h-7 w-7 min-h-[44px] min-w-[44px]" aria-label="עריכת תלמיד" onClick={() => setEditing(student)}>
+                       <Edit2 className="w-3.5 h-3.5" />
+                     </Button>
+                     <Button size="icon" variant="ghost" className="h-7 w-7 min-h-[44px] min-w-[44px] text-destructive/60 hover:text-destructive" aria-label="מחיקת תלמיד" onClick={() => onDelete(student.id)}>
+                       <Trash2 className="w-3.5 h-3.5" />
+                     </Button>
+                   </div>
                 </div>
                 <StudentPortfolio student={student} open={portfolioStudent?.id === student.id} />
               </motion.div>

@@ -60,11 +60,21 @@ export default function EventsPage() {
     createEventMutation.mutate(form);
   }
 
-  async function deleteEvent(id) {
-    await base44.entities.SchoolEvent.delete(id);
-    qc.invalidateQueries({ queryKey: ['school-events'] });
-    toast.success('נמחק בהצלחה');
-  }
+  const deleteMutation = useMutation({
+    mutationFn: (id) => base44.entities.SchoolEvent.delete(id),
+    onMutate: async (id) => {
+      await qc.cancelQueries({ queryKey: ['school-events'] });
+      const previous = qc.getQueryData(['school-events']);
+      qc.setQueryData(['school-events'], (old = []) => old.filter(e => e.id !== id));
+      return { previous };
+    },
+    onError: (_err, _id, ctx) => {
+      if (ctx?.previous) qc.setQueryData(['school-events'], ctx.previous);
+      toast.error('שגיאה במחיקה');
+    },
+    onSettled: () => qc.invalidateQueries({ queryKey: ['school-events'] }),
+    onSuccess: () => toast.success('נמחק בהצלחה'),
+  });
 
   function daysUntil(date) {
     const diff = new Date(date) - now;
@@ -104,7 +114,7 @@ export default function EventsPage() {
                     <div className="flex-1 min-w-0">
                       <div className="flex items-start justify-between gap-2">
                         <p className="font-semibold text-sm">{event.title}</p>
-                        <button onClick={() => deleteEvent(event.id)} className="p-1 hover:bg-destructive/10 rounded-lg shrink-0">
+                        <button onClick={() => deleteMutation.mutate(event.id)} className="p-1 hover:bg-destructive/10 rounded-lg shrink-0">
                           <Trash2 className="w-3.5 h-3.5 text-destructive" />
                         </button>
                       </div>
@@ -141,7 +151,7 @@ export default function EventsPage() {
                     <span>{meta.emoji}</span>
                     <span className="text-sm flex-1 truncate">{event.title}</span>
                     <span className="text-[10px] text-muted-foreground">{new Date(event.start_date).toLocaleDateString('he-IL')}</span>
-                    <button onClick={() => deleteEvent(event.id)} className="p-1 hover:bg-destructive/10 rounded-lg">
+                    <button onClick={() => deleteMutation.mutate(event.id)} className="p-1 hover:bg-destructive/10 rounded-lg">
                       <X className="w-3 h-3 text-destructive" />
                     </button>
                   </div>

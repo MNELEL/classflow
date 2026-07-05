@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { toast } from 'sonner';
-import { FileText, Plus, Calendar, Users, Trophy, BarChart3, Save, X, Check } from 'lucide-react';
+import { FileText, Plus, Calendar, Users, Trophy, BarChart3, Save, X, Check, Trash2 } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 export default function ExamsPage() {
@@ -61,6 +61,22 @@ export default function ExamsPage() {
       status: 'scheduled',
     });
   }
+
+  const deleteExamMutation = useMutation({
+    mutationFn: (id) => base44.entities.Exam.delete(id),
+    onMutate: async (id) => {
+      await qc.cancelQueries({ queryKey: ['exams'] });
+      const previous = qc.getQueryData(['exams']);
+      qc.setQueryData(['exams'], (old = []) => old.filter(e => e.id !== id));
+      return { previous };
+    },
+    onError: (_err, _id, ctx) => {
+      if (ctx?.previous) qc.setQueryData(['exams'], ctx.previous);
+      toast.error('שגיאה במחיקה');
+    },
+    onSettled: () => qc.invalidateQueries({ queryKey: ['exams'] }),
+    onSuccess: () => toast.success('המבחן נמחק'),
+  });
 
   async function saveGrades() {
     const scoresArr = activeStudents.map(s => ({
@@ -144,10 +160,13 @@ export default function ExamsPage() {
                     </div>
                   )}
                   <div className="flex gap-1.5">
-                    <Button size="sm" variant="outline" className="h-8 text-xs flex-1 gap-1" onClick={() => startGrading(exam)}>
-                      <Trophy className="w-3 h-3" /> בדיקה וציונים
-                    </Button>
-                  </div>
+                     <Button size="sm" variant="outline" className="h-8 text-xs flex-1 gap-1" onClick={() => startGrading(exam)}>
+                       <Trophy className="w-3 h-3" /> בדיקה וציונים
+                     </Button>
+                     <Button size="icon" variant="ghost" className="h-8 w-8 min-h-[44px] min-w-[44px] text-destructive/60 hover:text-destructive" aria-label="מחק מבחן" onClick={() => deleteExamMutation.mutate(exam.id)}>
+                       <Trash2 className="w-3.5 h-3.5" />
+                     </Button>
+                   </div>
                 </motion.div>
               );
             })}

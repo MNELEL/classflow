@@ -13,8 +13,12 @@ export default function ClassroomGrid({ seats, students, rows, cols, showNumbers
   const [gridZoom, setGridZoom] = useState(1);
 
   useEffect(() => {
-    if (cols > 7 || rows > 6) {
-      setGridZoom(Math.min(1, (window.innerWidth - 48) / (cols * 70)));
+    const MIN_CELL = 52; // px
+    const availW = Math.min(window.innerWidth - 48, 400); // cap at 400px
+    if (cols > 6 || rows > 6) {
+      setGridZoom(Math.min(1, availW / (cols * 70)));
+    } else if (cols * MIN_CELL > availW) {
+      setGridZoom(availW / (cols * MIN_CELL));
     } else {
       setGridZoom(1);
     }

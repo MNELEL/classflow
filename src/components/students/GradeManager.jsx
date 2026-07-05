@@ -136,7 +136,7 @@ ${gradesSummary}
                           <span className={`font-bold ${(g.score / (g.max_score || 100)) >= 0.7 ? 'text-emerald-600' : (g.score / (g.max_score || 100)) >= 0.5 ? 'text-yellow-600' : 'text-red-600'}`}>
                             {g.score}/{g.max_score || 100}
                           </span>
-                          <Button size="icon" variant="ghost" className="h-6 w-6 text-destructive/60 hover:text-destructive" onClick={() => deleteMutation.mutate(g.id)}>
+                          <Button size="icon" variant="ghost" className="h-6 w-6 min-h-[44px] min-w-[44px] text-destructive/60 hover:text-destructive" aria-label="מחק ציון" onClick={() => deleteMutation.mutate(g.id)}>
                             <Trash2 className="w-3 h-3" />
                           </Button>
                         </div>

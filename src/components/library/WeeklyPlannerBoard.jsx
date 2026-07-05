@@ -439,6 +439,13 @@ export default function WeeklyPlannerBoard() {
         {/* ── Edit mode: side-by-side library + timetable grid ──────────────── */}
         {viewMode === 'edit' && (
           <div className="flex flex-col sm:flex-row gap-3 pb-4">
+            {/* Mobile notice for wide grid */}
+            {isMobile && (
+              <div className="space-y-2 text-xs text-muted-foreground text-center py-4 bg-muted/30 rounded-xl sm:hidden">
+                <p>הטבלה המלאה זמינה במסך רחב יותר</p>
+                <p>השתמש בגלילה אופקית לצפייה בלוח השבועי</p>
+              </div>
+            )}
 
             {/* Mobile library toggle */}
             {isMobile && (
