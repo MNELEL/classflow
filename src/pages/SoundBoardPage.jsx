@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import AppLayout from '@/components/layout/AppLayout';
@@ -12,9 +12,13 @@ import { Play, Square, Upload, Trash2, Volume2, Trophy, Bell, Music } from 'luci
 import { toast } from 'sonner';
 import { motion } from 'framer-motion';
 import { warmSoundBoardMedia } from '@/lib/mediaWarmup';
+import { usePullToRefresh } from '@/hooks/usePullToRefresh';
+import PullToRefreshIndicator from '@/components/ui/PullToRefreshIndicator';
 
 export default function SoundBoardPage() {
   const qc = useQueryClient();
+  const handleRefresh = useCallback(async () => { await qc.invalidateQueries({ queryKey: ['sounds'] }); }, [qc]);
+  const { containerRef, pullY, refreshing } = usePullToRefresh(handleRefresh);
   const fileInputRef = useRef(null);
   const [playingId, setPlayingId] = useState(null);
   const audioRefs = useRef({});
@@ -117,7 +121,8 @@ export default function SoundBoardPage() {
 
   return (
     <AppLayout>
-      <div className="p-4 space-y-4 max-w-4xl mx-auto" dir="rtl">
+      <div ref={containerRef} className="p-4 space-y-4 max-w-4xl mx-auto" dir="rtl">
+        <PullToRefreshIndicator pullY={pullY} refreshing={refreshing} />
         <div className="flex items-center gap-2 mb-2">
           <div className="w-9 h-9 bg-purple-100 dark:bg-purple-900/30 rounded-xl flex items-center justify-center text-xl">🎵</div>
           <div>

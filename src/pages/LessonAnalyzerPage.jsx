@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import AppLayout from '@/components/layout/AppLayout';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -11,6 +11,8 @@ import { MobileSelect, SelectItem } from '@/components/ui/MobileSelect';
 import { toast } from 'sonner';
 import LessonSummaryHub from '@/components/lessonanalyzer/LessonSummaryHub.jsx';
 import SummaryTaskBoard from '@/components/lessonanalyzer/SummaryTaskBoard.jsx';
+import { usePullToRefresh } from '@/hooks/usePullToRefresh';
+import PullToRefreshIndicator from '@/components/ui/PullToRefreshIndicator';
 
 const STEPS = {
   IDLE: 'idle',
@@ -60,6 +62,8 @@ export default function LessonAnalyzerPage() {
   const [savingId, setSavingId] = useState(null);
   const [detailLevel, setDetailLevel] = useState('standard');
   const queryClient = useQueryClient();
+  const handleRefresh = useCallback(async () => { await queryClient.invalidateQueries({ queryKey: ['lesson_analyses'] }); await queryClient.invalidateQueries({ queryKey: ['library'] }); }, [queryClient]);
+  const { containerRef, pullY, refreshing } = usePullToRefresh(handleRefresh);
 
   const deleteMutation = useMutation({
     mutationFn: (id) => base44.entities.LibraryItem.delete(id),
@@ -167,7 +171,8 @@ export default function LessonAnalyzerPage() {
 
   return (
     <AppLayout>
-      <div className="overflow-y-auto h-full">
+      <div ref={containerRef} className="overflow-y-auto h-full">
+        <PullToRefreshIndicator pullY={pullY} refreshing={refreshing} />
         <div className="p-4 max-w-2xl mx-auto space-y-5 pb-8" dir="rtl">
 
           {/* Header */}

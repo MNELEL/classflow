@@ -147,7 +147,7 @@ export default function SmartGuide({ onClose }) {
             <h2 className="font-bold text-base">מדריך חכם</h2>
             <p className="text-xs text-muted-foreground">מפת דרכים אינטראקטיבית</p>
           </div>
-          <button onClick={onClose} className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-muted transition-colors">
+          <button onClick={onClose} aria-label="סגור מדריך" className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-muted transition-colors">
             <X className="w-4 h-4" />
           </button>
         </div>

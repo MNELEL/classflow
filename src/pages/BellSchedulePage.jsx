@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useQueryClient, useMutation } from '@tanstack/react-query';
 import AppLayout from '@/components/layout/AppLayout';
@@ -10,6 +10,8 @@ import { MobileSelect, SelectItem } from '@/components/ui/MobileSelect';
 import { toast } from 'sonner';
 import { Plus, Bell, Trash2, Play, Pause, Clock, Music, ToggleLeft, ToggleRight, Volume2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { usePullToRefresh } from '@/hooks/usePullToRefresh';
+import PullToRefreshIndicator from '@/components/ui/PullToRefreshIndicator';
 
 const DAY_NAMES = ['ראשון', 'שני', 'שלישי', 'רביעי', 'חמישי', 'שישי', 'שבת'];
 const DAY_SHORT = ['א׳', 'ב׳', 'ג׳', 'ד׳', 'ה׳', 'ו׳', 'ש׳'];
@@ -103,6 +105,8 @@ const DEFAULT_FORM = { name: '', time: '', days: [...SCHOOL_DAYS], sound_type: '
 
 export default function BellSchedulePage() {
   const qc = useQueryClient();
+  const handleRefresh = useCallback(async () => { await qc.invalidateQueries({ queryKey: ['bells'] }); }, [qc]);
+  const { containerRef, pullY, refreshing } = usePullToRefresh(handleRefresh);
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState(DEFAULT_FORM);
   const [editing, setEditing] = useState(null);
@@ -234,7 +238,8 @@ export default function BellSchedulePage() {
 
   return (
     <AppLayout>
-      <div className="p-4 space-y-4" dir="rtl">
+      <div ref={containerRef} className="p-4 space-y-4" dir="rtl">
+        <PullToRefreshIndicator pullY={pullY} refreshing={refreshing} />
         {/* Header */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
@@ -11,6 +11,8 @@ import { AnimatePresence, motion } from 'framer-motion';
 import WeekCard from '@/components/curriculum/WeekCard';
 import AppLayout from '@/components/layout/AppLayout';
 import TractateSelector from '@/components/curriculum/TractateSelector';
+import { usePullToRefresh } from '@/hooks/usePullToRefresh';
+import PullToRefreshIndicator from '@/components/ui/PullToRefreshIndicator';
 
 export default function CurriculumPlannerPage() {
   const [showForm, setShowForm] = useState(false);
@@ -20,7 +22,8 @@ export default function CurriculumPlannerPage() {
   const [freeText, setFreeText] = useState('');
   const [processing, setProcessing] = useState(false);
   const qc = useQueryClient();
-
+  const handleRefresh = useCallback(async () => { await qc.invalidateQueries({ queryKey: ['curriculum_weeks'] }); }, [qc]);
+  const { containerRef, pullY, refreshing } = usePullToRefresh(handleRefresh);
   const { data: weeks = [], isLoading } = useQuery({
     queryKey: ['curriculum_weeks'],
     queryFn: () => base44.entities.CurriculumWeek.list('-week_start', 30),
@@ -131,7 +134,8 @@ ${JSON.stringify(libraryContext)}
 
   return (
     <AppLayout>
-      <div className="h-full overflow-y-auto">
+      <div ref={containerRef} className="h-full overflow-y-auto">
+        <PullToRefreshIndicator pullY={pullY} refreshing={refreshing} />
         <div className="max-w-2xl mx-auto px-4 py-5 space-y-4">
           {/* Header */}
           <div className="flex items-center justify-between">

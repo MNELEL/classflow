@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import AppLayout from '@/components/layout/AppLayout';
@@ -14,6 +14,8 @@ import { loadStyleProfile, buildStyleInstruction } from '@/lib/teacherStyle';
 import TeacherStylePanel from '@/components/library/TeacherStylePanel';
 import { motion } from 'framer-motion';
 import ReactMarkdown from 'react-markdown';
+import { usePullToRefresh } from '@/hooks/usePullToRefresh';
+import PullToRefreshIndicator from '@/components/ui/PullToRefreshIndicator';
 
 const QUESTION_TYPES = ['רב-ברירה', 'שאלה פתוחה', 'נכון/לא נכון', 'השלמת משפט'];
 const DIFFICULTIES = ['קל', 'בינוני', 'קשה'];
@@ -21,6 +23,8 @@ const GRADE_LEVELS = ['א-ב', 'ג-ד', 'ה-ו', 'ז-ח', 'ט-י', 'י"א-י"ב'
 
 export default function WorksheetGeneratorPage() {
   const qc = useQueryClient();
+  const handleRefresh = useCallback(async () => { await qc.invalidateQueries({ queryKey: ['worksheets'] }); }, [qc]);
+  const { containerRef, pullY, refreshing } = usePullToRefresh(handleRefresh);
   const [form, setForm] = useState({ subject: '', topic: '', grade_level: 'ה-ו', difficulty: 'בינוני', num_questions: 5, question_types: ['רב-ברירה', 'שאלה פתוחה'] });
   const [generated, setGenerated] = useState(null);
   const [generating, setGenerating] = useState(false);
@@ -156,7 +160,8 @@ export default function WorksheetGeneratorPage() {
 
   return (
     <AppLayout>
-      <div className="p-4 max-w-2xl mx-auto overflow-y-auto h-full space-y-5" dir="rtl">
+      <div ref={containerRef} className="p-4 max-w-2xl mx-auto overflow-y-auto h-full space-y-5" dir="rtl">
+        <PullToRefreshIndicator pullY={pullY} refreshing={refreshing} />
         <div className="flex items-center gap-2">
           <div className="w-9 h-9 bg-primary/10 rounded-xl flex items-center justify-center">
             <BookOpen className="w-5 h-5 text-primary" />

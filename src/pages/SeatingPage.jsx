@@ -17,6 +17,8 @@ import { Badge } from '@/components/ui/badge';
 import { Lock, Unlock, EyeOff, SlidersHorizontal, Users, BarChart2 } from 'lucide-react';
 import { toast } from 'sonner';
 import SatisfactionReport from '@/components/classroom/SatisfactionReport';
+import { usePullToRefresh } from '@/hooks/usePullToRefresh';
+import PullToRefreshIndicator from '@/components/ui/PullToRefreshIndicator';
 
 const STORAGE_KEY = 'classmanager_seats';
 const ARRANGEMENT_KEY = 'classmanager_arrangement';
@@ -37,10 +39,13 @@ function loadFromStorage() {
 export default function SeatingPage() {
   const qc = useQueryClient();
 
-  const { data: students = [] } = useQuery({
+  const { data: students = [], refetch } = useQuery({
     queryKey: ['students'],
     queryFn: () => base44.entities.Student.list(),
   });
+
+  const handleRefresh = useCallback(async () => { await refetch(); }, [refetch]);
+  const { containerRef, pullY, refreshing } = usePullToRefresh(handleRefresh);
 
   const [rows, setRows] = useState(5);
   const [cols, setCols] = useState(6);
@@ -464,7 +469,7 @@ ${overrideLines ? `\nהעדפות ייבוא נוספות:\n${overrideLines}` : 
 
   return (
     <AppLayout>
-      <div className="flex relative" style={{ height: 'calc(100vh - 57px - 64px - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px))' }} dir="rtl">
+      <div className="flex relative" style={{ height: 'calc(100dvh - 121px - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px))', minHeight: 0 }} dir="rtl">
 
         {/* Desktop: fixed sidebars */}
         <div className="hidden md:flex w-52 border-l border-border bg-card overflow-y-auto shrink-0 flex-col">
@@ -472,7 +477,8 @@ ${overrideLines ? `\nהעדפות ייבוא נוספות:\n${overrideLines}` : 
         </div>
 
         {/* Main grid */}
-        <div className="flex-1 overflow-auto overflow-x-auto p-2 md:p-4 relative min-w-0" style={{ touchAction: 'pan-y', WebkitOverflowScrolling: 'touch' }}>
+        <div ref={containerRef} className="flex-1 overflow-auto overflow-x-auto p-2 md:p-4 relative min-w-0" style={{ touchAction: 'pan-y', WebkitOverflowScrolling: 'touch' }}>
+          <PullToRefreshIndicator pullY={pullY} refreshing={refreshing} />
           {/* Mobile horizontal scroll hint */}
           <div className="md:hidden text-center text-[10px] text-muted-foreground/60 mb-1">
             ← גלול לצפייה בכל הכיתה →

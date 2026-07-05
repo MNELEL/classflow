@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import AppLayout from '@/components/layout/AppLayout';
@@ -10,6 +10,8 @@ import { toast } from 'sonner';
 import { addWeeks, addDays, startOfWeek, format, isSameDay } from 'date-fns';
 import SmartBellTimer from '@/components/schedule/SmartBellTimer';
 import { MobileSelect, SelectItem } from '@/components/ui/MobileSelect';
+import { usePullToRefresh } from '@/hooks/usePullToRefresh';
+import PullToRefreshIndicator from '@/components/ui/PullToRefreshIndicator';
 
 const DAYS = [
   { key: 'sun', label: 'ראשון' },
@@ -181,6 +183,8 @@ function LessonCard({ lesson, color, onDelete, libraryItem }) {
 // ── Main Page ──
 export default function WeeklySchedulePage() {
   const qc = useQueryClient();
+  const handleRefresh = useCallback(async () => { await qc.invalidateQueries({ queryKey: ['weekly-plans'] }); }, [qc]);
+  const { containerRef, pullY, refreshing } = usePullToRefresh(handleRefresh);
   const [weekOffset, setWeekOffset] = useState(0);
   const [addDialog, setAddDialog] = useState({ open: false, day: null, hour: null });
   const [mobileDay, setMobileDay] = useState(() => {
@@ -294,7 +298,8 @@ export default function WeeklySchedulePage() {
 
   return (
     <AppLayout>
-      <div className="min-h-full bg-background" dir="rtl" style={{ touchAction: 'pan-y' }}>
+      <div ref={containerRef} className="min-h-full bg-background overflow-y-auto" dir="rtl" style={{ touchAction: 'pan-y' }}>
+        <PullToRefreshIndicator pullY={pullY} refreshing={refreshing} />
 
         {/* Header */}
         <div className="sticky top-0 z-20 bg-background/95 backdrop-blur border-b border-border px-4 py-3 overflow-x-hidden">
