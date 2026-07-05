@@ -219,7 +219,7 @@ export default function AIGradeInput({ students, grades, onGradesSaved }) {
           <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
             <div className="flex items-center justify-between mb-3">
               <p className="text-sm font-semibold">כרטיסי טיוטה ({draftCards.length})</p>
-              <Button size="sm" onClick={saveAll} className="gap-1.5 bg-emerald-600 hover:bg-emerald-700">
+              <Button size="sm" onClick={saveAll} disabled={savingIds.length > 0} className="gap-1.5 bg-emerald-600 hover:bg-emerald-700">
                 {savingIds.length > 0 ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Save className="w-3.5 h-3.5" />} שמור הכל
               </Button>
             </div>

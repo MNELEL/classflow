@@ -12,11 +12,11 @@ import OverdueAlertsPanel from '@/components/alerts/OverdueAlertsPanel';
 
 // 5 bottom nav tabs — all other routes accessible via /more
 const PRIMARY_NAV = [
-  { path: '/',         icon: BookOpen,      label: 'דשבורד'  },
-  { path: '/students', icon: Users,         label: 'תלמידים' },
-  { path: '/seating',  icon: LayoutGrid,    label: 'ישיבה'   },
-  { path: '/library',  icon: Library,       label: 'ספרייה'   },
-  { path: '/more',     icon: Grid3x3,       label: 'עוד'      },
+  { path: '/',           icon: BookOpen,      label: 'דשבורד'  },
+  { path: '/students',   icon: Users,         label: 'תלמידים' },
+  { path: '/attendance', icon: CalendarCheck, label: 'נוכחות'  },
+  { path: '/library',    icon: Library,       label: 'ספרייה'   },
+  { path: '/more',       icon: Grid3x3,       label: 'עוד'      },
 ];
 
 
@@ -95,7 +95,7 @@ export default function AppLayout({ children }) {
   const title = branding.page_titles?.[location.pathname] || branding.school_name || 'ClassManager Pro';
 
   // Check if current path is in the "more" section (any route not in the 4 primary tabs)
-  const MORE_PATHS = ['/attendance','/toolkit','/grades','/gamification','/parents','/worksheets','/question-bank','/lesson-analyzer','/curriculum','/homework','/sound-board','/student-view','/reports','/analytics','/events','/exams','/fast-feedback','/behavior-timeline','/weekly-schedule','/bell-schedule','/study-plan-generator','/raffle','/daily-summary','/exam-scanner','/more'];
+  const MORE_PATHS = ['/seating','/toolkit','/grades','/gamification','/parents','/worksheets','/question-bank','/lesson-analyzer','/curriculum','/homework','/sound-board','/student-view','/reports','/analytics','/events','/exams','/fast-feedback','/behavior-timeline','/weekly-schedule','/bell-schedule','/study-plan-generator','/raffle','/daily-summary','/exam-scanner','/more'];
   const isMoreActive = MORE_PATHS.includes(location.pathname);
 
   return (
@@ -157,6 +157,8 @@ export default function AppLayout({ children }) {
 
       {/* Bottom Navigation Bar — 5 tabs */}
       <nav
+        role="navigation"
+        aria-label="ניווט ראשי"
         className="fixed bottom-0 inset-x-0 z-50 flex items-stretch backdrop-blur-md bg-background/95 border-t border-border"
         style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
       >
@@ -170,6 +172,7 @@ export default function AppLayout({ children }) {
               key={path}
               to={path}
               onClick={(e) => handleNavClick(e, path)}
+              aria-current={active ? 'page' : undefined}
               className={cn(
                 'flex-1 flex flex-col items-center justify-center gap-0.5 min-h-[56px] min-w-[44px] py-2 select-none transition-all duration-200',
                 active

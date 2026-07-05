@@ -140,7 +140,7 @@ export default function AcademicCalendar() {
           <span className="text-[11px] font-normal text-muted-foreground">{hebMonthLabel}</span>
         </CardTitle>
         {/* Tabs */}
-        <div className="flex gap-1 bg-muted/40 rounded-lg p-0.5">
+        <div role="tablist" className="flex gap-1 bg-muted/40 rounded-lg p-0.5">
           {[
             { id: 'calendar', label: '📅 לוח שנה' },
             { id: 'bk', label: '📖 בבא קמא' },
@@ -148,6 +148,8 @@ export default function AcademicCalendar() {
           ].map(tab => (
             <button
               key={tab.id}
+              role="tab"
+              aria-selected={activeTab === tab.id}
               onClick={() => setActiveTab(tab.id)}
               className={`flex-1 text-[11px] font-medium py-1 rounded-md transition-colors ${
                 activeTab === tab.id ? 'bg-white dark:bg-card shadow-sm text-foreground' : 'text-muted-foreground'

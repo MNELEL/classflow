@@ -117,7 +117,7 @@ export default function GamificationPage() {
             <h1 className="font-bold text-base">גיימיפיקציה</h1>
           </div>
           <div className="flex gap-2">
-            <Button size="sm" variant="outline" className="gap-1 text-xs" onClick={() => setKioskMode(true)}>
+            <Button size="sm" variant="outline" className="gap-1 text-xs" onClick={() => setKioskMode(true)} aria-label="מצב תצוגה מלאה">
               <Maximize2 className="w-3.5 h-3.5" /> מצב תצוגה
             </Button>
             <Button size="sm" className="gap-1 text-xs" onClick={() => setShowRewardForm(true)}>
@@ -127,9 +127,9 @@ export default function GamificationPage() {
         </div>
 
         {/* Tabs */}
-        <div className="flex gap-1 bg-muted/50 rounded-xl p-1 overflow-x-auto">
+        <div role="tablist" className="flex gap-1 bg-muted/50 rounded-xl p-1 overflow-x-auto">
           {TABS.map(([id, label]) => (
-            <button key={id} onClick={() => setTab(id)}
+            <button key={id} role="tab" aria-selected={tab === id} onClick={() => setTab(id)}
               className={`flex-shrink-0 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${tab === id ? 'bg-card shadow text-foreground' : 'text-muted-foreground hover:text-foreground'}`}>
               {label}
             </button>

@@ -1,5 +1,3 @@
-import jsPDF from 'jspdf';
-import html2canvas from 'html2canvas';
 import { toast } from 'sonner';
 import { loadBranding } from '@/lib/branding';
 
@@ -150,6 +148,10 @@ export async function exportToPDF(seats, students, rows, cols, title = '') {
   document.body.appendChild(container);
 
   try {
+    const [{ default: jsPDF }, { default: html2canvas }] = await Promise.all([
+      import('jspdf'),
+      import('html2canvas'),
+    ]);
     const el = container.querySelector('#pdf-root');
     const canvas = await html2canvas(el, {
       scale: 2,

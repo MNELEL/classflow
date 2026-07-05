@@ -1,5 +1,3 @@
-import { Document, Packer, Paragraph, TextRun, Table, TableRow, TableCell, HeadingLevel, AlignmentType, WidthType } from 'docx';
-
 function saveAs(blob, filename) {
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
@@ -24,6 +22,7 @@ const PERIOD_LABELS = { weekly: 'שבועי', monthly: 'חודשי', exam: 'מב
 
 export async function createPeriodReportWordDoc(data, className, periodLabel, audienceLabel, teacherName) {
   const { summary, highlights = [], challenges = [], classAchievements = [], recommendation, subjectSummaries = [], stats = {} } = data;
+  const { Document, Packer, Paragraph, TextRun, Table, TableRow, TableCell, HeadingLevel, AlignmentType, WidthType } = await import('docx');
 
   const doc = new Document({
     sections: [{
@@ -105,6 +104,7 @@ export async function createStudentReportWordDoc(student, grades, tasks, teacher
     ? Math.round(grades.reduce((s, g) => s + (g.score / (g.max_score || 100)) * 100, 0) / grades.length)
     : null;
   const doneTasks = tasks.filter(t => t.status === 'done').length;
+  const { Document, Packer, Paragraph, TextRun, Table, TableRow, TableCell, HeadingLevel, AlignmentType, WidthType } = await import('docx');
 
   const doc = new Document({
     sections: [{
