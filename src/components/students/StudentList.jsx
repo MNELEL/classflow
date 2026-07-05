@@ -74,7 +74,7 @@ export default function StudentList({ students, onSave, onDelete }) {
                       </div>
                     </div>
                   </div>
-                  <div className="flex gap-1 opacity-60 group-hover:opacity-100 transition-opacity shrink-0">
+                  <div className="flex gap-1 opacity-60 md:opacity-60 md:group-hover:opacity-100 touch-show transition-opacity shrink-0">
                     <Button size="icon" variant="ghost" className="h-7 w-7" aria-label="פרופיל תלמיד" title="פרופיל תלמיד" onClick={() => navigate(`/students/${student.id}`)}>
                       <User className="w-3.5 h-3.5 text-primary" />
                     </Button>

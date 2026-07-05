@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { MobileSelect, SelectItem } from '@/components/ui/MobileSelect';
 import { Search, Sparkles, Loader2, Plus, ExternalLink, BookOpen, FileText, Link2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useQueryClient } from '@tanstack/react-query';
@@ -198,14 +198,9 @@ ${content}
             />
           </div>
           <div className="flex gap-2">
-            <Select value={source} onValueChange={setSource}>
-              <SelectTrigger className="h-8 text-xs flex-1 bg-white dark:bg-card">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {SOURCES.map(s => <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>)}
-              </SelectContent>
-            </Select>
+            <MobileSelect value={source} onValueChange={setSource} className="h-8 text-xs flex-1 bg-white dark:bg-card">
+              {SOURCES.map(s => <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>)}
+            </MobileSelect>
             <Input
               value={gradeLevel}
               onChange={e => setGradeLevel(e.target.value)}
@@ -266,14 +261,9 @@ ${content}
             {/* Generate section */}
             <div className="bg-muted/40 rounded-xl p-3 space-y-2 border border-border/60">
               <p className="text-xs font-semibold text-muted-foreground">יצירת חומר מהתוצאות:</p>
-              <Select value={outputType} onValueChange={setOutputType}>
-                <SelectTrigger className="h-8 text-xs">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {OUTPUT_TYPES.map(o => <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>)}
-                </SelectContent>
-              </Select>
+              <MobileSelect value={outputType} onValueChange={setOutputType} className="h-8 text-xs">
+                {OUTPUT_TYPES.map(o => <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>)}
+              </MobileSelect>
               <Button className="w-full gap-1.5 h-9" onClick={generateFromSelected} disabled={generating}>
                 {generating ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
                 {generating ? 'יוצר...' : `צור ${OUTPUT_TYPES.find(o => o.value === outputType)?.label || ''} מ-${selectedResults.length || results.length} תוצאות`}

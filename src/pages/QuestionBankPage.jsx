@@ -100,7 +100,7 @@ function SelectedChip({ q, idx, onRemove }) {
         <div ref={p.innerRef} {...p.draggableProps}
           className={`flex items-center gap-2 rounded-xl border bg-card p-2.5 text-xs group select-none
             ${snap.isDragging ? 'shadow-xl ring-2 ring-primary/40' : 'hover:shadow-sm'}`}>
-          <span {...p.dragHandleProps} className="cursor-grab text-muted-foreground opacity-40 group-hover:opacity-80">
+          <span {...p.dragHandleProps} className="cursor-grab text-muted-foreground opacity-40 group-hover:opacity-80 touch-show">
             <GripVertical className="w-3.5 h-3.5" />
           </span>
           <span className="w-5 h-5 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-bold text-[10px] shrink-0">{idx + 1}</span>

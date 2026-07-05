@@ -168,7 +168,8 @@ function LessonCard({ lesson, color, onDelete, libraryItem }) {
       ) : (
         <button
           onClick={() => setConfirm(true)}
-          className="absolute top-1 left-1 opacity-0 group-hover:opacity-100 transition-opacity p-0.5 rounded hover:bg-black/10"
+          className="absolute top-1 left-1 opacity-0 group-hover:opacity-100 touch-show transition-opacity p-0.5 rounded hover:bg-black/10"
+          aria-label="מחק שיעור"
         >
           <Trash2 className="w-3 h-3" />
         </button>
@@ -290,10 +291,10 @@ export default function WeeklySchedulePage() {
 
   return (
     <AppLayout>
-      <div className="min-h-full bg-background" dir="rtl">
+      <div className="min-h-full bg-background" dir="rtl" style={{ touchAction: 'pan-y' }}>
 
         {/* Header */}
-        <div className="sticky top-0 z-20 bg-background/95 backdrop-blur border-b border-border px-4 py-3">
+        <div className="sticky top-0 z-20 bg-background/95 backdrop-blur border-b border-border px-4 py-3 overflow-x-hidden">
           {/* Smart bell timer */}
           <div className="mb-3">
             <SmartBellTimer />
