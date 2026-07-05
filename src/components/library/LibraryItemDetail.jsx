@@ -10,6 +10,7 @@ import ReactMarkdown from 'react-markdown';
 import { X, Sparkles, Loader2, Plus, Trash2, Printer, Heart, Edit2, Check, BookOpen, Layers, GraduationCap, Star, Copy } from 'lucide-react';
 import { toast } from 'sonner';
 import ArtifactGenerator from './ArtifactGenerator';
+import ArtifactRenderer from './ArtifactRenderer';
 import { motion } from 'framer-motion';
 import { format } from 'date-fns';
 
@@ -286,9 +287,7 @@ export default function LibraryItemDetail({ itemId, onClose }) {
                   </Button>
                 </div>
                 <div id="classpro-a4-canvas" className="bg-white dark:bg-card border border-border/40 rounded-xl p-6 print-area">
-                  <ReactMarkdown className="prose prose-sm dark:prose-invert max-w-none text-sm leading-relaxed" dir="rtl">
-                    {selectedArtifact.content}
-                  </ReactMarkdown>
+                  <ArtifactRenderer artifact={selectedArtifact} />
                 </div>
               </div>
             ) : (

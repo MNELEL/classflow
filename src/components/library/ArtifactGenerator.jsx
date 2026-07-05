@@ -23,16 +23,179 @@ const ARTIFACT_TYPES = [
   { id: 'flashcards',                label: 'כרטיסיות חזרה',          icon: '🃏' },
 ];
 
-const PROMPTS = {
-  lesson_summary: 'כתוב סיכום שיעור מובנה בעברית ברורה. כלול: כותרת, נושא, נקודות עיקריות, מסקנות, ומשימה לחשיבה.',
-  lesson_plan: 'כתוב מערך שיעור מלא הכולל: מטרות שיעור, חומר נדרש, שלבי הוראה (פתיחה/גוף/סיכום), שאלות הנחיה, הערכה.',
-  review_questions_with: 'צור {count} שאלות חזרה מדורגות בקושי (קל→קשה) עם תשובות מלאות. כלול שאלות סגורות ופתוחות.',
-  review_questions_without: 'צור {count} שאלות חזרה מדורגות בקושי. שאלות בלבד, ללא תשובות. פורמט מוכן להדפסה.',
-  worksheet: 'צור דף עבודה לתלמיד הכולל: שם, תאריך, פעילויות מגוונות (השלמה/התאמה/כתיבה חופשית).',
-  teacher_guide: 'כתוב מדריך הוראה מפורט עם טיפים פדגוגיים, אזורי קושי צפויים, ושאלות הנחיה לדיון כיתתי.',
-  parent_summary: 'כתוב סיכום קצר וידידותי להורים (3-4 משפטים) על מה נלמד. טון חם ולא טכני.',
-  quiz: 'צור חידון בן {count} שאלות עם 4 תשובות אפשריות לכל שאלה. סמן תשובה נכונה.',
-  flashcards: 'צור {count} כרטיסיות לחזרה. פורמט: **צד א׳:** מושג/שאלה | **צד ב׳:** הגדרה/תשובה',
+// Structured prompts + JSON schemas per artifact type
+const ARTIFACT_CONFIG = {
+  lesson_summary: {
+    prompt: 'צור סיכום שיעור מובנה. כלול נקודות עיקריות (3-6), מסקנות (2-3), ומשימת חשיבה אחת לתלמיד.',
+    schema: {
+      type: 'object',
+      properties: {
+        title: { type: 'string' },
+        subject: { type: 'string' },
+        main_points: { type: 'array', items: { type: 'string' } },
+        conclusions: { type: 'array', items: { type: 'string' } },
+        thinking_task: { type: 'string' },
+      },
+      required: ['main_points', 'conclusions'],
+    },
+  },
+  lesson_plan: {
+    prompt: 'צור מערך שיעור מלא עם מטרות, חומר נדרש, שלבי הוראה (פתיחה/גוף/סיכום) כולל משך זמן ושאלות הנחיה לכל שלב, ואופן הערכה.',
+    schema: {
+      type: 'object',
+      properties: {
+        objectives: { type: 'array', items: { type: 'string' } },
+        materials: { type: 'array', items: { type: 'string' } },
+        stages: {
+          type: 'array',
+          items: {
+            type: 'object',
+            properties: {
+              name: { type: 'string' },
+              description: { type: 'string' },
+              duration_minutes: { type: 'number' },
+              guiding_questions: { type: 'array', items: { type: 'string' } },
+            },
+            required: ['name', 'description'],
+          },
+        },
+        assessment: { type: 'string' },
+      },
+      required: ['objectives', 'stages'],
+    },
+  },
+  review_questions_with: {
+    prompt: 'צור {count} שאלות חזרה מדורגות בקושי (קל→קשה). כלול סוגים מגוונים: רב-ברירה (עם 4 אפשרויות), שאלות פתוחות, ונכון/לא נכון. לכל שאלה צרף תשובה מלאה.',
+    schema: {
+      type: 'object',
+      properties: {
+        questions: {
+          type: 'array',
+          items: {
+            type: 'object',
+            properties: {
+              question: { type: 'string' },
+              type: { type: 'string', description: 'multiple_choice / open / true_false' },
+              options: { type: 'array', items: { type: 'string' } },
+              answer: { type: 'string' },
+              difficulty: { type: 'string', description: 'easy / medium / hard' },
+            },
+            required: ['question', 'answer', 'difficulty'],
+          },
+        },
+      },
+      required: ['questions'],
+    },
+  },
+  review_questions_without: {
+    prompt: 'צור {count} שאלות חזרה מדורגות בקושי. שאלות בלבד ללא תשובות. כלול רב-ברירה (4 אפשרויות) ושאלות פתוחות.',
+    schema: {
+      type: 'object',
+      properties: {
+        questions: {
+          type: 'array',
+          items: {
+            type: 'object',
+            properties: {
+              question: { type: 'string' },
+              type: { type: 'string' },
+              options: { type: 'array', items: { type: 'string' } },
+              difficulty: { type: 'string' },
+            },
+            required: ['question', 'difficulty'],
+          },
+        },
+      },
+      required: ['questions'],
+    },
+  },
+  worksheet: {
+    prompt: 'צור דף עבודה לתלמיד עם 3-5 פעילויות מגוונות: השלמת משפטים, התאמות, שאלות פתוחות. כלול הוראות ברורות לכל פעילות.',
+    schema: {
+      type: 'object',
+      properties: {
+        title: { type: 'string' },
+        activities: {
+          type: 'array',
+          items: {
+            type: 'object',
+            properties: {
+              type: { type: 'string', description: 'fill_blank / matching / open / multiple_choice' },
+              instruction: { type: 'string' },
+              items: { type: 'array', items: { type: 'string' } },
+            },
+            required: ['instruction', 'items'],
+          },
+        },
+      },
+      required: ['activities'],
+    },
+  },
+  teacher_guide: {
+    prompt: 'צור מדריך הוראה מפורט עם טיפים פדגוגיים (3-5), אזורי קושי צפויים (2-3), ושאלות הנחיה לדיון כיתתי (3-4).',
+    schema: {
+      type: 'object',
+      properties: {
+        tips: { type: 'array', items: { type: 'string' } },
+        difficulty_areas: { type: 'array', items: { type: 'string' } },
+        discussion_questions: { type: 'array', items: { type: 'string' } },
+      },
+      required: ['tips', 'discussion_questions'],
+    },
+  },
+  parent_summary: {
+    prompt: 'צור סיכום קצר וידידותי להורים על מה נלמד בשיעור (2-3 משפטים). כלול 2-3 נקודות לשיתוף. טון חם ולא טכני.',
+    schema: {
+      type: 'object',
+      properties: {
+        summary: { type: 'string' },
+        highlights: { type: 'array', items: { type: 'string' } },
+      },
+      required: ['summary'],
+    },
+  },
+  quiz: {
+    prompt: 'צור חידון בן {count} שאלות עם 4 אפשרויות לכל שאלה. סמן את התשובה הנכונה באמצעות correct_index (0-3).',
+    schema: {
+      type: 'object',
+      properties: {
+        questions: {
+          type: 'array',
+          items: {
+            type: 'object',
+            properties: {
+              question: { type: 'string' },
+              options: { type: 'array', items: { type: 'string' } },
+              correct_index: { type: 'number', description: '0-3' },
+              difficulty: { type: 'string' },
+            },
+            required: ['question', 'options', 'correct_index'],
+          },
+        },
+      },
+      required: ['questions'],
+    },
+  },
+  flashcards: {
+    prompt: 'צור {count} כרטיסיות לחזרה. כל כרטיסיה: front = מושג/שאלה קצרה, back = הגדרה/תשובה.',
+    schema: {
+      type: 'object',
+      properties: {
+        cards: {
+          type: 'array',
+          items: {
+            type: 'object',
+            properties: {
+              front: { type: 'string' },
+              back: { type: 'string' },
+            },
+            required: ['front', 'back'],
+          },
+        },
+      },
+      required: ['cards'],
+    },
+  },
 };
 
 export default function ArtifactGenerator({ open, onClose, item }) {
@@ -46,7 +209,8 @@ export default function ArtifactGenerator({ open, onClose, item }) {
     if (!artifactType) { toast.error('בחר סוג חומר'); return; }
     setGenerating(true);
     try {
-      const prompt = (PROMPTS[artifactType] || '').replace('{count}', questionCount);
+      const config = ARTIFACT_CONFIG[artifactType];
+      const prompt = config.prompt.replace('{count}', questionCount);
       const content = [
         item.transcript, item.ai_summary,
         ...(item.ai_key_points || [])
@@ -64,18 +228,16 @@ export default function ArtifactGenerator({ open, onClose, item }) {
 ${prompt}
 ${additionalInstructions ? `הוראות נוספות: ${additionalInstructions}` : ''}
 
-כתוב בעברית. השתמש ב-Markdown לעיצוב. כל השאלות והתוכן חייבים להיות מבוססים על החומר שסופק בלבד.`,
-        response_json_schema: {
-          type: "object",
-          properties: { content: { type: "string" } }
-        }
+כתוב בעברית בלבד. החזר אך ורק אובייקט JSON תקין.`,
+        response_json_schema: config.schema,
       });
 
       const newArtifact = {
         id: Date.now().toString(),
         type: artifactType,
         title: `${ARTIFACT_TYPES.find(t => t.id === artifactType)?.label} — ${item.title}`,
-        content: result.content,
+        content: typeof result === 'string' ? result : JSON.stringify(result, null, 2),
+        structured_data: typeof result === 'object' ? result : null,
         includes_answers: artifactType.includes('_with') || artifactType === 'quiz',
         created_at: format(new Date(), 'yyyy-MM-dd'),
       };

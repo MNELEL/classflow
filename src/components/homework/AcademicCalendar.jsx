@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Calendar, ChevronRight, ChevronLeft, Grid3X3, List } from 'lucide-react';
 import { format, startOfWeek, endOfWeek, eachDayOfInterval, startOfMonth, endOfMonth, isSameDay, addWeeks, subWeeks, addMonths, subMonths, parseISO } from 'date-fns';
 import { he } from 'date-fns/locale';
+import { toHebrewDay, toHebrewMonthYear } from '@/lib/hebrewDate';
 
 const TYPE_COLORS = {
   homework: 'bg-blue-500',
@@ -18,6 +19,7 @@ const TYPE_LABELS = { homework: 'שב"ד', exam: 'מבחן', project: 'פרוי�
 export default function AcademicCalendar() {
   const [view, setView] = useState('week');
   const [current, setCurrent] = useState(new Date());
+  const [showHebrew, setShowHebrew] = useState(true);
 
   const { data: assignments = [] } = useQuery({
     queryKey: ['homework'],
@@ -47,8 +49,8 @@ export default function AcademicCalendar() {
 
   const today = new Date();
   const periodLabel = view === 'week'
-    ? `${format(days[0], 'd MMM', { locale: he })} – ${format(days[days.length - 1], 'd MMM yyyy', { locale: he })}`
-    : format(current, 'MMMM yyyy', { locale: he });
+    ? `${format(days[0], 'd MMM', { locale: he })} – ${format(days[days.length - 1], 'd MMM yyyy', { locale: he })}${showHebrew ? ` · ${toHebrewMonthYear(days[0])}` : ''}`
+    : `${format(current, 'MMMM yyyy', { locale: he })}${showHebrew ? ` · ${toHebrewMonthYear(current)}` : ''}`;
 
   return (
     <div className="space-y-3">
@@ -74,6 +76,9 @@ export default function AcademicCalendar() {
           <Button size="sm" variant={view === 'month' ? 'default' : 'ghost'} className="h-8 px-2 text-xs" onClick={() => setView('month')}>
             <Grid3X3 className="w-3 h-3" />
           </Button>
+          <Button size="sm" variant={showHebrew ? 'default' : 'ghost'} className="h-8 px-2 text-xs" onClick={() => setShowHebrew(!showHebrew)} title="תאריך עברי">
+            <span className="text-[11px] font-bold">עב</span>
+          </Button>
         </div>
       </div>
 
@@ -88,9 +93,14 @@ export default function AcademicCalendar() {
             const isToday = isSameDay(day, today);
             return (
               <div key={day.toISOString()} className={`rounded-xl border min-h-[80px] p-1.5 ${isToday ? 'border-primary bg-primary/5' : 'border-border/40 bg-card'}`}>
-                <p className={`text-[11px] font-bold mb-1 text-center ${isToday ? 'text-primary' : 'text-muted-foreground'}`}>
-                  {format(day, 'd')}
-                </p>
+                <div className="text-center mb-1">
+                   <p className={`text-[11px] font-bold ${isToday ? 'text-primary' : 'text-muted-foreground'}`}>
+                     {format(day, 'd')}
+                   </p>
+                   {showHebrew && (
+                     <p className="text-[8px] text-muted-foreground/70 leading-none">{toHebrewDay(day)}</p>
+                   )}
+                 </div>
                 <div className="space-y-0.5">
                   {events.map((ev, i) => (
                     <div key={i} className={`${TYPE_COLORS[ev.type] || 'bg-gray-400'} rounded px-1 py-0.5`}>
@@ -123,6 +133,7 @@ export default function AcademicCalendar() {
               return (
                 <div key={day.toISOString()} className={`rounded-lg border p-1 min-h-[44px] ${isToday ? 'border-primary bg-primary/5' : 'border-border/30 bg-card'}`}>
                   <p className={`text-[10px] font-bold ${isToday ? 'text-primary' : 'text-muted-foreground'}`}>{format(day, 'd')}</p>
+                  {showHebrew && <p className="text-[7px] text-muted-foreground/60 leading-none">{toHebrewDay(day)}</p>}
                   {events.slice(0, 2).map((ev, i) => (
                     <div key={i} className={`${TYPE_COLORS[ev.type] || 'bg-gray-400'} rounded w-full h-1.5 mt-0.5`} title={ev.title} />
                   ))}
