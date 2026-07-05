@@ -31,7 +31,14 @@ export default function LibraryItemCard({ item, onClick }) {
 
   const favMutation = useMutation({
     mutationFn: () => base44.entities.LibraryItem.update(item.id, { is_favorite: !item.is_favorite }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['library'] }),
+    onMutate: async () => {
+      await qc.cancelQueries({ queryKey: ['library'] });
+      const previous = qc.getQueryData(['library']);
+      qc.setQueryData(['library'], old => (old || []).map(i => i.id === item.id ? { ...i, is_favorite: !i.is_favorite } : i));
+      return { previous };
+    },
+    onError: (_err, _vars, ctx) => { if (ctx?.previous) qc.setQueryData(['library'], ctx.previous); },
+    onSettled: () => qc.invalidateQueries({ queryKey: ['library'] }),
   });
 
   const aiInfo = AI_STATUS[item.ai_status] || AI_STATUS.pending;

@@ -3,7 +3,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { MobileSelect, SelectItem } from '@/components/ui/MobileSelect';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Loader2, Sparkles, ClipboardList, Save, Plus } from 'lucide-react';
@@ -140,15 +140,12 @@ ${content ? `תוכן רקע:\n"""\n${content.slice(0, 3000)}\n"""` : ''}
         {/* Source */}
         <div className="space-y-2">
           <label className="text-xs font-semibold">מקור הנושא</label>
-          <Select value={selectedItemId} onValueChange={(v) => { setSelectedItemId(v); if (v) setCustomTopic(''); }}>
-            <SelectTrigger className="h-10"><SelectValue placeholder="בחר מהספרייה (אופציונלי)..." /></SelectTrigger>
-            <SelectContent>
-              <SelectItem value={null}>— ללא, אכתוב נושא ידנית —</SelectItem>
-              {itemsWithContent.map(i => (
-                <SelectItem key={i.id} value={i.id}>{i.title}{i.subject ? ` · ${i.subject}` : ''}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <MobileSelect value={selectedItemId} onValueChange={(v) => { setSelectedItemId(v); if (v) setCustomTopic(''); }} placeholder="בחר מהספרייה (אופציונלי)..." className="h-10">
+            <SelectItem value={null}>— ללא, אכתוב נושא ידנית —</SelectItem>
+            {itemsWithContent.map(i => (
+              <SelectItem key={i.id} value={i.id}>{i.title}{i.subject ? ` · ${i.subject}` : ''}</SelectItem>
+            ))}
+          </MobileSelect>
           {!selectedItemId && (
             <Input
               placeholder="או הזן נושא חופשי (לדוגמה: כפל מטריצות, פרשת נח)"
@@ -181,12 +178,9 @@ ${content ? `תוכן רקע:\n"""\n${content.slice(0, 3000)}\n"""` : ''}
         <div className="grid grid-cols-2 gap-3">
           <div>
             <label className="text-xs font-semibold mb-1.5 block">סוג משימה</label>
-            <Select value={taskType} onValueChange={setTaskType}>
-              <SelectTrigger className="h-9 text-xs"><SelectValue /></SelectTrigger>
-              <SelectContent>
-                {TASK_TYPES.map(t => <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>)}
-              </SelectContent>
-            </Select>
+            <MobileSelect value={taskType} onValueChange={setTaskType} className="h-9 text-xs">
+              {TASK_TYPES.map(t => <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>)}
+            </MobileSelect>
           </div>
           <div>
             <label className="text-xs font-semibold mb-1.5 block">מספר משימות</label>

@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { MobileSelect, SelectItem } from '@/components/ui/MobileSelect';
 import { Search, Loader2, Download, ExternalLink, CheckCircle2, BookOpen, FileText, Sparkles } from 'lucide-react';
 import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -220,14 +220,9 @@ export default function ImportFromSourceModal({ open, onClose }) {
                   className="pr-9 h-9"
                 />
               </div>
-              <Select value={contentType} onValueChange={setContentType}>
-                <SelectTrigger className="h-9 w-36 text-xs">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {CONTENT_TYPES.map(c => <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>)}
-                </SelectContent>
-              </Select>
+              <MobileSelect value={contentType} onValueChange={setContentType} className="h-9 w-36 text-xs">
+                {CONTENT_TYPES.map(c => <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>)}
+              </MobileSelect>
             </div>
             <Button className="w-full gap-2 h-9" onClick={handleSearch} disabled={!query.trim() || loading}>
               {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}

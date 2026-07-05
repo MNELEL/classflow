@@ -344,6 +344,7 @@ export default function WeeklyPlannerBoard() {
           {/* Week nav */}
           <div className="flex items-center gap-1">
             <button onClick={() => setWeekStart(w => { const n = new Date(w); n.setDate(n.getDate() - 7); return n; })}
+              aria-label="שבוע קודם"
               className="p-1.5 rounded-lg hover:bg-accent border border-border">
               <ChevronRight className="w-4 h-4" />
             </button>
@@ -351,10 +352,12 @@ export default function WeeklyPlannerBoard() {
               {format(weekStart, 'dd/MM')} — {format(addDays(weekStart, 4), 'dd/MM/yy')}
             </span>
             <button onClick={() => setWeekStart(w => { const n = new Date(w); n.setDate(n.getDate() + 7); return n; })}
+              aria-label="שבוע הבא"
               className="p-1.5 rounded-lg hover:bg-accent border border-border">
               <ChevronLeft className="w-4 h-4" />
             </button>
             <button onClick={() => setWeekStart(getWeekStart())}
+              aria-label="חזור לשבוע הנוכחי"
               className="text-xs text-primary hover:underline px-1">השבוע</button>
           </div>
 
@@ -372,6 +375,7 @@ export default function WeeklyPlannerBoard() {
             </div>
             {viewMode === 'edit' && (
               <Button size="sm" onClick={handleSave} disabled={saveMutation.isPending || !dirty}
+                aria-label={saveMutation.isPending ? 'שומר' : dirty ? `שמור (${totalSlots})` : 'נשמר'}
                 className={`gap-1 ${!dirty ? 'opacity-50' : ''}`}>
                 {saveMutation.isPending ? <Save className="w-3.5 h-3.5 animate-pulse" /> : dirty ? <Save className="w-3.5 h-3.5" /> : <Check className="w-3.5 h-3.5" />}
                 {saveMutation.isPending ? 'שומר...' : dirty ? `שמור (${totalSlots})` : 'נשמר'}

@@ -84,6 +84,7 @@ function SubjectGroup({ subject, items, onStatusChange }) {
                 </div>
                 <button
                   onClick={() => onStatusChange(item.id, cfg.next)}
+                  aria-label={`שנה סטטוס ל-${STATUS_CONFIG[cfg.next]?.label}`}
                   className={`flex items-center gap-1 px-2 py-0.5 rounded-full border text-xs font-medium transition-all ${cfg.badgeClass}`}
                 >
                   <Icon className={`w-3 h-3 ${cfg.className}`} />

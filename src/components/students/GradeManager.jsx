@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Plus, Trash2, TrendingUp, Wand2, Loader2 } from 'lucide-react';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { MobileSelect, SelectItem } from '@/components/ui/MobileSelect';
 import { toast } from 'sonner';
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
 import { format, parseISO } from 'date-fns';
@@ -159,12 +159,9 @@ ${gradesSummary}
               <Input type="number" placeholder="ציון *" value={form.score} onChange={e => setForm(f => ({ ...f, score: e.target.value }))} min={0} max={200} />
               <Input type="number" placeholder="מקסימום" value={form.max_score} onChange={e => setForm(f => ({ ...f, max_score: e.target.value }))} />
               <Input type="date" value={form.date} onChange={e => setForm(f => ({ ...f, date: e.target.value }))} />
-              <Select value={form.period} onValueChange={v => setForm(f => ({ ...f, period: v }))}>
-                <SelectTrigger className="h-9 text-sm"><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  {Object.entries(PERIOD_LABELS).map(([v, l]) => <SelectItem key={v} value={v}>{l}</SelectItem>)}
-                </SelectContent>
-              </Select>
+              <MobileSelect value={form.period} onValueChange={v => setForm(f => ({ ...f, period: v }))} className="h-9 text-sm">
+                {Object.entries(PERIOD_LABELS).map(([v, l]) => <SelectItem key={v} value={v}>{l}</SelectItem>)}
+              </MobileSelect>
             </div>
             <Input placeholder="הערות" value={form.notes} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))} />
             <div className="flex gap-2">

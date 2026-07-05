@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { MobileSelect, SelectItem } from '@/components/ui/MobileSelect';
 import {
   BookOpen, HelpCircle, ChevronDown, ChevronUp, Trash2,
   Library, Printer, Loader2, FileAudio, Tag, Layers, Link2, CheckCircle2, FileText, Copy
@@ -203,20 +203,14 @@ function AnalysisCard({ item, onDelete, onSaveToLibrary, savingId, categories, l
                 <p className="text-xs font-semibold text-violet-800 flex items-center gap-1.5">
                   <Tag className="w-3.5 h-3.5" /> שיוך לקטגוריה ומערך שיעור
                 </p>
-                <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-                  <SelectTrigger className="h-9 text-xs w-full"><SelectValue placeholder="בחר קטגוריה לימודית..." /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value={null}>ללא קטגוריה</SelectItem>
-                    {categories.map(c => <SelectItem key={c.id} value={c.name}>{c.icon && `${c.icon} `}{c.name}</SelectItem>)}
-                  </SelectContent>
-                </Select>
-                <Select value={selectedPlan} onValueChange={setSelectedPlan}>
-                  <SelectTrigger className="h-9 text-xs w-full"><SelectValue placeholder="הוסף למערך שיעור קיים..." /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value={null}>לא לשייך למערך</SelectItem>
-                    {lessonPlans.map(p => <SelectItem key={p.id} value={p.id}>{p.title} — {p.subject}</SelectItem>)}
-                  </SelectContent>
-                </Select>
+                <MobileSelect value={selectedCategory} onValueChange={setSelectedCategory} placeholder="בחר קטגוריה לימודית..." className="h-9 text-xs w-full">
+                  <SelectItem value={null}>ללא קטגוריה</SelectItem>
+                  {categories.map(c => <SelectItem key={c.id} value={c.name}>{c.icon && `${c.icon} `}{c.name}</SelectItem>)}
+                </MobileSelect>
+                <MobileSelect value={selectedPlan} onValueChange={setSelectedPlan} placeholder="הוסף למערך שיעור קיים..." className="h-9 text-xs w-full">
+                  <SelectItem value={null}>לא לשייך למערך</SelectItem>
+                  {lessonPlans.map(p => <SelectItem key={p.id} value={p.id}>{p.title} — {p.subject}</SelectItem>)}
+                </MobileSelect>
                 <div className="flex gap-2 pt-1">
                   <Button size="sm" className="flex-1 h-9 gap-1.5 text-xs" onClick={handleSaveLink} disabled={savingLink}>
                     {savingLink ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <CheckCircle2 className="w-3.5 h-3.5" />}
@@ -340,22 +334,16 @@ export default function LessonSummaryHub({ onSaveToLibrary, savingId, onDelete }
       {(subjects.length > 0 || catNames.length > 0) && (
         <div className="flex gap-2 flex-wrap">
           {subjects.length > 0 && (
-            <Select value={filterSubject} onValueChange={setFilterSubject}>
-              <SelectTrigger className="h-9 text-xs flex-1 min-w-[120px]"><SelectValue placeholder="כל המקצועות" /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">כל המקצועות</SelectItem>
-                {subjects.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
-              </SelectContent>
-            </Select>
+            <MobileSelect value={filterSubject} onValueChange={setFilterSubject} placeholder="כל המקצועות" className="h-9 text-xs flex-1 min-w-[120px]">
+              <SelectItem value="all">כל המקצועות</SelectItem>
+              {subjects.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+            </MobileSelect>
           )}
           {catNames.length > 0 && (
-            <Select value={filterCategory} onValueChange={setFilterCategory}>
-              <SelectTrigger className="h-9 text-xs flex-1 min-w-[120px]"><SelectValue placeholder="כל הקטגוריות" /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">כל הקטגוריות</SelectItem>
-                {catNames.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
-              </SelectContent>
-            </Select>
+            <MobileSelect value={filterCategory} onValueChange={setFilterCategory} placeholder="כל הקטגוריות" className="h-9 text-xs flex-1 min-w-[120px]">
+              <SelectItem value="all">כל הקטגוריות</SelectItem>
+              {catNames.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+            </MobileSelect>
           )}
         </div>
       )}

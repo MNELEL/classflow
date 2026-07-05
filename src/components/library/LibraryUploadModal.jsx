@@ -3,7 +3,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { MobileSelect, SelectItem } from '@/components/ui/MobileSelect';
 import { Badge } from '@/components/ui/badge';
 import { base44 } from '@/api/base44Client';
 import { useQueryClient } from '@tanstack/react-query';
@@ -356,18 +356,15 @@ export default function LibraryUploadModal({ open, onClose }) {
                       />
                       <p className="text-[10px] text-muted-foreground">{(f.file.size / 1024 / 1024).toFixed(2)} MB • {f.sourceType}</p>
                     </div>
-                    <Select value={f.sourceType} onValueChange={v => setFiles(prev => prev.map(x => x.id === f.id ? { ...x, sourceType: v } : x))}>
-                      <SelectTrigger className="h-7 text-[10px] w-28"><SelectValue /></SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="pdf">📄 PDF</SelectItem>
-                        <SelectItem value="word_doc">📝 Word</SelectItem>
-                        <SelectItem value="presentation">📊 PPT</SelectItem>
-                        <SelectItem value="audio_file">🎵 אודיו</SelectItem>
-                        <SelectItem value="audio_recording">🎙️ הקלטה</SelectItem>
-                        <SelectItem value="video_file">🎬 סרטון</SelectItem>
-                        <SelectItem value="image">🖼️ תמונה</SelectItem>
-                      </SelectContent>
-                    </Select>
+                    <MobileSelect value={f.sourceType} onValueChange={v => setFiles(prev => prev.map(x => x.id === f.id ? { ...x, sourceType: v } : x))} className="h-7 text-[10px] w-28">
+                      <SelectItem value="pdf">📄 PDF</SelectItem>
+                      <SelectItem value="word_doc">📝 Word</SelectItem>
+                      <SelectItem value="presentation">📊 PPT</SelectItem>
+                      <SelectItem value="audio_file">🎵 אודיו</SelectItem>
+                      <SelectItem value="audio_recording">🎙️ הקלטה</SelectItem>
+                      <SelectItem value="video_file">🎬 סרטון</SelectItem>
+                      <SelectItem value="image">🖼️ תמונה</SelectItem>
+                    </MobileSelect>
                     <button onClick={() => removeFile(f.id)} className="text-muted-foreground hover:text-destructive transition-colors">
                       <X className="w-4 h-4" />
                     </button>
@@ -522,15 +519,10 @@ export default function LibraryUploadModal({ open, onClose }) {
         <div className="border-t border-border pt-3 space-y-2">
           <p className="text-xs font-medium text-muted-foreground">פרטים משותפים (ה-AI ימלא אוטומטית אם תשאיר ריק)</p>
           <div className="grid grid-cols-2 gap-2">
-            <Select value={category} onValueChange={setCategory}>
-              <SelectTrigger className="h-8 text-xs">
-                <SelectValue placeholder="קטגוריה (אוטומטי)" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value={null}>אוטומטי</SelectItem>
-                {CATEGORIES.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
-              </SelectContent>
-            </Select>
+            <MobileSelect value={category} onValueChange={setCategory} placeholder="קטגוריה (אוטומטי)" className="h-8 text-xs">
+              <SelectItem value={null}>אוטומטי</SelectItem>
+              {CATEGORIES.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+            </MobileSelect>
             <Input
               placeholder="נושא (אוטומטי)"
               value={subject}

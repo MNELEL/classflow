@@ -5,7 +5,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { MobileSelect, SelectItem } from '@/components/ui/MobileSelect';
 import { Badge } from '@/components/ui/badge';
 import { Loader2, Plus, Megaphone, Trash2, Pin, PinOff, AlertCircle, Info, Bell, FileText } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -108,26 +108,17 @@ export default function SchoolUpdatesManager() {
                   className="min-h-[80px] text-sm"
                 />
                 <div className="grid grid-cols-3 gap-2">
-                  <Select value={form.type} onValueChange={v => setForm({ ...form, type: v })}>
-                    <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      {Object.entries(TYPE_LABELS).map(([v, l]) => <SelectItem key={v} value={v}>{l}</SelectItem>)}
-                    </SelectContent>
-                  </Select>
-                  <Select value={form.priority} onValueChange={v => setForm({ ...form, priority: v })}>
-                    <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      {Object.entries(PRIORITY_LABELS).map(([v, l]) => <SelectItem key={v} value={v}>{l}</SelectItem>)}
-                    </SelectContent>
-                  </Select>
-                  <Select value={form.target_audience} onValueChange={v => setForm({ ...form, target_audience: v })}>
-                    <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">כולם</SelectItem>
-                      <SelectItem value="teachers">מורים</SelectItem>
-                      <SelectItem value="parents">הורים</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  <MobileSelect value={form.type} onValueChange={v => setForm({ ...form, type: v })} className="h-8 text-xs">
+                    {Object.entries(TYPE_LABELS).map(([v, l]) => <SelectItem key={v} value={v}>{l}</SelectItem>)}
+                  </MobileSelect>
+                  <MobileSelect value={form.priority} onValueChange={v => setForm({ ...form, priority: v })} className="h-8 text-xs">
+                    {Object.entries(PRIORITY_LABELS).map(([v, l]) => <SelectItem key={v} value={v}>{l}</SelectItem>)}
+                  </MobileSelect>
+                  <MobileSelect value={form.target_audience} onValueChange={v => setForm({ ...form, target_audience: v })} className="h-8 text-xs">
+                    <SelectItem value="all">כולם</SelectItem>
+                    <SelectItem value="teachers">מורים</SelectItem>
+                    <SelectItem value="parents">הורים</SelectItem>
+                  </MobileSelect>
                 </div>
                 <div className="flex gap-2">
                   <Input

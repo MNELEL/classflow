@@ -290,6 +290,7 @@ function SoundCard({ sound, isPlaying, onPlay, onDelete, audioRef, onEnded, type
         <div className="flex items-center gap-2">
           <button
             onClick={onPlay}
+            aria-label={isPlaying ? 'עצור' : 'הפעל צליל'}
             className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 transition-colors ${
               isPlaying ? 'bg-primary text-white' : iconColors[type]
             }`}
@@ -315,6 +316,7 @@ function SoundCard({ sound, isPlaying, onPlay, onDelete, audioRef, onEnded, type
           <div className="flex gap-1">
             <button
               onClick={() => setShowTagInput(v => !v)}
+              aria-label="הוסף תגית"
               className="w-7 h-7 rounded-lg hover:bg-muted flex items-center justify-center text-xs"
               title="הוסף תגית"
             >
@@ -325,6 +327,7 @@ function SoundCard({ sound, isPlaying, onPlay, onDelete, audioRef, onEnded, type
               variant="ghost"
               className="w-7 h-7 text-destructive hover:text-destructive"
               onClick={onDelete}
+              aria-label="מחק צליל"
             >
               <Trash2 className="w-3.5 h-3.5" />
             </Button>

@@ -4,6 +4,7 @@ import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { X, GripVertical, ListMusic, BookOpenCheck, ChevronDown, ChevronUp, Trash2 } from 'lucide-react';
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
+import { MobileSelect, SelectItem } from '@/components/ui/MobileSelect';
 import { toast } from 'sonner';
 
 const SOURCE_ICON = {
@@ -77,14 +78,15 @@ export default function PlaylistPanel({ itemIds, allItems, onRemove, onReorder, 
         {/* Link to plan menu */}
         {showLinkMenu && (
           <div className="px-3 py-2 border-b border-border bg-accent/20 flex gap-2">
-            <select
+            <MobileSelect
               value={linkPlanId}
-              onChange={e => setLinkPlanId(e.target.value)}
+              onValueChange={v => setLinkPlanId(v)}
+              title="בחר מערך שיעור..."
               className="flex-1 text-xs rounded-lg border border-border bg-card px-2 h-8"
             >
-              <option value="">בחר מערך שיעור...</option>
-              {plans.map(p => <option key={p.id} value={p.id}>{p.title}</option>)}
-            </select>
+              <SelectItem value={null}>בחר מערך שיעור...</SelectItem>
+              {plans.map(p => <SelectItem key={p.id} value={p.id}>{p.title}</SelectItem>)}
+            </MobileSelect>
             <Button size="sm" className="h-8 text-xs" onClick={handleLinkToPlan} disabled={!linkPlanId}>
               שייך
             </Button>

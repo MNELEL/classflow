@@ -142,9 +142,12 @@ export default function AIGradeInput({ students, grades, onGradesSaved }) {
     setDraftCards(prev => prev.filter((_, i) => i !== idx));
   }
 
+  const [savingIds, setSavingIds] = useState([]);
+
   async function saveAll() {
     const toSave = draftCards.filter(c => c.student_id);
     if (!toSave.length) { toast.error('אין ציונים מאושרים עם תלמיד תואם לשמירה'); return; }
+    setSavingIds(toSave.map(c => c.id));
     try {
       await Promise.all(toSave.map(c =>
         base44.entities.Grade.create({
@@ -166,6 +169,7 @@ export default function AIGradeInput({ students, grades, onGradesSaved }) {
     } catch (err) {
       toast.error('שגיאה בשמירה');
     }
+    setSavingIds([]);
   }
 
   return (
@@ -215,7 +219,7 @@ export default function AIGradeInput({ students, grades, onGradesSaved }) {
             <div className="flex items-center justify-between mb-3">
               <p className="text-sm font-semibold">כרטיסי טיוטה ({draftCards.length})</p>
               <Button size="sm" onClick={saveAll} className="gap-1.5 bg-emerald-600 hover:bg-emerald-700">
-                <Save className="w-3.5 h-3.5" /> שמור הכל
+                {savingIds.length > 0 ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Save className="w-3.5 h-3.5" />} שמור הכל
               </Button>
             </div>
 
@@ -226,6 +230,7 @@ export default function AIGradeInput({ students, grades, onGradesSaved }) {
                   card={card}
                   students={activeStudents}
                   isEditing={editingIdx === idx}
+                  isSaving={savingIds.includes(card.id)}
                   onEdit={() => setEditingIdx(editingIdx === idx ? null : idx)}
                   onUpdate={(field, val) => updateCard(idx, field, val)}
                   onRemove={() => removeCard(idx)}
@@ -239,7 +244,7 @@ export default function AIGradeInput({ students, grades, onGradesSaved }) {
   );
 }
 
-function DraftCard({ card, students, isEditing, onEdit, onUpdate, onRemove }) {
+function DraftCard({ card, students, isEditing, isSaving, onEdit, onUpdate, onRemove }) {
   const pct = card.max_score > 0 ? Math.round((card.score / card.max_score) * 100) : 0;
   const scoreColor = pct >= 80 ? 'text-emerald-600' : pct >= 60 ? 'text-yellow-600' : 'text-red-500';
   const barColor = pct >= 80 ? 'bg-emerald-500' : pct >= 60 ? 'bg-yellow-500' : 'bg-red-500';
@@ -330,10 +335,10 @@ function DraftCard({ card, students, isEditing, onEdit, onUpdate, onRemove }) {
       )}
 
       <div className="flex gap-1.5 mt-3 justify-end">
-        <Button size="sm" variant="ghost" onClick={onEdit} className="h-7 text-xs gap-1">
-          <Edit2 className="w-3 h-3" /> {isEditing ? 'סגור' : 'ערוך'}
+        <Button size="sm" variant="ghost" onClick={onEdit} className="h-7 text-xs gap-1" disabled={isSaving}>
+          {isSaving ? <Loader2 className="w-3 h-3 animate-spin" /> : <Edit2 className="w-3 h-3" />} {isEditing ? 'סגור' : 'ערוך'}
         </Button>
-        <Button size="sm" variant="ghost" onClick={onRemove} className="h-7 text-xs gap-1 text-destructive hover:text-destructive">
+        <Button size="sm" variant="ghost" onClick={onRemove} className="h-7 text-xs gap-1 text-destructive hover:text-destructive" disabled={isSaving}>
           <X className="w-3 h-3" /> הסר
         </Button>
       </div>

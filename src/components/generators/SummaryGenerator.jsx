@@ -3,7 +3,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { MobileSelect, SelectItem } from '@/components/ui/MobileSelect';
 import { Badge } from '@/components/ui/badge';
 import { Loader2, Sparkles, FileText, Copy, Save, GraduationCap, Eye, EyeOff, Mic } from 'lucide-react';
 import { toast } from 'sonner';
@@ -126,20 +126,17 @@ ${content.slice(0, 4000)}
         {/* Source selector */}
         <div>
           <label className="text-xs font-semibold mb-1.5 block">בחר חומר לימוד</label>
-          <Select value={selectedItemId} onValueChange={setSelectedItemId}>
-            <SelectTrigger className="h-10"><SelectValue placeholder="בחר מהספרייה..." /></SelectTrigger>
-            <SelectContent>
-              {itemsWithContent.length === 0 ? (
-                <SelectItem value={null} disabled>אין חומרים עם תוכן</SelectItem>
-              ) : (
-                itemsWithContent.map(i => (
-                  <SelectItem key={i.id} value={i.id}>
-                    {i.title}{i.subject ? ` · ${i.subject}` : ''}
-                  </SelectItem>
-                ))
-              )}
-            </SelectContent>
-          </Select>
+          <MobileSelect value={selectedItemId} onValueChange={setSelectedItemId} placeholder="בחר מהספרייה..." className="h-10">
+            {itemsWithContent.length === 0 ? (
+              <SelectItem value={null} disabled>אין חומרים עם תוכן</SelectItem>
+            ) : (
+              itemsWithContent.map(i => (
+                <SelectItem key={i.id} value={i.id}>
+                  {i.title}{i.subject ? ` · ${i.subject}` : ''}
+                </SelectItem>
+              ))
+            )}
+          </MobileSelect>
         </div>
 
         {/* Level selector */}

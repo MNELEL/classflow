@@ -317,11 +317,11 @@ export default function AdminDashboard() {
                   </Button>
                 </div>
               ) : (
-                <div className="space-y-2">
+                <div className="space-y-2 overflow-x-auto">
                   {teachers.map((teacher) => (
                     <div
                       key={teacher.id}
-                      className="flex items-center justify-between bg-card border border-border rounded-lg p-3 hover:border-primary/30 transition-colors"
+                      className="flex items-center justify-between bg-card border border-border rounded-lg p-3 hover:border-primary/30 transition-colors min-w-0"
                     >
                       <div className="flex items-center gap-3 flex-1">
                         <div className={`w-10 h-10 rounded-full flex items-center justify-center ${teacher.is_active !== false ? 'bg-primary/10' : 'bg-muted'}`}>
@@ -450,13 +450,13 @@ export default function AdminDashboard() {
                   </Button>
                 </div>
               ) : (
-                <div className="space-y-2">
+                <div className="space-y-2 overflow-x-auto">
                   {classrooms.map((classroom) => {
                     const assignedTeacher = teachers.find(t => t.id === classroom.teacher_id);
                     return (
                       <div
                         key={classroom.id}
-                        className="flex items-center justify-between bg-card border border-border rounded-lg p-3 hover:border-primary/30 transition-colors"
+                        className="flex items-center justify-between bg-card border border-border rounded-lg p-3 hover:border-primary/30 transition-colors min-w-0"
                       >
                         <div className="flex items-center gap-3 flex-1">
                           <div className={`w-10 h-10 rounded-full flex items-center justify-center ${classroom.is_active !== false ? 'bg-purple-100 dark:bg-purple-900/30' : 'bg-muted'}`}>
