@@ -106,7 +106,7 @@ export default function EventSoundMapper() {
                 <button
                   onClick={() => assignedId ? (isPlaying ? stopAll() : triggerEvent(event.key)) : null}
                   disabled={!assignedId}
-                  aria-label={isPlaying ? 'עצור צליל' : 'הפעל צליל'}
+                  aria-label={isPlaying ? `עצור ${event.label}` : `הפעל ${event.label}`}
                   className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 transition-all ${
                     !assignedId
                       ? 'text-muted-foreground/30 cursor-not-allowed'

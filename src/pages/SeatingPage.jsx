@@ -468,7 +468,7 @@ ${overrideLines ? `\nהעדפות ייבוא נוספות:\n${overrideLines}` : 
         </div>
 
         {/* Main grid */}
-        <div className="flex-1 overflow-auto p-2 md:p-4 relative">
+        <div className="flex-1 overflow-auto overflow-x-auto p-2 md:p-4 relative min-w-0">
           {/* Mobile floating action buttons */}
           <div className="flex md:hidden gap-2 mb-3 justify-between">
             <Sheet>

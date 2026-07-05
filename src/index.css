@@ -124,6 +124,7 @@ button, a, [role="button"] {
   input, select, textarea { font-size: 1rem !important; }
   [class*="text-[9px]"] { font-size: 11px !important; }
   [class*="text-[10px]"] { font-size: 11px !important; }
+  [class*="text-[11px]"] { font-size: 11px !important; }
 }
 
 .seat-card {
