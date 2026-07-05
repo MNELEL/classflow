@@ -4,7 +4,7 @@ import { base44 } from '@/api/base44Client';
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, parseISO, subMonths } from 'date-fns';
 import { he } from 'date-fns/locale';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, LineChart, Line, CartesianGrid, Legend } from 'recharts';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { MobileSelect, SelectItem } from '@/components/ui/MobileSelect';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { TrendingUp } from 'lucide-react';
 
@@ -91,27 +91,17 @@ export default function AttendanceChart({ students }) {
       <CardContent className="px-5 pb-5 space-y-4">
         {/* Controls */}
         <div className="flex gap-2 flex-wrap">
-          <Select value={selectedStudentId} onValueChange={setSelectedStudentId}>
-            <SelectTrigger className="flex-1 min-w-[140px] h-8 text-xs">
-              <SelectValue placeholder="בחר תלמיד..." />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="__all__">כל הכיתה</SelectItem>
-              {activeStudents.map(s => (
-                <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <Select value={String(monthOffset)} onValueChange={v => setMonthOffset(Number(v))}>
-            <SelectTrigger className="flex-1 min-w-[130px] h-8 text-xs">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {MONTHS.map(m => (
-                <SelectItem key={m.offset} value={String(m.offset)}>{m.label}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <MobileSelect value={selectedStudentId} onValueChange={setSelectedStudentId} placeholder="בחר תלמיד..." className="flex-1 min-w-[140px] h-8 text-xs">
+            <SelectItem value="__all__">כל הכיתה</SelectItem>
+            {activeStudents.map(s => (
+              <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>
+            ))}
+          </MobileSelect>
+          <MobileSelect value={String(monthOffset)} onValueChange={v => setMonthOffset(Number(v))} className="flex-1 min-w-[130px] h-8 text-xs">
+            {MONTHS.map(m => (
+              <SelectItem key={m.offset} value={String(m.offset)}>{m.label}</SelectItem>
+            ))}
+          </MobileSelect>
         </div>
 
         {/* Single student stats */}

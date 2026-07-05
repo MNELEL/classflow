@@ -2,7 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { MobileSelect, SelectItem } from '@/components/ui/MobileSelect';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { FileBarChart2, Printer, TrendingUp, TrendingDown, Minus, User, BookOpen, Loader2, Sparkles } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, LineChart, Line, CartesianGrid } from 'recharts';
@@ -121,17 +121,12 @@ ${ctx}
           </Button>
         </div>
 
-        <Select value={selectedId} onValueChange={v => { setSelectedId(v); setAiSummary(''); }}>
-          <SelectTrigger className="h-9 text-sm">
-            <SelectValue placeholder={mode === 'student' ? 'בחר תלמיד...' : 'בחר מקצוע...'} />
-          </SelectTrigger>
-          <SelectContent>
-            {mode === 'student'
-              ? activeStudents.map(s => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)
-              : subjects.map(sub => <SelectItem key={sub} value={sub}>{sub}</SelectItem>)
-            }
-          </SelectContent>
-        </Select>
+        <MobileSelect value={selectedId} onValueChange={v => { setSelectedId(v); setAiSummary(''); }} placeholder={mode === 'student' ? 'בחר תלמיד...' : 'בחר מקצוע...'} className="h-9 text-sm">
+          {mode === 'student'
+            ? activeStudents.map(s => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)
+            : subjects.map(sub => <SelectItem key={sub} value={sub}>{sub}</SelectItem>)
+          }
+        </MobileSelect>
       </div>
 
       {/* Report content */}

@@ -4,7 +4,7 @@ import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { MobileSelect, SelectItem } from '@/components/ui/MobileSelect';
 import { ClipboardCheck, Plus, CheckCircle2, Circle, Bell, Loader2, ChevronDown, ChevronUp, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -70,10 +70,10 @@ function AssignmentCard({ assignment, students, onToggleSubmit, onDelete }) {
                 תזכורת ({pending.length})
               </Button>
             )}
-            <button onClick={() => setExpanded(v => !v)} className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-muted transition-colors">
+            <button onClick={() => setExpanded(v => !v)} aria-label={expanded ? 'סגור פרטים' : 'פתח פרטים'} className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-muted transition-colors">
               {expanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
             </button>
-            <button onClick={() => onDelete(assignment.id)} className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors">
+            <button onClick={() => onDelete(assignment.id)} aria-label="מחק מטלה" className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors">
               <Trash2 className="w-3.5 h-3.5" />
             </button>
           </div>
@@ -204,12 +204,9 @@ export default function HomeworkTracker({ students }) {
                 <Input placeholder="מקצוע" value={subject} onChange={e => setSubject(e.target.value)} className="h-9 text-sm" />
                 <Input type="date" value={dueDate} onChange={e => setDueDate(e.target.value)} className="h-9 text-sm" />
               </div>
-              <Select value={type} onValueChange={setType}>
-                <SelectTrigger className="h-9 text-sm"><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  {Object.entries(TYPE_LABELS).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}
-                </SelectContent>
-              </Select>
+              <MobileSelect value={type} onValueChange={setType} className="h-9 text-sm">
+                {Object.entries(TYPE_LABELS).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}
+              </MobileSelect>
               <div className="flex gap-2">
                 <Button size="sm" className="flex-1 h-9 text-xs" onClick={() => createMutation.mutate()} disabled={!title || !dueDate || createMutation.isPending}>
                   {createMutation.isPending ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : 'צור מטלה'}

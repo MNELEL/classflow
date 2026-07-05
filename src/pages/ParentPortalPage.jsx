@@ -2,7 +2,7 @@ import React, { useState, useCallback } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import AppLayout from '@/components/layout/AppLayout';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { MobileSelect, SelectItem } from '@/components/ui/MobileSelect';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Users, GraduationCap, CalendarCheck, BookOpen, Star, Share2, TrendingUp } from 'lucide-react';
@@ -45,10 +45,9 @@ export default function ParentPortalPage() {
           </div>
         </div>
 
-        <Select value={selectedId} onValueChange={setSelectedId}>
-          <SelectTrigger className="text-sm"><SelectValue placeholder="בחר תלמיד..." /></SelectTrigger>
-          <SelectContent>{students.map(s => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}</SelectContent>
-        </Select>
+        <MobileSelect value={selectedId} onValueChange={setSelectedId} placeholder="בחר תלמיד..." className="text-sm">
+          {students.map(s => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}
+        </MobileSelect>
 
         {student && (
           <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-4">

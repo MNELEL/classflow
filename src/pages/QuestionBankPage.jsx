@@ -5,7 +5,7 @@ import AppLayout from '@/components/layout/AppLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { MobileSelect, SelectItem } from '@/components/ui/MobileSelect';
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 import {
   Search, CheckSquare, Square, GripVertical, X,
@@ -107,7 +107,7 @@ function SelectedChip({ q, idx, onRemove }) {
           <span className={`text-[10px] px-1.5 py-0.5 rounded-full border font-medium shrink-0 ${TYPE_BADGE[q.type] || 'bg-muted'}`}>{q.type}</span>
           <span className="flex-1 truncate font-medium text-foreground">{q.question}</span>
           <span className="text-muted-foreground shrink-0">{q.points || 10} נק'</span>
-          <button onClick={() => onRemove(q.uid)} className="text-muted-foreground hover:text-destructive shrink-0">
+          <button onClick={() => onRemove(q.uid)} aria-label="הסר שאלה" className="text-muted-foreground hover:text-destructive shrink-0">
             <X className="w-3.5 h-3.5" />
           </button>
         </div>
@@ -225,29 +225,20 @@ export default function QuestionBankPage() {
                 <Search className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
                 <Input placeholder="חפש שאלה..." value={search} onChange={e => setSearch(e.target.value)} className="h-8 text-xs pr-8" />
               </div>
-              <Select value={filterSubject} onValueChange={setFilterSubject}>
-                <SelectTrigger className="h-8 text-xs w-32"><SelectValue placeholder="מקצוע" /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">כל המקצועות</SelectItem>
-                  {subjects.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
-                </SelectContent>
-              </Select>
-              <Select value={filterType} onValueChange={setFilterType}>
-                <SelectTrigger className="h-8 text-xs w-32"><SelectValue placeholder="סוג" /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">כל הסוגים</SelectItem>
-                  {types.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}
-                </SelectContent>
-              </Select>
-              <Select value={filterDiff} onValueChange={setFilterDiff}>
-                <SelectTrigger className="h-8 text-xs w-28"><SelectValue placeholder="קושי" /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">כל הרמות</SelectItem>
-                  <SelectItem value="קל">קל</SelectItem>
-                  <SelectItem value="בינוני">בינוני</SelectItem>
-                  <SelectItem value="קשה">קשה</SelectItem>
-                </SelectContent>
-              </Select>
+              <MobileSelect value={filterSubject} onValueChange={setFilterSubject} placeholder="מקצוע" className="h-8 text-xs w-32">
+                <SelectItem value="all">כל המקצועות</SelectItem>
+                {subjects.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+              </MobileSelect>
+              <MobileSelect value={filterType} onValueChange={setFilterType} placeholder="סוג" className="h-8 text-xs w-32">
+                <SelectItem value="all">כל הסוגים</SelectItem>
+                {types.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}
+              </MobileSelect>
+              <MobileSelect value={filterDiff} onValueChange={setFilterDiff} placeholder="קושי" className="h-8 text-xs w-28">
+                <SelectItem value="all">כל הרמות</SelectItem>
+                <SelectItem value="קל">קל</SelectItem>
+                <SelectItem value="בינוני">בינוני</SelectItem>
+                <SelectItem value="קשה">קשה</SelectItem>
+              </MobileSelect>
               {(search || filterSubject !== 'all' || filterType !== 'all' || filterDiff !== 'all') && (
                 <button onClick={() => { setSearch(''); setFilterSubject('all'); setFilterType('all'); setFilterDiff('all'); }}
                   className="text-xs text-muted-foreground hover:text-destructive flex items-center gap-1">

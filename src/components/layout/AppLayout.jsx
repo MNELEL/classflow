@@ -26,7 +26,21 @@ export default function AppLayout({ children }) {
 
 
   const scrollPositions = useRef({});
+  const tabHistory = useRef({});
   const mainRef = useRef(null);
+
+  const NAV_PATHS = [...PRIMARY_NAV.map(n => n.path), '/more'];
+
+  function getCurrentTabRoot(pathname) {
+    for (const p of PRIMARY_NAV.map(n => n.path)) {
+      if (p === '/') {
+        if (pathname === '/') return '/';
+      } else if (pathname === p || pathname.startsWith(p + '/')) {
+        return p;
+      }
+    }
+    return '/more';
+  }
 
   useEffect(() => {
     const handler = (e) => setBranding(e.detail);
@@ -42,16 +56,38 @@ export default function AppLayout({ children }) {
     requestAnimationFrame(() => { main.scrollTop = savedY; });
   }, [location.pathname]);
 
+  // Save current path to tab history on route change
+  useEffect(() => {
+    const root = getCurrentTabRoot(location.pathname);
+    if (root) {
+      tabHistory.current[root] = location.pathname;
+    }
+  }, [location.pathname]);
+
   const handleNavClick = useCallback((e, path) => {
     if (mainRef.current) {
       scrollPositions.current[location.pathname] = mainRef.current.scrollTop;
     }
-    if (location.pathname === path) {
+    const currentTabRoot = getCurrentTabRoot(location.pathname);
+    if (path === currentTabRoot) {
+      // Same tab — reset to root
       e.preventDefault();
+      delete tabHistory.current[path];
       scrollPositions.current[path] = 0;
-      if (mainRef.current) mainRef.current.scrollTo({ top: 0, behavior: 'smooth' });
+      if (location.pathname === path) {
+        if (mainRef.current) mainRef.current.scrollTo({ top: 0, behavior: 'smooth' });
+      } else {
+        navigate(path);
+      }
+    } else {
+      // Different tab — restore last visited sub-path or go to root
+      const target = tabHistory.current[path] || path;
+      if (target !== path) {
+        e.preventDefault();
+        navigate(target);
+      }
     }
-  }, [location.pathname]);
+  }, [location.pathname, navigate]);
 
   const isDashboard = location.pathname === '/';
   const title = branding.page_titles?.[location.pathname] || branding.school_name || 'ClassManager Pro';

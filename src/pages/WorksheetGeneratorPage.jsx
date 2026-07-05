@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { MobileSelect, SelectItem } from '@/components/ui/MobileSelect';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from 'sonner';
 import { Sparkles, Printer, Save, Star, StarOff, Trash2, ChevronDown, ChevronUp, BookOpen, Brain } from 'lucide-react';
@@ -184,17 +184,15 @@ export default function WorksheetGeneratorPage() {
               </div>
               <div>
                 <Label className="text-xs mb-1 block">שכבת גיל</Label>
-                <Select value={form.grade_level} onValueChange={v => setForm(f => ({ ...f, grade_level: v }))}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>{GRADE_LEVELS.map(g => <SelectItem key={g} value={g}>{g}</SelectItem>)}</SelectContent>
-                </Select>
+                <MobileSelect value={form.grade_level} onValueChange={v => setForm(f => ({ ...f, grade_level: v }))} className="h-9 text-sm">
+                  {GRADE_LEVELS.map(g => <SelectItem key={g} value={g}>{g}</SelectItem>)}
+                </MobileSelect>
               </div>
               <div>
                 <Label className="text-xs mb-1 block">רמת קושי</Label>
-                <Select value={form.difficulty} onValueChange={v => setForm(f => ({ ...f, difficulty: v }))}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>{DIFFICULTIES.map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}</SelectContent>
-                </Select>
+                <MobileSelect value={form.difficulty} onValueChange={v => setForm(f => ({ ...f, difficulty: v }))} className="h-9 text-sm">
+                  {DIFFICULTIES.map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}
+                </MobileSelect>
               </div>
             </div>
 
@@ -305,11 +303,11 @@ export default function WorksheetGeneratorPage() {
                     </div>
                   </div>
                   <div className="flex gap-1 shrink-0">
-                    <button onClick={(e) => { e.stopPropagation(); favMutation.mutate({ id: ws.id, val: !ws.is_favorite }); }}
+                    <button onClick={(e) => { e.stopPropagation(); favMutation.mutate({ id: ws.id, val: !ws.is_favorite }); }} aria-label={ws.is_favorite ? 'הסר ממועדפים' : 'הוסף למועדפים'}
                       className={ws.is_favorite ? 'text-yellow-500' : 'text-muted-foreground'}>
                       {ws.is_favorite ? <Star className="w-4 h-4 fill-current" /> : <StarOff className="w-4 h-4" />}
                     </button>
-                    <button onClick={(e) => { e.stopPropagation(); deleteMutation.mutate(ws.id); }} className="text-destructive/50 hover:text-destructive">
+                    <button onClick={(e) => { e.stopPropagation(); deleteMutation.mutate(ws.id); }} aria-label="מחק דף עבודה" className="text-destructive/50 hover:text-destructive">
                       <Trash2 className="w-4 h-4" />
                     </button>
                     {expandedId === ws.id ? <ChevronUp className="w-4 h-4 text-muted-foreground" /> : <ChevronDown className="w-4 h-4 text-muted-foreground" />}

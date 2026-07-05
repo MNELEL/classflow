@@ -9,7 +9,7 @@ import CampaignTemplates from '@/components/gamification/CampaignTemplates';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { MobileSelect, SelectItem } from '@/components/ui/MobileSelect';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Plus, Trophy, Star, Maximize2, Minimize2, Trash2, Loader2, Users, Lightbulb } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -241,10 +241,9 @@ export default function GamificationPage() {
         <DialogContent dir="rtl" className="max-w-sm">
           <DialogHeader><DialogTitle className="flex items-center gap-2"><Star className="w-4 h-4 text-yellow-500" /> הענקת נקודות</DialogTitle></DialogHeader>
           <div className="space-y-3">
-            <Select value={rewardForm.student_id} onValueChange={v => setRewardForm(p => ({ ...p, student_id: v }))}>
-              <SelectTrigger className="text-sm"><SelectValue placeholder="בחר תלמיד..." /></SelectTrigger>
-              <SelectContent>{students.map(s => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}</SelectContent>
-            </Select>
+            <MobileSelect value={rewardForm.student_id} onValueChange={v => setRewardForm(p => ({ ...p, student_id: v }))} placeholder="בחר תלמיד..." className="text-sm">
+              {students.map(s => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}
+            </MobileSelect>
             <div className="flex items-center gap-2">
               <label className="text-sm text-muted-foreground shrink-0">נקודות:</label>
               <div className="flex gap-1.5 flex-1">

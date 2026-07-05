@@ -5,7 +5,7 @@ import AppLayout from '@/components/layout/AppLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { MobileSelect, SelectItem } from '@/components/ui/MobileSelect';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { toast } from 'sonner';
 import { GitBranch, Plus, TrendingUp, TrendingDown, Minus, ChevronLeft } from 'lucide-react';
@@ -115,20 +115,14 @@ export default function BehaviorTimelinePage() {
 
         {/* Filters */}
         <div className="flex gap-2">
-          <Select value={filterStudent} onValueChange={setFilterStudent}>
-            <SelectTrigger className="h-9 text-xs flex-1"><SelectValue placeholder="תלמיד" /></SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">כל התלמידים</SelectItem>
-              {activeStudents.map(s => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}
-            </SelectContent>
-          </Select>
-          <Select value={filterType} onValueChange={setFilterType}>
-            <SelectTrigger className="h-9 text-xs flex-1"><SelectValue placeholder="סוג" /></SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">הכל</SelectItem>
-              {Object.entries(TYPE_META).map(([k, v]) => <SelectItem key={k} value={k}>{v.label}</SelectItem>)}
-            </SelectContent>
-          </Select>
+          <MobileSelect value={filterStudent} onValueChange={setFilterStudent} placeholder="תלמיד" className="h-9 text-xs flex-1">
+            <SelectItem value="all">כל התלמידים</SelectItem>
+            {activeStudents.map(s => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}
+          </MobileSelect>
+          <MobileSelect value={filterType} onValueChange={setFilterType} placeholder="סוג" className="h-9 text-xs flex-1">
+            <SelectItem value="all">הכל</SelectItem>
+            {Object.entries(TYPE_META).map(([k, v]) => <SelectItem key={k} value={k}>{v.label}</SelectItem>)}
+          </MobileSelect>
         </div>
 
         {/* Timeline */}
@@ -185,12 +179,9 @@ export default function BehaviorTimelinePage() {
           <DialogContent dir="rtl" className="max-w-sm">
             <DialogHeader><DialogTitle>אירוע התנהגות חדש</DialogTitle></DialogHeader>
             <div className="space-y-3">
-              <Select value={form.student_id} onValueChange={v => setForm(f => ({ ...f, student_id: v }))}>
-                <SelectTrigger className="h-9 text-sm"><SelectValue placeholder="בחרו תלמיד..." /></SelectTrigger>
-                <SelectContent>
-                  {activeStudents.map(s => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}
-                </SelectContent>
-              </Select>
+              <MobileSelect value={form.student_id} onValueChange={v => setForm(f => ({ ...f, student_id: v }))} placeholder="בחרו תלמיד..." className="h-9 text-sm">
+                {activeStudents.map(s => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}
+              </MobileSelect>
 
               <div>
                 <label className="text-xs text-muted-foreground mb-1.5 block">סוג אירוע</label>
@@ -204,12 +195,9 @@ export default function BehaviorTimelinePage() {
                 </div>
               </div>
 
-              <Select value={form.category} onValueChange={v => setForm(f => ({ ...f, category: v }))}>
-                <SelectTrigger className="h-9 text-sm"><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  {CATEGORIES.map(c => <SelectItem key={c} value={c}>{CATEGORY_LABELS[c]}</SelectItem>)}
-                </SelectContent>
-              </Select>
+              <MobileSelect value={form.category} onValueChange={v => setForm(f => ({ ...f, category: v }))} className="h-9 text-sm">
+                {CATEGORIES.map(c => <SelectItem key={c} value={c}>{CATEGORY_LABELS[c]}</SelectItem>)}
+              </MobileSelect>
 
               <div>
                 <label className="text-xs text-muted-foreground mb-1 block">תיאור</label>

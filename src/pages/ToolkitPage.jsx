@@ -101,7 +101,7 @@ function NameWheel({ students }) {
             <Button size="sm" onClick={spin} disabled={spinning} className="gap-1">
               <Play className="w-3.5 h-3.5" /> {spinning ? 'מסתובב...' : 'סובב!'}
             </Button>
-            <Button size="sm" variant="outline" onClick={() => { setWinner(null); angleRef.current = 0; drawWheel(canvasRef.current, names, colors, 0); }}>
+            <Button size="sm" variant="outline" aria-label="אפס גלגל" onClick={() => { setWinner(null); angleRef.current = 0; drawWheel(canvasRef.current, names, colors, 0); }}>
               <RotateCcw className="w-3.5 h-3.5" />
             </Button>
           </div>
@@ -264,9 +264,9 @@ function CountdownTimer() {
         </div>
         {!running && remaining === null && (
           <div className="flex gap-2 items-center">
-            <button onClick={() => setMinutes(m => Math.max(0, m - 1))}><ChevronDown className="w-4 h-4" /></button>
+            <button onClick={() => setMinutes(m => Math.max(0, m - 1))} aria-label="הפחת דקות"><ChevronDown className="w-4 h-4" /></button>
             <span className="text-sm font-medium w-12 text-center">{minutes} דקות</span>
-            <button onClick={() => setMinutes(m => m + 1)}><ChevronUp className="w-4 h-4" /></button>
+            <button onClick={() => setMinutes(m => m + 1)} aria-label="הוסף דקות"><ChevronUp className="w-4 h-4" /></button>
           </div>
         )}
         <div className="flex gap-2">
@@ -275,7 +275,7 @@ function CountdownTimer() {
           ) : (
             <Button size="sm" variant="outline" onClick={stop} className="gap-1"><Square className="w-3.5 h-3.5" /> עצור</Button>
           )}
-          <Button size="sm" variant="ghost" onClick={reset}><RotateCcw className="w-3.5 h-3.5" /></Button>
+          <Button size="sm" variant="ghost" aria-label="אפס טיימר" onClick={reset}><RotateCcw className="w-3.5 h-3.5" /></Button>
         </div>
       </div>
     </div>
