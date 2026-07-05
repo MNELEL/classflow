@@ -63,6 +63,13 @@ export default function AppLayout({ children }) {
     const root = getCurrentTabRoot(location.pathname);
     if (root) {
       tabHistory.current[root] = location.pathname;
+      // For /more tab, explicitly save full sub-path (e.g. /seating, /gamification)
+      const morePaths = ['/seating','/toolkit','/grades','/gamification','/parents','/worksheets','/question-bank','/lesson-analyzer','/curriculum','/homework','/sound-board','/student-view','/reports','/analytics','/events','/exams','/fast-feedback','/behavior-timeline','/weekly-schedule','/bell-schedule','/study-plan-generator','/raffle','/daily-summary','/exam-scanner','/more'];
+      morePaths.forEach(p => {
+        if (location.pathname === p || location.pathname.startsWith(p + '/')) {
+          tabHistory.current['/more'] = location.pathname;
+        }
+      });
     }
   }, [location.pathname]);
 
@@ -84,7 +91,7 @@ export default function AppLayout({ children }) {
     } else {
       // Different tab — restore last visited sub-path or go to root
       const target = tabHistory.current[path] || path;
-      if (target !== path) {
+      if (target !== location.pathname) {
         e.preventDefault();
         navigate(target);
       }

@@ -207,7 +207,7 @@ function App() {
           <AuthenticatedApp />
         </Router>
         <Toaster />
-        <Sonner position="top-center" richColors />
+        <Sonner position="bottom-center" richColors offset="80px" />
       </QueryClientProvider>
     </AuthProvider>
   );

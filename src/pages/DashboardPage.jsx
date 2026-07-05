@@ -33,7 +33,7 @@ export default function DashboardPage() {
 
   const [secondaryEnabled, setSecondaryEnabled] = useState(false);
   useEffect(() => {
-    const t = setTimeout(() => setSecondaryEnabled(true), 300);
+    const t = setTimeout(() => setSecondaryEnabled(true), 800);
     return () => clearTimeout(t);
   }, []);
 
@@ -41,12 +41,12 @@ export default function DashboardPage() {
     queryKey: ['students'],
     queryFn: () => base44.entities.Student.list(),
   });
-  const { data: grades = [] } = useQuery({ queryKey: ['grades'], queryFn: () => base44.entities.Grade.list('-date', 100), enabled: secondaryEnabled, staleTime: 30000 });
-  const { data: attendance = [] } = useQuery({ queryKey: ['attendance'], queryFn: () => base44.entities.Attendance.list('-date', 100), enabled: secondaryEnabled, staleTime: 30000 });
-  const { data: libraryItems = [] } = useQuery({ queryKey: ['library'], queryFn: () => base44.entities.LibraryItem.list('-created_date', 50), enabled: secondaryEnabled, staleTime: 30000 });
-  const { data: rewards = [] } = useQuery({ queryKey: ['rewards'], queryFn: () => base44.entities.Reward.list('-date', 200), enabled: secondaryEnabled, staleTime: 30000 });
-  const { data: homework = [] } = useQuery({ queryKey: ['homework'], queryFn: () => base44.entities.HomeworkAssignment.list('-due_date', 50), enabled: secondaryEnabled, staleTime: 30000 });
-  const { data: behaviorEvents = [] } = useQuery({ queryKey: ['behavior'], queryFn: () => base44.entities.BehaviorEvent.list('-date', 200), enabled: secondaryEnabled, staleTime: 30000 });
+  const { data: grades = [] } = useQuery({ queryKey: ['grades'], queryFn: () => base44.entities.Grade.list('-date', 100), enabled: secondaryEnabled, staleTime: 60000 });
+  const { data: attendance = [] } = useQuery({ queryKey: ['attendance'], queryFn: () => base44.entities.Attendance.list('-date', 100), enabled: secondaryEnabled, staleTime: 60000 });
+  const { data: libraryItems = [] } = useQuery({ queryKey: ['library'], queryFn: () => base44.entities.LibraryItem.list('-created_date', 50), enabled: secondaryEnabled, staleTime: 60000 });
+  const { data: rewards = [] } = useQuery({ queryKey: ['rewards'], queryFn: () => base44.entities.Reward.list('-date', 200), enabled: secondaryEnabled, staleTime: 60000 });
+  const { data: homework = [] } = useQuery({ queryKey: ['homework'], queryFn: () => base44.entities.HomeworkAssignment.list('-due_date', 50), enabled: secondaryEnabled, staleTime: 60000 });
+  const { data: behaviorEvents = [] } = useQuery({ queryKey: ['behavior'], queryFn: () => base44.entities.BehaviorEvent.list('-date', 200), enabled: secondaryEnabled, staleTime: 60000 });
 
   const handleRefresh = useCallback(async () => { await refetch(); }, [refetch]);
   const { containerRef, pullY, refreshing } = usePullToRefresh(handleRefresh);

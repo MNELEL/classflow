@@ -136,9 +136,9 @@ export default function ReportsPage() {
       <div className="p-5 max-w-3xl mx-auto overflow-y-auto h-full space-y-5" dir="rtl">
 
         {/* Tabs */}
-        <div className="flex gap-1 bg-muted/50 rounded-xl p-1">
+        <div role="tablist" className="flex gap-1 bg-muted/50 rounded-xl p-1">
           {[['stats','📊 סטטיסטיקות'], ['student','🤖 דוח תלמיד AI'], ['bulletin','📰 חוברת שבועית'], ['period','📋 דוח תקופתי']].map(([id, label]) => (
-            <button key={id} onClick={() => setTab(id)}
+            <button key={id} role="tab" aria-selected={tab === id} tabIndex={tab === id ? 0 : -1} onClick={() => setTab(id)}
               className={`flex-1 py-1.5 rounded-lg text-xs font-medium transition-all ${tab === id ? 'bg-card shadow text-foreground' : 'text-muted-foreground hover:text-foreground'}`}>
               {label}
             </button>

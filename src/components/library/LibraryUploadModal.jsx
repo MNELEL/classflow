@@ -298,7 +298,7 @@ export default function LibraryUploadModal({ open, onClose }) {
         </DialogHeader>
 
         {/* Tab bar */}
-        <div className="flex gap-1 bg-muted rounded-lg p-1">
+        <div role="tablist" className="flex gap-1 bg-muted rounded-lg p-1">
           {[
             { id: 'files', icon: '📁', label: 'קבצים' },
             { id: 'drive', icon: '☁️', label: 'Drive' },
@@ -306,7 +306,7 @@ export default function LibraryUploadModal({ open, onClose }) {
             { id: 'text', icon: '✍️', label: 'טקסט' },
             { id: 'search', icon: '🔍', label: 'חיפוש' },
           ].map(t => (
-            <button key={t.id} onClick={() => setTab(t.id)}
+            <button key={t.id} role="tab" aria-selected={tab === t.id} tabIndex={tab === t.id ? 0 : -1} onClick={() => setTab(t.id)}
               className={cn('flex-1 py-1.5 px-2 rounded text-xs font-medium transition-colors flex items-center justify-center gap-1',
                 tab === t.id ? 'bg-card shadow text-foreground' : 'text-muted-foreground hover:text-foreground')}>
               {t.icon} {t.label}
