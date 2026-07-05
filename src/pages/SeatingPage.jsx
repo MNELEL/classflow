@@ -472,7 +472,11 @@ ${overrideLines ? `\nהעדפות ייבוא נוספות:\n${overrideLines}` : 
         </div>
 
         {/* Main grid */}
-        <div className="flex-1 overflow-auto overflow-x-auto p-2 md:p-4 relative min-w-0" style={{ touchAction: 'pan-y' }}>
+        <div className="flex-1 overflow-auto overflow-x-auto p-2 md:p-4 relative min-w-0" style={{ touchAction: 'pan-y', WebkitOverflowScrolling: 'touch' }}>
+          {/* Mobile horizontal scroll hint */}
+          <div className="md:hidden text-center text-[10px] text-muted-foreground/60 mb-1">
+            ← גלול לצפייה בכל הכיתה →
+          </div>
           {/* Mobile floating action buttons */}
           <div className="flex md:hidden gap-2 mb-3 justify-between">
             <Sheet>

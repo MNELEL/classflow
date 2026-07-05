@@ -153,6 +153,14 @@ button, a, [role="button"] {
   box-shadow: 0 0 0 2px hsl(var(--primary)), 0 4px 16px rgba(99,102,241,0.25) !important;
 }
 
+/* Improve tap feedback on Android */
+@media (pointer: coarse) {
+  button, a, [role="button"] {
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+  }
+}
+
 /* Smooth scrollbar — desktop only */
 @media (pointer: fine) {
   ::-webkit-scrollbar { width: 4px; height: 4px; }

@@ -183,7 +183,10 @@ export default function WeeklySchedulePage() {
   const qc = useQueryClient();
   const [weekOffset, setWeekOffset] = useState(0);
   const [addDialog, setAddDialog] = useState({ open: false, day: null, hour: null });
-  const [mobileDay, setMobileDay] = useState(0);
+  const [mobileDay, setMobileDay] = useState(() => {
+    const d = new Date().getDay();
+    return d > 4 ? 0 : d; // Sunday–Thursday = 0–4; Friday/Saturday → Sunday
+  });
 
   const weekStart = useMemo(() => getWeekStart(addWeeks(new Date(), weekOffset)), [weekOffset]);
   const weekLabel = useMemo(() => {
@@ -417,7 +420,7 @@ export default function WeeklySchedulePage() {
         </div>
 
         {/* Desktop full grid */}
-        <div className="hidden md:block overflow-x-auto">
+        <div className="hidden md:block overflow-x-auto" style={{ WebkitOverflowScrolling: 'touch' }}>
           <div className="min-w-[640px] px-2 pb-6">
 
             {/* Day headers */}

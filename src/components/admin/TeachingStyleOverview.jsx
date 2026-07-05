@@ -76,7 +76,7 @@ export default function TeachingStyleOverview({ teachers, classrooms, allStudent
             <Sparkles className="w-3.5 h-3.5 text-violet-600" />
             <p className="text-xs font-semibold text-muted-foreground">מורים עם ניתוח סגנון הוראה ({withSummary.length})</p>
           </div>
-          <div className="space-y-2">
+          <div className="space-y-2 overflow-x-auto">
             {withSummary.map((teacher, i) => (
               <motion.div
                 key={teacher.id}
@@ -98,7 +98,7 @@ export default function TeachingStyleOverview({ teachers, classrooms, allStudent
             <FileText className="w-3.5 h-3.5 text-muted-foreground" />
             <p className="text-xs font-semibold text-muted-foreground">ממתינים לניתוח ({withoutSummary.length})</p>
           </div>
-          <div className="space-y-2">
+          <div className="space-y-2 overflow-x-auto">
             {withoutSummary.map(teacher => (
               <Link
                 key={teacher.id}
@@ -161,7 +161,7 @@ function TeacherStyleCard({ teacher }) {
           </div>
 
           {/* Quick metrics */}
-          <div className="flex items-center gap-3 text-[11px]">
+          <div className="flex items-center gap-3 text-[11px] overflow-x-auto no-scrollbar">
             <span className="flex items-center gap-1 text-amber-600">
               <TrendingUp className="w-3 h-3" /> {stats.completionRate}%
             </span>

@@ -28,7 +28,7 @@ export default function QuickEditMode({ active, onToggle, onQuickAction, selecte
     <div className="bg-primary/5 border border-primary/30 rounded-xl p-3 space-y-2">
       <div className="flex items-center justify-between mb-1">
         <span className="text-xs font-bold text-primary">מצב עריכה מהירה</span>
-        <button onClick={onToggle} className="text-muted-foreground hover:text-foreground">
+        <button onClick={onToggle} aria-label="סגור מצב עריכה מהירה" className="text-muted-foreground hover:text-foreground">
           <X className="w-3.5 h-3.5" />
         </button>
       </div>
@@ -48,32 +48,35 @@ export default function QuickEditMode({ active, onToggle, onQuickAction, selecte
 
       <div className="grid grid-cols-2 gap-1.5">
         <Button
-          size="sm"
-          variant="outline"
-          className="text-xs h-8"
-          disabled={!selectedSeat}
-          onClick={() => onQuickAction('lock')}
-        >
+           size="sm"
+           variant="outline"
+           className="text-xs h-8"
+           disabled={!selectedSeat}
+           aria-label={selectedSeat?.is_locked ? 'שחרר נעילת מושב' : 'נעל מושב'}
+           onClick={() => onQuickAction('lock')}
+         >
           {selectedSeat?.is_locked ? <Unlock className="w-3 h-3 ml-1" /> : <Lock className="w-3 h-3 ml-1" />}
           {selectedSeat?.is_locked ? 'שחרר' : 'נעל'}
         </Button>
         <Button
-          size="sm"
-          variant="outline"
-          className="text-xs h-8"
-          disabled={!selectedSeat}
-          onClick={() => onQuickAction('hide')}
-        >
+           size="sm"
+           variant="outline"
+           className="text-xs h-8"
+           disabled={!selectedSeat}
+           aria-label={selectedSeat?.is_hidden ? 'הצג מושב' : 'הסתר מושב'}
+           onClick={() => onQuickAction('hide')}
+         >
           <EyeOff className="w-3 h-3 ml-1" />
           {selectedSeat?.is_hidden ? 'הצג' : 'הסתר'}
         </Button>
         <Button
-          size="sm"
-          variant="outline"
-          className="text-xs h-8 col-span-2"
-          disabled={!selectedSeat}
-          onClick={() => onQuickAction('gap')}
-        >
+           size="sm"
+           variant="outline"
+           className="text-xs h-8 col-span-2"
+           disabled={!selectedSeat}
+           aria-label={selectedSeat?.is_gap ? 'בטל מרווח' : 'הפוך למרווח'}
+           onClick={() => onQuickAction('gap')}
+         >
           <Minus className="w-3 h-3 ml-1" />
           {selectedSeat?.is_gap ? 'בטל גאפ' : 'הפוך לגאפ'}
         </Button>

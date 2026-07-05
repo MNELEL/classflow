@@ -49,10 +49,10 @@ export default function BoardLabelEditor({ label, onSave }) {
         ))}
       </div>
       <div className="flex gap-2">
-        <button onClick={confirm} className="flex items-center gap-1 px-3 py-1 rounded-lg bg-primary text-primary-foreground text-xs font-semibold hover:bg-primary/90">
+        <button onClick={confirm} aria-label="אשר כותרת" className="flex items-center gap-1 px-3 py-1 rounded-lg bg-primary text-primary-foreground text-xs font-semibold hover:bg-primary/90">
           <Check className="w-3 h-3" /> שמור
         </button>
-        <button onClick={cancel} className="flex items-center gap-1 px-3 py-1 rounded-lg border border-border text-xs hover:bg-muted">
+        <button onClick={cancel} aria-label="בטל עריכת כותרת" className="flex items-center gap-1 px-3 py-1 rounded-lg border border-border text-xs hover:bg-muted">
           <X className="w-3 h-3" /> ביטול
         </button>
       </div>

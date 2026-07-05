@@ -88,7 +88,7 @@ export default function OverdueAlertsPanel() {
                     <CheckCheck className="w-3 h-3" /> סמן הכל
                   </button>
                 )}
-                <button onClick={() => setOpen(false)} className="p-1 hover:bg-accent rounded-lg">
+                <button onClick={() => setOpen(false)} aria-label="סגור התראות" className="p-1 hover:bg-accent rounded-lg">
                   <X className="w-3.5 h-3.5" />
                 </button>
               </div>
@@ -116,7 +116,7 @@ export default function OverdueAlertsPanel() {
                         {alert.days_overdue === 0 ? 'איחור של היום' : `${alert.days_overdue} ימים איחור`}
                       </p>
                     </div>
-                    <button onClick={() => markRead(alert.id)} className="p-1 hover:bg-accent rounded-lg shrink-0">
+                    <button onClick={() => markRead(alert.id)} aria-label="סמן התראה כנקראה" className="p-1 hover:bg-accent rounded-lg shrink-0">
                       <X className="w-3.5 h-3.5 text-muted-foreground" />
                     </button>
                   </div>

@@ -78,7 +78,7 @@ export default function MorePage() {
         {/* ── Quick tiles grid ── */}
         <div className="px-4">
           <p className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider mb-2.5">שימוש יומי</p>
-          <div className="grid grid-cols-3 gap-2.5">
+          <div className="grid grid-cols-3 sm:grid-cols-4 gap-2.5">
             {TOP_TILES.map(({ path, icon: Icon, label, color }) => {
               const active = location.pathname === path;
               return (
@@ -95,7 +95,7 @@ export default function MorePage() {
                   <div className={cn('w-11 h-11 rounded-2xl flex items-center justify-center', color)}>
                     <Icon className="w-5 h-5" />
                   </div>
-                  <span className="text-xs font-semibold text-foreground leading-tight text-center">{label}</span>
+                  <span className="text-[10px] sm:text-xs font-semibold text-foreground leading-tight text-center line-clamp-1">{label}</span>
                 </button>
               );
             })}

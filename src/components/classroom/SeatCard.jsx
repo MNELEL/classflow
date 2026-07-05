@@ -156,6 +156,7 @@ const SeatCard = memo(function SeatCard({
           aria-hidden="true"
           initial={{ scale: 0 }} animate={{ scale: 1 }}
           className="absolute -top-1.5 -left-1.5 bg-red-500 text-white rounded-full w-4 h-4 flex items-center justify-center shadow-sm"
+          title="התנגשות העדפות"
         >
           <AlertTriangle className="w-2 h-2" />
         </motion.span>
@@ -165,6 +166,7 @@ const SeatCard = memo(function SeatCard({
           aria-hidden="true"
           initial={{ scale: 0 }} animate={{ scale: 1 }}
           className="absolute -top-1.5 -left-1.5 bg-emerald-500 text-white rounded-full w-4 h-4 flex items-center justify-center shadow-sm"
+          title="העדפה מסופקת"
         >
           <CheckCircle2 className="w-2 h-2" />
         </motion.span>

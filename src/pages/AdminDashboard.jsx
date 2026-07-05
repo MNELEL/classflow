@@ -210,6 +210,7 @@ export default function AdminDashboard() {
 
   const activeTeachers = teachers.filter(t => t.is_active !== false);
   const activeClassrooms = classrooms.filter(c => c.is_active !== false);
+  const scrollContainerStyle = { WebkitOverflowScrolling: 'touch' };
 
   return (
     <AppLayout>
@@ -317,8 +318,8 @@ export default function AdminDashboard() {
                   </Button>
                 </div>
               ) : (
-                <div className="space-y-2 overflow-x-auto">
-                  {teachers.map((teacher) => (
+                <div className="space-y-2 overflow-x-auto" style={scrollContainerStyle}>
+                   {teachers.map((teacher) => (
                     <div
                       key={teacher.id}
                       className="flex items-center justify-between bg-card border border-border rounded-lg p-3 hover:border-primary/30 transition-colors min-w-0"
@@ -450,7 +451,7 @@ export default function AdminDashboard() {
                   </Button>
                 </div>
               ) : (
-                <div className="space-y-2 overflow-x-auto">
+                <div className="space-y-2 overflow-x-auto" style={scrollContainerStyle}>
                   {classrooms.map((classroom) => {
                     const assignedTeacher = teachers.find(t => t.id === classroom.teacher_id);
                     return (

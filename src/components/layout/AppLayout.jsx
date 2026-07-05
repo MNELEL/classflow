@@ -105,7 +105,7 @@ export default function AppLayout({ children }) {
         className="bg-white/95 backdrop-blur-xl border-b border-border/60 flex items-center justify-between sticky top-0 z-50 shadow-[0_1px_12px_rgba(0,120,130,0.06)]"
         style={{ paddingTop: 'env(safe-area-inset-top)', paddingLeft: 'env(safe-area-inset-left)', paddingRight: 'env(safe-area-inset-right)' }}
       >
-        <div className="flex items-center gap-2 px-4 py-3 w-full">
+        <div className="flex items-center gap-2 px-4 py-3 w-full min-h-[56px]">
           {!isDashboard ? (
             <button
               onClick={() => {
