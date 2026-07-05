@@ -49,6 +49,11 @@
       "items": {
         "type": "string"
       }
+    },
+    "description": {
+      "type": "string",
+      "maxLength": 1000,
+      "description": "\u05ea\u05d9\u05d0\u05d5\u05e8"
     }
   },
   "required": [
