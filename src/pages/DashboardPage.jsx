@@ -24,6 +24,12 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 export default function DashboardPage() {
   const [showGuide, setShowGuide] = useState(false);
+  const [showCalendar, setShowCalendar] = useState(false);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setShowCalendar(true), 800);
+    return () => clearTimeout(timer);
+  }, []);
 
   const [secondaryEnabled, setSecondaryEnabled] = useState(false);
   useEffect(() => {
@@ -344,12 +350,12 @@ export default function DashboardPage() {
 
         {/* Academic Calendar (Hebrew) — includes BK + trackers tabs */}
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.34 }} className="mb-3">
-          <AcademicCalendar />
+          {showCalendar ? <AcademicCalendar /> : <div className="h-48 bg-muted/40 rounded-xl animate-pulse" />}
         </motion.div>
 
         {/* Study Progress Tracker */}
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.36 }} className="mb-3">
-          <StudyProgressTracker />
+          {showCalendar ? <StudyProgressTracker /> : <div className="h-48 bg-muted/40 rounded-xl animate-pulse" />}
         </motion.div>
 
         {/* Absence Alert */}

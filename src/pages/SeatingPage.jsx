@@ -166,6 +166,7 @@ export default function SeatingPage() {
       return;
     }
     setIsLoading(true);
+    await new Promise(resolve => setTimeout(resolve, 50));
     try {
       // First run the local smart algorithm — this now guarantees full placement
       // Lock fixed-seat students before sorting
@@ -291,8 +292,10 @@ ${overrideLines ? `\nהעדפות ייבוא נוספות:\n${overrideLines}` : 
     }
   }
 
-  function handleQuickSort() {
+  async function handleQuickSort() {
     pushHistory(seats);
+    setIsLoading(true);
+    await new Promise(resolve => setTimeout(resolve, 50));
     const seatsWithFixed = seats.map(s => s.fixed_seat_number ? { ...s, is_locked: true } : s);
     // Apply the selected preference to all students temporarily for this sort only
     const studentsWithPref = quickSortPref === 'none' ? students : students.map(s => ({
@@ -302,6 +305,7 @@ ${overrideLines ? `\nהעדפות ייבוא נוספות:\n${overrideLines}` : 
     }));
     const sorted = smartSort(seatsWithFixed, studentsWithPref);
     setSeats(sorted);
+    setIsLoading(false);
     toast.success('הסידור המהיר הושלם!');
   }
 

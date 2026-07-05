@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/lib/AuthContext';
@@ -53,10 +53,21 @@ export default function MorePage() {
   const navigate = useNavigate();
   const location = useLocation();
   const { user } = useAuth();
+  const scrollRef = useRef(null);
+  const savedScroll = useRef(0);
+
+  useEffect(() => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollTop = savedScroll.current;
+    }
+    return () => {
+      if (scrollRef.current) savedScroll.current = scrollRef.current.scrollTop;
+    };
+  }, []);
 
   return (
     <AppLayout>
-      <div className="min-h-full bg-background pb-6" dir="rtl">
+      <div ref={scrollRef} className="overflow-y-auto h-full min-h-full bg-background pb-6" dir="rtl">
 
         {/* Header */}
         <div className="px-4 pt-5 pb-4">

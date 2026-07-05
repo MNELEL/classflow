@@ -114,17 +114,20 @@ button, a, [role="button"] {
     min-height: 44px;
     min-width: 44px;
   }
-  /* Override explicit size classes on icon buttons */
-  button.w-7, button.h-7 {
+  /* Override for ALL small icon buttons regardless of size class */
+  button[class*="h-7"], button[class*="w-7"],
+  button[class*="h-6"], button[class*="w-6"],
+  button[class*="h-8"], button[class*="w-8"] {
     min-height: 44px !important;
     min-width: 44px !important;
   }
+  /* Minimum readable text sizes */
+  [class*="text-[9px]"] { font-size: 11px !important; }
+  [class*="text-[10px]"] { font-size: 11px !important; }
+  [class*="text-[11px]"] { font-size: 12px !important; }
   .text-xs { font-size: 0.8125rem; }
   label, .label-text { font-size: 0.875rem; }
   input, select, textarea { font-size: 1rem !important; }
-  [class*="text-[9px]"] { font-size: 11px !important; }
-  [class*="text-[10px]"] { font-size: 11px !important; }
-  [class*="text-[11px]"] { font-size: 11px !important; }
 }
 
 .seat-card {
