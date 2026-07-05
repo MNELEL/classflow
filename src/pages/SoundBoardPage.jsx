@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import AppLayout from '@/components/layout/AppLayout';
@@ -11,6 +11,7 @@ import { Badge } from '@/components/ui/badge';
 import { Play, Square, Upload, Trash2, Volume2, Trophy, Bell, Music } from 'lucide-react';
 import { toast } from 'sonner';
 import { motion } from 'framer-motion';
+import { warmSoundBoardMedia } from '@/lib/mediaWarmup';
 
 export default function SoundBoardPage() {
   const qc = useQueryClient();
@@ -86,6 +87,13 @@ export default function SoundBoardPage() {
   function handleEnded(id) {
     setPlayingId(null);
   }
+
+  // Preload audio assets when sounds are loaded
+  useEffect(() => {
+    if (sounds.length > 0) {
+      warmSoundBoardMedia(sounds);
+    }
+  }, [sounds]);
 
   const achievementSounds = sounds.filter(s => 
     s.tags?.includes('הישג') || s.tags?.includes('ניצחון') || s.tags?.includes('הצלחה')

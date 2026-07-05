@@ -5,6 +5,7 @@ import { queryClientInstance } from '@/lib/query-client'
 import { BrowserRouter as Router, Route, Routes, useLocation, Navigate } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useEffect, useState, lazy, Suspense } from 'react';
+import { warmDashboardMedia } from '@/lib/mediaWarmup';
 import PageNotFound from './lib/PageNotFound';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
@@ -56,6 +57,7 @@ const GeneratorsPage       = lazy(() => import('./pages/GeneratorsPage'));
 const TasksHubPage          = lazy(() => import('./pages/TasksHubPage'));
 const AdminGeneratorsPage   = lazy(() => import('./pages/AdminGeneratorsPage'));
 const TeacherInsightsPage   = lazy(() => import('./pages/TeacherInsightsPage'));
+const IngestPage            = lazy(() => import('./pages/IngestPage'));
 
 const pageVariants = {
   initial: { opacity: 0, x: 20 },
@@ -122,6 +124,7 @@ function AnimatedRoutes() {
 <Route path="/tasks-hub" element={<TasksHubPage />} />
 <Route path="/admin-generators" element={<AdminGeneratorsPage />} />
 <Route path="/teacher-insights" element={<TeacherInsightsPage />} />
+<Route path="/ingest" element={<IngestPage />} />
 <Route path="/teacher-login" element={<TeacherLogin />} />
 <Route path="/teacher-dashboard" element={<TeacherDashboard />} />
             </Route>
@@ -141,6 +144,13 @@ const AuthenticatedApp = () => {
   useEffect(() => {
     if (user && !localStorage.getItem('classflow_onboarding_done')) {
       setShowOnboarding(true);
+    }
+  }, [user]);
+
+  // Prefetch dashboard media assets immediately after successful authentication
+  useEffect(() => {
+    if (user) {
+      warmDashboardMedia();
     }
   }, [user]);
 

@@ -6,7 +6,7 @@ import {
   CalendarCheck, GraduationCap, Trophy, Wrench,
   Contact, FileText, Layers, Mic, ClipboardCheck,
   Music, Eye, Clock, UserCircle, ChevronLeft, BarChart2, Brain,
-  BookOpen, Home, Bell, BookMarked, Shuffle, Zap, GitBranch, CalendarDays, Sparkles, Shield
+  BookOpen, Home, Bell, BookMarked, Shuffle, Zap, GitBranch, CalendarDays, Sparkles, Shield, Upload
 } from 'lucide-react';
 import AppLayout from '@/components/layout/AppLayout';
 
@@ -29,6 +29,7 @@ const ROWS = [
   { path: '/curriculum',      icon: Clock,      label: 'מערכת שעות',      desc: 'תכנון שבועי ויעדי לימוד',         color: 'bg-indigo-100 text-indigo-600 dark:bg-indigo-900/30 dark:text-indigo-400' },
   { path: '/question-bank',   icon: Layers,     label: 'בנק שאלות',       desc: 'שאלות לפי נושא ורמה',            color: 'bg-pink-100 text-pink-600 dark:bg-pink-900/30 dark:text-pink-400'         },
   { path: '/lesson-analyzer', icon: Mic,        label: 'ניתוח שיעורים',   desc: 'סיכום, תמלול וחומרי לימוד',      color: 'bg-rose-100 text-rose-600 dark:bg-rose-900/30 dark:text-rose-400'         },
+  { path: '/ingest',             icon: Upload,     label: 'העלאת קבצים',      desc: 'תמונות, PDF ואודיו לניתוח',       color: 'bg-cyan-100 text-cyan-600 dark:bg-cyan-900/30 dark:text-cyan-400'         },
   { path: '/parents',         icon: Contact,    label: 'הורים',            desc: 'תקשורת ושיתוף חומרים',           color: 'bg-teal-100 text-teal-600 dark:bg-teal-900/30 dark:text-teal-400'         },
   { path: '/student-view',    icon: Eye,        label: 'תצוגת תלמיד',     desc: 'מה התלמיד רואה',                  color: 'bg-sky-100 text-sky-600 dark:bg-sky-900/30 dark:text-sky-400'             },
   { path: '/sound-board',          icon: Music,       label: 'לוח צלילים',       desc: 'צלילים וניהול כיתה',                color: 'bg-violet-100 text-violet-600 dark:bg-violet-900/30 dark:text-violet-400' },
@@ -43,6 +44,7 @@ const ROWS = [
   { path: '/daily-summary',        icon: Sparkles,    label: 'סיכום יומי',        desc: 'AI מחולל סיכום היום והמלצות',      color: 'bg-purple-100 text-purple-600 dark:bg-purple-900/30 dark:text-purple-400'},
   { path: '/admin-generators',     icon: Sparkles,    label: 'מרכז מחוללים - מנהל', desc: 'סיכומים, משימות ועדכונים כלליים',  color: 'bg-violet-100 text-violet-600 dark:bg-violet-900/30 dark:text-violet-400', adminOnly: true },
   { path: '/admin',                icon: Shield,      label: 'לוח בקרה - מנהל',  desc: 'ניהול כיתות ומורים',              color: 'bg-primary/10 text-primary', adminOnly: true },
+  { path: '/teacher-insights',     icon: Brain,       label: 'ניתוח מורים',       desc: 'סגנון הוראה ותדריכי פגישות',     color: 'bg-violet-100 text-violet-600 dark:bg-violet-900/30 dark:text-violet-400', adminOnly: true },
   { path: '/settings',             icon: UserCircle,  label: 'פרופיל והגדרות',   desc: 'מיתוג, תצוגה ועוד',                color: 'bg-slate-100 text-slate-600 dark:bg-slate-900/30 dark:text-slate-400'     },
 ];
 

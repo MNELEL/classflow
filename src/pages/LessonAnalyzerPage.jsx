@@ -6,7 +6,8 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Mic, Upload, FileAudio, Loader2, Plus, CheckCircle2, Layers } from 'lucide-react';
+import { Mic, Upload, FileAudio, Loader2, Plus, CheckCircle2, Layers, AlignRight } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
 import LessonSummaryHub from '@/components/lessonanalyzer/LessonSummaryHub.jsx';
 import SummaryTaskBoard from '@/components/lessonanalyzer/SummaryTaskBoard.jsx';
@@ -27,12 +28,37 @@ const STEP_LABELS = {
   done: 'הושלם!',
 };
 
+const DETAIL_LEVELS = {
+  brief: {
+    label: 'תמציתי',
+    desc: '3-4 נקודות עיקריות, 4-5 שאלות',
+    sections: '3-4',
+    questions: '4-5',
+    detail: 'קצר ותמציתי',
+  },
+  standard: {
+    label: 'רגיל',
+    desc: '5-7 פרקים, 6-8 שאלות',
+    sections: '5-7',
+    questions: '6-8',
+    detail: 'מפורט עם דוגמאות',
+  },
+  detailed: {
+    label: 'מפורט',
+    desc: '8-10 פרקים מלאים, 8-12 שאלות',
+    sections: '8-10',
+    questions: '8-12',
+    detail: 'מקיף עם ציטוטים והסברים מפורטים',
+  },
+};
+
 export default function LessonAnalyzerPage() {
   const [file, setFile] = useState(null);
   const [title, setTitle] = useState('');
   const [subject, setSubject] = useState('');
   const [step, setStep] = useState(STEPS.IDLE);
   const [savingId, setSavingId] = useState(null);
+  const [detailLevel, setDetailLevel] = useState('standard');
   const queryClient = useQueryClient();
 
   const deleteMutation = useMutation({
@@ -78,8 +104,9 @@ export default function LessonAnalyzerPage() {
       const transcript = await base44.integrations.Core.TranscribeAudio({ audio_url: file_url });
 
       setStep(STEPS.ANALYZING);
+      const cfg = DETAIL_LEVELS[detailLevel];
       const analysis = await base44.integrations.Core.InvokeLLM({
-        prompt: `אתה מומחה חינוכי. להלן תמליל שיעור בעברית:\n\n"""\n${transcript}\n"""\n\nנתח את השיעור והפק:\n1. סיכום מובנה בראשי פרקים (4-7 פרקים) — כל פרק עם כותרת וסיכום קצר של 2-3 משפטים.\n2. 6-10 שאלות חזרה לתלמידים מסוגים מגוונים (רב-ברירה, שאלה פתוחה, נכון/לא נכון). לכל שאלת רב-ברירה צרף 4 אפשרויות ותשובה נכונה.\n\nענה בעברית בלבד.`,
+        prompt: `אתה מומחה חינוכי. להלן תמליל שיעור בעברית:\n\n"""\n${transcript}\n"""\n\nנתח את השיעור והפק:\n1. סיכום מובנה בראשי פרקים (${cfg.sections} פרקים) — כל פרק עם כותרת וסיכום ${cfg.detail}.\n2. ${cfg.questions} שאלות חזרה לתלמידים מסוגים מגוונים (רב-ברירה, שאלה פתוחה, נכון/לא נכון). לכל שאלת רב-ברירה צרף 4 אפשרויות ותשובה נכונה. לכל שאלה צרף ציון confidence (0-100) המשקף עד כמה השאלה מדויקת ורלוונטית לתוכן השיעור.\n3. נקודות מפתח חשובות שעלו בשיעור.\n\nרמת פירוט: ${cfg.label} — ${cfg.detail}.\n\nענה בעברית בלבד.`,
         response_json_schema: {
           type: 'object',
           properties: {
@@ -96,8 +123,13 @@ export default function LessonAnalyzerPage() {
                   type: { type: 'string' },
                   options: { type: 'array', items: { type: 'string' } },
                   answer: { type: 'string' },
+                  confidence: { type: 'number', description: 'רמת ביטחון 0-100' },
                 },
               },
+            },
+            key_points: {
+              type: 'array',
+              items: { type: 'string' },
             },
           },
         },
@@ -114,7 +146,7 @@ export default function LessonAnalyzerPage() {
         ai_summary: analysis.summary_sections?.map(s => `**${s.heading}**\n${s.content}`).join('\n\n'),
         ai_summary_sections: analysis.summary_sections,
         ai_review_questions: analysis.review_questions,
-        ai_key_points: analysis.summary_sections?.map(s => s.heading),
+        ai_key_points: analysis.key_points || analysis.summary_sections?.map(s => s.heading),
       });
 
       queryClient.invalidateQueries({ queryKey: ['lesson_analyses'] });
@@ -166,6 +198,26 @@ export default function LessonAnalyzerPage() {
                 disabled={isProcessing}
                 className="h-11 text-base"
               />
+
+              {/* Detail level selector */}
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-muted-foreground flex items-center gap-1.5">
+                  <AlignRight className="w-3.5 h-3.5" /> רמת פירוט לסיכום
+                </label>
+                <Select value={detailLevel} onValueChange={setDetailLevel} disabled={isProcessing}>
+                  <SelectTrigger className="h-11 text-base"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    {Object.entries(DETAIL_LEVELS).map(([key, cfg]) => (
+                      <SelectItem key={key} value={key}>
+                        <div className="flex flex-col">
+                          <span className="font-medium">{cfg.label}</span>
+                          <span className="text-[10px] text-muted-foreground">{cfg.desc}</span>
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
 
               {/* File drop */}
               <label className={`flex flex-col items-center justify-center gap-2 border-2 border-dashed rounded-xl p-6 cursor-pointer transition-colors min-h-[100px]
