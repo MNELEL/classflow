@@ -12,6 +12,7 @@ import { Separator } from '@/components/ui/separator';
 import { toast } from 'sonner';
 import { Palette, LayoutGrid, Settings, Save, Trash2, Plus, Tag, Brush } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog';
+import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogFooter, AlertDialogCancel, AlertDialogAction } from '@/components/ui/alert-dialog';
 import BrandingPanel from '@/components/settings/BrandingPanel';
 
 const SETTINGS_KEY = 'classmanager_settings';
@@ -292,14 +293,14 @@ export default function SettingsPage() {
         </div>
       </div>
 
-      <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
-        <DialogContent dir="rtl">
-          <DialogHeader>
-            <DialogTitle className="text-destructive">מחיקת חשבון</DialogTitle>
-            <DialogDescription>
-              פעולה זו בלתי הפיכה. כל הנתונים שלך, כולל תלמידים וסידורי ישיבה, יימחקו לצמיתות מהשרת.
-            </DialogDescription>
-          </DialogHeader>
+      <AlertDialog open={showDeleteDialog} onOpenChange={(open) => { setShowDeleteDialog(open); if (!open) setDeleteConfirmText(''); }}>
+        <AlertDialogContent dir="rtl">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-destructive">מחיקת חשבון - פעולה בלתי הפיכה</AlertDialogTitle>
+            <AlertDialogDescription>
+              כל הנתונים שלך יימחקו ולא ניתן לשחזרם: תלמידים, ציונים, ספרייה, מטלות ועוד. האם אתה בטוח?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
           <div className="py-2">
             <Label className="text-sm mb-2 block">הקלד <strong>מחק</strong> לאישור:</Label>
             <Input
@@ -310,17 +311,15 @@ export default function SettingsPage() {
               autoComplete="off"
             />
           </div>
-          <DialogFooter className="flex-row-reverse gap-2 sm:gap-0">
-            <Button variant="outline" onClick={() => setShowDeleteDialog(false)}>
-              ביטול
-            </Button>
-            <Button
-              variant="destructive"
+          <AlertDialogFooter className="flex-row-reverse gap-2 sm:gap-0">
+            <AlertDialogCancel>ביטול</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive hover:bg-destructive/90"
               disabled={deleteConfirmText !== 'מחק' || isDeleting}
-              onClick={async () => {
+              onClick={async (e) => {
+                e.preventDefault();
                 setIsDeleting(true);
                 try {
-                  // Delete all user data from the database
                   const [students, grades, attendance, rewards, seating, history, homework, library, contacts, portfolio, tasks, bulletins, campaigns, curriculumWeeks, lessonPlans, worksheets, sharedLessons] = await Promise.allSettled([
                     base44.entities.Student.list(),
                     base44.entities.Grade.list(),
@@ -356,11 +355,11 @@ export default function SettingsPage() {
                 }
               }}
             >
-              {isDeleting ? 'מוחק...' : <><Trash2 className="w-4 h-4 ml-1" /> אישור מחיקה</>}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+              {isDeleting ? 'מוחק...' : <><Trash2 className="w-4 h-4 ml-1" /> מחק חשבון לצמיתות</>}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </AppLayout>
   );
 }
