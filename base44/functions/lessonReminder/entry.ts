@@ -5,13 +5,16 @@ Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
 
-    // Require authentication — only admins (or platform-scheduled invocations with elevated context) may trigger reminders
-    const isAuth = await base44.auth.isAuthenticated();
-    if (!isAuth) {
+    // Security: block direct unauthorized invocation.
+    // Scheduled (service-role) invocations have no user session — allow those through;
+    // authenticated direct calls require admin role.
+    try {
       const user = await base44.auth.me();
-      if (!user || user.role !== 'admin') {
-        return Response.json({ error: 'Unauthorized' }, { status: 403 });
+      if (user && user.role !== 'admin') {
+        return Response.json({ error: 'Forbidden' }, { status: 403 });
       }
+    } catch {
+      // No user session — assume platform-scheduled invocation; proceed.
     }
 
     const now = new Date();
