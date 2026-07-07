@@ -5,11 +5,14 @@ Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
 
-    // If invoked with a user auth context, require admin role.
-    // Platform-scheduled invocations have no user context and are allowed.
+    // Block anonymous callers — platform-scheduled invocations authenticate
+    // as service role (isAuthenticated true, no user); anonymous direct calls
+    // have no token at all.
+    const isAuth = await base44.auth.isAuthenticated();
+    if (!isAuth) return Response.json({ error: 'Unauthorized' }, { status: 401 });
     const user = await base44.auth.me().catch(() => null);
     if (user && user.role !== 'admin') {
-      return Response.json({ error: 'Unauthorized' }, { status: 403 });
+      return Response.json({ error: 'Forbidden' }, { status: 403 });
     }
 
     const now = new Date();
