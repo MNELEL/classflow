@@ -15,6 +15,9 @@ Deno.serve(async (req) => {
     if (fileId && !/^[a-zA-Z0-9_-]+$/.test(fileId)) {
       return Response.json({ error: 'Invalid fileId' }, { status: 400 });
     }
+    if (folderId && !/^[a-zA-Z0-9_-]+$/.test(folderId)) {
+      return Response.json({ error: 'Invalid folderId' }, { status: 400 });
+    }
 
     const { accessToken } = await base44.asServiceRole.connectors.getCurrentAppUserConnection(CONNECTOR_ID);
     const headers = { Authorization: `Bearer ${accessToken}` };
