@@ -272,11 +272,11 @@ export default function SettingsPage() {
             <Save className="w-4 h-4 ml-1" /> שמור הגדרות
           </Button>
 
-          {/* Danger Zone */}
+          {/* Security & Privacy */}
           <Card className="border-destructive/40">
             <CardHeader>
               <CardTitle className="text-base flex items-center gap-2 text-destructive">
-                <Trash2 className="w-4 h-4" /> אזור מסוכן
+                <Trash2 className="w-4 h-4" /> אבטחה ופרטיות
               </CardTitle>
               <CardDescription>פעולות בלתי הפיכות</CardDescription>
             </CardHeader>

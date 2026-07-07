@@ -133,7 +133,7 @@ export default function DashboardPage() {
 
   return (
     <AppLayout>
-      <div ref={containerRef} className="p-5 max-w-5xl mx-auto relative" dir="rtl">
+      <div ref={containerRef} className="p-5 max-w-5xl mx-auto relative overflow-y-auto h-full" dir="rtl">
         <PullToRefreshIndicator pullY={pullY} refreshing={refreshing} />
 
         {/* Header */}

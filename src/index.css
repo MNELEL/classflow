@@ -159,6 +159,11 @@ button, a, [role="button"] {
     -webkit-tap-highlight-color: transparent;
     touch-action: manipulation;
   }
+  /* Guarantee text selection on content elements while keeping buttons/tabs/icons non-selectable */
+  input, textarea, [contenteditable="true"], .transcript, .summary-text {
+    -webkit-user-select: text !important;
+    user-select: text !important;
+  }
 }
 
 /* Smooth scrollbar — desktop only */
