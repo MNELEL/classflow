@@ -9,6 +9,7 @@ import { ClipboardList, ChevronDown, ChevronUp, AlertCircle, CheckCircle2, Clock
 import { motion, AnimatePresence } from 'framer-motion';
 import { format, parseISO, differenceInCalendarDays } from 'date-fns';
 import { he } from 'date-fns/locale';
+import TaskAlertsBanner from '@/components/tasks/TaskAlertsBanner';
 
 const STATUS_LABELS = { pending: 'ממתין', in_progress: 'בביצוע', done: 'הושלם' };
 const STATUS_ICONS = { pending: Clock, in_progress: Clock, done: CheckCircle2 };
@@ -142,6 +143,9 @@ export default function TasksHubPage() {
               </p>
             </div>
           </div>
+
+          {/* Daily alerts */}
+          <TaskAlertsBanner classData={classData} />
 
           {/* Summary stats */}
           <div className="grid grid-cols-4 gap-2">
