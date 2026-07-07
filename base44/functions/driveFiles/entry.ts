@@ -34,6 +34,9 @@ Deno.serve(async (req) => {
     if (action === 'import') {
       // Import a Drive file as a LibraryItem
       if (!fileId) return Response.json({ error: 'fileId required' }, { status: 400 });
+      if (!/^[a-zA-Z0-9_-]+$/.test(fileId)) {
+        return Response.json({ error: 'Invalid fileId' }, { status: 400 });
+      }
 
       const metaRes = await fetch(
         `https://www.googleapis.com/drive/v3/files/${fileId}?fields=id,name,mimeType,webViewLink,modifiedTime`,
