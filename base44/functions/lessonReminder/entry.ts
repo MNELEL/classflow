@@ -5,16 +5,11 @@ Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
 
-    // Security: block direct unauthorized invocation.
-    // Scheduled (service-role) invocations have no user session — allow those through;
-    // authenticated direct calls require admin role.
-    try {
-      const user = await base44.auth.me();
-      if (user && user.role !== 'admin') {
-        return Response.json({ error: 'Forbidden' }, { status: 403 });
-      }
-    } catch {
-      // No user session — assume platform-scheduled invocation; proceed.
+    // If invoked with a user auth context, require admin role.
+    // Platform-scheduled invocations have no user context and are allowed.
+    const user = await base44.auth.me().catch(() => null);
+    if (user && user.role !== 'admin') {
+      return Response.json({ error: 'Unauthorized' }, { status: 403 });
     }
 
     const now = new Date();
