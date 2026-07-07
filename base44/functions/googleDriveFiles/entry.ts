@@ -43,10 +43,16 @@ Deno.serve(async (req) => {
       return Response.json({ file: data });
     }
 
-    // Export Google Docs as PDF link
+    // Export Google Docs as PDF — proxy content server-side so the access token is never exposed to the client
     if (action === 'exportUrl') {
       const exportUrl = `https://www.googleapis.com/drive/v3/files/${fileId}/export?mimeType=application/pdf`;
-      return Response.json({ exportUrl, accessToken });
+      const pdfRes = await fetch(exportUrl, { headers });
+      if (!pdfRes.ok) return Response.json({ error: 'export_failed' }, { status: 502 });
+      const pdfBuffer = await pdfRes.arrayBuffer();
+      return new Response(pdfBuffer, {
+        status: 200,
+        headers: { 'Content-Type': 'application/pdf', 'Content-Disposition': `inline; filename="${fileId}.pdf"` },
+      });
     }
 
     return Response.json({ error: 'Unknown action' }, { status: 400 });

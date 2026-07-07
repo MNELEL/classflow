@@ -5,6 +5,15 @@ Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
 
+    // Require authentication — only admins (or platform-scheduled invocations with elevated context) may trigger reminders
+    const isAuth = await base44.auth.isAuthenticated();
+    if (!isAuth) {
+      const user = await base44.auth.me();
+      if (!user || user.role !== 'admin') {
+        return Response.json({ error: 'Unauthorized' }, { status: 403 });
+      }
+    }
+
     const now = new Date();
     const dayMap = { 0: 'sun', 1: 'mon', 2: 'tue', 3: 'wed', 4: 'thu', 5: 'fri', 6: 'sat' };
     const todayKey = dayMap[now.getDay()];
