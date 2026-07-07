@@ -25,13 +25,8 @@ export default function TeacherDashboard() {
   const [teacher, setTeacher] = useState(null);
 
   useEffect(() => {
-    const hasSession = sessionStorage.getItem('classflow_teacher_id');
-    if (!hasSession) {
-      navigate('/teacher-login');
-      return;
-    }
-    // Validate teacher identity server-side — do not trust client-side storage for identity.
-    // The Teacher entity is RLS-protected: only readable if user_id matches the current user.
+    // Validate teacher identity entirely server-side via base44.auth.me() + RLS-protected
+    // Teacher entity. Client-side storage is never used for access control.
     let cancelled = false;
     (async () => {
       try {
