@@ -96,6 +96,27 @@
   }
 }
 
+/* ── Global text-selection policy (app-store polish) ──
+   Prevent accidental highlight when scrolling lists/cards/headers/nav.
+   Keep selection active on actual content: .transcript, .summary-text,
+   inputs, textareas, and paragraphs. */
+@layer base {
+  ul, ol, li,
+  h1, h2, h3, h4, h5, h6,
+  nav, label, .card, [role="list"], [role="grid"], [role="row"],
+  table, thead, tbody, th, td,
+  [data-selectable="false"] {
+    -webkit-user-select: none;
+    user-select: none;
+  }
+  .transcript, .summary-text,
+  input, textarea, [contenteditable="true"],
+  p {
+    -webkit-user-select: text !important;
+    user-select: text !important;
+  }
+}
+
 /* Safe area support for notched devices */
 :root {
   --sat: env(safe-area-inset-top, 0px);

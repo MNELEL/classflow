@@ -297,7 +297,7 @@ export default function SettingsPage() {
           <AlertDialogHeader>
             <AlertDialogTitle className="text-destructive">מחיקת חשבון - פעולה בלתי הפיכה</AlertDialogTitle>
             <AlertDialogDescription>
-              כל הנתונים שלך יימחקו ולא ניתן לשחזרם: תלמידים, ציונים, ספרייה, מטלות ועוד. האם אתה בטוח?
+              כל הנתונים שלך יימחקו ולא ניתן לשחזרם לצמיתות: כיתות, רשומות תלמידים, ציונים, ספרייה, מטלות, חומרים שהועלו ועוד. פעולה זו בלתי הפיכה. האם אתה בטוח?
             </AlertDialogDescription>
           </AlertDialogHeader>
           <div className="py-2">
