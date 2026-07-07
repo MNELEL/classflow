@@ -322,7 +322,7 @@ export default function SettingsPage() {
                    await base44.auth.deleteMe();
                    localStorage.clear();
                    toast.success('החשבון נמחק בהצלחה. מתנתק...');
-                   setTimeout(() => base44.auth.logout('/login'), 1500);
+                   setTimeout(() => base44.auth.logout('/register'), 1500);
                  } catch (err) {
                    toast.error('שגיאה במחיקת החשבון');
                    setIsDeleting(false);
