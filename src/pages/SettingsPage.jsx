@@ -271,13 +271,13 @@ export default function SettingsPage() {
             <Save className="w-4 h-4 ml-1" /> שמור הגדרות
           </Button>
 
-          {/* Security & Privacy */}
-          <Card className="border-destructive/40">
+          {/* Danger Zone */}
+          <Card className="border-destructive/40 bg-destructive/5">
             <CardHeader>
               <CardTitle className="text-base flex items-center gap-2 text-destructive">
-                <Trash2 className="w-4 h-4" /> אבטחה ופרטיות
+                <Trash2 className="w-4 h-4" /> אזור מסוכן
               </CardTitle>
-              <CardDescription>מחיקת החשבון תמחק לצמיתות את פרופיל המורה ואת כל שיוכי הכיתות, התלמידים והחומרים שהועלו.</CardDescription>
+              <CardDescription>מחיקת החשבון תמחק לצמיתות את פרופיל המורה ואת כל שיוכי הכיתות, התלמידים, הציונים והחומרים שהועלו. פעולה זו בלתי הפיכה.</CardDescription>
             </CardHeader>
             <CardContent>
               <Button

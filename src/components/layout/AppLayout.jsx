@@ -31,7 +31,21 @@ export default function AppLayout({ children }) {
   const tabHistory = useRef({});
   const mainRef = useRef(null);
 
-  const NAV_PATHS = [...PRIMARY_NAV.map(n => n.path), '/more'];
+  // All routes that belong to the /more tab — single source of truth
+  const MORE_PATHS = [
+    '/seating','/toolkit','/grades','/gamification','/parents','/worksheets',
+    '/question-bank','/lesson-analyzer','/curriculum','/homework','/sound-board',
+    '/student-view','/reports','/analytics','/events','/exams','/fast-feedback',
+    '/behavior-timeline','/weekly-schedule','/bell-schedule','/study-plan-generator',
+    '/raffle','/daily-summary','/exam-scanner','/more','/settings','/tasks-hub',
+    '/history','/admin','/generators','/admin-generators','/teacher-insights',
+    '/ingest','/teaching-style-dashboard','/teacher-style','/teacher-login',
+    '/teacher-dashboard',
+  ];
+
+  function isMoreSubPath(pathname) {
+    return MORE_PATHS.some(p => pathname === p || pathname.startsWith(p + '/'));
+  }
 
   function getCurrentTabRoot(pathname) {
     for (const p of PRIMARY_NAV.filter(n => n.path !== '/more').map(n => n.path)) {
@@ -58,18 +72,17 @@ export default function AppLayout({ children }) {
     requestAnimationFrame(() => { main.scrollTop = savedY; });
   }, [location.pathname]);
 
-  // Save current path to tab history on route change
+  // Save current path to tab history on route change — each /more sub-path
+  // gets its own scroll slot (keyed by pathname) and the last visited
+  // sub-path is tracked so returning to /more restores the exact view.
   useEffect(() => {
     const root = getCurrentTabRoot(location.pathname);
     if (root) {
       tabHistory.current[root] = location.pathname;
-      // For /more tab, explicitly save full sub-path (e.g. /seating, /gamification)
-      const morePaths = ['/seating','/toolkit','/grades','/gamification','/parents','/worksheets','/question-bank','/lesson-analyzer','/curriculum','/homework','/sound-board','/student-view','/reports','/analytics','/events','/exams','/fast-feedback','/behavior-timeline','/weekly-schedule','/bell-schedule','/study-plan-generator','/raffle','/daily-summary','/exam-scanner','/more'];
-      morePaths.forEach(p => {
-        if (location.pathname === p || location.pathname.startsWith(p + '/')) {
-          tabHistory.current['/more'] = location.pathname;
-        }
-      });
+    }
+    // Explicitly track /more sub-paths for robust restoration
+    if (isMoreSubPath(location.pathname)) {
+      tabHistory.current['/more'] = location.pathname;
     }
   }, [location.pathname]);
 
@@ -101,9 +114,7 @@ export default function AppLayout({ children }) {
   const isDashboard = location.pathname === '/';
   const title = branding.page_titles?.[location.pathname] || branding.school_name || 'ClassManager Pro';
 
-  // Check if current path is in the "more" section (any route not in the 4 primary tabs)
-  const MORE_PATHS = ['/seating','/toolkit','/grades','/gamification','/parents','/worksheets','/question-bank','/lesson-analyzer','/curriculum','/homework','/sound-board','/student-view','/reports','/analytics','/events','/exams','/fast-feedback','/behavior-timeline','/weekly-schedule','/bell-schedule','/study-plan-generator','/raffle','/daily-summary','/exam-scanner','/more'];
-  const isMoreActive = MORE_PATHS.includes(location.pathname);
+  const isMoreActive = isMoreSubPath(location.pathname);
 
   return (
     <div className="min-h-screen bg-background flex flex-col" dir="rtl">
