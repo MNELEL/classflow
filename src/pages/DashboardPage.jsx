@@ -16,6 +16,7 @@ import DailyBriefing from '@/components/dashboard/DailyBriefing';
 import StudyProgressTracker from '@/components/dashboard/StudyProgressTracker';
 import WeeklyActivitySummary from '@/components/dashboard/WeeklyActivitySummary';
 import StudentDataHub from '@/components/dashboard/StudentDataHub';
+import StudentEngagementPanel from '@/components/dashboard/StudentEngagementPanel';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { calcSatisfactionScore } from '@/lib/seatingUtils';
@@ -169,6 +170,11 @@ export default function DashboardPage() {
           homework={homework}
           behaviorEvents={behaviorEvents}
         />
+
+        {/* Student Engagement Panel */}
+        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.28 }} className="mb-6">
+          <StudentEngagementPanel students={students} grades={grades} homework={homework} />
+        </motion.div>
 
         {/* Stats grid */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
