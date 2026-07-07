@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useIsMobile } from '@/hooks/use-mobile';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -65,6 +66,7 @@ const TRAIT_OPTIONS = [
 ];
 
 export default function StudentForm({ student, students, onSave, onCancel }) {
+  const isMobile = useIsMobile();
   const existingGroups = loadGroups();
 
   const [form, setForm] = useState({
@@ -108,7 +110,7 @@ export default function StudentForm({ student, students, onSave, onCancel }) {
   }
 
   return (
-    <div className="space-y-4">
+    <div className={isMobile ? "space-y-4 max-h-[70vh] overflow-y-auto pr-1" : "space-y-4"}>
       {/* Name & group */}
       <div className="grid grid-cols-2 gap-3">
         <div>

@@ -6,7 +6,6 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
 import { toast } from 'sonner';
@@ -317,43 +316,18 @@ export default function SettingsPage() {
               className="bg-destructive hover:bg-destructive/90"
               disabled={deleteConfirmText !== 'מחק' || isDeleting}
               onClick={async (e) => {
-                e.preventDefault();
-                setIsDeleting(true);
-                try {
-                  const [students, grades, attendance, rewards, seating, history, homework, library, contacts, portfolio, tasks, bulletins, campaigns, curriculumWeeks, lessonPlans, worksheets, sharedLessons] = await Promise.allSettled([
-                    base44.entities.Student.list(),
-                    base44.entities.Grade.list(),
-                    base44.entities.Attendance.list(),
-                    base44.entities.Reward.list(),
-                    base44.entities.SeatingArrangement.list(),
-                    base44.entities.SeatHistory.list(),
-                    base44.entities.HomeworkAssignment.list(),
-                    base44.entities.LibraryItem.list(),
-                    base44.entities.ParentContact.list(),
-                    base44.entities.StudentPortfolioItem.list(),
-                    base44.entities.Task.list(),
-                    base44.entities.WeeklyBulletin.list(),
-                    base44.entities.Campaign.list(),
-                    base44.entities.CurriculumWeek.list(),
-                    base44.entities.LessonPlan.list(),
-                    base44.entities.Worksheet.list(),
-                    base44.entities.SharedLesson.list(),
-                  ]);
-                  const allRecords = [students, grades, attendance, rewards, seating, history, homework, library, contacts, portfolio, tasks, bulletins, campaigns, curriculumWeeks, lessonPlans, worksheets, sharedLessons];
-                  const entityNames = ['Student','Grade','Attendance','Reward','SeatingArrangement','SeatHistory','HomeworkAssignment','LibraryItem','ParentContact','StudentPortfolioItem','Task','WeeklyBulletin','Campaign','CurriculumWeek','LessonPlan','Worksheet','SharedLesson'];
-                  for (let i = 0; i < allRecords.length; i++) {
-                    if (allRecords[i].status === 'fulfilled') {
-                      await Promise.allSettled(allRecords[i].value.map(r => base44.entities[entityNames[i]].delete(r.id)));
-                    }
-                  }
-                  localStorage.clear();
-                  toast.success('כל הנתונים נמחקו. מתנתק...');
-                  setTimeout(() => base44.auth.logout('/login'), 1500);
-                } catch (err) {
-                  toast.error('שגיאה במחיקת הנתונים');
-                  setIsDeleting(false);
-                }
-              }}
+                 e.preventDefault();
+                 setIsDeleting(true);
+                 try {
+                   await base44.auth.deleteMe();
+                   localStorage.clear();
+                   toast.success('החשבון נמחק בהצלחה. מתנתק...');
+                   setTimeout(() => base44.auth.logout('/login'), 1500);
+                 } catch (err) {
+                   toast.error('שגיאה במחיקת החשבון');
+                   setIsDeleting(false);
+                 }
+               }}
             >
               {isDeleting ? 'מוחק...' : <><Trash2 className="w-4 h-4 ml-1" /> מחק חשבון לצמיתות</>}
             </AlertDialogAction>

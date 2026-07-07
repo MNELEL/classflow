@@ -4,7 +4,7 @@ import { Wand2, Shuffle, Hash, EyeOff, RefreshCw, FileDown, FileSpreadsheet, Pri
 import { Badge } from '@/components/ui/badge';
 import { exportToPDF, exportToExcel, printSeating, printCleanSeating } from '@/lib/exportUtils';
 import ImportPreferencesModal from './ImportPreferencesModal';
-import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from '@/components/ui/select';
+import { MobileSelect, SelectItem } from '@/components/ui/MobileSelect';
 
 const QUICK_SORT_PREFS = [
   { value: 'none', label: 'ברירת מחדל' },
@@ -143,12 +143,9 @@ export default function GridControls({
         </Button>
         <div className="space-y-1">
           <label className="text-[11px] text-muted-foreground block">העדפה לסידור מהיר</label>
-          <Select value={quickSortPref} onValueChange={onQuickSortPrefChange}>
-            <SelectTrigger className="w-full text-xs border border-border rounded-md h-8 bg-background"><SelectValue /></SelectTrigger>
-            <SelectContent>
-              {QUICK_SORT_PREFS.map(p => <SelectItem key={p.value} value={p.value}>{p.label}</SelectItem>)}
-            </SelectContent>
-          </Select>
+          <MobileSelect value={quickSortPref} onValueChange={onQuickSortPrefChange} className="w-full text-xs h-8" title="העדפה לסידור מהיר">
+            {QUICK_SORT_PREFS.map(p => <SelectItem key={p.value} value={p.value}>{p.label}</SelectItem>)}
+          </MobileSelect>
           <Button variant="outline" size="sm" className="w-full" onClick={onQuickSort}>
             <Shuffle className="w-4 h-4 ml-1" /> סידור מהיר
           </Button>

@@ -3,6 +3,8 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Edit2, Trash2, Plus, Eye, Volume2, Zap, CheckSquare, TrendingUp, FolderOpen, User } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from '@/components/ui/drawer';
+import { useIsMobile } from '@/hooks/use-mobile';
 import { useNavigate } from 'react-router-dom';
 import StudentForm from './StudentForm';
 import TaskManager from './TaskManager';
@@ -27,6 +29,7 @@ const LEVEL_CONFIG = {
 
 export default function StudentList({ students, onSave, onDelete }) {
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
   const [editing, setEditing] = useState(null);
   const [adding, setAdding] = useState(false);
   const [taskStudent, setTaskStudent] = useState(null);
@@ -116,21 +119,43 @@ export default function StudentList({ students, onSave, onDelete }) {
         )}
       </div>
 
-      {/* Add dialog */}
-      <Dialog open={adding} onOpenChange={setAdding}>
-        <DialogContent className="max-w-lg max-h-[80vh] overflow-y-auto">
-          <DialogHeader><DialogTitle>הוסף תלמיד חדש</DialogTitle></DialogHeader>
-          <StudentForm students={students} onSave={data => { onSave(data); setAdding(false); }} onCancel={() => setAdding(false)} />
-        </DialogContent>
-      </Dialog>
+      {/* Add dialog / drawer */}
+      {isMobile ? (
+        <Drawer open={adding} onOpenChange={setAdding}>
+          <DrawerContent dir="rtl" className="max-h-[90vh]">
+            <DrawerHeader className="pb-2"><DrawerTitle className="text-right text-base">הוסף תלמיד חדש</DrawerTitle></DrawerHeader>
+            <div className="overflow-y-auto px-4 pb-[env(safe-area-inset-bottom,16px)]">
+              <StudentForm students={students} onSave={data => { onSave(data); setAdding(false); }} onCancel={() => setAdding(false)} />
+            </div>
+          </DrawerContent>
+        </Drawer>
+      ) : (
+        <Dialog open={adding} onOpenChange={setAdding}>
+          <DialogContent className="max-w-lg max-h-[80vh] overflow-y-auto">
+            <DialogHeader><DialogTitle>הוסף תלמיד חדש</DialogTitle></DialogHeader>
+            <StudentForm students={students} onSave={data => { onSave(data); setAdding(false); }} onCancel={() => setAdding(false)} />
+          </DialogContent>
+        </Dialog>
+      )}
 
-      {/* Edit dialog */}
-      <Dialog open={!!editing} onOpenChange={() => setEditing(null)}>
-        <DialogContent className="max-w-lg max-h-[80vh] overflow-y-auto">
-          <DialogHeader><DialogTitle>עריכת תלמיד</DialogTitle></DialogHeader>
-          {editing && <StudentForm student={editing} students={students} onSave={data => { onSave(data); setEditing(null); }} onCancel={() => setEditing(null)} />}
-        </DialogContent>
-      </Dialog>
+      {/* Edit dialog / drawer */}
+      {isMobile ? (
+        <Drawer open={!!editing} onOpenChange={() => setEditing(null)}>
+          <DrawerContent dir="rtl" className="max-h-[90vh]">
+            <DrawerHeader className="pb-2"><DrawerTitle className="text-right text-base">עריכת תלמיד</DrawerTitle></DrawerHeader>
+            <div className="overflow-y-auto px-4 pb-[env(safe-area-inset-bottom,16px)]">
+              {editing && <StudentForm student={editing} students={students} onSave={data => { onSave(data); setEditing(null); }} onCancel={() => setEditing(null)} />}
+            </div>
+          </DrawerContent>
+        </Drawer>
+      ) : (
+        <Dialog open={!!editing} onOpenChange={() => setEditing(null)}>
+          <DialogContent className="max-w-lg max-h-[80vh] overflow-y-auto">
+            <DialogHeader><DialogTitle>עריכת תלמיד</DialogTitle></DialogHeader>
+            {editing && <StudentForm student={editing} students={students} onSave={data => { onSave(data); setEditing(null); }} onCancel={() => setEditing(null)} />}
+          </DialogContent>
+        </Dialog>
+      )}
 
       {/* Tasks manager */}
       <TaskManager student={taskStudent} open={!!taskStudent} onClose={() => setTaskStudent(null)} />
