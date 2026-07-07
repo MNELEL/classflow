@@ -22,28 +22,40 @@ import SchoolUpdatesFeed from '@/components/teacher/SchoolUpdatesFeed';
 
 export default function TeacherDashboard() {
   const navigate = useNavigate();
-  const [teacherId, setTeacherId] = useState(null);
-  const [teacherName, setTeacherName] = useState('');
+  const [teacher, setTeacher] = useState(null);
 
   useEffect(() => {
-    const tid = sessionStorage.getItem('classflow_teacher_id');
-    const tname = sessionStorage.getItem('classflow_teacher_name');
-    if (!tid) {
+    const hasSession = sessionStorage.getItem('classflow_teacher_id');
+    if (!hasSession) {
       navigate('/teacher-login');
       return;
     }
-    setTeacherId(tid);
-    setTeacherName(tname || 'מורה');
+    // Validate teacher identity server-side — do not trust client-side storage for identity.
+    // The Teacher entity is RLS-protected: only readable if user_id matches the current user.
+    let cancelled = false;
+    (async () => {
+      try {
+        const user = await base44.auth.me();
+        if (!user || cancelled) { navigate('/teacher-login'); return; }
+        const teachers = await base44.entities.Teacher.filter({ user_id: user.id, is_active: true });
+        if (cancelled) return;
+        if (!teachers || teachers.length === 0) { navigate('/teacher-login'); return; }
+        setTeacher(teachers[0]);
+      } catch {
+        if (!cancelled) navigate('/teacher-login');
+      }
+    })();
+    return () => { cancelled = true; };
   }, [navigate]);
 
   const { data: classroom } = useQuery({
-    queryKey: ['teacher-classroom', teacherId],
+    queryKey: ['teacher-classroom', teacher?.id],
     queryFn: async () => {
-      if (!teacherId) return null;
-      const classrooms = await base44.entities.Classroom.filter({ teacher_id: teacherId, is_active: true });
+      if (!teacher?.id) return null;
+      const classrooms = await base44.entities.Classroom.filter({ teacher_id: teacher.id, is_active: true });
       return classrooms?.[0] || null;
     },
-    enabled: !!teacherId,
+    enabled: !!teacher?.id,
   });
 
   const { data: students = [] } = useQuery({
@@ -82,7 +94,7 @@ export default function TeacherDashboard() {
     navigate('/teacher-login');
   };
 
-  if (!teacherId || !classroom) {
+  if (!teacher || !classroom) {
     return (
       <AppLayout>
         <div className="flex items-center justify-center h-full">
