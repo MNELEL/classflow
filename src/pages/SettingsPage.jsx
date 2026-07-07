@@ -277,7 +277,7 @@ export default function SettingsPage() {
               <CardTitle className="text-base flex items-center gap-2 text-destructive">
                 <Trash2 className="w-4 h-4" /> אבטחה ופרטיות
               </CardTitle>
-              <CardDescription>פעולות בלתי הפיכות</CardDescription>
+              <CardDescription>מחיקת החשבון תמחק לצמיתות את פרופיל המורה ואת כל שיוכי הכיתות, התלמידים והחומרים שהועלו.</CardDescription>
             </CardHeader>
             <CardContent>
               <Button
@@ -301,7 +301,7 @@ export default function SettingsPage() {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <div className="py-2">
-            <Label className="text-sm mb-2 block">הקלד <strong>מחק</strong> לאישור:</Label>
+            <Label className="text-sm mb-2 block">הקלד <strong>מחק</strong> או <strong>DELETE</strong> לאישור:</Label>
             <Input
               value={deleteConfirmText}
               onChange={e => setDeleteConfirmText(e.target.value)}
@@ -314,7 +314,7 @@ export default function SettingsPage() {
             <AlertDialogCancel>ביטול</AlertDialogCancel>
             <AlertDialogAction
               className="bg-destructive hover:bg-destructive/90"
-              disabled={deleteConfirmText !== 'מחק' || isDeleting}
+              disabled={!['מחק', 'DELETE'].includes(deleteConfirmText.trim()) || isDeleting}
               onClick={async (e) => {
                  e.preventDefault();
                  setIsDeleting(true);
