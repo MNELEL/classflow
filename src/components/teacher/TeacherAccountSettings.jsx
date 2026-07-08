@@ -49,13 +49,9 @@ export default function TeacherAccountSettings({ teacher, onLogout }) {
     try {
       await base44.entities.Teacher.update(teacher.id, { is_active: false });
       toast.success('החשבון הושבת בהצלחה');
-      sessionStorage.removeItem('classflow_teacher_id');
-      sessionStorage.removeItem('classflow_teacher_name');
-      sessionStorage.removeItem('classflow_user_role');
-      navigate('/teacher-login');
+      base44.auth.logout('/teacher-login');
     } catch (error) {
       toast.error('שגיאה בהשבתת החשבון');
-    } finally {
       setBusy(false);
       closeConfirm();
       setOpen(false);

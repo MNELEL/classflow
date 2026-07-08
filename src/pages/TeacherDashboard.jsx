@@ -83,11 +83,7 @@ export default function TeacherDashboard() {
   });
 
   const handleLogout = () => {
-    sessionStorage.removeItem('classflow_teacher_id');
-    sessionStorage.removeItem('classflow_teacher_name');
-    sessionStorage.removeItem('classflow_user_role');
-    toast.success('התנתקת בהצלחה');
-    navigate('/teacher-login');
+    base44.auth.logout('/teacher-login');
   };
 
   if (!teacher || !classroom) {

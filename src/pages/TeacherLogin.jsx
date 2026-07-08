@@ -31,11 +31,9 @@ export default function TeacherLogin() {
 
       const teacher = teachers[0];
       
-      // Store teacher context in session
-      sessionStorage.setItem('classflow_teacher_id', teacher.id);
-      sessionStorage.setItem('classflow_teacher_name', teacher.full_name);
-      sessionStorage.setItem('classflow_user_role', 'teacher');
-      
+      // Teacher identity is validated server-side via base44.auth.me() +
+      // Teacher entity filter in TeacherDashboard. No client-controlled
+      // session storage is used for access control or role assignment.
       toast.success(`ברוך הבא, ${teacher.full_name}!`);
       navigate('/teacher-dashboard');
     } catch (err) {

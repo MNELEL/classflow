@@ -44,30 +44,38 @@ export default function AdminDashboard() {
   });
   const [selectedTeacherForDetail, setSelectedTeacherForDetail] = useState(null);
 
+  const isAdmin = !!user && user.role === 'admin';
+
   const { data: teachers = [], isLoading: loadingTeachers } = useQuery({
     queryKey: ['teachers'],
     queryFn: () => base44.entities.Teacher.list(),
+    enabled: isAdmin,
   });
 
   const { data: classrooms = [], isLoading: loadingClassrooms } = useQuery({
     queryKey: ['classrooms'],
     queryFn: () => base44.entities.Classroom.list(),
+    enabled: isAdmin,
   });
   const { data: allStudents = [] } = useQuery({
     queryKey: ['students'],
     queryFn: () => base44.entities.Student.filter({ is_active: true }),
+    enabled: isAdmin,
   });
   const { data: allTasks = [] } = useQuery({
     queryKey: ['tasks-all'],
     queryFn: () => base44.entities.Task.list('-created_date', 200),
+    enabled: isAdmin,
   });
   const { data: allGrades = [] } = useQuery({
     queryKey: ['grades-all'],
     queryFn: () => base44.entities.Grade.list('-created_date', 200),
+    enabled: isAdmin,
   });
   const { data: allBehavior = [] } = useQuery({
     queryKey: ['behavior-all'],
     queryFn: () => base44.entities.BehaviorEvent.list('-created_date', 200),
+    enabled: isAdmin,
   });
 
   const createTeacherMutation = useMutation({
@@ -154,16 +162,18 @@ export default function AdminDashboard() {
     onError: (e) => toast.error('שגיאה בשליחה: ' + e.message),
   });
 
-  // Security check - only admins can access
+  // Security check - only admins can access. Server-side RLS on entities
+  // (Teacher, Classroom) enforces admin-only writes; queries are also
+  // gated by `enabled: isAdmin` so admin data is never fetched for non-admins.
   useEffect(() => {
-    if (user && user.role !== 'admin') {
+    if (user && !isAdmin) {
       toast.error('אין לך הרשאה לגשת לדף זה');
       navigate('/');
     }
-  }, [user, navigate]);
+  }, [user, isAdmin, navigate]);
 
   // Early return for non-admin users (after all hooks are called)
-  if (user && user.role !== 'admin') {
+  if (user && !isAdmin) {
     return (
       <AppLayout>
         <div className="p-5 max-w-6xl mx-auto" dir="rtl">

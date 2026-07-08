@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Link } from 'react-router-dom';
@@ -10,9 +10,13 @@ import { toast } from 'sonner';
 import { extractStyleFromLibrary, loadStyleProfile, clearStyleProfile } from '@/lib/teacherStyle';
 
 export default function TeacherStylePanel() {
-  const [profile, setProfile] = useState(loadStyleProfile);
+  const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(false);
   const [expanded, setExpanded] = useState(false);
+
+  useEffect(() => {
+    loadStyleProfile().then(setProfile);
+  }, []);
 
   const { data: libraryItems = [] } = useQuery({
     queryKey: ['library'],
@@ -39,8 +43,8 @@ export default function TeacherStylePanel() {
     setLoading(false);
   }
 
-  function handleClear() {
-    clearStyleProfile();
+  async function handleClear() {
+    await clearStyleProfile();
     setProfile(null);
     toast.success('פרופיל הסגנון נמחק');
   }

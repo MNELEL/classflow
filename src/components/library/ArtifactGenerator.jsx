@@ -216,7 +216,7 @@ export default function ArtifactGenerator({ open, onClose, item }) {
         ...(item.ai_key_points || [])
       ].filter(Boolean).join('\n\n');
 
-      const styleProfile = loadStyleProfile();
+      const styleProfile = await loadStyleProfile();
       const styleInstruction = buildStyleInstruction(styleProfile);
 
       const result = await base44.integrations.Core.InvokeLLM({

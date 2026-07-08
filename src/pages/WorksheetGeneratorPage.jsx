@@ -51,7 +51,7 @@ export default function WorksheetGeneratorPage() {
     if (!form.subject || !form.topic) { toast.error('יש למלא מקצוע ונושא'); return; }
     setGenerating(true);
     try {
-      const styleProfile = loadStyleProfile();
+      const styleProfile = await loadStyleProfile();
       const styleInstruction = buildStyleInstruction(styleProfile);
       const res = await base44.integrations.Core.InvokeLLM({
         prompt: `${styleInstruction ? styleInstruction + '\n\n' : ''}צור דף עבודה בעברית לתלמידים בנושא המבוקש בלבד.

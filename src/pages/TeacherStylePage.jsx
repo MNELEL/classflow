@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import AppLayout from '@/components/layout/AppLayout';
@@ -71,8 +71,12 @@ function TextRow({ label, value }) {
 }
 
 export default function TeacherStylePage() {
-  const [profile, setProfile] = useState(loadStyleProfile);
+  const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    loadStyleProfile().then(setProfile);
+  }, []);
   const [progress, setProgress] = useState(0);
   const [progressLabel, setProgressLabel] = useState('');
   const [expandedSection, setExpandedSection] = useState('writing');
@@ -165,8 +169,8 @@ export default function TeacherStylePage() {
     setProgress(0);
   }
 
-  function handleClear() {
-    clearStyleProfile();
+  async function handleClear() {
+    await clearStyleProfile();
     setProfile(null);
     toast.success('פרופיל הסגנון נמחק');
   }

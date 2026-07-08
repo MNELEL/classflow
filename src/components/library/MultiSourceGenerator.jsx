@@ -282,7 +282,7 @@ export default function MultiSourceGenerator() {
     setGenerating(true);
     setResult(null);
     try {
-      const styleProfile = loadStyleProfile();
+      const styleProfile = await loadStyleProfile();
       const styleInstruction = buildStyleInstruction(styleProfile);
       let prompt;
       if (reviewMode) {

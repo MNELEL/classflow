@@ -7,18 +7,40 @@
 
 import { base44 } from '@/api/base44Client';
 
-const STYLE_KEY   = 'classflow_teacher_style_v2';
+// ─── Persistence (RLS-protected backend entity, not localStorage) ─────────────
+// Style profiles contain sensitive pedagogical data and are stored server-side
+// in the TeacherStyleProfile entity, scoped to the authenticated user via RLS.
+let _cache = null;
 
-// ─── Persistence ──────────────────────────────────────────────────────────────
-export function loadStyleProfile() {
-  try { return JSON.parse(localStorage.getItem(STYLE_KEY) || 'null'); }
-  catch { return null; }
+export async function loadStyleProfile() {
+  if (_cache) return _cache;
+  try {
+    const records = await base44.entities.TeacherStyleProfile.list();
+    if (records && records.length > 0) {
+      _cache = JSON.parse(records[0].profile || 'null');
+      return _cache;
+    }
+  } catch { /* not authenticated or no profile yet */ }
+  return null;
 }
-export function saveStyleProfile(profile) {
-  localStorage.setItem(STYLE_KEY, JSON.stringify(profile));
+
+export async function saveStyleProfile(profile) {
+  _cache = profile;
+  const json = JSON.stringify(profile);
+  const records = await base44.entities.TeacherStyleProfile.list();
+  if (records && records.length > 0) {
+    await base44.entities.TeacherStyleProfile.update(records[0].id, { profile: json });
+  } else {
+    await base44.entities.TeacherStyleProfile.create({ profile: json });
+  }
 }
-export function clearStyleProfile() {
-  localStorage.removeItem(STYLE_KEY);
+
+export async function clearStyleProfile() {
+  _cache = null;
+  const records = await base44.entities.TeacherStyleProfile.list();
+  if (records && records.length > 0) {
+    await base44.entities.TeacherStyleProfile.delete(records[0].id);
+  }
 }
 
 // ─── Source classification ─────────────────────────────────────────────────
@@ -181,7 +203,7 @@ ${allSamples}
     generated_at: new Date().toISOString(),
   };
 
-  saveStyleProfile(profile);
+  await saveStyleProfile(profile);
   onProgress?.('הסתיים!', 100);
   return profile;
 }
