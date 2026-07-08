@@ -15,6 +15,7 @@ import { applyThemeClass, loadTheme } from '@/lib/themes';
 import { loadBrandingFromDB, loadBranding } from '@/lib/branding';
 import PinLockScreen from '@/components/security/PinLockScreen';
 import { isLocked } from '@/lib/pinLock';
+const AssistantDock = lazy(() => import('./components/assistant/AssistantDock'));
 
 // Lazy-loaded pages for code splitting
 const SeatingPage          = lazy(() => import('./pages/SeatingPage'));
@@ -237,6 +238,9 @@ const AuthenticatedApp = () => {
       <AnimatedRoutes />
       <Suspense fallback={null}>
         <OnboardingModal open={showOnboarding} onClose={() => setShowOnboarding(false)} />
+      </Suspense>
+      <Suspense fallback={null}>
+        <AssistantDock />
       </Suspense>
     </>
   );
