@@ -161,7 +161,7 @@ export default function SoundBoardPage() {
           <div className="flex items-center gap-2 mb-2">
             <Trophy className="w-4 h-4 text-yellow-600" />
             <h2 className="text-sm font-bold">צלילי הישגים וניצחונות</h2>
-            <Badge className="bg-yellow-100 text-yellow-800 border-0 text-[10px]">{achievementSounds.length}</Badge>
+            <Badge className="bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400 border-0 text-[10px]">{achievementSounds.length}</Badge>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
             {achievementSounds.map(sound => (
@@ -189,7 +189,7 @@ export default function SoundBoardPage() {
           <div className="flex items-center gap-2 mb-2">
             <Bell className="w-4 h-4 text-orange-600" />
             <h2 className="text-sm font-bold">צלילי התראה ומעבר</h2>
-            <Badge className="bg-orange-100 text-orange-800 border-0 text-[10px]">{alertSounds.length}</Badge>
+            <Badge className="bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-400 border-0 text-[10px]">{alertSounds.length}</Badge>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
             {alertSounds.map(sound => (
@@ -217,7 +217,7 @@ export default function SoundBoardPage() {
           <div className="flex items-center gap-2 mb-2">
             <Music className="w-4 h-4 text-blue-600" />
             <h2 className="text-sm font-bold">מוזיקה כללית</h2>
-            <Badge className="bg-blue-100 text-blue-800 border-0 text-[10px]">{musicSounds.length}</Badge>
+            <Badge className="bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400 border-0 text-[10px]">{musicSounds.length}</Badge>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
             {musicSounds.map(sound => (
@@ -284,9 +284,9 @@ function SoundCard({ sound, isPlaying, onPlay, onDelete, audioRef, onEnded, type
   }
 
   const iconColors = {
-    achievement: 'text-yellow-600 bg-yellow-50',
-    alert: 'text-orange-600 bg-orange-50',
-    music: 'text-blue-600 bg-blue-50',
+    achievement: 'text-yellow-600 bg-yellow-50 dark:bg-yellow-950/30 dark:text-yellow-400',
+    alert: 'text-orange-600 bg-orange-50 dark:bg-orange-950/30 dark:text-orange-400',
+    music: 'text-blue-600 bg-blue-50 dark:bg-blue-950/30 dark:text-blue-400',
   };
 
   return (

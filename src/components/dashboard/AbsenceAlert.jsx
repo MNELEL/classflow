@@ -107,7 +107,7 @@ export default function AbsenceAlert({ students }) {
                   </div>
                   <span className="text-sm font-medium text-red-800 dark:text-red-300">{student.name}</span>
                   {savedNote && (
-                    <span className="text-[10px] bg-green-100 text-green-700 px-1.5 py-0.5 rounded-full">יש הערה</span>
+                    <span className="text-[10px] bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 px-1.5 py-0.5 rounded-full">יש הערה</span>
                   )}
                 </div>
                 <div className="flex items-center gap-1.5">

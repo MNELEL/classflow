@@ -177,7 +177,7 @@ export default function LessonAnalyzerPage() {
 
           {/* Header */}
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-purple-100 rounded-xl flex items-center justify-center">
+            <div className="w-10 h-10 bg-purple-100 dark:bg-purple-900/30 rounded-xl flex items-center justify-center">
               <Mic className="w-5 h-5 text-purple-600" />
             </div>
             <div>
@@ -223,7 +223,7 @@ export default function LessonAnalyzerPage() {
 
               {/* File drop */}
               <label className={`flex flex-col items-center justify-center gap-2 border-2 border-dashed rounded-xl p-6 cursor-pointer transition-colors min-h-[100px]
-                ${file ? 'border-purple-400 bg-purple-50' : 'border-border hover:border-purple-300 hover:bg-purple-50/30'}
+                ${file ? 'border-purple-400 bg-purple-50 dark:border-purple-600 dark:bg-purple-950/30' : 'border-border hover:border-purple-300 hover:bg-purple-50/30 dark:hover:bg-purple-950/20'}
                 ${isProcessing ? 'pointer-events-none opacity-60' : ''}`}>
                 <input
                   type="file"
@@ -249,13 +249,13 @@ export default function LessonAnalyzerPage() {
 
               {/* Status */}
               {isProcessing && (
-                <div className="flex items-center gap-2 text-sm text-purple-700 bg-purple-50 rounded-xl p-3 min-h-[48px]">
+                <div className="flex items-center gap-2 text-sm text-purple-700 bg-purple-50 dark:text-purple-400 dark:bg-purple-950/30 rounded-xl p-3 min-h-[48px]">
                   <Loader2 className="w-4 h-4 animate-spin shrink-0" />
                   <span>{STEP_LABELS[step]}</span>
                 </div>
               )}
               {step === STEPS.DONE && (
-                <div className="flex items-center gap-2 text-sm text-emerald-700 bg-emerald-50 rounded-xl p-3 min-h-[48px]">
+                <div className="flex items-center gap-2 text-sm text-emerald-700 bg-emerald-50 dark:text-emerald-400 dark:bg-emerald-950/30 rounded-xl p-3 min-h-[48px]">
                   <CheckCircle2 className="w-4 h-4 shrink-0" />
                   <span>הניתוח הושלם בהצלחה!</span>
                 </div>

@@ -20,12 +20,12 @@ import { format, parseISO, subMonths } from 'date-fns';
 import { he } from 'date-fns/locale';
 
 const LEVEL_CONFIG = {
-  weak:          { label: 'חלש',         color: 'bg-red-100 text-red-700'        },
-  below_average: { label: 'מתקשה',       color: 'bg-orange-100 text-orange-700'  },
-  average:       { label: 'בינוני',      color: 'bg-gray-100 text-gray-600'      },
-  above_average: { label: 'מעל ממוצע',  color: 'bg-blue-100 text-blue-700'      },
-  strong:        { label: 'חזק',         color: 'bg-emerald-100 text-emerald-700'},
-  excellent:     { label: 'מצטיין',      color: 'bg-purple-100 text-purple-700'  },
+  weak:          { label: 'חלש',         color: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'        },
+  below_average: { label: 'מתקשה',       color: 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400'  },
+  average:       { label: 'בינוני',      color: 'bg-muted text-muted-foreground'      },
+  above_average: { label: 'מעל ממוצע',  color: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'      },
+  strong:        { label: 'חזק',         color: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400'},
+  excellent:     { label: 'מצטיין',      color: 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400'  },
 };
 
 const ATTENDANCE_CONFIG = {

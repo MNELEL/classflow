@@ -22,7 +22,7 @@ export default function WeekGoalCard({ goal, onToggleComplete, onUpdate }) {
       <div className="flex items-start gap-3 p-3">
         <button
           onClick={() => onToggleComplete(goal.id)}
-          className="mt-0.5 shrink-0 min-w-[36px] min-h-[36px] flex items-center justify-center rounded-lg hover:bg-green-100 transition-colors"
+          className="mt-0.5 shrink-0 min-w-[36px] min-h-[36px] flex items-center justify-center rounded-lg hover:bg-green-100 dark:hover:bg-green-900/30 transition-colors"
         >
           {goal.is_completed
             ? <CheckCircle2 className="w-5 h-5 text-green-600" />
@@ -40,12 +40,12 @@ export default function WeekGoalCard({ goal, onToggleComplete, onUpdate }) {
           )}
           <div className="flex gap-2 mt-1.5 flex-wrap">
             {goal.external_links?.length > 0 && (
-              <Badge className="bg-blue-100 text-blue-700 border-0 text-[10px]">
+              <Badge className="bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 border-0 text-[10px]">
                 <ExternalLink className="w-2.5 h-2.5 mr-1" />{goal.external_links.length} קישורים
               </Badge>
             )}
             {matchedItems.length > 0 && (
-              <Badge className="bg-violet-100 text-violet-700 border-0 text-[10px]">
+              <Badge className="bg-violet-100 text-violet-700 dark:bg-violet-900/30 dark:text-violet-400 border-0 text-[10px]">
                 <Library className="w-2.5 h-2.5 mr-1" />{matchedItems.length} מהספרייה
               </Badge>
             )}
@@ -72,8 +72,8 @@ export default function WeekGoalCard({ goal, onToggleComplete, onUpdate }) {
                     {goal.external_links.map((link, i) => {
                       const isSefaria = link.url?.includes('sefaria.org');
                       const isHebrewBooks = link.url?.includes('hebrewbooks.org');
-                      const bg = isSefaria ? 'border-emerald-200 bg-emerald-50 hover:bg-emerald-100' : isHebrewBooks ? 'border-amber-200 bg-amber-50 hover:bg-amber-100' : 'border-blue-200 bg-blue-50 hover:bg-blue-100';
-                      const textColor = isSefaria ? 'text-emerald-800' : isHebrewBooks ? 'text-amber-800' : 'text-blue-800';
+                      const bg = isSefaria ? 'border-emerald-200 bg-emerald-50 hover:bg-emerald-100 dark:border-emerald-800 dark:bg-emerald-950/30 dark:hover:bg-emerald-900/40' : isHebrewBooks ? 'border-amber-200 bg-amber-50 hover:bg-amber-100 dark:border-amber-800 dark:bg-amber-950/30 dark:hover:bg-amber-900/40' : 'border-blue-200 bg-blue-50 hover:bg-blue-100 dark:border-blue-800 dark:bg-blue-950/30 dark:hover:bg-blue-900/40';
+                      const textColor = isSefaria ? 'text-emerald-800 dark:text-emerald-400' : isHebrewBooks ? 'text-amber-800 dark:text-amber-400' : 'text-blue-800 dark:text-blue-400';
                       const icon = isSefaria ? '📜' : isHebrewBooks ? '📚' : '🔗';
                       return (
                         <a key={i} href={link.url} target="_blank" rel="noopener noreferrer"
@@ -92,7 +92,7 @@ export default function WeekGoalCard({ goal, onToggleComplete, onUpdate }) {
                   <p className="text-[11px] font-bold text-muted-foreground mb-1.5">מהספרייה שלך</p>
                   <div className="space-y-1.5">
                     {matchedItems.map(item => (
-                      <div key={item.id} className="flex items-center gap-2 p-2.5 rounded-lg border border-violet-200 bg-violet-50">
+                      <div key={item.id} className="flex items-center gap-2 p-2.5 rounded-lg border border-violet-200 bg-violet-50 dark:border-violet-800 dark:bg-violet-950/30">
                         <FileText className="w-3.5 h-3.5 text-violet-600 shrink-0" />
                         <span className="text-xs text-violet-800 font-medium truncate">{item.title}</span>
                       </div>

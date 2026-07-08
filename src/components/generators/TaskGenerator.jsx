@@ -208,7 +208,7 @@ ${content ? `תוכן רקע:\n"""\n${content.slice(0, 3000)}\n"""` : ''}
         {tasks.length > 0 && (
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <Badge className="bg-emerald-100 text-emerald-700 border-0">{tasks.length} משימות</Badge>
+              <Badge className="bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400 border-0">{tasks.length} משימות</Badge>
               <Button size="sm" className="text-xs gap-1 h-7" onClick={handleSaveAll}>
                 <Save className="w-3 h-3" /> שמור הכל למשימות
               </Button>

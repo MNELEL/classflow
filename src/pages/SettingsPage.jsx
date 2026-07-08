@@ -337,6 +337,7 @@ export default function SettingsPage() {
                  try {
                    await base44.auth.deleteMe();
                    localStorage.clear();
+                   sessionStorage.clear();
                    toast.success('החשבון נמחק בהצלחה. מתנתק...');
                    setTimeout(() => navigate('/register', { replace: true }), 1500);
                  } catch (err) {

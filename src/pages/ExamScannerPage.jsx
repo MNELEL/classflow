@@ -126,10 +126,10 @@ export default function ExamScannerPage() {
   }
 
   const statusConfig = {
-    correct: { label: 'נכון', color: 'bg-green-100 text-green-700', icon: '✓' },
-    wrong: { label: 'שגוי', color: 'bg-red-100 text-red-700', icon: '✗' },
-    partial: { label: 'חלקי', color: 'bg-yellow-100 text-yellow-700', icon: '~' },
-    unreadable: { label: 'לא קריא', color: 'bg-gray-100 text-gray-600', icon: '?' },
+    correct: { label: 'נכון', color: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400', icon: '✓' },
+    wrong: { label: 'שגוי', color: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400', icon: '✗' },
+    partial: { label: 'חלקי', color: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400', icon: '~' },
+    unreadable: { label: 'לא קריא', color: 'bg-muted text-muted-foreground', icon: '?' },
   };
 
   return (
@@ -185,7 +185,7 @@ export default function ExamScannerPage() {
                         <User className="w-4 h-4 text-primary" />
                         <span className="font-bold text-base">{result.student_name || 'שם לא זוהה'}</span>
                         {result.confidence === 'low' && (
-                          <Badge className="bg-orange-100 text-orange-700 border-0 text-[10px]">⚠ ביטחון נמוך</Badge>
+                          <Badge className="bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400 border-0 text-[10px]">⚠ ביטחון נמוך</Badge>
                         )}
                       </div>
                       <p className="text-xs text-muted-foreground">{result.subject || 'לא צוין נושא'}</p>

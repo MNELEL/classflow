@@ -63,7 +63,7 @@ export default function BavaKammaTracker() {
           <CardTitle className="text-sm flex items-center gap-2">
             <BookOpen className="w-4 h-4 text-amber-600" />
             מעקב הספקים — בבא קמא
-            <Badge className="bg-amber-100 text-amber-800 border-0 text-[10px]">
+            <Badge className="bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400 border-0 text-[10px]">
               {count}/{TOTAL_DAFIM} דפים
             </Badge>
           </CardTitle>

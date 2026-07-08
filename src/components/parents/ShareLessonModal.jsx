@@ -85,19 +85,19 @@ export default function ShareLessonModal({ item, students, open, onClose }) {
                     <div className="flex items-center justify-between">
                       <span className="text-sm font-medium">{s.student_name}</span>
                       {s.viewed_at ? (
-                        <Badge className="bg-green-100 text-green-700 border-0 text-[10px] gap-1">
+                        <Badge className="bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 border-0 text-[10px] gap-1">
                           <Eye className="w-2.5 h-2.5" />
                           נצפה {new Date(s.viewed_at).toLocaleDateString('he-IL')}
                         </Badge>
                       ) : (
-                        <Badge className="bg-amber-100 text-amber-700 border-0 text-[10px] gap-1">
+                        <Badge className="bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 border-0 text-[10px] gap-1">
                           <EyeOff className="w-2.5 h-2.5" />
                           טרם נצפה
                         </Badge>
                       )}
                     </div>
                     {s.parent_comment && (
-                      <div className="rounded-lg bg-blue-50 p-2 flex gap-1.5">
+                      <div className="rounded-lg bg-blue-50 dark:bg-blue-950/30 p-2 flex gap-1.5">
                         <MessageSquare className="w-3.5 h-3.5 text-blue-500 shrink-0 mt-0.5" />
                         <p className="text-xs text-blue-700">{s.parent_comment}</p>
                       </div>

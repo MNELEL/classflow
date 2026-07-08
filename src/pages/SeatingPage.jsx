@@ -578,7 +578,7 @@ ${overrideLines ? `\nהעדפות ייבוא נוספות:\n${overrideLines}` : 
                 )}
                 {selectedStudent.notes && <p className="text-xs text-muted-foreground">{selectedStudent.notes}</p>}
                 {selectedStudent.custom_conditions && (
-                  <p className="text-xs text-amber-700 mt-1 bg-amber-50 rounded px-2 py-1">📌 {selectedStudent.custom_conditions}</p>
+                  <p className="text-xs text-amber-700 mt-1 bg-amber-50 dark:text-amber-400 dark:bg-amber-950/30 rounded px-2 py-1">📌 {selectedStudent.custom_conditions}</p>
                 )}
               </div>
             ) : (

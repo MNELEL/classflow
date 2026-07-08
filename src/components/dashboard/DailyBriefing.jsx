@@ -28,10 +28,10 @@ function Section({ color, icon, title, count, link, linkLabel, children }) {
     orange: 'text-orange-500', red: 'text-red-500', blue: 'text-blue-500', purple: 'text-purple-500',
   };
   const badgeColors = {
-    orange: 'bg-orange-100 text-orange-700 border-0',
-    red:    'bg-red-100    text-red-700    border-0',
-    blue:   'bg-blue-100   text-blue-700   border-0',
-    purple: 'bg-purple-100 text-purple-700 border-0',
+    orange: 'bg-orange-100 text-orange-700 border-0 dark:bg-orange-900/30 dark:text-orange-400',
+    red:    'bg-red-100    text-red-700    border-0 dark:bg-red-900/30 dark:text-red-400',
+    blue:   'bg-blue-100   text-blue-700   border-0 dark:bg-blue-900/30 dark:text-blue-400',
+    purple: 'bg-purple-100 text-purple-700 border-0 dark:bg-purple-900/30 dark:text-purple-400',
   };
   return (
     <div className={`rounded-2xl border p-4 ${colors[color]}`}>
@@ -137,7 +137,7 @@ export default function DailyBriefing({ students = [] }) {
         </div>
         {totalAlerts > 0
           ? <Badge className="bg-primary/10 text-primary border-0 text-xs">{totalAlerts} פריטים לטיפול</Badge>
-          : <Badge className="bg-green-100 text-green-700 border-0 text-xs">✓ הכל תקין</Badge>
+          : <Badge className="bg-green-100 text-green-700 border-0 text-xs dark:bg-green-900/30 dark:text-green-400">✓ הכל תקין</Badge>
         }
       </div>
 
@@ -184,7 +184,7 @@ export default function DailyBriefing({ students = [] }) {
             {pendingFollowUps.slice(0, 2).map(c => (
               <Row key={c.id} className="bg-blue-100/50 dark:bg-blue-900/20">
                 <span className="font-medium truncate max-w-[70%]">📞 {studentMap[c.student_id]?.name || c.parent_name}: {c.summary?.slice(0, 35)}...</span>
-                <Badge className="bg-amber-100 text-amber-800 border-0 text-xs h-4 px-1 shrink-0">ממתין למעקב</Badge>
+                <Badge className="bg-amber-100 text-amber-800 border-0 text-xs h-4 px-1 shrink-0 dark:bg-amber-900/30 dark:text-amber-400">ממתין למעקב</Badge>
               </Row>
             ))}
             {unviewedShared.length > 0 && (

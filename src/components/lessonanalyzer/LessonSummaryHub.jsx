@@ -99,7 +99,7 @@ function AnalysisCard({ item, onDelete, onSaveToLibrary, savingId, categories, l
         <div className="px-4 pt-4 pb-3">
           <div className="flex items-start justify-between gap-2">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-purple-100 rounded-xl flex items-center justify-center shrink-0">
+              <div className="w-10 h-10 bg-purple-100 dark:bg-purple-900/30 rounded-xl flex items-center justify-center shrink-0">
                 <FileAudio className="w-5 h-5 text-purple-600" />
               </div>
               <div>
@@ -108,14 +108,14 @@ function AnalysisCard({ item, onDelete, onSaveToLibrary, savingId, categories, l
                   {new Date(item.created_date).toLocaleDateString('he-IL')}
                   {item.subject && <> · {item.subject}</>}
                   {item.category && (
-                    <Badge className="mr-1 text-[9px] bg-violet-100 text-violet-700 border-0 px-1.5">{item.category}</Badge>
+                    <Badge className="mr-1 text-[9px] bg-violet-100 text-violet-700 dark:bg-violet-900/30 dark:text-violet-400 border-0 px-1.5">{item.category}</Badge>
                   )}
                 </p>
               </div>
             </div>
             <div className="flex items-center gap-1">
               <button onClick={() => setLinking(v => !v)} title="שייך לקטגוריה / מערך שיעור"
-                className="min-w-[40px] min-h-[40px] flex items-center justify-center text-muted-foreground hover:text-violet-600 hover:bg-violet-50 rounded-xl transition-colors">
+                className="min-w-[40px] min-h-[40px] flex items-center justify-center text-muted-foreground hover:text-violet-600 hover:bg-violet-50 dark:hover:bg-violet-950/20 dark:hover:text-violet-400 rounded-xl transition-colors">
                 <Link2 className="w-4 h-4" />
               </button>
               <button onClick={() => onSaveToLibrary(item)} disabled={savingId === item.id} title="שמור לדפי עבודה"
@@ -123,7 +123,7 @@ function AnalysisCard({ item, onDelete, onSaveToLibrary, savingId, categories, l
                 {savingId === item.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <Library className="w-4 h-4" />}
               </button>
               <button onClick={() => printWorksheet(item)} title="הדפס דף עבודה"
-                className="min-w-[40px] min-h-[40px] flex items-center justify-center text-muted-foreground hover:text-emerald-600 hover:bg-emerald-50 rounded-xl transition-colors">
+                className="min-w-[40px] min-h-[40px] flex items-center justify-center text-muted-foreground hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-950/20 dark:hover:text-emerald-400 rounded-xl transition-colors">
                 <Printer className="w-4 h-4" />
               </button>
               <button onClick={() => onDelete(item.id)}
@@ -138,12 +138,12 @@ function AnalysisCard({ item, onDelete, onSaveToLibrary, savingId, categories, l
         {item.transcript && (
           <button
             onClick={() => setShowTranscript(true)}
-            className="w-full flex items-center justify-between p-3 rounded-xl bg-amber-50 hover:bg-amber-100 active:bg-amber-200 transition-colors text-right min-h-[48px] mt-3"
+            className="w-full flex items-center justify-between p-3 rounded-xl bg-amber-50 hover:bg-amber-100 active:bg-amber-200 dark:bg-amber-950/20 dark:hover:bg-amber-900/30 dark:active:bg-amber-900/40 transition-colors text-right min-h-[48px] mt-3"
           >
             <div className="flex items-center gap-2">
               <FileText className="w-4 h-4 text-amber-600" />
               <span className="text-sm font-semibold text-amber-800">תמלול מלא וסיכום</span>
-              <Badge className="bg-amber-100 text-amber-700 text-[10px] border-0">{item.transcript.length} תווים</Badge>
+              <Badge className="bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 text-[10px] border-0">{item.transcript.length} תווים</Badge>
             </div>
             <ChevronDown className="w-4 h-4 text-amber-600" />
           </button>
@@ -225,11 +225,11 @@ function AnalysisCard({ item, onDelete, onSaveToLibrary, savingId, categories, l
 
         <div className="px-4 pb-4 space-y-2">
           <button onClick={() => toggle('summary')}
-            className="w-full flex items-center justify-between p-3 rounded-xl bg-blue-50 hover:bg-blue-100 active:bg-blue-200 transition-colors text-right min-h-[48px]">
+            className="w-full flex items-center justify-between p-3 rounded-xl bg-blue-50 hover:bg-blue-100 active:bg-blue-200 dark:bg-blue-950/20 dark:hover:bg-blue-900/30 dark:active:bg-blue-900/40 transition-colors text-right min-h-[48px]">
             <div className="flex items-center gap-2">
               <BookOpen className="w-4 h-4 text-blue-600" />
               <span className="text-sm font-semibold text-blue-800">סיכום בראשי פרקים</span>
-              <Badge className="bg-blue-100 text-blue-700 text-[10px] border-0">{item.ai_summary_sections?.length || 0}</Badge>
+              <Badge className="bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 text-[10px] border-0">{item.ai_summary_sections?.length || 0}</Badge>
             </div>
             {openSection === 'summary' ? <ChevronUp className="w-4 h-4 text-blue-600" /> : <ChevronDown className="w-4 h-4 text-blue-600" />}
           </button>
@@ -239,7 +239,7 @@ function AnalysisCard({ item, onDelete, onSaveToLibrary, savingId, categories, l
                 <div className="pt-1 pb-2 px-1 space-y-2">
                   {item.ai_summary_sections?.map((sec, i) => (
                     <div key={i} className="flex gap-2.5">
-                      <span className="w-6 h-6 rounded-full bg-blue-100 text-blue-700 text-[11px] font-bold flex items-center justify-center shrink-0 mt-0.5">{i + 1}</span>
+                      <span className="w-6 h-6 rounded-full bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 text-[11px] font-bold flex items-center justify-center shrink-0 mt-0.5">{i + 1}</span>
                       <div>
                         <p className="text-sm font-semibold">{sec.heading}</p>
                         <p className="text-xs text-muted-foreground leading-relaxed mt-0.5">{sec.content}</p>
@@ -252,11 +252,11 @@ function AnalysisCard({ item, onDelete, onSaveToLibrary, savingId, categories, l
           </AnimatePresence>
 
           <button onClick={() => toggle('questions')}
-            className="w-full flex items-center justify-between p-3 rounded-xl bg-emerald-50 hover:bg-emerald-100 active:bg-emerald-200 transition-colors text-right min-h-[48px]">
+            className="w-full flex items-center justify-between p-3 rounded-xl bg-emerald-50 hover:bg-emerald-100 active:bg-emerald-200 dark:bg-emerald-950/20 dark:hover:bg-emerald-900/30 dark:active:bg-emerald-900/40 transition-colors text-right min-h-[48px]">
             <div className="flex items-center gap-2">
               <HelpCircle className="w-4 h-4 text-emerald-600" />
               <span className="text-sm font-semibold text-emerald-800">שאלות חזרה</span>
-              <Badge className="bg-emerald-100 text-emerald-700 text-[10px] border-0">{item.ai_review_questions?.length || 0}</Badge>
+              <Badge className="bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400 text-[10px] border-0">{item.ai_review_questions?.length || 0}</Badge>
             </div>
             {openSection === 'questions' ? <ChevronUp className="w-4 h-4 text-emerald-600" /> : <ChevronDown className="w-4 h-4 text-emerald-600" />}
           </button>
@@ -271,7 +271,7 @@ function AnalysisCard({ item, onDelete, onSaveToLibrary, savingId, categories, l
                       {q.options?.length > 0 && (
                         <div className="grid grid-cols-2 gap-1 mb-1.5">
                           {q.options.map((o, j) => (
-                            <div key={j} className="text-xs bg-white rounded-lg px-2 py-1.5 border border-emerald-100">{['א','ב','ג','ד'][j]}. {o}</div>
+                            <div key={j} className="text-xs bg-card rounded-lg px-2 py-1.5 border border-emerald-100 dark:border-emerald-900">{['א','ב','ג','ד'][j]}. {o}</div>
                           ))}
                         </div>
                       )}
@@ -322,7 +322,7 @@ export default function LessonSummaryHub({ onSaveToLibrary, savingId, onDelete }
   return (
     <div className="space-y-3">
       <div className="flex items-center gap-2">
-        <div className="w-8 h-8 bg-violet-100 rounded-xl flex items-center justify-center">
+        <div className="w-8 h-8 bg-violet-100 dark:bg-violet-900/30 rounded-xl flex items-center justify-center">
           <Layers className="w-4 h-4 text-violet-600" />
         </div>
         <div>

@@ -386,7 +386,7 @@ export default function LibraryUploadModal({ open, onClose }) {
         {/* DRIVE TAB */}
         {tab === 'drive' && (
           <div className="flex flex-col items-center justify-center py-8 gap-4 text-center">
-            <div className="w-16 h-16 rounded-2xl bg-blue-50 flex items-center justify-center">
+            <div className="w-16 h-16 rounded-2xl bg-blue-50 dark:bg-blue-950/30 flex items-center justify-center">
               <CloudIcon className="w-8 h-8 text-blue-500" />
             </div>
             <div>

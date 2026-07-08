@@ -237,15 +237,15 @@ export default function TasksHubPage() {
                       <div className="flex flex-col items-end gap-1 shrink-0">
                         <div className="flex items-center gap-1">
                           {overdueCount > 0 && (
-                            <Badge className="bg-red-100 text-red-700 border-0 text-[10px] gap-0.5">
+                            <Badge className="bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 border-0 text-[10px] gap-0.5">
                               <AlertCircle className="w-3 h-3" /> {overdueCount}
                             </Badge>
                           )}
                           {pendingCount > 0 && (
-                            <Badge className="bg-amber-100 text-amber-700 border-0 text-[10px]">{pendingCount}</Badge>
+                            <Badge className="bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 border-0 text-[10px]">{pendingCount}</Badge>
                           )}
                           {pendingCount === 0 && overdueCount === 0 && totalCount > 0 && (
-                            <Badge className="bg-emerald-100 text-emerald-700 border-0 text-[10px] gap-0.5">
+                            <Badge className="bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400 border-0 text-[10px] gap-0.5">
                               <CheckCircle2 className="w-3 h-3" /> מעודכן
                             </Badge>
                           )}
@@ -294,7 +294,7 @@ export default function TasksHubPage() {
                                             {` · ${submitted}/${total} הגישו`}
                                           </p>
                                         </div>
-                                        {isOverdue && <Badge className="bg-red-100 text-red-700 border-0 text-[10px]">איחור</Badge>}
+                                        {isOverdue && <Badge className="bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 border-0 text-[10px]">איחור</Badge>}
                                       </div>
                                     );
                                   })}
@@ -326,7 +326,7 @@ export default function TasksHubPage() {
                                         <Badge className={`${STATUS_COLORS[t.status]} border-0 text-[10px]`}>
                                           {STATUS_LABELS[t.status] || t.status}
                                         </Badge>
-                                        {isOverdue && <Badge className="bg-red-100 text-red-700 border-0 text-[10px]">איחור</Badge>}
+                                        {isOverdue && <Badge className="bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 border-0 text-[10px]">איחור</Badge>}
                                       </div>
                                     );
                                   })}

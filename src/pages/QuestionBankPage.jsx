@@ -15,16 +15,16 @@ import { toast } from 'sonner';
 import WorksheetExportPanel from '@/components/questionbank/WorksheetExportPanel';
 
 const TYPE_BADGE = {
-  'רב-ברירה': 'bg-blue-100 text-blue-800 border-blue-200',
-  'שאלה פתוחה': 'bg-purple-100 text-purple-800 border-purple-200',
-  'נכון/לא נכון': 'bg-green-100 text-green-800 border-green-200',
-  'השלמת משפט': 'bg-orange-100 text-orange-800 border-orange-200',
+  'רב-ברירה': 'bg-blue-100 text-blue-800 border-blue-200 dark:bg-blue-900/30 dark:text-blue-400 dark:border-blue-800',
+  'שאלה פתוחה': 'bg-purple-100 text-purple-800 border-purple-200 dark:bg-purple-900/30 dark:text-purple-400 dark:border-purple-800',
+  'נכון/לא נכון': 'bg-green-100 text-green-800 border-green-200 dark:bg-green-900/30 dark:text-green-400 dark:border-green-800',
+  'השלמת משפט': 'bg-orange-100 text-orange-800 border-orange-200 dark:bg-orange-900/30 dark:text-orange-400 dark:border-orange-800',
 };
 
 const DIFF_BADGE = {
-  'קל': 'bg-emerald-100 text-emerald-700',
-  'בינוני': 'bg-yellow-100 text-yellow-700',
-  'קשה': 'bg-red-100 text-red-700',
+  'קל': 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400',
+  'בינוני': 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400',
+  'קשה': 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
 };
 
 // Flatten all questions from all worksheets into one bank
@@ -188,7 +188,7 @@ export default function QuestionBankPage() {
         <div className="px-4 pt-4 pb-3 border-b border-border bg-card">
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
-              <div className="w-9 h-9 bg-indigo-100 rounded-xl flex items-center justify-center">
+              <div className="w-9 h-9 bg-indigo-100 dark:bg-indigo-900/30 rounded-xl flex items-center justify-center">
                 <Layers className="w-5 h-5 text-indigo-600" />
               </div>
               <div>

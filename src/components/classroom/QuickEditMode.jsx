@@ -165,7 +165,7 @@ export default function QuickEditMode({ active, onToggle, onQuickAction, selecte
           <Button
             size="sm"
             variant="outline"
-            className="text-xs h-8 col-span-2 border-orange-300 text-orange-600 hover:bg-orange-50"
+            className="text-xs h-8 col-span-2 border-orange-300 text-orange-600 hover:bg-orange-50 dark:hover:bg-orange-950/20"
             disabled={!selectedSeat}
             onClick={() => { onQuickAction('block', null); setShowBlockReasons(false); }}
           >
@@ -176,7 +176,7 @@ export default function QuickEditMode({ active, onToggle, onQuickAction, selecte
             <Button
               size="sm"
               variant="outline"
-              className="text-xs h-8 col-span-2 border-orange-300 text-orange-600 hover:bg-orange-50"
+              className="text-xs h-8 col-span-2 border-orange-300 text-orange-600 hover:bg-orange-50 dark:hover:bg-orange-950/20"
               disabled={!selectedSeat}
               onClick={() => setShowBlockReasons(v => !v)}
             >

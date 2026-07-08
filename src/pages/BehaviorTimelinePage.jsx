@@ -231,7 +231,7 @@ export default function BehaviorTimelinePage() {
                 <div className="flex gap-1">
                   {['low', 'medium', 'high'].map(s => (
                     <button key={s} onClick={() => setForm(f => ({ ...f, severity: s }))}
-                      className={`px-3 py-1 rounded-lg text-xs font-semibold border-2 ${form.severity === s ? (s === 'high' ? 'border-rose-500 text-rose-600 bg-rose-50' : s === 'medium' ? 'border-amber-500 text-amber-600 bg-amber-50' : 'border-emerald-500 text-emerald-600 bg-emerald-50') : 'border-border'}`}>
+                      className={`px-3 py-1 rounded-lg text-xs font-semibold border-2 ${form.severity === s ? (s === 'high' ? 'border-rose-500 text-rose-600 bg-rose-50 dark:bg-rose-950/30 dark:text-rose-400' : s === 'medium' ? 'border-amber-500 text-amber-600 bg-amber-50 dark:bg-amber-950/30 dark:text-amber-400' : 'border-emerald-500 text-emerald-600 bg-emerald-50 dark:bg-emerald-950/30 dark:text-emerald-400') : 'border-border'}`}>
                       {s === 'low' ? 'קל' : s === 'medium' ? 'בינוני' : 'חמור'}
                     </button>
                   ))}

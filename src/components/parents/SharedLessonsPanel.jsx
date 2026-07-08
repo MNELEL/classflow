@@ -56,7 +56,7 @@ export default function SharedLessonsPanel({ studentId, studentName }) {
                 <div className="flex items-center gap-2 flex-1 min-w-0">
                   <BookOpen className="w-4 h-4 text-purple-500 shrink-0" />
                   <span className="text-xs font-medium truncate">{lesson.title}</span>
-                  {lesson.subject && <Badge className="bg-blue-100 text-blue-700 border-0 text-[9px] shrink-0">{lesson.subject}</Badge>}
+                  {lesson.subject && <Badge className="bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 border-0 text-[9px] shrink-0">{lesson.subject}</Badge>}
                 </div>
                 <Button size="sm" variant="outline" className="h-7 text-xs gap-1 shrink-0"
                   onClick={() => shareMutation.mutate(lesson)}
@@ -89,9 +89,9 @@ export default function SharedLessonsPanel({ studentId, studentName }) {
                   </div>
                   <div className="flex items-center gap-1.5 shrink-0">
                     {s.viewed_at ? (
-                      <Badge className="bg-green-100 text-green-700 border-0 text-[9px]">נצפה</Badge>
+                      <Badge className="bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 border-0 text-[9px]">נצפה</Badge>
                     ) : (
-                      <Badge className="bg-amber-100 text-amber-700 border-0 text-[9px]">טרם נצפה</Badge>
+                      <Badge className="bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 border-0 text-[9px]">טרם נצפה</Badge>
                     )}
                     {s.parent_comment && <MessageSquare className="w-3.5 h-3.5 text-blue-500" />}
                     {expanded === s.id ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
@@ -104,7 +104,7 @@ export default function SharedLessonsPanel({ studentId, studentName }) {
                         <p className="text-[10px] text-muted-foreground">שותף: {new Date(s.shared_at).toLocaleDateString('he-IL')}</p>
                         {s.viewed_at && <p className="text-[10px] text-green-600">נצפה: {new Date(s.viewed_at).toLocaleDateString('he-IL')}</p>}
                         {s.parent_comment && (
-                          <div className="rounded-lg bg-blue-50 p-2 flex gap-1.5">
+                          <div className="rounded-lg bg-blue-50 dark:bg-blue-950/30 p-2 flex gap-1.5">
                             <MessageSquare className="w-3.5 h-3.5 text-blue-500 shrink-0 mt-0.5" />
                             <div>
                               <p className="text-[10px] font-semibold text-blue-700 mb-0.5">הערת הורה:</p>

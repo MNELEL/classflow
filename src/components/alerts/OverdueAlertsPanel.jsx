@@ -77,7 +77,7 @@ export default function OverdueAlertsPanel() {
                 <AlertTriangle className="w-4 h-4 text-orange-500" />
                 <span className="font-bold text-sm">משימות מאחרות</span>
                 {urgentCount > 0 && (
-                  <span className="text-[10px] bg-red-100 text-red-600 px-1.5 py-0.5 rounded-full font-semibold">
+                  <span className="text-[10px] bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400 px-1.5 py-0.5 rounded-full font-semibold">
                     {urgentCount} דחוף
                   </span>
                 )}

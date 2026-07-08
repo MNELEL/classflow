@@ -74,7 +74,7 @@ export default function EventSoundMapper() {
           <Zap className="w-4 h-4 text-purple-600" />
           מיפוי אירועים לצלילים
           {mappedCount > 0 && (
-            <Badge className="bg-purple-100 text-purple-800 border-0 text-[10px]">{mappedCount} ממופים</Badge>
+            <Badge className="bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400 border-0 text-[10px]">{mappedCount} ממופים</Badge>
           )}
         </CardTitle>
       </CardHeader>
@@ -111,8 +111,8 @@ export default function EventSoundMapper() {
                     !assignedId
                       ? 'text-muted-foreground/30 cursor-not-allowed'
                       : isPlaying
-                        ? 'bg-red-100 text-red-600 hover:bg-red-200'
-                        : 'bg-purple-100 text-purple-700 hover:bg-purple-200'
+                        ? 'bg-red-100 text-red-600 hover:bg-red-200 dark:bg-red-900/30 dark:text-red-400 dark:hover:bg-red-800/40'
+                        : 'bg-purple-100 text-purple-700 hover:bg-purple-200 dark:bg-purple-900/30 dark:text-purple-400 dark:hover:bg-purple-800/40'
                   }`}
                   title={assignedId ? 'הפעל צליל' : 'בחר צליל תחילה'}
                 >

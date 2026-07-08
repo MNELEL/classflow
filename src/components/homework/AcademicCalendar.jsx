@@ -56,7 +56,7 @@ export default function AcademicCalendar() {
     <div className="space-y-3">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <div className="w-8 h-8 bg-indigo-100 rounded-xl flex items-center justify-center">
+          <div className="w-8 h-8 bg-indigo-100 dark:bg-indigo-900/30 rounded-xl flex items-center justify-center">
             <Calendar className="w-4 h-4 text-indigo-600" />
           </div>
           <div>

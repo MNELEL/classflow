@@ -117,7 +117,7 @@ export default function AnalyticsPage() {
     .sort((a, b) => a.avg - b.avg);
 
   const priorityLabel = { low: 'פחות חשוב', normal: 'רגיל', high: 'חשוב מאוד' };
-  const priorityColors = { low: 'text-muted-foreground bg-muted', normal: 'text-blue-600 bg-blue-50', high: 'text-red-600 bg-red-50' };
+  const priorityColors = { low: 'text-muted-foreground bg-muted', normal: 'text-blue-600 bg-blue-50 dark:bg-blue-950/30 dark:text-blue-400', high: 'text-red-600 bg-red-50 dark:bg-red-950/30 dark:text-red-400' };
 
   return (
     <AppLayout>

@@ -11,10 +11,10 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 const TYPE_LABELS = { homework: 'שיעורי בית', exam: 'מבחן', project: 'פרויקט', quiz: 'חידון' };
 const TYPE_COLORS = {
-  homework: 'bg-blue-100 text-blue-700',
-  exam: 'bg-red-100 text-red-700',
-  project: 'bg-purple-100 text-purple-700',
-  quiz: 'bg-amber-100 text-amber-700',
+  homework: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
+  exam: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
+  project: 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400',
+  quiz: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400',
 };
 
 function AssignmentCard({ assignment, students, onToggleSubmit, onDelete }) {
@@ -65,7 +65,7 @@ function AssignmentCard({ assignment, students, onToggleSubmit, onDelete }) {
           </div>
           <div className="flex items-center gap-1">
             {pending.length > 0 && (
-              <Button size="sm" variant="ghost" className="h-8 gap-1 text-xs text-amber-600 hover:bg-amber-50" onClick={sendReminders} disabled={sending}>
+              <Button size="sm" variant="ghost" className="h-8 gap-1 text-xs text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-950/20" onClick={sendReminders} disabled={sending}>
                 {sending ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Bell className="w-3.5 h-3.5" />}
                 תזכורת ({pending.length})
               </Button>
@@ -85,8 +85,8 @@ function AssignmentCard({ assignment, students, onToggleSubmit, onDelete }) {
           <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden">
             <div className="px-4 pb-4 space-y-1.5">
               <div className="flex gap-2 mb-2">
-                <Badge className="bg-green-100 text-green-700 border-0 text-xs">הגישו {submitted.length}</Badge>
-                <Badge className="bg-red-100 text-red-700 border-0 text-xs">לא הגישו {pending.length}</Badge>
+                <Badge className="bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 border-0 text-xs">הגישו {submitted.length}</Badge>
+                <Badge className="bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 border-0 text-xs">לא הגישו {pending.length}</Badge>
               </div>
               {submissions.map(sub => (
                 <button key={sub.student_id} onClick={() => onToggleSubmit(assignment, sub.student_id)}
@@ -182,7 +182,7 @@ export default function HomeworkTracker({ students }) {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <div className="w-8 h-8 bg-blue-100 rounded-xl flex items-center justify-center">
+          <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900/30 rounded-xl flex items-center justify-center">
             <ClipboardCheck className="w-4 h-4 text-blue-600" />
           </div>
           <div>

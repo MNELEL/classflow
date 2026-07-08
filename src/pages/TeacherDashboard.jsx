@@ -113,28 +113,28 @@ export default function TeacherDashboard() {
       value: activeStudents.length,
       icon: Users,
       color: 'text-blue-600',
-      bgColor: 'bg-blue-100',
+      bgColor: 'bg-blue-100 dark:bg-blue-900/30',
     },
     {
       title: 'נוכחות היום',
       value: `${attendanceRate}%`,
       icon: Calendar,
       color: 'text-green-600',
-      bgColor: 'bg-green-100',
+      bgColor: 'bg-green-100 dark:bg-green-900/30',
     },
     {
       title: avgGrade !== null ? 'ממוצע ציונים' : 'ללא ציונים',
       value: avgGrade !== null ? avgGrade : '—',
       icon: TrendingUp,
       color: 'text-purple-600',
-      bgColor: 'bg-purple-100',
+      bgColor: 'bg-purple-100 dark:bg-purple-900/30',
     },
     {
       title: 'מטלות פתוחות',
       value: '0',
       icon: ClipboardCheck,
       color: 'text-orange-600',
-      bgColor: 'bg-orange-100',
+      bgColor: 'bg-orange-100 dark:bg-orange-900/30',
     },
   ];
 

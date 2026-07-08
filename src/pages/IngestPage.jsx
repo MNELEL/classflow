@@ -359,7 +359,7 @@ export default function IngestPage() {
                         <Badge variant="secondary" className="text-[10px]">{result.rows.length} שורות</Badge>
                       )}
                       {result.extracted && (
-                        <Badge className="bg-emerald-100 text-emerald-700 text-[10px] border-0">{result.extracted.length} תווים</Badge>
+                        <Badge className="bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400 text-[10px] border-0">{result.extracted.length} תווים</Badge>
                       )}
                     </div>
                     {result.error && <p className="text-xs text-destructive">{result.error}</p>}

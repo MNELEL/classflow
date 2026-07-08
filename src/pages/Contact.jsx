@@ -64,7 +64,7 @@ export default function Contact() {
         <div className="bg-card rounded-2xl shadow-sm border border-border p-8">
           {sent ? (
             <div className="text-center py-8">
-              <div className="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center mx-auto mb-4">
+              <div className="w-12 h-12 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center mx-auto mb-4">
                 <Send className="w-6 h-6 text-green-600" />
               </div>
               <p className="text-lg font-semibold text-foreground">ההודעה נשלחה בהצלחה!</p>

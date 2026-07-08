@@ -9,9 +9,9 @@ import { useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 
 const STATUS_MAP = {
-  planned: { label: 'מתוכנן', color: 'bg-slate-100 text-slate-600' },
-  in_progress: { label: 'בביצוע', color: 'bg-yellow-100 text-yellow-700' },
-  completed: { label: 'הושלם', color: 'bg-green-100 text-green-700' },
+  planned: { label: 'מתוכנן', color: 'bg-muted text-muted-foreground' },
+  in_progress: { label: 'בביצוע', color: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400' },
+  completed: { label: 'הושלם', color: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' },
 };
 
 export default function WeekCard({ week, onDelete }) {
@@ -45,7 +45,7 @@ export default function WeekCard({ week, onDelete }) {
         onClick={() => setOpen(v => !v)}
       >
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-indigo-100 rounded-xl flex items-center justify-center shrink-0">
+          <div className="w-10 h-10 bg-indigo-100 dark:bg-indigo-900/30 rounded-xl flex items-center justify-center shrink-0">
             <BookMarked className="w-5 h-5 text-indigo-600" />
           </div>
           <div>
@@ -92,7 +92,7 @@ export default function WeekCard({ week, onDelete }) {
                     <ArrowLeft className="w-3 h-3" /> המשך מוצע לשבוע הבא
                   </p>
                   {nextSuggestions.map((g, i) => (
-                    <p key={i} className="text-xs text-violet-600 bg-violet-50 rounded-lg px-3 py-1.5 mb-1">{g.suggested_next}</p>
+                    <p key={i} className="text-xs text-violet-600 bg-violet-50 dark:bg-violet-950/30 dark:text-violet-400 rounded-lg px-3 py-1.5 mb-1">{g.suggested_next}</p>
                   ))}
                 </div>
               )}

@@ -14,7 +14,7 @@ const STEPS = [
     link: '/students',
     linkLabel: 'לניהול תלמידים',
     color: 'bg-blue-500/10 border-blue-500/30',
-    iconBg: 'bg-blue-100',
+    iconBg: 'bg-blue-100 dark:bg-blue-900/30',
   },
   {
     id: 2,
@@ -25,7 +25,7 @@ const STEPS = [
     link: '/seating',
     linkLabel: 'לסידור ישיבה',
     color: 'bg-emerald-500/10 border-emerald-500/30',
-    iconBg: 'bg-emerald-100',
+    iconBg: 'bg-emerald-100 dark:bg-emerald-900/30',
   },
   {
     id: 3,
@@ -36,7 +36,7 @@ const STEPS = [
     link: '/library',
     linkLabel: 'לספריית חומרים',
     color: 'bg-purple-500/10 border-purple-500/30',
-    iconBg: 'bg-purple-100',
+    iconBg: 'bg-purple-100 dark:bg-purple-900/30',
   },
   {
     id: 4,
@@ -47,7 +47,7 @@ const STEPS = [
     link: '/worksheets',
     linkLabel: 'ליוצר דפ"ע',
     color: 'bg-orange-500/10 border-orange-500/30',
-    iconBg: 'bg-orange-100',
+    iconBg: 'bg-orange-100 dark:bg-orange-900/30',
   },
   {
     id: 5,
@@ -58,7 +58,7 @@ const STEPS = [
     link: '/attendance',
     linkLabel: 'לניהול נוכחות',
     color: 'bg-cyan-500/10 border-cyan-500/30',
-    iconBg: 'bg-cyan-100',
+    iconBg: 'bg-cyan-100 dark:bg-cyan-900/30',
   },
   {
     id: 6,
@@ -69,7 +69,7 @@ const STEPS = [
     link: '/gamification',
     linkLabel: 'למערכת גמול',
     color: 'bg-yellow-500/10 border-yellow-500/30',
-    iconBg: 'bg-yellow-100',
+    iconBg: 'bg-yellow-100 dark:bg-yellow-900/30',
   },
 ];
 

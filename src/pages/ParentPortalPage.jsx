@@ -13,7 +13,7 @@ import StudentReportPDF from '@/components/parents/StudentReportPDF';
 import SharedLessonsPanel from '@/components/parents/SharedLessonsPanel';
 
 const STATUS_LABELS = { present: 'נוכח', absent: 'נעדר', late: 'איחר' };
-const STATUS_COLOR = { present: 'bg-green-100 text-green-700', absent: 'bg-red-100 text-red-700', late: 'bg-yellow-100 text-yellow-700' };
+const STATUS_COLOR = { present: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400', absent: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400', late: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400' };
 
 export default function ParentPortalPage() {
   const [selectedId, setSelectedId] = useState('');
@@ -100,7 +100,7 @@ export default function ParentPortalPage() {
                           <span className="text-muted-foreground">{g.test_name || g.subject}</span>
                           <div className="flex items-center gap-2">
                             <span className="text-xs text-muted-foreground">{g.date}</span>
-                            <span className={`font-bold w-10 text-center rounded-lg px-1 py-0.5 text-xs ${g.score >= 80 ? 'bg-green-100 text-green-700' : g.score >= 60 ? 'bg-yellow-100 text-yellow-700' : 'bg-red-100 text-red-700'}`}>
+                            <span className={`font-bold w-10 text-center rounded-lg px-1 py-0.5 text-xs ${g.score >= 80 ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' : g.score >= 60 ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400' : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'}`}>
                               {g.score}
                             </span>
                           </div>

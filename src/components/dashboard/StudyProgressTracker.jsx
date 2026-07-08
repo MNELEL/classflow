@@ -33,12 +33,12 @@ const DEFAULT_TRACKERS = [
 ];
 
 const COLORS = [
-  { key: 'amber', bar: 'bg-amber-500', badge: 'bg-amber-100 text-amber-800', btn_on: 'bg-amber-500 border-amber-500 text-white', btn_off: 'hover:border-amber-400 hover:text-amber-700' },
-  { key: 'blue', bar: 'bg-blue-500', badge: 'bg-blue-100 text-blue-800', btn_on: 'bg-blue-500 border-blue-500 text-white', btn_off: 'hover:border-blue-400 hover:text-blue-700' },
-  { key: 'green', bar: 'bg-green-500', badge: 'bg-green-100 text-green-800', btn_on: 'bg-green-500 border-green-500 text-white', btn_off: 'hover:border-green-400 hover:text-green-700' },
-  { key: 'purple', bar: 'bg-purple-500', badge: 'bg-purple-100 text-purple-800', btn_on: 'bg-purple-500 border-purple-500 text-white', btn_off: 'hover:border-purple-400 hover:text-purple-700' },
-  { key: 'rose', bar: 'bg-rose-500', badge: 'bg-rose-100 text-rose-800', btn_on: 'bg-rose-500 border-rose-500 text-white', btn_off: 'hover:border-rose-400 hover:text-rose-700' },
-  { key: 'teal', bar: 'bg-teal-500', badge: 'bg-teal-100 text-teal-800', btn_on: 'bg-teal-500 border-teal-500 text-white', btn_off: 'hover:border-teal-400 hover:text-teal-700' },
+  { key: 'amber', bar: 'bg-amber-500', badge: 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400', btn_on: 'bg-amber-500 border-amber-500 text-white', btn_off: 'hover:border-amber-400 hover:text-amber-700' },
+  { key: 'blue', bar: 'bg-blue-500', badge: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400', btn_on: 'bg-blue-500 border-blue-500 text-white', btn_off: 'hover:border-blue-400 hover:text-blue-700' },
+  { key: 'green', bar: 'bg-green-500', badge: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400', btn_on: 'bg-green-500 border-green-500 text-white', btn_off: 'hover:border-green-400 hover:text-green-700' },
+  { key: 'purple', bar: 'bg-purple-500', badge: 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400', btn_on: 'bg-purple-500 border-purple-500 text-white', btn_off: 'hover:border-purple-400 hover:text-purple-700' },
+  { key: 'rose', bar: 'bg-rose-500', badge: 'bg-rose-100 text-rose-800 dark:bg-rose-900/30 dark:text-rose-400', btn_on: 'bg-rose-500 border-rose-500 text-white', btn_off: 'hover:border-rose-400 hover:text-rose-700' },
+  { key: 'teal', bar: 'bg-teal-500', badge: 'bg-teal-100 text-teal-800 dark:bg-teal-900/30 dark:text-teal-400', btn_on: 'bg-teal-500 border-teal-500 text-white', btn_off: 'hover:border-teal-400 hover:text-teal-700' },
 ];
 
 function colorFor(key) { return COLORS.find(c => c.key === key) || COLORS[0]; }

@@ -56,13 +56,13 @@ export default function TractateSelector({ value, onChange, onInsertText }) {
       <button
         type="button"
         onClick={() => setOpen(v => !v)}
-        className="text-xs px-3 py-1.5 rounded-lg border border-amber-300 bg-amber-50 text-amber-800 hover:bg-amber-100 transition-colors font-medium flex items-center gap-1.5"
+        className="text-xs px-3 py-1.5 rounded-lg border border-amber-300 bg-amber-50 text-amber-800 hover:bg-amber-100 dark:bg-amber-950/30 dark:text-amber-400 dark:hover:bg-amber-900/40 transition-colors font-medium flex items-center gap-1.5"
       >
         📖 הוסף דפים מבבא קמא
       </button>
 
       {open && (
-        <div className="absolute top-full mt-1.5 right-0 z-50 bg-white border border-border rounded-xl shadow-lg p-3 w-72 space-y-2.5">
+        <div className="absolute top-full mt-1.5 right-0 z-50 bg-card border border-border rounded-xl shadow-lg p-3 w-72 space-y-2.5">
           <p className="text-xs font-bold text-amber-800">בחר מסכת ודפים</p>
 
           {/* Tractate select */}

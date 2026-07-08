@@ -17,10 +17,10 @@ function SummaryChip({ item, pending }) {
       </div>
       <div className="flex flex-wrap gap-1 pr-5">
         {item.subject && (
-          <Badge className="bg-blue-100 text-blue-700 border-0 text-[9px] px-1.5">{item.subject}</Badge>
+          <Badge className="bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 border-0 text-[9px] px-1.5">{item.subject}</Badge>
         )}
         {item.category && (
-          <Badge className="bg-violet-100 text-violet-700 border-0 text-[9px] px-1.5 flex items-center gap-0.5">
+          <Badge className="bg-violet-100 text-violet-700 dark:bg-violet-900/30 dark:text-violet-400 border-0 text-[9px] px-1.5 flex items-center gap-0.5">
             <Tag className="w-2.5 h-2.5" />{item.category}
           </Badge>
         )}

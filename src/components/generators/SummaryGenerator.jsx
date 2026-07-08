@@ -184,7 +184,7 @@ ${content.slice(0, 4000)}
         {result && (
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <Badge className="bg-blue-100 text-blue-700 border-0">
+              <Badge className="bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 border-0">
                 {LEVEL_OPTIONS.find(l => l.value === level)?.label} · {SCOPE_OPTIONS.find(s => s.value === scope)?.label}
               </Badge>
               <div className="flex gap-1">

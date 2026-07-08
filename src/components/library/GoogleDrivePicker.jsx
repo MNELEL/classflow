@@ -23,13 +23,13 @@ function getMimeLabel(mimeType) {
 }
 
 function getMimeColor(mimeType) {
-  if (!mimeType) return 'bg-gray-100 text-gray-600';
-  if (mimeType.includes('document')) return 'bg-blue-100 text-blue-700';
-  if (mimeType.includes('presentation')) return 'bg-orange-100 text-orange-700';
-  if (mimeType.includes('spreadsheet')) return 'bg-green-100 text-green-700';
-  if (mimeType.includes('pdf')) return 'bg-red-100 text-red-700';
-  if (mimeType.includes('image')) return 'bg-purple-100 text-purple-700';
-  return 'bg-gray-100 text-gray-600';
+  if (!mimeType) return 'bg-muted text-muted-foreground';
+  if (mimeType.includes('document')) return 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400';
+  if (mimeType.includes('presentation')) return 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400';
+  if (mimeType.includes('spreadsheet')) return 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400';
+  if (mimeType.includes('pdf')) return 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400';
+  if (mimeType.includes('image')) return 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400';
+  return 'bg-muted text-muted-foreground';
 }
 
 function FileRow({ file, onSelect }) {
@@ -143,7 +143,7 @@ export default function GoogleDrivePicker({ open, onClose, onImport }) {
           </div>
         ) : !connected ? (
           <div className="flex-1 flex flex-col items-center justify-center py-10 gap-4 text-center">
-            <div className="w-16 h-16 rounded-2xl bg-blue-50 flex items-center justify-center">
+            <div className="w-16 h-16 rounded-2xl bg-blue-50 dark:bg-blue-950/30 flex items-center justify-center">
               <CloudIcon className="w-8 h-8 text-blue-500" />
             </div>
             <div>

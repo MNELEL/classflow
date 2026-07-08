@@ -49,6 +49,8 @@ export default function TeacherAccountSettings({ teacher, onLogout }) {
     try {
       await base44.entities.Teacher.update(teacher.id, { is_active: false });
       toast.success('החשבון הושבת בהצלחה');
+      localStorage.clear();
+      sessionStorage.clear();
       base44.auth.logout('/teacher-login');
     } catch (error) {
       toast.error('שגיאה בהשבתת החשבון');
@@ -186,7 +188,7 @@ export default function TeacherAccountSettings({ teacher, onLogout }) {
                 else handleDelete();
               }}
               className={isDeactivate
-                ? 'border-amber-500 text-amber-700 hover:bg-amber-100'
+                ? 'border-amber-500 text-amber-700 hover:bg-amber-100 dark:text-amber-400 dark:hover:bg-amber-900/30'
                 : 'bg-destructive text-destructive-foreground hover:bg-destructive/90'}
             >
               {busy

@@ -408,12 +408,12 @@ function TrackersOverview({ trackers: initialTrackers }) {
         const total = tracker.items?.length || 0;
         const pct = total > 0 ? Math.round((done / total) * 100) : 0;
         const colors = {
-          amber: { bar: 'bg-amber-500', badge: 'bg-amber-100 text-amber-800' },
-          blue: { bar: 'bg-blue-500', badge: 'bg-blue-100 text-blue-800' },
-          green: { bar: 'bg-green-500', badge: 'bg-green-100 text-green-800' },
-          purple: { bar: 'bg-purple-500', badge: 'bg-purple-100 text-purple-800' },
-          rose: { bar: 'bg-rose-500', badge: 'bg-rose-100 text-rose-800' },
-          teal: { bar: 'bg-teal-500', badge: 'bg-teal-100 text-teal-800' },
+          amber: { bar: 'bg-amber-500', badge: 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400' },
+          blue: { bar: 'bg-blue-500', badge: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400' },
+          green: { bar: 'bg-green-500', badge: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400' },
+          purple: { bar: 'bg-purple-500', badge: 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400' },
+          rose: { bar: 'bg-rose-500', badge: 'bg-rose-100 text-rose-800 dark:bg-rose-900/30 dark:text-rose-400' },
+          teal: { bar: 'bg-teal-500', badge: 'bg-teal-100 text-teal-800 dark:bg-teal-900/30 dark:text-teal-400' },
         };
         const col = colors[tracker.color] || colors.blue;
         return (
