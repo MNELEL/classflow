@@ -1,6 +1,8 @@
 import React, { useState, useCallback, useRef } from 'react';
 import { base44 } from '@/api/base44Client';
 import AppLayout from '@/components/layout/AppLayout';
+import { usePullToRefresh } from '@/hooks/usePullToRefresh';
+import PullToRefreshIndicator from '@/components/ui/PullToRefreshIndicator';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -52,6 +54,9 @@ export default function IngestPage() {
   const inputRef = useRef(null);
 
   const currentType = FILE_TYPES[fileType];
+
+  const handleRefresh = useCallback(async () => {}, []);
+  const { containerRef, pullY, refreshing } = usePullToRefresh(handleRefresh);
 
   const handleFiles = useCallback((newFiles) => {
     const valid = Array.from(newFiles).filter(f => {
@@ -182,7 +187,8 @@ export default function IngestPage() {
 
   return (
     <AppLayout>
-      <div className="overflow-y-auto h-full">
+      <div ref={containerRef} className="overflow-y-auto h-full relative">
+        <PullToRefreshIndicator pullY={pullY} refreshing={refreshing} />
         <div className="p-4 max-w-2xl mx-auto space-y-5 pb-8" dir="rtl">
 
           {/* Header */}
