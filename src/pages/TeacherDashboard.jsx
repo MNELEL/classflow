@@ -19,6 +19,7 @@ import {
 import { motion } from 'framer-motion';
 import { toast } from 'sonner';
 import SchoolUpdatesFeed from '@/components/teacher/SchoolUpdatesFeed';
+import TeacherAccountSettings from '@/components/teacher/TeacherAccountSettings';
 
 export default function TeacherDashboard() {
   const navigate = useNavigate();
@@ -163,9 +164,12 @@ export default function TeacherDashboard() {
             <h1 className="text-2xl font-bold">הכיתה שלי</h1>
             <p className="text-muted-foreground text-sm">{classroom.name} • {classroom.grade_level || 'לא צוין'}</p>
           </div>
-          <Button variant="outline" size="sm" onClick={handleLogout} className="gap-2">
-            <LogOut className="w-4 h-4" /> התנתק
-          </Button>
+          <div className="flex items-center gap-2">
+            <TeacherAccountSettings teacher={teacher} onLogout={handleLogout} />
+            <Button variant="outline" size="sm" onClick={handleLogout} className="gap-2">
+              <LogOut className="w-4 h-4" /> התנתק
+            </Button>
+          </div>
         </motion.div>
 
         {/* Classroom Info */}
