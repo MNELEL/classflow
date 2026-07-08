@@ -112,7 +112,38 @@ export default function AppLayout({ children }) {
   }, [location.pathname, navigate]);
 
   const isDashboard = location.pathname === '/';
-  const title = branding.page_titles?.[location.pathname] || branding.school_name || 'ClassManager Pro';
+
+  // Compute a meaningful title for deep-linked child routes (e.g. /students/:id)
+  const CHILD_TITLES = {
+    '/students/': 'פרופיל תלמיד',
+    '/library/': 'פריט ספרייה',
+    '/worksheets/': 'דף עבודה',
+  };
+  function getChildTitle(pathname) {
+    for (const [prefix, label] of Object.entries(CHILD_TITLES)) {
+      if (pathname.startsWith(prefix)) return label;
+    }
+    return null;
+  }
+  const title = branding.page_titles?.[location.pathname]
+    || getChildTitle(location.pathname)
+    || branding.school_name
+    || 'ClassManager Pro';
+
+  // Compute parent route for back navigation — robust on WebView deep-links
+  // where history.back() could exit the app.
+  function getParentRoute(pathname) {
+    // If it's a child of a primary nav tab, go to that tab root
+    const tabRoot = getCurrentTabRoot(pathname);
+    if (tabRoot !== pathname) return tabRoot;
+    // If it's a /more sub-path, go to /more
+    if (isMoreSubPath(pathname) && pathname !== '/more') return '/more';
+    // Fallback: strip last segment
+    const parts = pathname.split('/').filter(Boolean);
+    if (parts.length > 1) return '/' + parts.slice(0, -1).join('/');
+    return '/';
+  }
+  const parentRoute = getParentRoute(location.pathname);
 
   const isMoreActive = isMoreSubPath(location.pathname);
 
@@ -127,13 +158,20 @@ export default function AppLayout({ children }) {
           {!isDashboard ? (
             <button
               onClick={() => {
-                if (window.history.length > 1) navigate(-1);
-                else navigate('/');
+                // Prefer in-app parent route for WebView safety; fall back to
+                // browser history only if we have one and it stays within app.
+                if (parentRoute && parentRoute !== location.pathname) {
+                  navigate(parentRoute);
+                } else if (window.history.length > 1) {
+                  navigate(-1);
+                } else {
+                  navigate('/');
+                }
               }}
-              className="min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg hover:bg-accent transition-colors select-none"
+              className="min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg hover:bg-accent active:bg-accent/70 transition-colors select-none group"
               aria-label="חזור"
             >
-              <ChevronRight className="w-5 h-5" />
+              <ChevronRight className="w-5 h-5 text-primary transition-transform group-active:translate-x-0.5" />
             </button>
           ) : (
             branding.logo_url ? (
