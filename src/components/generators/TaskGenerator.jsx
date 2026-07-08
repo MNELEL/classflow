@@ -129,7 +129,7 @@ ${content ? `תוכן רקע:\n"""\n${content.slice(0, 3000)}\n"""` : ''}
       <CardContent className="p-4 space-y-4">
         <div className="flex items-center gap-2">
           <div className="w-9 h-9 bg-emerald-100 dark:bg-emerald-900/30 rounded-xl flex items-center justify-center">
-            <ClipboardList className="w-4 h-4 text-emerald-600" />
+            <ClipboardList className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
           </div>
           <div>
             <h3 className="font-bold text-sm">מחולל משימות</h3>

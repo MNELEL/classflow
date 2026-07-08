@@ -61,7 +61,7 @@ export default function BavaKammaTracker() {
           onClick={() => setExpanded(v => !v)}
         >
           <CardTitle className="text-sm flex items-center gap-2">
-            <BookOpen className="w-4 h-4 text-amber-600" />
+            <BookOpen className="w-4 h-4 text-amber-600 dark:text-amber-400" />
             מעקב הספקים — בבא קמא
             <Badge className="bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400 border-0 text-[10px]">
               {count}/{TOTAL_DAFIM} דפים
@@ -88,12 +88,12 @@ export default function BavaKammaTracker() {
                 transition={{ duration: 1.2, ease: 'easeOut' }}
               />
             </svg>
-            <span className="absolute inset-0 flex items-center justify-center text-[9px] font-bold text-amber-700">{percent}%</span>
+            <span className="absolute inset-0 flex items-center justify-center text-[9px] font-bold text-amber-700 dark:text-amber-400">{percent}%</span>
           </div>
           <div className="flex-1">
             <div className="flex justify-between items-center mb-1">
               <span className="text-[10px] text-muted-foreground">{count} דפים הוספקו</span>
-              <span className="text-[10px] font-bold text-amber-700">{count}/{TOTAL_DAFIM}</span>
+              <span className="text-[10px] font-bold text-amber-700 dark:text-amber-400">{count}/{TOTAL_DAFIM}</span>
             </div>
             <div className="w-full bg-muted rounded-full h-2">
               <motion.div
@@ -128,7 +128,7 @@ export default function BavaKammaTracker() {
                         className={`w-8 h-7 rounded text-[11px] font-medium border transition-all ${
                           done
                             ? 'bg-amber-500 border-amber-500 text-white shadow-sm'
-                            : 'bg-background border-border text-muted-foreground hover:border-amber-400 hover:text-amber-700'
+                            : 'bg-background border-border text-muted-foreground hover:border-amber-400 hover:text-amber-700 dark:hover:text-amber-400'
                         }`}
                         title={`דף ${daf}`}
                       >

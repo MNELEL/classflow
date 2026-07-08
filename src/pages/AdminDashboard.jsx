@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '@/lib/AuthContext';
 import AppLayout from '@/components/layout/AppLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -33,8 +33,7 @@ export default function AdminDashboard() {
   const { user } = useAuth();
 
   // All hooks must be called unconditionally at the top
-  const [showTeacherForm, setShowTeacherForm] = useState(false);
-  const [showClassroomForm, setShowClassroomForm] = useState(false);
+  const [searchParams, setSearchParams] = useSearchParams();
   const [copiedId, setCopiedId] = useState(null);
   const [newTeacher, setNewTeacher] = useState({
     full_name: '', email: '', phone: '', subject: ''
@@ -42,7 +41,7 @@ export default function AdminDashboard() {
   const [newClassroom, setNewClassroom] = useState({
     name: '', grade_level: '', school: '', year: new Date().getFullYear().toString(), notes: ''
   });
-  const [selectedTeacherForDetail, setSelectedTeacherForDetail] = useState(null);
+
 
   const isAdmin = !!user && user.role === 'admin';
 
@@ -78,6 +77,12 @@ export default function AdminDashboard() {
     enabled: isAdmin,
   });
 
+  // Modal state — driven by URL search params for Android back-button support
+  const showTeacherForm = searchParams.get('modal') === 'teacher-form';
+  const showClassroomForm = searchParams.get('modal') === 'classroom-form';
+  const teacherDetailId = searchParams.get('teacher');
+  const selectedTeacherForDetail = teacherDetailId ? teachers.find(t => t.id === teacherDetailId) || null : null;
+
   const createTeacherMutation = useMutation({
     mutationFn: async (teacherData) => {
       const accessCode = generateAccessCode();
@@ -90,7 +95,7 @@ export default function AdminDashboard() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries(['teachers']);
-      setShowTeacherForm(false);
+      setSearchParams({}, { replace: true });
       setNewTeacher({ full_name: '', email: '', phone: '', subject: '' });
       toast.success('המורה נוצר בהצלחה!');
     },
@@ -109,7 +114,7 @@ export default function AdminDashboard() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries(['classrooms']);
-      setShowClassroomForm(false);
+      setSearchParams({}, { replace: true });
       setNewClassroom({ name: '', grade_level: '', school: '', year: new Date().getFullYear().toString(), notes: '' });
       toast.success('הכיתה נוצרה בהצלחה!');
     },
@@ -291,10 +296,10 @@ export default function AdminDashboard() {
 
         {/* Action Buttons */}
         <div className="flex gap-2 mb-6">
-          <Button onClick={() => setShowTeacherForm(true)} className="flex-1">
+          <Button onClick={() => setSearchParams({ modal: 'teacher-form' })} className="flex-1">
             <Plus className="w-4 h-4 ml-1" /> הוסף מורה חדש
           </Button>
-          <Button onClick={() => setShowClassroomForm(true)} variant="outline" className="flex-1">
+          <Button onClick={() => setSearchParams({ modal: 'classroom-form' })} variant="outline" className="flex-1">
             <BookOpen className="w-4 h-4 ml-1" /> צור כיתה חדשה
           </Button>
           <Button onClick={() => navigate('/teacher-insights')} variant="outline" className="flex-1">
@@ -323,7 +328,7 @@ export default function AdminDashboard() {
                 <div className="flex flex-col items-center py-8 gap-3 text-center">
                   <Users className="w-12 h-12 text-muted-foreground/20" />
                   <p className="text-sm text-muted-foreground">אין מורים במערכת</p>
-                  <Button size="sm" onClick={() => setShowTeacherForm(true)}>
+                  <Button size="sm" onClick={() => setSearchParams({ modal: 'teacher-form' })}>
                     הוסף מורה ראשון
                   </Button>
                 </div>
@@ -403,7 +408,7 @@ export default function AdminDashboard() {
                         <Button
                           size="sm"
                           variant="outline"
-                          onClick={() => setSelectedTeacherForDetail(teacher)}
+                          onClick={() => setSearchParams({ teacher: teacher.id })}
                           className="h-8 text-xs gap-1"
                         >
                           <Stethoscope className="w-3.5 h-3.5" /> ניהול
@@ -456,7 +461,7 @@ export default function AdminDashboard() {
                 <div className="flex flex-col items-center py-8 gap-3 text-center">
                   <BookOpen className="w-12 h-12 text-muted-foreground/20" />
                   <p className="text-sm text-muted-foreground">אין כיתות במערכת</p>
-                  <Button size="sm" onClick={() => setShowClassroomForm(true)}>
+                  <Button size="sm" onClick={() => setSearchParams({ modal: 'classroom-form' })}>
                     צור כיתה ראשונה
                   </Button>
                 </div>
@@ -567,7 +572,7 @@ export default function AdminDashboard() {
                   <Button type="submit" className="flex-1">
                     <Plus className="w-4 h-4 ml-1" /> צור מורה
                   </Button>
-                  <Button type="button" variant="outline" onClick={() => setShowTeacherForm(false)} className="flex-1">
+                  <Button type="button" variant="outline" onClick={() => setSearchParams({}, { replace: true })} className="flex-1">
                     ביטול
                   </Button>
                 </div>
@@ -579,7 +584,7 @@ export default function AdminDashboard() {
         {/* Teacher Detail Modal */}
         <AnimatePresence>
           {selectedTeacherForDetail && (
-            <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={() => setSelectedTeacherForDetail(null)}>
+            <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={() => setSearchParams({}, { replace: true })}>
               <motion.div
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
@@ -597,7 +602,7 @@ export default function AdminDashboard() {
                       <p className="text-[11px] text-muted-foreground">{selectedTeacherForDetail.subject || 'ללא מקצוע'}</p>
                     </div>
                   </div>
-                  <button onClick={() => setSelectedTeacherForDetail(null)} className="p-1.5 hover:bg-accent rounded-lg">
+                  <button onClick={() => setSearchParams({}, { replace: true })} className="p-1.5 hover:bg-accent rounded-lg">
                     <X className="w-4 h-4" />
                   </button>
                 </div>
@@ -720,7 +725,7 @@ export default function AdminDashboard() {
                   <Button type="submit" className="flex-1">
                     <Plus className="w-4 h-4 ml-1" /> צור כיתה
                   </Button>
-                  <Button type="button" variant="outline" onClick={() => setShowClassroomForm(false)} className="flex-1">
+                  <Button type="button" variant="outline" onClick={() => setSearchParams({}, { replace: true })} className="flex-1">
                     ביטול
                   </Button>
                 </div>

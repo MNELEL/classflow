@@ -115,7 +115,7 @@ ${content.slice(0, 4000)}
       <CardContent className="p-4 space-y-4">
         <div className="flex items-center gap-2">
           <div className="w-9 h-9 bg-blue-100 dark:bg-blue-900/30 rounded-xl flex items-center justify-center">
-            <FileText className="w-4 h-4 text-blue-600" />
+            <FileText className="w-4 h-4 text-blue-600 dark:text-blue-400" />
           </div>
           <div>
             <h3 className="font-bold text-sm">מחולל סיכומים מותאם</h3>
@@ -222,7 +222,7 @@ ${content.slice(0, 4000)}
             {/* Summary view */}
             <div className="bg-muted/30 rounded-xl p-3 max-h-[400px] overflow-y-auto border border-border/60">
               <div className="flex items-center gap-1.5 mb-2">
-                <FileText className="w-3.5 h-3.5 text-blue-600" />
+                <FileText className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
                 <span className="text-xs font-bold text-blue-700 dark:text-blue-400">סיכום מלא</span>
               </div>
               <ReactMarkdown className="prose prose-sm dark:prose-invert max-w-none text-sm leading-relaxed" dir="rtl">
