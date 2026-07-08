@@ -37,7 +37,11 @@ export default function ClassroomGrid({ seats, students, rows, cols, showNumbers
 
   useEffect(() => {
     const MIN_CELL = 52; // px
-    const availW = Math.min(window.innerWidth - 48, 400); // cap at 400px
+    // On very narrow screens (<380px), subtract padding more aggressively
+    // to guarantee no horizontal viewport overflow.
+    const vp = window.innerWidth;
+    const pad = vp < 380 ? 24 : 48;
+    const availW = Math.min(vp - pad, 400); // cap at 400px
     if (cols > 6 || rows > 6) {
       setGridZoom(Math.min(1, availW / (cols * 70)));
     } else if (cols * MIN_CELL > availW) {
@@ -81,8 +85,8 @@ export default function ClassroomGrid({ seats, students, rows, cols, showNumbers
       </div>
 
       {/* Row labels + grid */}
-      <div className="overflow-x-auto w-full" style={{ WebkitOverflowScrolling: 'touch' }}>
-      <div className="flex gap-2 items-start" style={{ zoom: gridZoom }}>
+      <div className="overflow-x-auto w-full max-w-full" style={{ WebkitOverflowScrolling: 'touch', overflowX: 'hidden' }}>
+      <div className="flex gap-2 items-start w-full" style={{ zoom: gridZoom, transformOrigin: 'top center' }}>
         {/* Row numbers */}
         <div className="flex flex-col gap-2 pt-0.5" style={{ minWidth: '18px' }}>
           {Array.from({ length: rows }).map((_, r) => (

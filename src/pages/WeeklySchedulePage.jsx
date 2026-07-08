@@ -426,7 +426,7 @@ export default function WeeklySchedulePage() {
 
         {/* Desktop full grid */}
         <div className="hidden md:block overflow-x-auto" style={{ WebkitOverflowScrolling: 'touch' }}>
-          <div className="min-w-[640px] px-2 pb-6">
+          <div className="min-w-[640px] max-w-full px-2 pb-6" style={{ zoom: 'var(--timetable-zoom, 1)', transformOrigin: 'top center' }}>
 
             {/* Day headers */}
             <div className="grid gap-1 mt-3 mb-1" style={{ gridTemplateColumns: '48px repeat(5, 1fr)' }}>

@@ -11,10 +11,10 @@ import GroupSeatingOptimizer from '@/components/classroom/GroupSeatingOptimizer'
 import StrategicLeadersOptimizer from '@/components/classroom/StrategicLeadersOptimizer';
 import { buildInitialSeats, smartSort, calcSatisfactionScore, getSeatAt } from '@/lib/seatingUtils';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle } from '@/components/ui/sheet';
+import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerTrigger } from '@/components/ui/drawer';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Lock, Unlock, EyeOff, SlidersHorizontal, Users, BarChart2 } from 'lucide-react';
+import { Lock, Unlock, EyeOff, SlidersHorizontal, Users, BarChart2, GripHorizontal } from 'lucide-react';
 import { toast } from 'sonner';
 import SatisfactionReport from '@/components/classroom/SatisfactionReport';
 import { usePullToRefresh } from '@/hooks/usePullToRefresh';
@@ -494,38 +494,42 @@ ${overrideLines ? `\nהעדפות ייבוא נוספות:\n${overrideLines}` : 
           <div className="md:hidden text-center text-[10px] text-muted-foreground/60 mb-1">
             ← גלול לצפייה בכל הכיתה →
           </div>
-          {/* Mobile floating action buttons */}
+          {/* Mobile floating action buttons — bottom drawer triggers */}
           <div className="flex md:hidden gap-2 mb-3 justify-between">
-            <Sheet open={searchParams.get('sheet') === 'controls'} onOpenChange={(open) => updateParam('sheet', open ? 'controls' : null)}>
-              <SheetTrigger asChild>
+            <Drawer open={searchParams.get('sheet') === 'controls'} onOpenChange={(open) => updateParam('sheet', open ? 'controls' : null)}>
+              <DrawerTrigger asChild>
                 <Button size="sm" variant="outline" className="flex-1 gap-1.5">
                   <SlidersHorizontal className="w-4 h-4" /> פקדים
                 </Button>
-              </SheetTrigger>
-              <SheetContent side="right" className="w-72 overflow-y-auto p-0" dir="rtl">
-                <SheetHeader className="p-4 border-b">
-                  <SheetTitle>פקדי כיתה</SheetTitle>
-                </SheetHeader>
+              </DrawerTrigger>
+              <DrawerContent className="max-h-[75vh] overflow-y-auto" dir="rtl">
+                <DrawerHeader className="pb-1 pt-2">
+                  <DrawerTitle className="flex items-center gap-2 text-sm">
+                    <GripHorizontal className="w-4 h-4 text-muted-foreground" /> פקדי כיתה
+                  </DrawerTitle>
+                </DrawerHeader>
                 {ControlsPanel}
-              </SheetContent>
-            </Sheet>
+              </DrawerContent>
+            </Drawer>
 
-            <Sheet open={searchParams.get('sheet') === 'students'} onOpenChange={(open) => updateParam('sheet', open ? 'students' : null)}>
-              <SheetTrigger asChild>
+            <Drawer open={searchParams.get('sheet') === 'students'} onOpenChange={(open) => updateParam('sheet', open ? 'students' : null)}>
+              <DrawerTrigger asChild>
                 <Button size="sm" variant="outline" className="flex-1 gap-1.5">
                   <Users className="w-4 h-4" /> תלמידים
                   {unseatedCount > 0 && (
                     <Badge className="bg-warning text-white text-[10px] px-1.5 py-0">{unseatedCount}</Badge>
                   )}
                 </Button>
-              </SheetTrigger>
-              <SheetContent side="left" className="w-64 overflow-y-auto p-0" dir="rtl">
-                <SheetHeader className="p-4 border-b">
-                  <SheetTitle>תלמידים</SheetTitle>
-                </SheetHeader>
+              </DrawerTrigger>
+              <DrawerContent className="max-h-[75vh] overflow-y-auto" dir="rtl">
+                <DrawerHeader className="pb-1 pt-2">
+                  <DrawerTitle className="flex items-center gap-2 text-sm">
+                    <GripHorizontal className="w-4 h-4 text-muted-foreground" /> תלמידים
+                  </DrawerTitle>
+                </DrawerHeader>
                 {StudentsPanel}
-              </SheetContent>
-            </Sheet>
+              </DrawerContent>
+            </Drawer>
           </div>
 
           {/* Satisfaction score bar */}

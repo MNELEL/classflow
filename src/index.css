@@ -126,6 +126,21 @@
   --sab: env(safe-area-inset-bottom, 0px);
   --sal: env(safe-area-inset-left, 0px);
   --sar: env(safe-area-inset-right, 0px);
+  /* Timetable adaptive zoom — scales down on very narrow screens
+     to prevent horizontal viewport overflow in WebView. */
+  --timetable-zoom: 1;
+}
+
+/* Narrow viewport scaling — prevent horizontal scroll on <380px screens */
+@media (max-width: 380px) {
+  :root {
+    --timetable-zoom: 0.85;
+  }
+}
+@media (max-width: 340px) {
+  :root {
+    --timetable-zoom: 0.72;
+  }
 }
 
 /* Tap target polish — 44×44px minimum on touch devices */
@@ -170,18 +185,22 @@ button, a, [role="button"] {
   }
 }
 
-/* ── Hit-target expansion for icon buttons inside list items ──
+/* ── Hit-target expansion for icon buttons ──
    Keeps the icon visually compact (natural size) while expanding the
-   clickable area to at least 44×44px on touch devices. */
+   clickable area to at least 44×44px on touch devices. Applies to
+   ALL icon-only buttons/links, not just those inside list items. */
 @media (pointer: coarse) {
-  li button:has(svg),
-  li [role="button"]:has(svg) {
+  /* Target icon-only buttons: contain only svg(s) and optional whitespace */
+  button:not(:has(span:not(:empty))):has(svg),
+  a[href]:not(:has(span:not(:empty))):has(svg),
+  [role="button"]:not(:has(span:not(:empty))):has(svg) {
     position: relative;
     min-height: auto !important;
     min-width: auto !important;
   }
-  li button:has(svg)::after,
-  li [role="button"]:has(svg)::after {
+  button:not(:has(span:not(:empty))):has(svg)::after,
+  a[href]:not(:has(span:not(:empty))):has(svg)::after,
+  [role="button"]:not(:has(span:not(:empty))):has(svg)::after {
     content: '';
     position: absolute;
     top: 50%;
@@ -189,6 +208,15 @@ button, a, [role="button"] {
     transform: translate(-50%, -50%);
     width: 44px;
     height: 44px;
+    min-width: 44px;
+    min-height: 44px;
+  }
+  /* Legacy: keep list-item specific selector for backwards compatibility */
+  li button:has(svg),
+  li [role="button"]:has(svg) {
+    position: relative;
+    min-height: auto !important;
+    min-width: auto !important;
   }
 }
 
