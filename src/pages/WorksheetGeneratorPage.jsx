@@ -1,4 +1,5 @@
 import React, { useState, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import AppLayout from '@/components/layout/AppLayout';
@@ -9,7 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { MobileSelect, SelectItem } from '@/components/ui/MobileSelect';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from 'sonner';
-import { Sparkles, Printer, Save, Star, StarOff, Trash2, ChevronDown, ChevronUp, BookOpen, Brain } from 'lucide-react';
+import { Sparkles, Printer, Save, Star, StarOff, Trash2, BookOpen, Brain, ChevronUp, ChevronDown } from 'lucide-react';
 import { loadStyleProfile, buildStyleInstruction } from '@/lib/teacherStyle';
 import TeacherStylePanel from '@/components/library/TeacherStylePanel';
 import { motion } from 'framer-motion';
@@ -23,13 +24,13 @@ const GRADE_LEVELS = ['א-ב', 'ג-ד', 'ה-ו', 'ז-ח', 'ט-י', 'י"א-י"ב'
 
 export default function WorksheetGeneratorPage() {
   const qc = useQueryClient();
+  const navigate = useNavigate();
   const handleRefresh = useCallback(async () => { await qc.invalidateQueries({ queryKey: ['worksheets'] }); }, [qc]);
   const { containerRef, pullY, refreshing } = usePullToRefresh(handleRefresh);
   const [form, setForm] = useState({ subject: '', topic: '', grade_level: 'ה-ו', difficulty: 'בינוני', num_questions: 5, question_types: ['רב-ברירה', 'שאלה פתוחה'] });
   const [generated, setGenerated] = useState(null);
   const [generating, setGenerating] = useState(false);
   const [showAnswers, setShowAnswers] = useState({});
-  const [expandedId, setExpandedId] = useState(null);
 
   const { data: worksheets = [] } = useQuery({ queryKey: ['worksheets'], queryFn: () => base44.entities.Worksheet.list('-created_date', 30) });
 
@@ -298,7 +299,7 @@ export default function WorksheetGeneratorPage() {
               <Card key={ws.id} className="border-border/60">
                 <div
                   className="flex items-center justify-between p-3 cursor-pointer"
-                  onClick={() => setExpandedId(expandedId === ws.id ? null : ws.id)}
+                  onClick={() => navigate(`/worksheets/${ws.id}`)}
                 >
                   <div className="flex items-center gap-2 min-w-0">
                     <BookOpen className="w-4 h-4 text-primary shrink-0" />
@@ -308,6 +309,9 @@ export default function WorksheetGeneratorPage() {
                     </div>
                   </div>
                   <div className="flex gap-1 shrink-0">
+                    <button onClick={(e) => { e.stopPropagation(); setGenerated(ws); window.scrollTo({ top: 0, behavior: 'smooth' }); toast.success('נטען לעריכה'); }} aria-label="טען לעריכה" className="text-primary hover:text-primary/70">
+                      <BookOpen className="w-4 h-4" />
+                    </button>
                     <button onClick={(e) => { e.stopPropagation(); favMutation.mutate({ id: ws.id, val: !ws.is_favorite }); }} aria-label={ws.is_favorite ? 'הסר ממועדפים' : 'הוסף למועדפים'}
                       className={ws.is_favorite ? 'text-yellow-500' : 'text-muted-foreground'}>
                       {ws.is_favorite ? <Star className="w-4 h-4 fill-current" /> : <StarOff className="w-4 h-4" />}
@@ -315,22 +319,8 @@ export default function WorksheetGeneratorPage() {
                     <button onClick={(e) => { e.stopPropagation(); deleteMutation.mutate(ws.id); }} aria-label="מחק דף עבודה" className="text-destructive/50 hover:text-destructive">
                       <Trash2 className="w-4 h-4" />
                     </button>
-                    {expandedId === ws.id ? <ChevronUp className="w-4 h-4 text-muted-foreground" /> : <ChevronDown className="w-4 h-4 text-muted-foreground" />}
                   </div>
                 </div>
-                {expandedId === ws.id && ws.questions?.length > 0 && (
-                  <CardContent className="px-3 pb-3 pt-0 space-y-2 border-t border-border/50">
-                    <Button size="sm" className="w-full" onClick={() => { setGenerated(ws); window.scrollTo({ top: 0, behavior: 'smooth' }); }}>
-                      טען לעריכה
-                    </Button>
-                    {ws.questions.slice(0, 3).map((q, i) => (
-                      <div key={i} className="text-xs bg-muted/30 rounded-lg p-2">
-                        <span className="font-medium">{i + 1}. {q.type}</span> — {q.question}
-                      </div>
-                    ))}
-                    {ws.questions.length > 3 && <p className="text-xs text-muted-foreground text-center">...ועוד {ws.questions.length - 3}</p>}
-                  </CardContent>
-                )}
               </Card>
             ))}
           </div>

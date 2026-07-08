@@ -26,6 +26,7 @@ const GamificationPage     = lazy(() => import('./pages/GamificationPage'));
 const ToolkitPage          = lazy(() => import('./pages/ToolkitPage'));
 const ParentPortalPage     = lazy(() => import('./pages/ParentPortalPage'));
 const WorksheetGeneratorPage = lazy(() => import('./pages/WorksheetGeneratorPage'));
+const WorksheetDetailPage    = lazy(() => import('./pages/WorksheetDetailPage'));
 const QuestionBankPage     = lazy(() => import('./pages/QuestionBankPage'));
 const LessonAnalyzerPage   = lazy(() => import('./pages/LessonAnalyzerPage'));
 const CurriculumPlannerPage = lazy(() => import('./pages/CurriculumPlannerPage'));
@@ -106,6 +107,7 @@ function AnimatedRoutes() {
               <Route path="/toolkit" element={<ToolkitPage />} />
               <Route path="/parents" element={<ParentPortalPage />} />
               <Route path="/worksheets" element={<WorksheetGeneratorPage />} />
+            <Route path="/worksheets/:id" element={<WorksheetDetailPage />} />
               <Route path="/question-bank" element={<QuestionBankPage />} />
               <Route path="/lesson-analyzer" element={<LessonAnalyzerPage />} />
               <Route path="/curriculum" element={<CurriculumPlannerPage />} />
