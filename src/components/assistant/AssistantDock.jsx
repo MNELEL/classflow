@@ -96,6 +96,7 @@ export default function AssistantDock() {
             exit={{ scale: 0, opacity: 0 }}
             onClick={() => { setOpen(true); setTimeout(() => inputRef.current?.focus(), 200); }}
             className="fixed bottom-20 left-4 z-40 w-14 h-14 rounded-full bg-primary text-primary-foreground shadow-lg shadow-primary/30 flex items-center justify-center hover:scale-105 active:scale-95 transition-transform"
+            style={{ bottom: 'calc(5rem + env(safe-area-inset-bottom))' }}
             aria-label="עוזר AI"
           >
             <Sparkles className="w-6 h-6" />
@@ -113,7 +114,8 @@ export default function AssistantDock() {
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: 100, opacity: 0 }}
             transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-            className="fixed bottom-20 left-4 right-4 z-40 max-w-md mx-auto"
+            className="fixed left-4 right-4 z-40 max-w-md mx-auto"
+            style={{ bottom: 'calc(5rem + env(safe-area-inset-bottom))' }}
             dir="rtl"
           >
             <div className="bg-card border border-border rounded-2xl shadow-xl shadow-primary/10 overflow-hidden">

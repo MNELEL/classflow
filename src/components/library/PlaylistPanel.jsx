@@ -59,7 +59,7 @@ export default function PlaylistPanel({ itemIds, allItems, onRemove, onReorder, 
   if (playlistItems.length === 0) return null;
 
   return (
-    <div className="fixed bottom-[72px] inset-x-0 z-40 px-3 pb-2" style={{ paddingBottom: 'calc(0.5rem + env(safe-area-inset-bottom))' }}>
+    <div className="fixed inset-x-0 z-40 px-3 pb-2" style={{ bottom: 'calc(4.5rem + env(safe-area-inset-bottom))' }}>
       <div className="bg-card border border-border rounded-2xl shadow-xl overflow-hidden">
         {/* Header */}
         <div className="flex items-center gap-2 px-3 py-2 bg-primary/5 border-b border-border">

@@ -18,13 +18,23 @@ export function usePullToRefresh(onRefresh) {
     el.setAttribute('data-pull-to-refresh', '');
 
     function onTouchStart(e) {
-      // Only trigger when scrolled to top
-      if (el.scrollTop > 0) return;
+      // Only intercept when the container is scrolled to exactly 0
+      if (el.scrollTop !== 0) {
+        startY.current = null;
+        return;
+      }
       startY.current = e.touches[0].clientY;
     }
 
     function onTouchMove(e) {
       if (startY.current === null) return;
+      // Re-check scrollTop in case the user scrolled between touchstart and touchmove
+      if (el.scrollTop > 0) {
+        startY.current = null;
+        setPullY(0);
+        setPulling(false);
+        return;
+      }
       const dy = e.touches[0].clientY - startY.current;
       if (dy <= 0) { setPullY(0); setPulling(false); return; }
       e.preventDefault();
@@ -33,12 +43,11 @@ export function usePullToRefresh(onRefresh) {
     }
 
     async function onTouchEnd() {
-      if (!pulling) { startY.current = null; return; }
-      if (pullY >= THRESHOLD) {
+      if (startY.current === null) return;
+      if (pullY >= THRESHOLD && !refreshing) {
         setRefreshing(true);
         setPullY(THRESHOLD);
-        await onRefresh();
-        setRefreshing(false);
+        try { await onRefresh(); } finally { setRefreshing(false); }
       }
       setPulling(false);
       setPullY(0);
@@ -53,7 +62,7 @@ export function usePullToRefresh(onRefresh) {
       el.removeEventListener('touchmove', onTouchMove);
       el.removeEventListener('touchend', onTouchEnd);
     };
-  }, [pulling, pullY, onRefresh]);
+  }, [pullY, pulling, refreshing, onRefresh]);
 
   return { containerRef, pullY, pulling, refreshing };
 }
