@@ -165,13 +165,13 @@ const AuthenticatedApp = () => {
   useEffect(() => {
     const mq = window.matchMedia('(prefers-color-scheme: dark)');
     const savedSettings = (() => { try { return JSON.parse(localStorage.getItem('classmanager_settings') || '{}'); } catch { return {}; } })();
-    if (!savedSettings.theme) {
+    if (!savedSettings.theme || savedSettings.theme === 'system') {
       if (mq.matches) document.documentElement.classList.add('dark');
       else document.documentElement.classList.remove('dark');
     }
     const handler = (e) => {
       const current = (() => { try { return JSON.parse(localStorage.getItem('classmanager_settings') || '{}'); } catch { return {}; } })();
-      if (!current.theme) {
+      if (!current.theme || current.theme === 'system') {
         if (e.matches) document.documentElement.classList.add('dark');
         else document.documentElement.classList.remove('dark');
       }

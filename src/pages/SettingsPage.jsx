@@ -39,6 +39,18 @@ function applyPalette(paletteId) {
   document.documentElement.style.setProperty('--ring', palette.primary);
 }
 
+function applyTheme(theme) {
+  const root = document.documentElement;
+  if (theme === 'dark') {
+    root.classList.add('dark');
+  } else if (theme === 'system') {
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    root.classList.toggle('dark', prefersDark);
+  } else {
+    root.classList.remove('dark');
+  }
+}
+
 export default function SettingsPage() {
   const qc = useQueryClient();
   const { data: categories = [] } = useQuery({ queryKey: ['categories'], queryFn: () => base44.entities.LessonCategory.list() });
@@ -68,20 +80,22 @@ export default function SettingsPage() {
 
   useEffect(() => {
     applyPalette(settings.color_palette);
-    if (settings.theme === 'dark') {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-    }
+    applyTheme(settings.theme);
   }, []);
+
+  // Listen to system color-scheme changes when 'system' theme is active
+  useEffect(() => {
+    if (settings.theme !== 'system') return;
+    const mq = window.matchMedia('(prefers-color-scheme: dark)');
+    const handler = () => applyTheme('system');
+    mq.addEventListener('change', handler);
+    return () => mq.removeEventListener('change', handler);
+  }, [settings.theme]);
 
   function update(key, value) {
     setSettings(prev => ({ ...prev, [key]: value }));
     if (key === 'color_palette') applyPalette(value);
-    if (key === 'theme') {
-      if (value === 'dark') document.documentElement.classList.add('dark');
-      else document.documentElement.classList.remove('dark');
-    }
+    if (key === 'theme') applyTheme(value);
   }
 
   function saveSettings() {
@@ -150,7 +164,7 @@ export default function SettingsPage() {
               <div>
                 <Label className="text-sm mb-2 block">ערכת נושא</Label>
                 <div className="flex gap-2">
-                  {[{ id: 'light', label: '☀️ בהיר' }, { id: 'dark', label: '🌙 כהה' }].map(t => (
+                  {[{ id: 'light', label: '☀️ בהיר' }, { id: 'dark', label: '🌙 כהה' }, { id: 'system', label: '🖥️ מערכת' }].map(t => (
                     <button
                       key={t.id}
                       onClick={() => update('theme', t.id)}
