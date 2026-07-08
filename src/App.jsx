@@ -13,6 +13,8 @@ import ProtectedRoute from '@/components/ProtectedRoute';
 import { ThemeProvider } from '@/lib/themeContext';
 import { applyThemeClass, loadTheme } from '@/lib/themes';
 import { loadBrandingFromDB, loadBranding } from '@/lib/branding';
+import PinLockScreen from '@/components/security/PinLockScreen';
+import { isLocked } from '@/lib/pinLock';
 
 // Lazy-loaded pages for code splitting
 const SeatingPage          = lazy(() => import('./pages/SeatingPage'));
@@ -157,6 +159,14 @@ const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin, user } = useAuth();
   const navigate = useNavigate();
   const [showOnboarding, setShowOnboarding] = useState(false);
+  const [locked, setLocked] = useState(isLocked());
+
+  // React to manual lock / PIN changes from settings
+  useEffect(() => {
+    const handler = () => setLocked(isLocked());
+    window.addEventListener('pin-lock-changed', handler);
+    return () => window.removeEventListener('pin-lock-changed', handler);
+  }, []);
 
   // Apply saved theme on mount (before auth completes)
   useEffect(() => {
@@ -216,6 +226,10 @@ const AuthenticatedApp = () => {
   if (authError) {
     if (authError.type === 'user_not_registered') return <UserNotRegisteredError />;
     if (authError.type === 'auth_required') { navigateToLogin(); return null; }
+  }
+
+  if (locked) {
+    return <PinLockScreen onUnlock={() => setLocked(false)} />;
   }
 
   return (

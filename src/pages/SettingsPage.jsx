@@ -14,6 +14,7 @@ import { Palette, LayoutGrid, Settings, Save, Trash2, Plus, Tag, Brush } from 'l
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogFooter, AlertDialogCancel, AlertDialogAction } from '@/components/ui/alert-dialog';
 import BrandingPanel from '@/components/settings/BrandingPanel';
+import SecuritySettings from '@/components/security/SecuritySettings';
 
 const SETTINGS_KEY = 'classmanager_settings';
 
@@ -286,6 +287,9 @@ export default function SettingsPage() {
           <Button className="w-full" onClick={saveSettings}>
             <Save className="w-4 h-4 ml-1" /> שמור הגדרות
           </Button>
+
+          {/* Security / PIN lock */}
+          <SecuritySettings />
 
           {/* Danger Zone */}
           <Card className="border-destructive/40 bg-destructive/5">
