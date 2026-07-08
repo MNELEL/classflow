@@ -16,6 +16,7 @@ import {
   CheckCircle2, XCircle, Clock, Star, FolderOpen, BookOpen, ListTodo
 } from 'lucide-react';
 import StudentTaskList from '@/components/students/StudentTaskList';
+import QuickPreferencesEditor from '@/components/students/QuickPreferencesEditor';
 import { format, parseISO, subMonths } from 'date-fns';
 import { he } from 'date-fns/locale';
 
@@ -199,6 +200,9 @@ export default function StudentProfilePage() {
             color="text-violet-600"
           />
         </div>
+
+        {/* Quick preferences editor */}
+        <QuickPreferencesEditor student={student} />
 
         {/* Tabs */}
         <Tabs defaultValue="grades" dir="rtl">
