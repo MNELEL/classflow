@@ -15,6 +15,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogD
 import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogFooter, AlertDialogCancel, AlertDialogAction } from '@/components/ui/alert-dialog';
 import BrandingPanel from '@/components/settings/BrandingPanel';
 import SecuritySettings from '@/components/security/SecuritySettings';
+import AccountManagement from '@/components/settings/AccountManagement';
 
 const SETTINGS_KEY = 'classmanager_settings';
 
@@ -290,6 +291,9 @@ export default function SettingsPage() {
 
           {/* Security / PIN lock */}
           <SecuritySettings />
+
+          {/* Account Management — deactivate / delete */}
+          <AccountManagement />
 
           {/* Danger Zone */}
           <Card className="border-destructive/40 bg-destructive/5">

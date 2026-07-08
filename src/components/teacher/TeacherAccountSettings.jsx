@@ -24,12 +24,14 @@ import { Label } from '@/components/ui/label';
 import { Trash2, Settings, LogOut, UserX, AlertTriangle } from 'lucide-react';
 import { toast } from 'sonner';
 
-export default function TeacherAccountSettings({ teacher, onLogout }) {
+export default function TeacherAccountSettings({ teacher, onLogout, triggerLabel, triggerVariant = 'ghost', triggerSize = 'icon' }) {
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   const [mode, setMode] = useState(null); // 'deactivate' | 'delete'
   const [confirmText, setConfirmText] = useState('');
   const [busy, setBusy] = useState(false);
+
+  const hasTeacher = teacher && teacher.id;
 
   const CONFIRM_WORDS = ['מחק', 'DELETE'];
   const isConfirmed = CONFIRM_WORDS.includes(confirmText.trim());
@@ -47,7 +49,9 @@ export default function TeacherAccountSettings({ teacher, onLogout }) {
   async function handleDeactivate() {
     setBusy(true);
     try {
-      await base44.entities.Teacher.update(teacher.id, { is_active: false });
+      if (hasTeacher) {
+        await base44.entities.Teacher.update(teacher.id, { is_active: false });
+      }
       toast.success('החשבון הושבת בהצלחה');
       localStorage.clear();
       sessionStorage.clear();
@@ -63,7 +67,9 @@ export default function TeacherAccountSettings({ teacher, onLogout }) {
   async function handleDelete() {
     setBusy(true);
     try {
-      await base44.entities.Teacher.delete(teacher.id);
+      if (hasTeacher) {
+        await base44.entities.Teacher.delete(teacher.id);
+      }
       await base44.auth.deleteMe();
       localStorage.clear();
       sessionStorage.clear();
@@ -81,8 +87,8 @@ export default function TeacherAccountSettings({ teacher, onLogout }) {
 
   return (
     <>
-      <Button variant="ghost" size="icon" onClick={() => setOpen(true)} aria-label="הגדרות חשבון">
-        <Settings className="w-5 h-5" />
+      <Button variant={triggerVariant} size={triggerSize} onClick={() => setOpen(true)} aria-label={triggerLabel || "הגדרות חשבון"} className="w-full gap-2">
+        {triggerLabel ? <><Settings className="w-4 h-4" /> {triggerLabel}</> : <Settings className="w-5 h-5" />}
       </Button>
 
       <Dialog open={open} onOpenChange={setOpen}>
@@ -97,8 +103,8 @@ export default function TeacherAccountSettings({ teacher, onLogout }) {
           <div className="space-y-4 pt-2">
             <div className="flex items-center justify-between rounded-lg border p-3">
               <div>
-                <p className="font-medium text-sm">{teacher.full_name}</p>
-                <p className="text-xs text-muted-foreground">{teacher.email || 'מורה פעיל'}</p>
+                <p className="font-medium text-sm">{teacher?.full_name || 'משתמש'}</p>
+                <p className="text-xs text-muted-foreground">{teacher?.email || 'חשבון פעיל'}</p>
               </div>
             </div>
 
