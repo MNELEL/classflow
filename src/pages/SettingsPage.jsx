@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import AppLayout from '@/components/layout/AppLayout';
@@ -53,6 +54,7 @@ function applyTheme(theme) {
 
 export default function SettingsPage() {
   const qc = useQueryClient();
+  const navigate = useNavigate();
   const { data: categories = [] } = useQuery({ queryKey: ['categories'], queryFn: () => base44.entities.LessonCategory.list() });
   const [newCat, setNewCat] = useState({ name: '', description: '', icon: '', color_tag: '' });
 
@@ -336,7 +338,7 @@ export default function SettingsPage() {
                    await base44.auth.deleteMe();
                    localStorage.clear();
                    toast.success('החשבון נמחק בהצלחה. מתנתק...');
-                   setTimeout(() => base44.auth.logout('/register'), 1500);
+                   setTimeout(() => navigate('/register', { replace: true }), 1500);
                  } catch (err) {
                    toast.error('שגיאה במחיקת החשבון');
                    setIsDeleting(false);

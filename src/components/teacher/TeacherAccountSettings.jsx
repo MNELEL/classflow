@@ -66,7 +66,8 @@ export default function TeacherAccountSettings({ teacher, onLogout }) {
     setBusy(true);
     try {
       await base44.entities.Teacher.delete(teacher.id);
-      toast.success('הפרופיל נמחק לצמיתות');
+      await base44.auth.deleteMe();
+      toast.success('הפרופיל והחשבון נמחקו לצמיתות');
       sessionStorage.removeItem('classflow_teacher_id');
       sessionStorage.removeItem('classflow_teacher_name');
       sessionStorage.removeItem('classflow_user_role');
