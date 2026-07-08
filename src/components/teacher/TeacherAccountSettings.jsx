@@ -104,6 +104,15 @@ export default function TeacherAccountSettings({ teacher, onLogout }) {
               </div>
             </div>
 
+            {/* Prominent Delete Account — instantly visible for store compliance */}
+            <Button
+              variant="destructive"
+              className="w-full gap-2 font-semibold"
+              onClick={() => openConfirm('delete')}
+            >
+              <Trash2 className="w-4 h-4" /> מחיקת חשבון
+            </Button>
+
             <Button variant="outline" className="w-full gap-2" onClick={onLogout}>
               <LogOut className="w-4 h-4" /> התנתקות
             </Button>
