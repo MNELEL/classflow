@@ -387,18 +387,20 @@ ${overrideLines ? `\nהעדפות ייבוא נוספות:\n${overrideLines}` : 
   function handleToggleHide() {
     if (!selectedSeat) return;
     setSeats(prev => prev.map(s => s.id === selectedSeat.id ? { ...s, is_hidden: !s.is_hidden, student_id: s.is_hidden ? s.student_id : null } : s));
-    updateParam('seat', null, true);
+    updateParam('seat', null);
   }
 
   const satisfactionScore = calcSatisfactionScore(seats, students);
   const seatedIds = new Set(seats.filter(s => s.student_id).map(s => s.student_id));
   const unseatedCount = students.filter(s => s.is_active !== false && !seatedIds.has(s.id)).length;
 
-  const updateParam = useCallback((key, value, replace = false) => {
+  // Opening a modal/sheet (truthy value) → PUSH so Android back closes it.
+  // Closing (falsy value) → REPLACE so back doesn't re-open it.
+  const updateParam = useCallback((key, value) => {
     const next = new URLSearchParams(searchParams);
     if (value) next.set(key, value);
     else next.delete(key);
-    setSearchParams(next, { replace });
+    setSearchParams(next, { replace: !value });
   }, [searchParams, setSearchParams]);
 
   const seatParam = searchParams.get('seat');
@@ -494,7 +496,7 @@ ${overrideLines ? `\nהעדפות ייבוא נוספות:\n${overrideLines}` : 
           </div>
           {/* Mobile floating action buttons */}
           <div className="flex md:hidden gap-2 mb-3 justify-between">
-            <Sheet open={searchParams.get('sheet') === 'controls'} onOpenChange={(open) => updateParam('sheet', open ? 'controls' : null, !open)}>
+            <Sheet open={searchParams.get('sheet') === 'controls'} onOpenChange={(open) => updateParam('sheet', open ? 'controls' : null)}>
               <SheetTrigger asChild>
                 <Button size="sm" variant="outline" className="flex-1 gap-1.5">
                   <SlidersHorizontal className="w-4 h-4" /> פקדים
@@ -508,7 +510,7 @@ ${overrideLines ? `\nהעדפות ייבוא נוספות:\n${overrideLines}` : 
               </SheetContent>
             </Sheet>
 
-            <Sheet open={searchParams.get('sheet') === 'students'} onOpenChange={(open) => updateParam('sheet', open ? 'students' : null, !open)}>
+            <Sheet open={searchParams.get('sheet') === 'students'} onOpenChange={(open) => updateParam('sheet', open ? 'students' : null)}>
               <SheetTrigger asChild>
                 <Button size="sm" variant="outline" className="flex-1 gap-1.5">
                   <Users className="w-4 h-4" /> תלמידים
@@ -558,7 +560,7 @@ ${overrideLines ? `\nהעדפות ייבוא נוספות:\n${overrideLines}` : 
       </div>
 
       {/* Satisfaction Report Dialog */}
-      <Dialog open={searchParams.get('dialog') === 'satisfaction'} onOpenChange={(open) => updateParam('dialog', open ? 'satisfaction' : null, !open)}>
+      <Dialog open={searchParams.get('dialog') === 'satisfaction'} onOpenChange={(open) => updateParam('dialog', open ? 'satisfaction' : null)}>
         <DialogContent className="max-w-md max-h-[80vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
@@ -570,7 +572,7 @@ ${overrideLines ? `\nהעדפות ייבוא נוספות:\n${overrideLines}` : 
       </Dialog>
 
       {/* Seat detail dialog */}
-      <Dialog open={!!selectedSeat} onOpenChange={() => updateParam('seat', null, true)}>
+      <Dialog open={!!selectedSeat} onOpenChange={() => updateParam('seat', null)}>
         <DialogContent className="max-w-sm">
           <DialogHeader>
             <DialogTitle>
