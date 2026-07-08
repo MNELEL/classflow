@@ -94,6 +94,9 @@
     overscroll-behavior: none;
     -webkit-tap-highlight-color: transparent;
   }
+  main, [class*="overflow-y-auto"], [class*="overflow-auto"] {
+    overscroll-behavior-y: contain;
+  }
 }
 
 /* ── Global text-selection policy (app-store polish) ──

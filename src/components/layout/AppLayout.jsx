@@ -171,7 +171,7 @@ export default function AppLayout({ children }) {
       {/* Main Content */}
       <main
         ref={mainRef}
-        className="flex-1 overflow-y-auto no-scrollbar pb-[calc(64px+env(safe-area-inset-bottom))]"
+        className="flex-1 overflow-y-auto no-scrollbar overscroll-y-contain pb-[calc(64px+env(safe-area-inset-bottom))]"
       >
         {children}
       </main>
