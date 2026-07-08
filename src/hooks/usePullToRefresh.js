@@ -14,6 +14,9 @@ export function usePullToRefresh(onRefresh) {
     const el = containerRef.current;
     if (!el) return;
 
+    // Tag the container so global touch-action rules can exempt it
+    el.setAttribute('data-pull-to-refresh', '');
+
     function onTouchStart(e) {
       // Only trigger when scrolled to top
       if (el.scrollTop > 0) return;

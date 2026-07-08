@@ -199,6 +199,15 @@ button, a, [role="button"] {
   box-shadow: 0 0 0 2px hsl(var(--primary)), 0 4px 16px rgba(99,102,241,0.25) !important;
 }
 
+/* Pull-to-refresh containers: allow vertical panning (pan-y) so the custom
+   gesture competes fairly with native scroll on Android WebViews.
+   Exempted from the global `touch-action: manipulation` override on touch
+   pointers, which would otherwise flatten the vertical swipe. */
+[data-pull-to-refresh] {
+  touch-action: pan-y;
+  -ms-touch-action: pan-y;
+}
+
 /* Improve tap feedback on Android */
 @media (pointer: coarse) {
   button, a, [role="button"] {
