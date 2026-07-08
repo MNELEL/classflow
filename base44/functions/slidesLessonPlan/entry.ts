@@ -20,6 +20,11 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'plan or planId required' }, { status: 400 });
     }
 
+    // Ownership check — prevent IDOR: only the author or an admin may export.
+    if (lessonPlan.created_by_id && lessonPlan.created_by_id !== user.id && user.role !== 'admin') {
+      return Response.json({ error: 'Forbidden' }, { status: 403 });
+    }
+
     const { accessToken } = await base44.asServiceRole.connectors.getConnection('googleslides');
     const headers = {
       Authorization: `Bearer ${accessToken}`,
