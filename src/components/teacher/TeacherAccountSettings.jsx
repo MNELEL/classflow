@@ -19,17 +19,33 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
-import { Trash2, Settings, LogOut } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Trash2, Settings, LogOut, UserX, AlertTriangle } from 'lucide-react';
 import { toast } from 'sonner';
 
 export default function TeacherAccountSettings({ teacher, onLogout }) {
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
-  const [confirmOpen, setConfirmOpen] = useState(false);
-  const [deleting, setDeleting] = useState(false);
+  const [mode, setMode] = useState(null); // 'deactivate' | 'delete'
+  const [confirmText, setConfirmText] = useState('');
+  const [busy, setBusy] = useState(false);
 
-  const handleDeactivate = async () => {
-    setDeleting(true);
+  const CONFIRM_WORDS = ['מחק', 'DELETE'];
+  const isConfirmed = CONFIRM_WORDS.includes(confirmText.trim());
+
+  function openConfirm(m) {
+    setMode(m);
+    setConfirmText('');
+  }
+
+  function closeConfirm() {
+    setMode(null);
+    setConfirmText('');
+  }
+
+  async function handleDeactivate() {
+    setBusy(true);
     try {
       await base44.entities.Teacher.update(teacher.id, { is_active: false });
       toast.success('החשבון הושבת בהצלחה');
@@ -40,11 +56,31 @@ export default function TeacherAccountSettings({ teacher, onLogout }) {
     } catch (error) {
       toast.error('שגיאה בהשבתת החשבון');
     } finally {
-      setDeleting(false);
-      setConfirmOpen(false);
+      setBusy(false);
+      closeConfirm();
       setOpen(false);
     }
-  };
+  }
+
+  async function handleDelete() {
+    setBusy(true);
+    try {
+      await base44.entities.Teacher.delete(teacher.id);
+      toast.success('הפרופיל נמחק לצמיתות');
+      sessionStorage.removeItem('classflow_teacher_id');
+      sessionStorage.removeItem('classflow_teacher_name');
+      sessionStorage.removeItem('classflow_user_role');
+      navigate('/teacher-login');
+    } catch (error) {
+      toast.error('שגיאה במחיקת הפרופיל');
+    } finally {
+      setBusy(false);
+      closeConfirm();
+      setOpen(false);
+    }
+  }
+
+  const isDeactivate = mode === 'deactivate';
 
   return (
     <>
@@ -73,40 +109,87 @@ export default function TeacherAccountSettings({ teacher, onLogout }) {
               <LogOut className="w-4 h-4" /> התנתקות
             </Button>
 
-            <div className="rounded-lg border border-destructive/30 bg-destructive/5 p-3">
-              <p className="text-sm font-medium text-destructive mb-1">השבתת חשבון</p>
+            {/* Deactivation */}
+            <div className="rounded-lg border border-amber-300/50 bg-amber-50 dark:bg-amber-950/20 p-3">
+              <p className="text-sm font-medium text-amber-700 dark:text-amber-400 mb-1 flex items-center gap-1.5">
+                <UserX className="w-4 h-4" /> השבתת חשבון
+              </p>
               <p className="text-xs text-muted-foreground mb-3">
                 השבתת החשבון תסיר את הגישה שלך למערכת. ניתן לפנות למנהל המערכת לשחזור הגישה.
+              </p>
+              <Button
+                variant="outline"
+                size="sm"
+                className="w-full gap-2 border-amber-400 text-amber-700 dark:text-amber-400 hover:bg-amber-100 dark:hover:bg-amber-900/30"
+                onClick={() => openConfirm('deactivate')}
+              >
+                <UserX className="w-4 h-4" /> בקשת השבתת חשבון
+              </Button>
+            </div>
+
+            {/* Permanent deletion */}
+            <div className="rounded-lg border border-destructive/30 bg-destructive/5 p-3">
+              <p className="text-sm font-medium text-destructive mb-1 flex items-center gap-1.5">
+                <AlertTriangle className="w-4 h-4" /> מחיקת פרופיל לצמיתות
+              </p>
+              <p className="text-xs text-muted-foreground mb-3">
+                פעולה זו תמחק את פרופיל המורה שלך לצמיתות ולא ניתן לשחזרו. ודא שברצונך להמשיך.
               </p>
               <Button
                 variant="destructive"
                 size="sm"
                 className="w-full gap-2"
-                onClick={() => setConfirmOpen(true)}
+                onClick={() => openConfirm('delete')}
               >
-                <Trash2 className="w-4 h-4" /> בקשת השבתת חשבון
+                <Trash2 className="w-4 h-4" /> מחיקת פרופיל לצמיתות
               </Button>
             </div>
           </div>
         </DialogContent>
       </Dialog>
 
-      <AlertDialog open={confirmOpen} onOpenChange={setConfirmOpen}>
-        <AlertDialogContent>
+      <AlertDialog open={mode !== null} onOpenChange={(o) => { if (!o) closeConfirm(); }}>
+        <AlertDialogContent dir="rtl">
           <AlertDialogHeader>
-            <AlertDialogTitle>האם אתה בטוח?</AlertDialogTitle>
+            <AlertDialogTitle className={isDeactivate ? '' : 'text-destructive'}>
+              {isDeactivate ? 'השבתת חשבון' : 'מחיקת פרופיל - פעולה בלתי הפיכה'}
+            </AlertDialogTitle>
             <AlertDialogDescription>
-              פעולה זו תשבית את חשבון המורה שלך ותסיר את הגישה למערכת. לא ניתן לבטל פעולה זו ללא פנייה למנהל המערכת.
+              {isDeactivate
+                ? 'השבתת החשבון תסיר את הגישה שלך למערכת. ניתן לפנות למנהל המערכת לשחזור הגישה.'
+                : 'פרופיל המורה שלך יימחק לצמיתות ולא ניתן לשחזרו. פעולה זו בלתי הפיכה. האם אתה בטוח?'}
             </AlertDialogDescription>
           </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel disabled={deleting}>ביטול</AlertDialogCancel>
+          <div className="py-2">
+            <Label className="text-sm mb-2 block">
+              הקלד <strong>מחק</strong> או <strong>DELETE</strong> לאישור:
+            </Label>
+            <Input
+              value={confirmText}
+              onChange={e => setConfirmText(e.target.value)}
+              placeholder="מחק"
+              className="text-base h-11"
+              autoComplete="off"
+            />
+          </div>
+          <AlertDialogFooter className="flex-row-reverse gap-2 sm:gap-0">
+            <AlertDialogCancel disabled={busy}>ביטול</AlertDialogCancel>
             <AlertDialogAction
-              onClick={handleDeactivate}
-              disabled={deleting}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              disabled={!isConfirmed || busy}
+              onClick={(e) => {
+                e.preventDefault();
+                if (isDeactivate) handleDeactivate();
+                else handleDelete();
+              }}
+              className={isDeactivate
+                ? 'border-amber-500 text-amber-700 hover:bg-amber-100'
+                : 'bg-destructive text-destructive-foreground hover:bg-destructive/90'}
             >
-              {deleting ? 'משבית...' : 'השבת חשבון'}
+              {busy
+                ? (isDeactivate ? 'משבית...' : 'מוחק...')
+                : <>{isDeactivate
+                  ? <><UserX className="w-4 h-4 ml-1" /> השבת חשבון</>
+                  : <><Trash2 className="w-4 h-4 ml-1" /> מחק פרופיל לצמיתות</>}</>}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

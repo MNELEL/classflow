@@ -44,7 +44,7 @@ export default function SeatingPage() {
     queryFn: () => base44.entities.Student.list(),
   });
 
-  const handleRefresh = useCallback(async () => { await refetch(); }, [refetch]);
+  const handleRefresh = useCallback(async () => { await qc.invalidateQueries({ queryKey: ['students'] }); }, [qc]);
   const { containerRef, pullY, refreshing } = usePullToRefresh(handleRefresh);
 
   const [rows, setRows] = useState(5);
