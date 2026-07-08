@@ -67,14 +67,12 @@ export default function TeacherAccountSettings({ teacher, onLogout }) {
     try {
       await base44.entities.Teacher.delete(teacher.id);
       await base44.auth.deleteMe();
-      toast.success('הפרופיל והחשבון נמחקו לצמיתות');
-      sessionStorage.removeItem('classflow_teacher_id');
-      sessionStorage.removeItem('classflow_teacher_name');
-      sessionStorage.removeItem('classflow_user_role');
-      navigate('/teacher-login');
+      localStorage.clear();
+      sessionStorage.clear();
+      toast.success('הפרופיל והחשבון נמחקו לצמיתות. מתנתק...');
+      setTimeout(() => navigate('/register', { replace: true }), 1500);
     } catch (error) {
       toast.error('שגיאה במחיקת הפרופיל');
-    } finally {
       setBusy(false);
       closeConfirm();
       setOpen(false);
