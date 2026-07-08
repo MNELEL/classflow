@@ -3,10 +3,11 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Sparkles, Loader2, Printer, ChevronDown, ChevronUp, FileDown } from 'lucide-react';
+import { Sparkles, Loader2, Printer, ChevronDown, ChevronUp, FileDown, ClipboardCopy, Mail } from 'lucide-react';
 import { toast } from 'sonner';
 import { motion } from 'framer-motion';
 import { format } from 'date-fns';
+import { convertOklchColors } from '@/lib/colorUtils';
 export default function BulletinGenerator() {
   const qc = useQueryClient();
   const [startDate, setStartDate] = useState('');
@@ -28,7 +29,11 @@ export default function BulletinGenerator() {
       import('html2canvas'),
     ]);
     const doc = new jsPDF({ direction: 'rtl', unit: 'mm', format: 'a4' });
-    const canvas = await html2canvas(document.getElementById('classpro-a4-canvas'), { scale: 2, useCORS: true });
+    const canvas = await html2canvas(document.getElementById('classpro-a4-canvas'), {
+      scale: 2,
+      useCORS: true,
+      onclone: (clonedDoc) => convertOklchColors(clonedDoc),
+    });
     const imgData = canvas.toDataURL('image/png');
     const imgWidth = 210;
     const imgHeight = (canvas.height * imgWidth) / canvas.width;
@@ -36,6 +41,73 @@ export default function BulletinGenerator() {
     doc.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
     doc.save(`חוברת-שבועית-${className || 'כיתה'}-${startDate}.pdf`);
     toast.success('ה-PDF ייוצר בהצלחה!');
+  }
+
+  function buildCleanText() {
+    if (!bulletin) return '';
+    const lines = [];
+    lines.push(`ניוזלטר שבועי — ${className || 'הכיתה'}`);
+    lines.push(`תאריכים: ${startDate} – ${endDate}`);
+    lines.push('----------------------------------------');
+    if (bulletin.digestSummary) {
+      lines.push('');
+      lines.push('סיכום השבוע:');
+      lines.push(bulletin.digestSummary);
+    }
+    if (bulletin.studyPoints?.length) {
+      lines.push('');
+      lines.push('נקודות ללימוד בבית:');
+      bulletin.studyPoints.forEach((pt, i) => lines.push(`${i + 1}. ${pt}`));
+    }
+    if (bulletin.recapQuestions?.length) {
+      lines.push('');
+      lines.push('שאלות חזרה:');
+      bulletin.recapQuestions.forEach((q, i) => {
+        lines.push(`${i + 1}. ${q.question}`);
+        if (q.answer) lines.push(`   תשובה: ${q.answer}`);
+      });
+    }
+    if (bulletin.weeklyRiddle) {
+      lines.push('');
+      lines.push('חידת השבוע:');
+      lines.push(bulletin.weeklyRiddle);
+      if (bulletin.weeklyRiddleAnswer) lines.push(`תשובה: ${bulletin.weeklyRiddleAnswer}`);
+    }
+    if (bulletin.topStudents?.length) {
+      lines.push('');
+      lines.push('מצטיינים השבוע:');
+      bulletin.topStudents.forEach(s => lines.push(`★ ${s}`));
+    }
+    if (bulletin.investingStudents?.length) {
+      lines.push('');
+      lines.push('משקיעים השבוע:');
+      bulletin.investingStudents.forEach(s => lines.push(`↑ ${s}`));
+    }
+    if (bulletin.activities?.length) {
+      lines.push('');
+      lines.push('פעילויות מוצעות לבית:');
+      bulletin.activities.forEach(a => lines.push(`✓ ${a}`));
+    }
+    lines.push('');
+    lines.push('----------------------------------------');
+    lines.push('ClassManager Pro — ניוזלטר שבועי');
+    return lines.join('\n');
+  }
+
+  function copyCleanText() {
+    const text = buildCleanText();
+    navigator.clipboard.writeText(text).then(() => {
+      toast.success('הטקסט הועתק ללוח!');
+    }).catch(() => {
+      toast.error('שגיאה בהעתקה');
+    });
+  }
+
+  function sendCleanMail() {
+    const text = buildCleanText();
+    const subject = encodeURIComponent(`ניוזלטר שבועי — ${className || 'הכיתה'} ${startDate}`);
+    const body = encodeURIComponent(text);
+    window.open(`mailto:?subject=${subject}&body=${body}`, '_blank');
   }
 
   async function generate() {
@@ -146,12 +218,18 @@ ${context || 'שבוע לימודים רגיל'}
           {/* Print header */}
           <div className="flex justify-between items-center px-4 py-2.5 border-b border-border/50 bg-primary/5">
             <p className="text-sm font-bold text-primary">📰 ניוזלטר שבתי</p>
-            <div className="flex gap-1.5">
+            <div className="flex gap-1.5 flex-wrap">
               <Button size="sm" variant="outline" className="gap-1 text-xs h-7" onClick={generatePDF}>
                 <FileDown className="w-3 h-3" /> ייצא PDF
               </Button>
               <Button size="sm" variant="outline" className="gap-1 text-xs h-7" onClick={() => window.print()}>
                 <Printer className="w-3 h-3" /> הדפס
+              </Button>
+              <Button size="sm" variant="outline" className="gap-1 text-xs h-7" onClick={copyCleanText}>
+                <ClipboardCopy className="w-3 h-3" /> העתק טקסט להנהלה
+              </Button>
+              <Button size="sm" variant="outline" className="gap-1 text-xs h-7" onClick={sendCleanMail}>
+                <Mail className="w-3 h-3" /> שלח להנהלה
               </Button>
             </div>
           </div>

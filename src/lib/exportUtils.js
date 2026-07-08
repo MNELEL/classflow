@@ -1,5 +1,6 @@
 import { toast } from 'sonner';
 import { loadBranding } from '@/lib/branding';
+import { convertOklchColors } from '@/lib/colorUtils';
 
 // ── Excel / CSV Export ────────────────────────────────────────────────────────
 export async function exportToExcel(seats, students, rows, cols) {
@@ -159,6 +160,7 @@ export async function exportToPDF(seats, students, rows, cols, title = '') {
       backgroundColor: '#ffffff',
       width: el.scrollWidth,
       height: el.scrollHeight,
+      onclone: (clonedDoc) => convertOklchColors(clonedDoc),
     });
 
     const imgData = canvas.toDataURL('image/png');

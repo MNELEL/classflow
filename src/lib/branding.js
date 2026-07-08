@@ -62,3 +62,44 @@ export function saveBranding(branding) {
   // Dispatch event so other components can react
   window.dispatchEvent(new CustomEvent('branding-updated', { detail: branding }));
 }
+
+// ── DB sync (TeacherSettings entity) ──
+// Saves branding to the user's TeacherSettings record for cross-device sync.
+import { base44 } from '@/api/base44Client';
+
+export async function syncBrandingToDB(branding) {
+  try {
+    const authed = await base44.auth.isAuthenticated();
+    if (!authed) return;
+    const existing = await base44.entities.TeacherSettings.list('-updated_date', 1);
+    const payload = { branding, updated_at: new Date().toISOString() };
+    if (existing?.length > 0) {
+      await base44.entities.TeacherSettings.update(existing[0].id, payload);
+    } else {
+      const user = await base44.auth.me();
+      await base44.entities.TeacherSettings.create({ uid: user.id, ...payload });
+    }
+  } catch {
+    // Silent — localStorage is the fallback
+  }
+}
+
+export async function loadBrandingFromDB() {
+  try {
+    const authed = await base44.auth.isAuthenticated();
+    if (!authed) return null;
+    const existing = await base44.entities.TeacherSettings.list('-updated_date', 1);
+    if (existing?.length > 0 && existing[0].branding) {
+      return existing[0].branding;
+    }
+  } catch {
+    // Silent
+  }
+  return null;
+}
+
+// Save to both localStorage and DB
+export async function saveBrandingSync(branding) {
+  saveBranding(branding);
+  await syncBrandingToDB(branding);
+}

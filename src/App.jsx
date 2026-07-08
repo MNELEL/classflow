@@ -10,6 +10,9 @@ import PageNotFound from './lib/PageNotFound';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 import ProtectedRoute from '@/components/ProtectedRoute';
+import { ThemeProvider } from '@/lib/themeContext';
+import { applyThemeClass, loadTheme } from '@/lib/themes';
+import { loadBrandingFromDB, loadBranding } from '@/lib/branding';
 
 // Lazy-loaded pages for code splitting
 const SeatingPage          = lazy(() => import('./pages/SeatingPage'));
@@ -63,6 +66,7 @@ const AdminGeneratorsPage   = lazy(() => import('./pages/AdminGeneratorsPage'));
 const TeacherInsightsPage   = lazy(() => import('./pages/TeacherInsightsPage'));
 const IngestPage            = lazy(() => import('./pages/IngestPage'));
 const TeachingStyleDashboard = lazy(() => import('./pages/TeachingStyleDashboard'));
+const ParentFeedbackPage = lazy(() => import('./pages/ParentFeedbackPage'));
 
 const pageVariants = {
   initial: { opacity: 0, x: 20 },
@@ -90,6 +94,8 @@ function AnimatedRoutes() {
             <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/about" element={<About />} />
             <Route path="/contact" element={<Contact />} />
+            {/* Public parent feedback route — no auth required */}
+            <Route path="/feedback/:bulletinId" element={<ParentFeedbackPage />} />
 
             {/* Protected app routes */}
             <Route element={<ProtectedRoute unauthenticatedElement={<Navigate to="/login" replace />} />}>
@@ -151,6 +157,11 @@ const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin, user } = useAuth();
   const navigate = useNavigate();
   const [showOnboarding, setShowOnboarding] = useState(false);
+
+  // Apply saved theme on mount (before auth completes)
+  useEffect(() => {
+    applyThemeClass(loadTheme());
+  }, []);
 
   // Hardware back-button handling for Android/iOS WebViews — native wrapper
   // posts a 'message' event; navigate back unless already at root.
@@ -220,13 +231,15 @@ const AuthenticatedApp = () => {
 function App() {
   return (
     <AuthProvider>
-      <QueryClientProvider client={queryClientInstance}>
-        <Router>
-          <AuthenticatedApp />
-        </Router>
-        <Toaster />
-        <Sonner position="bottom-center" richColors offset="80px" />
-      </QueryClientProvider>
+      <ThemeProvider>
+        <QueryClientProvider client={queryClientInstance}>
+          <Router>
+            <AuthenticatedApp />
+          </Router>
+          <Toaster />
+          <Sonner position="bottom-center" richColors offset="80px" />
+        </QueryClientProvider>
+      </ThemeProvider>
     </AuthProvider>
   );
 }

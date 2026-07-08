@@ -295,3 +295,162 @@ button, a, [role="button"] {
   box-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 8px 24px rgba(0, 120, 130, 0.06);
   border: 1px solid hsl(210 18% 91%);
 }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   THEME SYSTEM — 7 visual themes that override CSS variables
+   Applied via .theme-* class on document.documentElement
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* Conservative — traditional navy/blue */
+.theme-conservative {
+  --primary: 217 70% 28%;
+  --primary-foreground: 0 0% 100%;
+  --accent: 217 50% 92%;
+  --accent-foreground: 217 70% 26%;
+  --ring: 217 70% 28%;
+  --sidebar-background: 217 40% 12%;
+  --sidebar-primary: 217 60% 52%;
+  --sidebar-accent: 217 30% 16%;
+  --sidebar-ring: 217 60% 52%;
+}
+.dark.theme-conservative {
+  --primary: 217 60% 48%;
+  --accent: 217 40% 18%;
+  --accent-foreground: 217 60% 72%;
+  --ring: 217 60% 48%;
+}
+
+/* Minimal — clean gray/neutral */
+.theme-minimal {
+  --primary: 215 16% 34%;
+  --primary-foreground: 0 0% 100%;
+  --accent: 215 16% 93%;
+  --accent-foreground: 215 16% 28%;
+  --ring: 215 16% 34%;
+  --sidebar-background: 215 20% 12%;
+  --sidebar-primary: 215 10% 52%;
+  --sidebar-accent: 215 16% 16%;
+  --sidebar-ring: 215 10% 52%;
+  --radius: 0.5rem;
+}
+.dark.theme-minimal {
+  --primary: 215 12% 52%;
+  --accent: 215 12% 18%;
+  --accent-foreground: 215 12% 70%;
+  --ring: 215 12% 52%;
+}
+
+/* RetroDark — warm brown/amber on dark */
+.theme-retroDark {
+  --primary: 24 75% 45%;
+  --primary-foreground: 40 30% 97%;
+  --accent: 30 50% 90%;
+  --accent-foreground: 24 75% 35%;
+  --ring: 24 75% 45%;
+  --sidebar-background: 20 30% 10%;
+  --sidebar-primary: 24 65% 55%;
+  --sidebar-accent: 20 25% 15%;
+  --sidebar-ring: 24 65% 55%;
+  --card: 30 20% 98%;
+  --background: 35 30% 95%;
+}
+.dark.theme-retroDark {
+  --primary: 28 70% 55%;
+  --accent: 28 30% 18%;
+  --accent-foreground: 28 60% 72%;
+  --ring: 28 70% 55%;
+  --background: 20 20% 8%;
+  --card: 20 18% 11%;
+  --secondary: 20 15% 15%;
+}
+
+/* Scholastic — forest green academic */
+.theme-scholastic {
+  --primary: 142 60% 28%;
+  --primary-foreground: 0 0% 100%;
+  --accent: 142 40% 92%;
+  --accent-foreground: 142 60% 26%;
+  --ring: 142 60% 28%;
+  --sidebar-background: 145 30% 10%;
+  --sidebar-primary: 142 50% 48%;
+  --sidebar-accent: 145 25% 14%;
+  --sidebar-ring: 142 50% 48%;
+}
+.dark.theme-scholastic {
+  --primary: 142 50% 45%;
+  --accent: 142 30% 18%;
+  --accent-foreground: 142 50% 72%;
+  --ring: 142 50% 45%;
+}
+
+/* Sunset — warm pink/rose */
+.theme-sunset {
+  --primary: 330 70% 45%;
+  --primary-foreground: 0 0% 100%;
+  --accent: 330 50% 93%;
+  --accent-foreground: 330 70% 38%;
+  --ring: 330 70% 45%;
+  --sidebar-background: 330 30% 14%;
+  --sidebar-primary: 330 55% 58%;
+  --sidebar-accent: 330 25% 18%;
+  --sidebar-ring: 330 55% 58%;
+}
+.dark.theme-sunset {
+  --primary: 330 55% 58%;
+  --accent: 330 35% 20%;
+  --accent-foreground: 330 55% 75%;
+  --ring: 330 55% 58%;
+}
+
+/* Ocean — deep Mediterranean blue */
+.theme-ocean {
+  --primary: 202 80% 34%;
+  --primary-foreground: 0 0% 100%;
+  --accent: 202 60% 92%;
+  --accent-foreground: 202 80% 28%;
+  --ring: 202 80% 34%;
+  --sidebar-background: 205 40% 8%;
+  --sidebar-primary: 202 65% 52%;
+  --sidebar-accent: 205 30% 12%;
+  --sidebar-ring: 202 65% 52%;
+}
+.dark.theme-ocean {
+  --primary: 202 65% 50%;
+  --accent: 202 40% 18%;
+  --accent-foreground: 202 65% 72%;
+  --ring: 202 65% 50%;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   PRINT STYLES — clean A4 printing from browser
+   ═══════════════════════════════════════════════════════════════════════════ */
+@media print {
+  .no-print, header, nav, aside,
+  button:not(.print-button),
+  [role="navigation"], [role="tablist"],
+  [data-no-print] {
+    display: none !important;
+  }
+  body {
+    margin: 0;
+    padding: 0;
+    background: white !important;
+    color: black !important;
+  }
+  .print-a4 {
+    width: 210mm;
+    min-height: 297mm;
+    padding: 20mm;
+    box-sizing: border-box;
+    margin: 0;
+    box-shadow: none !important;
+    border: none !important;
+  }
+  .page-break {
+    page-break-before: always;
+  }
+  @page {
+    size: A4;
+    margin: 10mm;
+  }
+}

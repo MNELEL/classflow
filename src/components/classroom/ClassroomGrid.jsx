@@ -4,6 +4,29 @@ import BoardLabelEditor from './BoardLabelEditor';
 import { detectConflicts, detectPhysicalViolation, getSeatAt } from '@/lib/seatingUtils';
 import { motion } from 'framer-motion';
 
+// Compute concentration level based on academic level and distance from teacher (front)
+function getConcentrationLevel(student, seat, totalRows) {
+  if (!student) return null;
+  const lowLevel = ['weak', 'below_average'].includes(student.academic_level);
+  const needsAttention = student.traits?.includes('needs_teacher_attention') ||
+    student.traits?.includes('needs_extra_explanation');
+  if (!lowLevel && !needsAttention) return null;
+
+  const rowThird = Math.ceil(totalRows / 3);
+  if (seat.row < rowThird) return 'green'; // front third — good
+  if (seat.row < totalRows - rowThird) return 'yellow'; // middle — OK
+  return 'red'; // back third — bad
+}
+
+// Check if student is tall and student in front is short
+function hasHeightConflict(student, seat, seats, students) {
+  if (!student || student.height !== 'tall' || seat.row === 0) return false;
+  const frontSeat = seats.find(s => s.row === seat.row - 1 && s.col === seat.col);
+  if (!frontSeat?.student_id) return false;
+  const frontStudent = students.find(s => s.id === frontSeat.student_id);
+  return frontStudent?.height === 'short';
+}
+
 const BOARD_LABEL_KEY = 'classmanager_board_label';
 
 export default function ClassroomGrid({ seats, students, rows, cols, showNumbers, onSeatClick, onMoveStu, teacherView = true }) {
@@ -30,6 +53,8 @@ export default function ClassroomGrid({ seats, students, rows, cols, showNumbers
   }
   const [draggingOver, setDraggingOver] = useState(null);
   const studentMap = Object.fromEntries(students.map(s => [s.id, s]));
+
+  const totalRows = seats.length ? Math.max(...seats.map(s => s.row)) + 1 : 1;
 
   let seatNum = 1;
   const seatNumbers = {};
@@ -117,6 +142,8 @@ export default function ClassroomGrid({ seats, students, rows, cols, showNumbers
                     student={student}
                     conflictType={conflict.type}
                     physicalViolation={physicalViolation}
+                    heightConflict={student ? hasHeightConflict(student, seat, seats, students) : false}
+                    concentrationLevel={student ? getConcentrationLevel(student, seat, totalRows) : null}
                     showNumbers={showNumbers}
                     seatNumber={seatNumbers[seat.id]}
                     isDraggingOver={draggingOver === seat.id}

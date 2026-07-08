@@ -58,6 +58,33 @@ export function calcSatisfactionDetailed(seats, students) {
     const mySeat = getStudentSeat(seats, student.id);
     if (!mySeat) continue;
 
+    // ── Height-based check: tall student behind short student = violation ──
+    if (student.height === 'tall' && mySeat.row > 0) {
+      const frontSeat = seats.find(s => s.row === mySeat.row - 1 && s.col === mySeat.col);
+      if (frontSeat?.student_id) {
+        const frontStudent = students.find(s => s.id === frontSeat.student_id);
+        if (frontStudent?.height === 'short') {
+          total++;
+          violated++;
+        }
+      }
+    }
+
+    // ── Academic concentration: low-level students far from teacher = penalty ──
+    const lowLevel = ['weak', 'below_average'].includes(student.academic_level);
+    if (lowLevel) {
+      const rowThird = Math.ceil(totalRows / 3);
+      if (mySeat.row >= totalRows - rowThird) {
+        // In back third — violation
+        total++;
+        violated++;
+      } else if (mySeat.row >= rowThird) {
+        // In middle third — partial
+        total++;
+        partial++;
+      }
+    }
+
     // Friends nearby: adjacent=satisfied, dist≤3=partial, else=violated
     for (const fid of (student.friends || [])) {
       const fs = getStudentSeat(seats, fid);

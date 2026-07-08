@@ -3,9 +3,10 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
-import { Wand2, Loader2, CheckCircle2, AlertCircle, ChevronDown, ChevronUp } from 'lucide-react';
+import { Wand2, Loader2, CheckCircle2, AlertCircle, ChevronDown, ChevronUp, Zap } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { toast } from 'sonner';
+import { parseUnstructuredText } from '@/lib/parseStudents';
 
 export default function FreeTextImport({ open, onClose, students, onUpdateStudent }) {
   const [text, setText] = useState('');
@@ -88,7 +89,14 @@ ${text}
         toast.error('לא נמצאו עדכונים — נסה לנסח מחדש');
       }
     } catch {
-      toast.error('שגיאה בניתוח — נסה שוב');
+      // ── Heuristic fallback (no AI) ──
+      const fallback = parseUnstructuredText(text, students);
+      if (fallback.length > 0) {
+        setResults(fallback);
+        toast.info('הייבוא בוצע באמצעות מנוע חלופי (ללא AI)');
+      } else {
+        toast.error('שגיאה בניתוח — נסה לנסח מחדש');
+      }
     }
     setLoading(false);
   }

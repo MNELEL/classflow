@@ -5,9 +5,12 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { toast } from 'sonner';
-import { Upload, Save, RotateCcw, Building2, Palette, Navigation } from 'lucide-react';
+import { Upload, Save, RotateCcw, Building2, Palette, Navigation, Check } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
-import { loadBranding, saveBranding, DEFAULT_BRANDING } from '@/lib/branding';
+import { loadBranding, saveBranding, saveBrandingSync, DEFAULT_BRANDING } from '@/lib/branding';
+import { useTheme } from '@/lib/themeContext';
+import { THEMES } from '@/lib/themes';
+import { cn } from '@/lib/utils';
 
 const NAV_PATHS = [
   { path: '/', defaultLabel: 'דשבורד' },
@@ -27,6 +30,7 @@ export default function BrandingPanel() {
   const [branding, setBranding] = useState(loadBranding);
   const [uploading, setUploading] = useState(false);
   const fileRef = useRef();
+  const { theme, setTheme } = useTheme();
 
   function update(key, value) {
     setBranding(prev => ({ ...prev, [key]: value }));
@@ -50,9 +54,9 @@ export default function BrandingPanel() {
     toast.success('הלוגו הועלה בהצלחה!');
   }
 
-  function handleSave() {
-    saveBranding(branding);
-    toast.success('הגדרות המיתוג נשמרו!');
+  async function handleSave() {
+    saveBrandingSync(branding);
+    toast.success('הגדרות המיתוג נשמרו וסונכרנו!');
     // Force page reload so AppLayout re-reads branding
     setTimeout(() => window.location.reload(), 300);
   }
@@ -152,6 +156,49 @@ export default function BrandingPanel() {
                   placeholder={defaultLabel}
                 />
               </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Theme selection */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base flex items-center gap-2">
+            <Palette className="w-4 h-4" /> ערכת נראות
+          </CardTitle>
+          <CardDescription>בחר ערכת עיצוב — ההגדרה תסונכרן בין מכשירים</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
+            {THEMES.map((t) => (
+              <button
+                key={t.id}
+                onClick={() => setTheme(t.id)}
+                className={cn(
+                  'relative rounded-xl border-2 p-3 text-right transition-all',
+                  theme === t.id
+                    ? 'border-primary ring-1 ring-primary/30'
+                    : 'border-border hover:border-primary/40'
+                )}
+              >
+                {theme === t.id && (
+                  <span className="absolute top-1.5 left-1.5 w-5 h-5 rounded-full bg-primary text-primary-foreground flex items-center justify-center">
+                    <Check className="w-3 h-3" />
+                  </span>
+                )}
+                <div className="flex gap-1 mb-2">
+                  {t.preview.map((color, i) => (
+                    <span
+                      key={i}
+                      className="w-5 h-5 rounded-full border border-border"
+                      style={{ background: color }}
+                    />
+                  ))}
+                </div>
+                <p className="text-sm font-semibold">{t.name}</p>
+                <p className="text-[10px] text-muted-foreground">{t.description}</p>
+              </button>
             ))}
           </div>
         </CardContent>

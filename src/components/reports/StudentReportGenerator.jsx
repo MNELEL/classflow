@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { MobileSelect, SelectItem } from '@/components/ui/MobileSelect';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { FileDown, MessageCircle, Mail, Loader2, User, TrendingUp, CheckSquare, Star, Sparkles, CalendarCheck, FileText } from 'lucide-react';
+import { FileDown, MessageCircle, Mail, Loader2, User, TrendingUp, CheckSquare, Star, Sparkles, CalendarCheck, FileText, MailCheck } from 'lucide-react';
 import { toast } from 'sonner';
 import { format, parseISO } from 'date-fns';
 import { he } from 'date-fns/locale';
@@ -230,6 +230,7 @@ export default function StudentReportGenerator({ students }) {
   });
   const [aiSummary, setAiSummary] = useState('');
   const [generatingAI, setGeneratingAI] = useState(false);
+  const [sendEmailAutomatically, setSendEmailAutomatically] = useState(false);
 
   async function handleGenerateAISummary() {
     if (!student) return;
@@ -265,6 +266,9 @@ export default function StudentReportGenerator({ students }) {
       });
       setAiSummary(res);
       toast.success('סיכום AI הופק!');
+      if (sendEmailAutomatically) {
+        await handleAutoSendEmail(res);
+      }
     } catch {
       toast.error('שגיאה ביצירת סיכום AI');
     } finally {
@@ -331,6 +335,27 @@ export default function StudentReportGenerator({ students }) {
     setIsSendingEmail(false);
     toast.success('המייל נשלח בהצלחה!');
     setEmailTo('');
+  }
+
+  // Called automatically after AI summary is generated if checkbox is set
+  async function handleAutoSendEmail(summaryText) {
+    if (!emailTo || !emailTo.includes('@')) {
+      toast.info('מייל אוטומטי: לא הוגדרה כתובת מייל — דלג על שליחה');
+      return;
+    }
+    setIsSendingEmail(true);
+    const body = `שלום,\n\nלהלן סיכום פדגוגי עבור ${student.name} לתקופת ${period}:\n\n${summaryText}\n\nבברכה,\nClassManager Pro`;
+    try {
+      await base44.integrations.Core.SendEmail({
+        to: emailTo,
+        subject: `סיכום פדגוגי — ${student.name} (${period})`,
+        body,
+      });
+      toast.success('המייל נשלח אוטומטית!');
+    } catch {
+      toast.error('שגיאה בשליחת מייל אוטומטית');
+    }
+    setIsSendingEmail(false);
   }
 
   const PERIODS = ['מחצית א׳', 'מחצית ב׳', 'רבעון 1', 'רבעון 2', 'רבעון 3', 'רבעון 4', 'שנתי'];
@@ -423,15 +448,27 @@ export default function StudentReportGenerator({ students }) {
             {/* AI Summary generator */}
             {student && (
               <div className="space-y-2">
-                <Button
-                  variant="outline"
-                  className="w-full gap-2 border-violet-300 text-violet-700 hover:bg-violet-50 dark:border-violet-700 dark:text-violet-400"
-                  onClick={handleGenerateAISummary}
-                  disabled={generatingAI}
-                >
-                  {generatingAI ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
-                  {generatingAI ? 'מייצר סיכום AI...' : 'צור סיכום פדגוגי עם AI'}
-                </Button>
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="outline"
+                    className="flex-1 gap-2 border-violet-300 text-violet-700 hover:bg-violet-50 dark:border-violet-700 dark:text-violet-400"
+                    onClick={handleGenerateAISummary}
+                    disabled={generatingAI}
+                  >
+                    {generatingAI ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
+                    {generatingAI ? 'מייצר סיכום AI...' : 'צור סיכום פדגוגי עם AI'}
+                  </Button>
+                </div>
+                <label className="flex items-center gap-2 text-xs cursor-pointer select-none">
+                  <input
+                    type="checkbox"
+                    checked={sendEmailAutomatically}
+                    onChange={(e) => setSendEmailAutomatically(e.target.checked)}
+                    className="w-4 h-4 rounded border-border"
+                  />
+                  <MailCheck className="w-3.5 h-3.5 text-violet-500" />
+                  <span>שלח מייל אוטומטית לאחר יצירת הסיכום</span>
+                </label>
                 {aiSummary && (
                   <div className="bg-violet-50 dark:bg-violet-900/20 border border-violet-200 dark:border-violet-800 rounded-xl p-3">
                     <div className="flex items-center gap-1.5 mb-1.5">

@@ -1,6 +1,6 @@
 import React, { useState, memo } from 'react';
 import { cn } from '@/lib/utils';
-import { Lock, Eye, Volume2, Zap, Heart, Ban, AlertTriangle, CheckCircle2, MapPin } from 'lucide-react';
+import { Lock, Eye, Volume2, Zap, Heart, Ban, AlertTriangle, CheckCircle2, MapPin, ArrowUp } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const BLOCK_ICONS = { broken: '🪑', speaker: '🔊', ac: '❄️', door: '🚪', other: '⚠️' };
@@ -14,6 +14,7 @@ const SPECIAL_ICONS = {
 const SeatCard = memo(function SeatCard({
   seat, student, conflictType, physicalViolation,
   showNumbers, seatNumber, onDrop, onDragStart, onClick, isDraggingOver, teacherView = true,
+  heightConflict = false, concentrationLevel = null,
 }) {
   const [isHovered, setIsHovered] = useState(false);
 
@@ -150,6 +151,32 @@ const SeatCard = memo(function SeatCard({
         >
           <MapPin className="w-2 h-2" />
         </motion.span>
+      )}
+      {heightConflict && (
+        <motion.span
+          aria-hidden="true"
+          initial={{ scale: 0 }} animate={{ scale: 1 }}
+          className="absolute -top-1.5 -left-7 bg-red-500 text-white rounded-full px-1 h-4 flex items-center justify-center shadow-sm text-[8px] font-bold whitespace-nowrap gap-0.5"
+          title="תלמיד גבוה מאחורי תלמיד נמוך"
+        >
+          <ArrowUp className="w-2 h-2" /> גובה
+        </motion.span>
+      )}
+      {concentrationLevel && (
+        <span
+          aria-hidden="true"
+          className={cn(
+            'absolute -bottom-1 -right-1 w-2.5 h-2.5 rounded-full border border-white shadow-sm',
+            concentrationLevel === 'green' && 'bg-green-500',
+            concentrationLevel === 'yellow' && 'bg-amber-400',
+            concentrationLevel === 'red' && 'bg-red-500',
+          )}
+          title={
+            concentrationLevel === 'green' ? 'ריכוז: קרוב למורה' :
+            concentrationLevel === 'yellow' ? 'ריכוז: מרחק בינוני' :
+            'ריכוז: רחוק מהמורה'
+          }
+        />
       )}
       {conflictType === 'conflict' && (
         <motion.span
