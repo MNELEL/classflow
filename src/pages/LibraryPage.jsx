@@ -20,7 +20,7 @@ import ExternalSourceSearch from '@/components/library/ExternalSourceSearch';
 import GoogleDrivePanel from '@/components/library/GoogleDrivePanel';
 import ImportFromSourceModal from '@/components/library/ImportFromSourceModal';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { usePullToRefresh } from '@/hooks/usePullToRefresh';
 import PullToRefreshIndicator from '@/components/ui/PullToRefreshIndicator';
 
@@ -31,8 +31,19 @@ const SOURCE_LABELS = {
 };
 
 export default function LibraryPage() {
-  const [showUpload, setShowUpload] = useState(false);
+  const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
+  const showUpload = searchParams.get('modal') === 'upload';
+  const showPlaylist = searchParams.get('modal') === 'playlist';
+  const showAISettings = searchParams.get('modal') === 'ai-settings';
+  const showImportModal = searchParams.get('modal') === 'import';
+  const setModal = useCallback((value) => {
+    const next = new URLSearchParams(searchParams);
+    if (value) next.set('modal', value);
+    else next.delete('modal');
+    setSearchParams(next, { replace: !value });
+  }, [searchParams, setSearchParams]);
+
   const [search, setSearch] = useState('');
   const [filterType, setFilterType] = useState('all');
   const [filterCategory, setFilterCategory] = useState('all');
@@ -41,9 +52,6 @@ export default function LibraryPage() {
   const [filterTag, setFilterTag] = useState('');
   const [showFavOnly, setShowFavOnly] = useState(false);
   const [playlistIds, setPlaylistIds] = useState([]);
-  const [showPlaylist, setShowPlaylist] = useState(false);
-  const [showAISettings, setShowAISettings] = useState(false);
-  const [showImportModal, setShowImportModal] = useState(false);
 
   const { data: items = [], isLoading } = useQuery({
     queryKey: ['library'],
@@ -100,7 +108,7 @@ export default function LibraryPage() {
 
   const togglePlaylist = (id) => {
     setPlaylistIds(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
-    setShowPlaylist(true);
+    setModal('playlist');
   };
 
   return (
@@ -149,17 +157,17 @@ export default function LibraryPage() {
               </div>
               <div className="flex gap-2">
                 {playlistIds.length > 0 && (
-                  <Button size="sm" variant="outline" onClick={() => setShowPlaylist(v => !v)} className="gap-1">
+                  <Button size="sm" variant="outline" onClick={() => setModal(showPlaylist ? null : 'playlist')} className="gap-1">
                     <ListMusic className="w-4 h-4" />
                     <span className="bg-primary text-primary-foreground rounded-full w-4 h-4 flex items-center justify-center text-[10px]">
                       {playlistIds.length}
                     </span>
                   </Button>
                 )}
-                <Button size="sm" variant="outline" onClick={() => setShowAISettings(true)} className="gap-1 px-2">
+                <Button size="sm" variant="outline" onClick={() => setModal('ai-settings')} className="gap-1 px-2">
                   <Settings2 className="w-4 h-4" />
                 </Button>
-                <Button size="sm" onClick={() => setShowUpload(true)} className="gap-1">
+                <Button size="sm" onClick={() => setModal('upload')} className="gap-1">
                   <Plus className="w-4 h-4" /> העלאה
                 </Button>
               </div>
@@ -251,7 +259,7 @@ export default function LibraryPage() {
                 <BookOpen className="w-12 h-12 mx-auto mb-3 opacity-20" />
                 <p className="font-semibold">הספרייה ריקה</p>
                 <p className="text-sm mt-1">הוסף את החומר הלימודי הראשון שלך</p>
-                <Button size="sm" className="mt-4 gap-1" onClick={() => setShowUpload(true)}>
+                <Button size="sm" className="mt-4 gap-1" onClick={() => setModal('upload')}>
                   <Plus className="w-3.5 h-3.5" /> הוסף חומר
                 </Button>
               </div>
@@ -305,7 +313,7 @@ export default function LibraryPage() {
                   <p className="font-bold text-sm">ייבוא ישיר ממאגרים</p>
                   <p className="text-xs text-muted-foreground">ייבא תכנים מפורטל הדף היומי, קול הלשון ועוד לספריה שלך</p>
                 </div>
-                <Button size="sm" className="gap-1.5 shrink-0" onClick={() => setShowImportModal(true)}>
+                <Button size="sm" className="gap-1.5 shrink-0" onClick={() => setModal('import')}>
                   <Download className="w-4 h-4" /> ייבא
                 </Button>
               </div>
@@ -334,9 +342,9 @@ export default function LibraryPage() {
           </TabsContent>
         </Tabs>
 
-        <LibraryUploadModal open={showUpload} onClose={() => setShowUpload(false)} />
-        <AIProviderSettings open={showAISettings} onClose={() => setShowAISettings(false)} />
-        <ImportFromSourceModal open={showImportModal} onClose={() => setShowImportModal(false)} />
+        <LibraryUploadModal open={showUpload} onClose={() => setModal(null)} />
+        <AIProviderSettings open={showAISettings} onClose={() => setModal(null)} />
+        <ImportFromSourceModal open={showImportModal} onClose={() => setModal(null)} />
 
       </div>
 
@@ -349,7 +357,7 @@ export default function LibraryPage() {
               allItems={items}
               onRemove={(id) => setPlaylistIds(prev => prev.filter(x => x !== id))}
               onReorder={setPlaylistIds}
-              onClose={() => setShowPlaylist(false)}
+              onClose={() => setModal(null)}
             />
           </motion.div>
         )}
