@@ -2,7 +2,7 @@ import { Toaster } from "@/components/ui/toaster"
 import { Toaster as Sonner } from 'sonner';
 import { QueryClientProvider } from '@tanstack/react-query'
 import { queryClientInstance } from '@/lib/query-client'
-import { BrowserRouter as Router, Route, Routes, useLocation, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Routes, useLocation, useNavigate, Navigate } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useEffect, useState, lazy, Suspense } from 'react';
 import { warmDashboardMedia } from '@/lib/mediaWarmup';
@@ -147,7 +147,23 @@ function AnimatedRoutes() {
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin, user } = useAuth();
+  const navigate = useNavigate();
   const [showOnboarding, setShowOnboarding] = useState(false);
+
+  // Hardware back-button handling for Android/iOS WebViews — native wrapper
+  // posts a 'message' event; navigate back unless already at root.
+  useEffect(() => {
+    const handleMessage = (event) => {
+      const data = event.data;
+      const isBack = typeof data === 'string'
+        ? data === 'back' || data === 'backbutton'
+        : data && (data.type === 'back' || data.type === 'backbutton' || data.action === 'back');
+      if (!isBack) return;
+      if (window.location.pathname !== '/') navigate(-1);
+    };
+    window.addEventListener('message', handleMessage);
+    return () => window.removeEventListener('message', handleMessage);
+  }, [navigate]);
 
   useEffect(() => {
     if (user && !localStorage.getItem('classflow_onboarding_done')) {
