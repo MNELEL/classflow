@@ -38,6 +38,7 @@ export default function AccountManagement() {
       <CardContent>
         <TeacherAccountSettings
           teacher={teacherData}
+          user={user}
           onLogout={handleLogout}
           triggerLabel="פתח ניהול חשבון"
           triggerVariant="outline"

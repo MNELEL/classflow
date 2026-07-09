@@ -1,4 +1,5 @@
 import React, { useState, useCallback, useRef } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import AppLayout from '@/components/layout/AppLayout';
 import { usePullToRefresh } from '@/hooks/usePullToRefresh';
@@ -55,7 +56,10 @@ export default function IngestPage() {
 
   const currentType = FILE_TYPES[fileType];
 
-  const handleRefresh = useCallback(async () => {}, []);
+  const qc = useQueryClient();
+  const handleRefresh = useCallback(async () => {
+    await qc.invalidateQueries({ queryKey: ['library'] });
+  }, [qc]);
   const { containerRef, pullY, refreshing } = usePullToRefresh(handleRefresh);
 
   const handleFiles = useCallback((newFiles) => {
@@ -187,7 +191,7 @@ export default function IngestPage() {
 
   return (
     <AppLayout>
-      <div ref={containerRef} className="overflow-y-auto h-full relative">
+      <div ref={containerRef} data-pull-to-refresh className="overflow-y-auto h-full relative" style={{ touchAction: 'pan-y' }}>
         <PullToRefreshIndicator pullY={pullY} refreshing={refreshing} />
         <div className="p-4 max-w-2xl mx-auto space-y-5 pb-8" dir="rtl">
 

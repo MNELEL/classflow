@@ -22,7 +22,7 @@ export default function HomeworkPage() {
 
   return (
     <AppLayout>
-      <div ref={containerRef} className="relative p-4 max-w-2xl mx-auto overflow-y-auto h-full pb-8" dir="rtl">
+      <div ref={containerRef} data-pull-to-refresh className="relative p-4 max-w-2xl mx-auto overflow-y-auto h-full pb-8" dir="rtl" style={{ touchAction: 'pan-y' }}>
         <PullToRefreshIndicator pullY={pullY} refreshing={refreshing} />
         <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="flex items-center gap-3 mb-5">
           <div className="w-10 h-10 bg-blue-100 dark:bg-blue-900/30 rounded-xl flex items-center justify-center">

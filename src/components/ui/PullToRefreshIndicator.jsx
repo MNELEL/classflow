@@ -10,8 +10,8 @@ export default function PullToRefreshIndicator({ pullY, refreshing, threshold = 
 
   return (
     <div
-      className="absolute top-0 inset-x-0 flex justify-center items-center z-50 pointer-events-none"
-      style={{ height: `${refreshing ? threshold : pullY}px`, transition: refreshing ? 'height 0.2s ease' : 'none' }}
+      className="absolute inset-x-0 flex justify-center items-center z-50 pointer-events-none"
+      style={{ top: 'env(safe-area-inset-top, 0px)', height: `${refreshing ? threshold : pullY}px`, transition: refreshing ? 'height 0.2s ease' : 'none' }}
     >
       <div className={cn(
         'w-9 h-9 rounded-full bg-card border border-border shadow-md flex items-center justify-center',

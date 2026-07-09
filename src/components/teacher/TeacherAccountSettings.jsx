@@ -23,6 +23,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Trash2, Settings, LogOut, UserX, AlertTriangle } from 'lucide-react';
 import { toast } from 'sonner';
+import { purgeUserData, clearLocalState } from '@/lib/accountCleanup';
 
 export default function TeacherAccountSettings({ teacher, onLogout, triggerLabel, triggerVariant = 'ghost', triggerSize = 'icon' }) {
   const navigate = useNavigate();
@@ -53,8 +54,7 @@ export default function TeacherAccountSettings({ teacher, onLogout, triggerLabel
         await base44.entities.Teacher.update(teacher.id, { is_active: false });
       }
       toast.success('החשבון הושבת בהצלחה');
-      localStorage.clear();
-      sessionStorage.clear();
+      clearLocalState();
       base44.auth.logout('/teacher-login');
     } catch (error) {
       toast.error('שגיאה בהשבתת החשבון');
@@ -67,12 +67,13 @@ export default function TeacherAccountSettings({ teacher, onLogout, triggerLabel
   async function handleDelete() {
     setBusy(true);
     try {
+      const user = await base44.auth.me();
+      await purgeUserData(user);
       if (hasTeacher) {
         await base44.entities.Teacher.delete(teacher.id);
       }
       await base44.auth.deleteMe();
-      localStorage.clear();
-      sessionStorage.clear();
+      clearLocalState();
       toast.success('הפרופיל והחשבון נמחקו לצמיתות. מתנתק...');
       setTimeout(() => navigate('/register', { replace: true }), 1500);
     } catch (error) {

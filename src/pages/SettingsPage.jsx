@@ -16,6 +16,7 @@ import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, A
 import BrandingPanel from '@/components/settings/BrandingPanel';
 import SecuritySettings from '@/components/security/SecuritySettings';
 import AccountManagement from '@/components/settings/AccountManagement';
+import { purgeUserData, clearLocalState } from '@/lib/accountCleanup';
 
 const SETTINGS_KEY = 'classmanager_settings';
 
@@ -343,15 +344,16 @@ export default function SettingsPage() {
                  e.preventDefault();
                  setIsDeleting(true);
                  try {
-                   await base44.auth.deleteMe();
-                   localStorage.clear();
-                   sessionStorage.clear();
-                   toast.success('החשבון נמחק בהצלחה. מתנתק...');
-                   setTimeout(() => navigate('/register', { replace: true }), 1500);
-                 } catch (err) {
-                   toast.error('שגיאה במחיקת החשבון');
-                   setIsDeleting(false);
-                 }
+                    const user = await base44.auth.me();
+                    await purgeUserData(user);
+                    await base44.auth.deleteMe();
+                    clearLocalState();
+                    toast.success('החשבון נמחק בהצלחה. מתנתק...');
+                    setTimeout(() => navigate('/register', { replace: true }), 1500);
+                  } catch (err) {
+                    toast.error('שגיאה במחיקת החשבון');
+                    setIsDeleting(false);
+                  }
                }}
             >
               {isDeleting ? 'מוחק...' : <><Trash2 className="w-4 h-4 ml-1" /> מחק חשבון לצמיתות</>}
