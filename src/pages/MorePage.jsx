@@ -1,4 +1,6 @@
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, useCallback } from 'react';
+import { usePullToRefresh } from '@/hooks/usePullToRefresh';
+import PullToRefreshIndicator from '@/components/ui/PullToRefreshIndicator';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/lib/AuthContext';
@@ -53,21 +55,23 @@ export default function MorePage() {
   const navigate = useNavigate();
   const location = useLocation();
   const { user } = useAuth();
-  const scrollRef = useRef(null);
   const savedScroll = useRef(0);
+  const handleRefresh = useCallback(async () => {}, []);
+  const { containerRef, pullY, refreshing } = usePullToRefresh(handleRefresh);
 
   useEffect(() => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollTop = savedScroll.current;
+    if (containerRef.current) {
+      containerRef.current.scrollTop = savedScroll.current;
     }
     return () => {
-      if (scrollRef.current) savedScroll.current = scrollRef.current.scrollTop;
+      if (containerRef.current) savedScroll.current = containerRef.current.scrollTop;
     };
   }, []);
 
   return (
     <AppLayout>
-      <div ref={scrollRef} className="overflow-y-auto h-full min-h-full bg-background pb-6" dir="rtl">
+      <div ref={containerRef} className="overflow-y-auto h-full min-h-full bg-background pb-6 relative" dir="rtl">
+        <PullToRefreshIndicator pullY={pullY} refreshing={refreshing} />
 
         {/* Header */}
         <div className="px-4 pt-5 pb-4">

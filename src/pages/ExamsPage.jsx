@@ -8,11 +8,12 @@ import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { toast } from 'sonner';
 import { FileText, Plus, Calendar, Users, Trophy, BarChart3, Save, X, Check, Trash2 } from 'lucide-react';
+import { useUrlOverlay } from '@/hooks/useUrlOverlay';
 import { motion } from 'framer-motion';
 
 export default function ExamsPage() {
   const qc = useQueryClient();
-  const [showForm, setShowForm] = useState(false);
+  const { isOpen, open: openDialog, close: closeDialog } = useUrlOverlay('dialog');
   const [gradingExam, setGradingExam] = useState(null);
   const [form, setForm] = useState({ title: '', subject: '', date: '', max_score: 100, duration_minutes: 45, topics: [], notes: '' });
   const [topicInput, setTopicInput] = useState('');
@@ -44,7 +45,7 @@ export default function ExamsPage() {
     onSettled: () => qc.invalidateQueries({ queryKey: ['exams'] }),
     onSuccess: () => {
       toast.success('המבחן נוצר!');
-      setShowForm(false);
+      closeDialog();
       setForm({ title: '', subject: '', date: '', max_score: 100, duration_minutes: 45, topics: [], notes: '' });
     },
   });
@@ -111,7 +112,7 @@ export default function ExamsPage() {
             <h1 className="font-bold text-lg">מבחנים</h1>
             <p className="text-xs text-muted-foreground">{exams.length} מבחנים</p>
           </div>
-          <Button size="sm" className="gap-1" onClick={() => setShowForm(true)}>
+          <Button size="sm" className="gap-1" onClick={() => openDialog('form')}>
             <Plus className="w-4 h-4" /> מבחן
           </Button>
         </div>
@@ -174,7 +175,7 @@ export default function ExamsPage() {
         )}
 
         {/* Form dialog */}
-        <Dialog open={showForm} onOpenChange={setShowForm}>
+        <Dialog open={isOpen('form')} onOpenChange={(open) => { if (!open) closeDialog(); }}>
           <DialogContent dir="rtl" className="max-w-sm">
             <DialogHeader><DialogTitle>מבחן חדש</DialogTitle></DialogHeader>
             <div className="space-y-3">

@@ -17,6 +17,7 @@ import BrandingPanel from '@/components/settings/BrandingPanel';
 import SecuritySettings from '@/components/security/SecuritySettings';
 import AccountManagement from '@/components/settings/AccountManagement';
 import { purgeUserData, clearLocalState } from '@/lib/accountCleanup';
+import { useUrlOverlay } from '@/hooks/useUrlOverlay';
 
 const SETTINGS_KEY = 'classmanager_settings';
 
@@ -69,7 +70,7 @@ export default function SettingsPage() {
     mutationFn: (id) => base44.entities.LessonCategory.delete(id),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['categories'] }),
   });
-  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const { isOpen, open: openDialog, close: closeDialog } = useUrlOverlay('dialog');
   const [deleteConfirmText, setDeleteConfirmText] = useState('');
   const [isDeleting, setIsDeleting] = useState(false);
   const [settings, setSettings] = useState({
@@ -308,7 +309,7 @@ export default function SettingsPage() {
               <Button
                 variant="destructive"
                 className="w-full"
-                onClick={() => setShowDeleteDialog(true)}
+                onClick={() => openDialog('delete')}
               >
                 <Trash2 className="w-4 h-4 ml-1" /> מחק חשבון
               </Button>
@@ -317,7 +318,7 @@ export default function SettingsPage() {
         </div>
       </div>
 
-      <AlertDialog open={showDeleteDialog} onOpenChange={(open) => { setShowDeleteDialog(open); if (!open) setDeleteConfirmText(''); }}>
+      <AlertDialog open={isOpen('delete')} onOpenChange={(open) => { if (!open) { closeDialog(); setDeleteConfirmText(''); } }}>
         <AlertDialogContent dir="rtl">
           <AlertDialogHeader>
             <AlertDialogTitle className="text-destructive">מחיקת חשבון - פעולה בלתי הפיכה</AlertDialogTitle>

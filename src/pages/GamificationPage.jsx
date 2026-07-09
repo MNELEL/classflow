@@ -17,6 +17,7 @@ import { toast } from 'sonner';
 import { usePullToRefresh } from '@/hooks/usePullToRefresh';
 import PullToRefreshIndicator from '@/components/ui/PullToRefreshIndicator';
 import { format } from 'date-fns';
+import { useUrlOverlay } from '@/hooks/useUrlOverlay';
 
 const TABS = [
   ['leaderboard', '🏆 מובילים'],
@@ -30,9 +31,7 @@ export default function GamificationPage() {
   const qc = useQueryClient();
   const [tab, setTab] = useState('leaderboard');
   const [kioskMode, setKioskMode] = useState(false);
-  const [showRewardForm, setShowRewardForm] = useState(false);
-  const [showCampaignForm, setShowCampaignForm] = useState(false);
-  const [showTemplates, setShowTemplates] = useState(false);
+  const { isOpen, open: openDialog, close: closeDialog } = useUrlOverlay('dialog');
   const [rewardForm, setRewardForm] = useState({ student_id: '', points: 1, reason: '' });
   const [campaignForm, setCampaignForm] = useState({ title: '', description: '', target_points: 100, reward_description: '', start_date: '', end_date: '' });
 
@@ -64,13 +63,13 @@ export default function GamificationPage() {
       if (ctx?.previous) qc.setQueryData(['rewards'], ctx.previous);
       toast.error('שגיאה בשמירת הנקודות');
     },
-    onSuccess: () => { toast.success('נקודות נרשמו!'); setShowRewardForm(false); setRewardForm({ student_id: '', points: 1, reason: '' }); },
+    onSuccess: () => { toast.success('נקודות נרשמו!'); closeDialog(); setRewardForm({ student_id: '', points: 1, reason: '' }); },
     onSettled: () => qc.invalidateQueries({ queryKey: ['rewards'] }),
   });
 
   const addCampaign = useMutation({
     mutationFn: (data) => base44.entities.Campaign.create(data),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ['campaigns'] }); toast.success('מבצע נוצר!'); setShowCampaignForm(false); setCampaignForm({ title: '', description: '', target_points: 100, reward_description: '', start_date: '', end_date: '' }); },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ['campaigns'] }); toast.success('מבצע נוצר!'); closeDialog(); setCampaignForm({ title: '', description: '', target_points: 100, reward_description: '', start_date: '', end_date: '' }); },
   });
 
   const deleteCampaign = useMutation({
@@ -86,8 +85,7 @@ export default function GamificationPage() {
 
   function applyTemplate(t) {
     setCampaignForm(f => ({ ...f, title: t.title, description: t.description, target_points: t.target_points, reward_description: t.reward_description }));
-    setShowTemplates(false);
-    setShowCampaignForm(true);
+    openDialog('campaign');
   }
 
   if (kioskMode) {
@@ -120,7 +118,7 @@ export default function GamificationPage() {
             <Button size="sm" variant="outline" className="gap-1 text-xs" onClick={() => setKioskMode(true)} aria-label="מצב תצוגה מלאה">
               <Maximize2 className="w-3.5 h-3.5" /> מצב תצוגה
             </Button>
-            <Button size="sm" className="gap-1 text-xs" onClick={() => setShowRewardForm(true)}>
+            <Button size="sm" className="gap-1 text-xs" onClick={() => openDialog('reward')}>
               <Plus className="w-3.5 h-3.5" /> הענק נקודות
             </Button>
           </div>
@@ -143,10 +141,10 @@ export default function GamificationPage() {
         {tab === 'campaigns' && (
           <div className="space-y-3">
             <div className="flex gap-2">
-              <Button size="sm" variant="outline" className="flex-1 gap-1" onClick={() => setShowTemplates(true)}>
+              <Button size="sm" variant="outline" className="flex-1 gap-1" onClick={() => openDialog('templates')}>
                 <Lightbulb className="w-3.5 h-3.5" /> מתבניות מוכנות
               </Button>
-              <Button size="sm" className="flex-1 gap-1" onClick={() => setShowCampaignForm(true)}>
+              <Button size="sm" className="flex-1 gap-1" onClick={() => openDialog('campaign')}>
                 <Plus className="w-3.5 h-3.5" /> מבצע חדש
               </Button>
             </div>
@@ -237,7 +235,7 @@ export default function GamificationPage() {
       </div>
 
       {/* Reward Dialog */}
-      <Dialog open={showRewardForm} onOpenChange={setShowRewardForm}>
+      <Dialog open={isOpen('reward')} onOpenChange={(open) => { if (!open) closeDialog(); }}>
         <DialogContent dir="rtl" className="max-w-sm">
           <DialogHeader><DialogTitle className="flex items-center gap-2"><Star className="w-4 h-4 text-yellow-500" /> הענקת נקודות</DialogTitle></DialogHeader>
           <div className="space-y-3">
@@ -264,7 +262,7 @@ export default function GamificationPage() {
       </Dialog>
 
       {/* Campaign Templates Dialog */}
-      <Dialog open={showTemplates} onOpenChange={setShowTemplates}>
+      <Dialog open={isOpen('templates')} onOpenChange={(open) => { if (!open) closeDialog(); }}>
         <DialogContent dir="rtl" className="max-w-md max-h-[80vh] overflow-y-auto">
           <DialogHeader><DialogTitle>🎯 תבניות מבצעים מוכנות</DialogTitle></DialogHeader>
           <CampaignTemplates onSelect={applyTemplate} />
@@ -272,7 +270,7 @@ export default function GamificationPage() {
       </Dialog>
 
       {/* Campaign Dialog */}
-      <Dialog open={showCampaignForm} onOpenChange={setShowCampaignForm}>
+      <Dialog open={isOpen('campaign')} onOpenChange={(open) => { if (!open) closeDialog(); }}>
         <DialogContent dir="rtl" className="max-w-sm">
           <DialogHeader><DialogTitle>🎯 צור מבצע חדש</DialogTitle></DialogHeader>
           <div className="space-y-3">

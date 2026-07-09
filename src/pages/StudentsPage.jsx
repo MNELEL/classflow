@@ -12,13 +12,11 @@ import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Upload, Wand2, Users, FileDown, FileUp, SortAsc, SortDesc, Calendar } from 'lucide-react';
 import CsvImportModal, { exportToCSV } from '@/components/data/CsvImportModal';
+import { useUrlOverlay } from '@/hooks/useUrlOverlay';
 
 export default function StudentsPage() {
   const qc = useQueryClient();
-  const [showImport, setShowImport] = useState(false);
-  const [showFreeText, setShowFreeText] = useState(false);
-  const [showGroups, setShowGroups] = useState(false);
-  const [showCsvImport, setShowCsvImport] = useState(false);
+  const { isOpen, open: openDialog, close: closeDialog } = useUrlOverlay('dialog');
   const [sortMode, setSortMode] = useState('created'); // 'created' | 'firstName' | 'lastName'
 
   const { data: students = [], isLoading, refetch } = useQuery({
@@ -178,16 +176,16 @@ export default function StudentsPage() {
           <>
             {/* Import buttons above the list */}
             <div className="flex justify-end gap-2 mb-4 flex-wrap">
-              <Button variant="outline" size="sm" onClick={() => setShowGroups(true)} className="gap-1.5">
+              <Button variant="outline" size="sm" onClick={() => openDialog('groups')} className="gap-1.5">
                 <Users className="w-4 h-4" /> קבוצות
               </Button>
-              <Button variant="outline" size="sm" onClick={() => setShowFreeText(true)} className="gap-1.5">
+              <Button variant="outline" size="sm" onClick={() => openDialog('free-text')} className="gap-1.5">
                 <Wand2 className="w-4 h-4" /> עדכון (AI)
               </Button>
-              <Button variant="outline" size="sm" onClick={() => setShowImport(true)} className="gap-1.5">
+              <Button variant="outline" size="sm" onClick={() => openDialog('import')} className="gap-1.5">
                 <Upload className="w-4 h-4" /> ייבוא JSON
               </Button>
-              <Button variant="outline" size="sm" onClick={() => setShowCsvImport(true)} className="gap-1.5">
+              <Button variant="outline" size="sm" onClick={() => openDialog('csv-import')} className="gap-1.5">
                 <FileUp className="w-4 h-4" /> ייבוא CSV
               </Button>
               <Button variant="outline" size="sm" onClick={() => exportToCSV(students.map(s=>({name:s.name,gender:s.gender||'',height:s.height||'medium',learning_group:s.learning_group||'',notes:s.notes||'',academic_level:s.academic_level||'average'})), 'students.csv')} className="gap-1.5">
@@ -227,8 +225,8 @@ export default function StudentsPage() {
       </div>
 
       <CsvImportModal
-        open={showCsvImport}
-        onClose={() => setShowCsvImport(false)}
+        open={isOpen('csv-import')}
+        onClose={closeDialog}
         mode="students"
         students={students}
         onImportStudents={async (rows) => {
@@ -239,21 +237,21 @@ export default function StudentsPage() {
       />
 
       <ImportStudentsModal
-        open={showImport}
-        onClose={() => setShowImport(false)}
+        open={isOpen('import')}
+        onClose={closeDialog}
         onImport={handleImport}
       />
 
       <FreeTextImport
-        open={showFreeText}
-        onClose={() => setShowFreeText(false)}
+        open={isOpen('free-text')}
+        onClose={closeDialog}
         students={students}
         onUpdateStudent={data => saveMutation.mutate(data)}
       />
 
       <GroupsManager
-        open={showGroups}
-        onClose={() => setShowGroups(false)}
+        open={isOpen('groups')}
+        onClose={closeDialog}
         students={students}
       />
     </AppLayout>

@@ -184,7 +184,7 @@ const AuthenticatedApp = () => {
   // search params), close it by stripping those params instead of navigating
   // back a full page. Otherwise, navigate back unless already at root.
   useEffect(() => {
-    const OVERLAY_PARAMS = ['modal', 'dialog', 'sheet', 'seat'];
+    const OVERLAY_PARAMS = ['modal', 'dialog', 'drawer', 'sheet', 'seat'];
     const handleMessage = (event) => {
       const data = event.data;
       const isBack = typeof data === 'string'
