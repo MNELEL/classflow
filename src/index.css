@@ -234,6 +234,7 @@ button, a, [role="button"] {
 [data-pull-to-refresh] {
   touch-action: pan-y;
   -ms-touch-action: pan-y;
+  overscroll-behavior-y: contain;
 }
 
 /* Improve tap feedback on Android */

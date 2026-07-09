@@ -4,16 +4,67 @@ import { THEMES, DEFAULT_THEME, THEME_KEY, loadTheme, saveTheme, applyThemeClass
 
 const ThemeContext = createContext(null);
 
+const SETTINGS_KEY = 'classmanager_settings';
+
+/** Read light/dark/system preference from classmanager_settings localStorage */
+function loadDarkMode() {
+  try {
+    const settings = JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}');
+    return settings.theme || 'system';
+  } catch {
+    return 'system';
+  }
+}
+
+/** Persist light/dark/system preference back to classmanager_settings */
+function saveDarkMode(mode) {
+  try {
+    const settings = JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}');
+    settings.theme = mode;
+    localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
+  } catch {}
+}
+
+/** Synchronously toggle the 'dark' class on <html> based on the mode */
+function applyDarkClass(mode) {
+  const root = document.documentElement;
+  let shouldDark = mode === 'dark';
+  if (mode === 'system') {
+    shouldDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+  }
+  root.classList.toggle('dark', shouldDark);
+}
+
 export function ThemeProvider({ children }) {
-  const [theme, setTheme] = useState(loadTheme);
+  const [theme, setTheme] = useState(loadTheme);       // CSS-variable theme (modern, ocean, …)
+  const [darkMode, setDarkModeState] = useState(loadDarkMode); // light / dark / system
   const [syncing, setSyncing] = useState(false);
 
-  // Apply theme class on mount
+  // Apply CSS-variable theme class on mount and whenever it changes
   useEffect(() => {
     applyThemeClass(theme);
   }, [theme]);
 
-  // Sync from DB on mount (if user is authenticated)
+  // Apply dark/light class synchronously on mount and whenever darkMode changes
+  useEffect(() => {
+    applyDarkClass(darkMode);
+  }, [darkMode]);
+
+  // Listen to OS-level prefers-color-scheme changes so 'system' mode
+  // reacts in real-time without a page reload.
+  useEffect(() => {
+    const mq = window.matchMedia('(prefers-color-scheme: dark)');
+    function handler() {
+      // Re-read from localStorage in case the user changed the mode in Settings
+      if (loadDarkMode() === 'system') {
+        applyDarkClass('system');
+      }
+    }
+    mq.addEventListener('change', handler);
+    return () => mq.removeEventListener('change', handler);
+  }, []);
+
+  // Sync CSS-variable theme from DB on mount (if user is authenticated)
   useEffect(() => {
     let cancelled = false;
     async function syncFromDB() {
@@ -25,10 +76,7 @@ export function ThemeProvider({ children }) {
         if (settings?.length > 0) {
           const dbTheme = settings[0].theme;
           const localTheme = loadTheme();
-          // DB is source of truth if different
           if (dbTheme && dbTheme !== localTheme) {
-            const dbUpdated = settings[0].updated_at ? new Date(settings[0].updated_at) : new Date(0);
-            // Always prefer DB version
             setTheme(dbTheme);
             saveTheme(dbTheme);
           }
@@ -69,8 +117,16 @@ export function ThemeProvider({ children }) {
     setSyncing(false);
   }, []);
 
+  const changeDarkMode = useCallback((mode) => {
+    setDarkModeState(mode);
+    saveDarkMode(mode);
+    applyDarkClass(mode); // apply synchronously for immediate visual feedback
+  }, []);
+
   return (
-    <ThemeContext.Provider value={{ theme, setTheme: changeTheme, themes: THEMES, syncing }}>
+    <ThemeContext.Provider
+      value={{ theme, setTheme: changeTheme, themes: THEMES, syncing, darkMode, setDarkMode: changeDarkMode }}
+    >
       {children}
     </ThemeContext.Provider>
   );
@@ -78,6 +134,6 @@ export function ThemeProvider({ children }) {
 
 export function useTheme() {
   const ctx = useContext(ThemeContext);
-  if (!ctx) return { theme: DEFAULT_THEME, setTheme: () => {}, themes: THEMES, syncing: false };
+  if (!ctx) return { theme: DEFAULT_THEME, setTheme: () => {}, themes: THEMES, syncing: false, darkMode: 'system', setDarkMode: () => {} };
   return ctx;
 }

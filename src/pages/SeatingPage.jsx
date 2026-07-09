@@ -18,7 +18,7 @@ import { Lock, Unlock, EyeOff, SlidersHorizontal, Users, BarChart2, GripHorizont
 import { toast } from 'sonner';
 import SatisfactionReport from '@/components/classroom/SatisfactionReport';
 import { usePullToRefresh } from '@/hooks/usePullToRefresh';
-import { useSearchParams } from 'react-router-dom';
+import { useUrlOverlay } from '@/hooks/useUrlOverlay';
 import PullToRefreshIndicator from '@/components/ui/PullToRefreshIndicator';
 
 const STORAGE_KEY = 'classmanager_seats';
@@ -52,7 +52,9 @@ export default function SeatingPage() {
   const [cols, setCols] = useState(6);
   const [seats, setSeats] = useState([]);
   const [showNumbers, setShowNumbers] = useState(false);
-  const [searchParams, setSearchParams] = useSearchParams();
+  const sheetOverlay = useUrlOverlay('sheet');
+  const dialogOverlay = useUrlOverlay('dialog');
+  const seatOverlay = useUrlOverlay('seat');
   const [isLoading, setIsLoading] = useState(false);
   const [lastSaved, setLastSaved] = useState(null);
   const [quickEditMode, setQuickEditMode] = useState(false);
@@ -325,7 +327,7 @@ ${overrideLines ? `\nהעדפות ייבוא נוספות:\n${overrideLines}` : 
       setQuickEditSeat(seat);
       return;
     }
-    updateParam('seat', seat.id);
+    seatOverlay.open(seat.id);
   }
 
   function handleQuickAction(action, payload) {
@@ -387,24 +389,14 @@ ${overrideLines ? `\nהעדפות ייבוא נוספות:\n${overrideLines}` : 
   function handleToggleHide() {
     if (!selectedSeat) return;
     setSeats(prev => prev.map(s => s.id === selectedSeat.id ? { ...s, is_hidden: !s.is_hidden, student_id: s.is_hidden ? s.student_id : null } : s));
-    updateParam('seat', null);
+    seatOverlay.close();
   }
 
   const satisfactionScore = calcSatisfactionScore(seats, students);
   const seatedIds = new Set(seats.filter(s => s.student_id).map(s => s.student_id));
   const unseatedCount = students.filter(s => s.is_active !== false && !seatedIds.has(s.id)).length;
 
-  // Opening a modal/sheet (truthy value) → PUSH so Android back closes it.
-  // Closing (falsy value) → REPLACE so back doesn't re-open it.
-  const updateParam = useCallback((key, value) => {
-    const next = new URLSearchParams(searchParams);
-    if (value) next.set(key, value);
-    else next.delete(key);
-    setSearchParams(next, { replace: !value });
-  }, [searchParams, setSearchParams]);
-
-  const seatParam = searchParams.get('seat');
-  const selectedSeat = seatParam ? seats.find(s => s.id === seatParam) || null : null;
+  const selectedSeat = seatOverlay.current ? seats.find(s => s.id === seatOverlay.current) || null : null;
 
   const selectedStudent = selectedSeat?.student_id
     ? students.find(s => s.id === selectedSeat.student_id)
@@ -496,7 +488,7 @@ ${overrideLines ? `\nהעדפות ייבוא נוספות:\n${overrideLines}` : 
           </div>
           {/* Mobile floating action buttons — bottom drawer triggers */}
           <div className="flex md:hidden gap-2 mb-3 justify-between">
-            <Drawer open={searchParams.get('sheet') === 'controls'} onOpenChange={(open) => updateParam('sheet', open ? 'controls' : null)}>
+            <Drawer open={sheetOverlay.isOpen('controls')} onOpenChange={(open) => open ? sheetOverlay.open('controls') : sheetOverlay.close()}>
               <DrawerTrigger asChild>
                 <Button size="sm" variant="outline" className="flex-1 gap-1.5">
                   <SlidersHorizontal className="w-4 h-4" /> פקדים
@@ -512,7 +504,7 @@ ${overrideLines ? `\nהעדפות ייבוא נוספות:\n${overrideLines}` : 
               </DrawerContent>
             </Drawer>
 
-            <Drawer open={searchParams.get('sheet') === 'students'} onOpenChange={(open) => updateParam('sheet', open ? 'students' : null)}>
+            <Drawer open={sheetOverlay.isOpen('students')} onOpenChange={(open) => open ? sheetOverlay.open('students') : sheetOverlay.close()}>
               <DrawerTrigger asChild>
                 <Button size="sm" variant="outline" className="flex-1 gap-1.5">
                   <Users className="w-4 h-4" /> תלמידים
@@ -540,7 +532,7 @@ ${overrideLines ? `\nהעדפות ייבוא נוספות:\n${overrideLines}` : 
               </span>
               <span className="text-xs text-muted-foreground">שביעות רצון</span>
             </div>
-            <Button size="sm" variant="outline" className="gap-1.5 text-xs h-7" onClick={() => updateParam('dialog', 'satisfaction')}>
+            <Button size="sm" variant="outline" className="gap-1.5 text-xs h-7" onClick={() => dialogOverlay.open('satisfaction')}>
               <BarChart2 className="w-3.5 h-3.5" /> דוח מפורט
             </Button>
           </div>
@@ -564,7 +556,7 @@ ${overrideLines ? `\nהעדפות ייבוא נוספות:\n${overrideLines}` : 
       </div>
 
       {/* Satisfaction Report Dialog */}
-      <Dialog open={searchParams.get('dialog') === 'satisfaction'} onOpenChange={(open) => updateParam('dialog', open ? 'satisfaction' : null)}>
+      <Dialog open={dialogOverlay.isOpen('satisfaction')} onOpenChange={(open) => open ? dialogOverlay.open('satisfaction') : dialogOverlay.close()}>
         <DialogContent className="max-w-md max-h-[80vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
@@ -576,7 +568,7 @@ ${overrideLines ? `\nהעדפות ייבוא נוספות:\n${overrideLines}` : 
       </Dialog>
 
       {/* Seat detail dialog */}
-      <Dialog open={!!selectedSeat} onOpenChange={() => updateParam('seat', null)}>
+      <Dialog open={!!selectedSeat} onOpenChange={() => seatOverlay.close()}>
         <DialogContent className="max-w-sm">
           <DialogHeader>
             <DialogTitle>
