@@ -72,17 +72,19 @@ export default function AppLayout({ children }) {
     requestAnimationFrame(() => { main.scrollTop = savedY; });
   }, [location.pathname]);
 
-  // Save current path to tab history on route change — each /more sub-path
-  // gets its own scroll slot (keyed by pathname) and the last visited
-  // sub-path is tracked so returning to /more restores the exact view.
+  // Save current path to tab history on route change — each tab root
+  // maintains a stack of visited sub-paths so returning to a tab restores
+  // the exact nested view and preserves the full navigation context.
   useEffect(() => {
     const root = getCurrentTabRoot(location.pathname);
     if (root) {
-      tabHistory.current[root] = location.pathname;
-    }
-    // Explicitly track /more sub-paths for robust restoration
-    if (isMoreSubPath(location.pathname)) {
-      tabHistory.current['/more'] = location.pathname;
+      const stack = tabHistory.current[root] || [];
+      if (stack[stack.length - 1] !== location.pathname) {
+        stack.push(location.pathname);
+        // Cap stack to prevent unbounded growth
+        if (stack.length > 20) stack.shift();
+        tabHistory.current[root] = stack;
+      }
     }
   }, [location.pathname]);
 
@@ -92,9 +94,9 @@ export default function AppLayout({ children }) {
     }
     const currentTabRoot = getCurrentTabRoot(location.pathname);
     if (path === currentTabRoot) {
-      // Same tab — reset to root
+      // Same tab — reset to root and clear the stack
       e.preventDefault();
-      delete tabHistory.current[path];
+      tabHistory.current[path] = [path];
       scrollPositions.current[path] = 0;
       if (location.pathname === path) {
         if (mainRef.current) mainRef.current.scrollTo({ top: 0, behavior: 'smooth' });
@@ -102,8 +104,9 @@ export default function AppLayout({ children }) {
         navigate(path);
       }
     } else {
-      // Different tab — restore last visited sub-path or go to root
-      const target = tabHistory.current[path] || path;
+      // Different tab — restore the last visited sub-path from the tab's stack
+      const stack = tabHistory.current[path] || [];
+      const target = stack[stack.length - 1] || path;
       if (target !== location.pathname) {
         e.preventDefault();
         navigate(target);

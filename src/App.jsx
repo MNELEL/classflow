@@ -2,7 +2,7 @@ import { Toaster } from "@/components/ui/toaster"
 import { Toaster as Sonner } from 'sonner';
 import { QueryClientProvider } from '@tanstack/react-query'
 import { queryClientInstance } from '@/lib/query-client'
-import { BrowserRouter as Router, Route, Routes, useLocation, useNavigate, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Routes, useLocation, useNavigate, useNavigationType, Navigate } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useEffect, useState, lazy, Suspense } from 'react';
 import { warmDashboardMedia } from '@/lib/mediaWarmup';
@@ -71,10 +71,14 @@ const IngestPage            = lazy(() => import('./pages/IngestPage'));
 const TeachingStyleDashboard = lazy(() => import('./pages/TeachingStyleDashboard'));
 const ParentFeedbackPage = lazy(() => import('./pages/ParentFeedbackPage'));
 
+// Direction-aware page transitions.
+// Forward (push): new screen enters from the right, old exits left → "to the left".
+// Back (pop): new screen enters from the left, old exits right → "to the right".
+// `custom` carries the isBack flag so exiting children animate correctly.
 const pageVariants = {
-  initial: { opacity: 0, x: 20 },
+  initial: (isBack) => ({ opacity: 0, x: isBack ? -20 : 20 }),
   animate: { opacity: 1, x: 0, transition: { duration: 0.2, ease: 'easeOut' } },
-  exit: { opacity: 0, x: -20, transition: { duration: 0.15, ease: 'easeIn' } },
+  exit: (isBack) => ({ opacity: 0, x: isBack ? 20 : -20, transition: { duration: 0.15, ease: 'easeIn' } }),
 };
 
 const PageLoader = () => (
@@ -85,9 +89,10 @@ const PageLoader = () => (
 
 function AnimatedRoutes() {
   const location = useLocation();
+  const isBack = useNavigationType() === 'POP';
   return (
-    <AnimatePresence mode="wait">
-      <motion.div key={location.pathname} variants={pageVariants} initial="initial" animate="animate" exit="exit" style={{ height: '100%' }}>
+    <AnimatePresence mode="wait" custom={isBack}>
+      <motion.div key={location.pathname} variants={pageVariants} initial="initial" animate="animate" exit="exit" custom={isBack} style={{ height: '100%' }}>
         <Suspense fallback={<PageLoader />}>
           <Routes location={location}>
             {/* Public auth routes */}
