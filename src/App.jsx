@@ -175,14 +175,26 @@ const AuthenticatedApp = () => {
   }, []);
 
   // Hardware back-button handling for Android/iOS WebViews — native wrapper
-  // posts a 'message' event; navigate back unless already at root.
+  // posts a 'message' event. If a modal/dialog/sheet is open (tracked via URL
+  // search params), close it by stripping those params instead of navigating
+  // back a full page. Otherwise, navigate back unless already at root.
   useEffect(() => {
+    const OVERLAY_PARAMS = ['modal', 'dialog', 'sheet', 'seat'];
     const handleMessage = (event) => {
       const data = event.data;
       const isBack = typeof data === 'string'
         ? data === 'back' || data === 'backbutton'
         : data && (data.type === 'back' || data.type === 'backbutton' || data.action === 'back');
       if (!isBack) return;
+
+      const url = new URL(window.location.href);
+      const hasOverlay = OVERLAY_PARAMS.some(k => url.searchParams.has(k));
+      if (hasOverlay) {
+        OVERLAY_PARAMS.forEach(k => url.searchParams.delete(k));
+        navigate(url.pathname + url.search, { replace: true });
+        return;
+      }
+
       if (window.location.pathname !== '/') navigate(-1);
     };
     window.addEventListener('message', handleMessage);
