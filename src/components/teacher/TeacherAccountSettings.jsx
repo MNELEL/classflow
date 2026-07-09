@@ -21,47 +21,23 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Trash2, Settings, LogOut, UserX, AlertTriangle } from 'lucide-react';
+import { Trash2, Settings, LogOut, AlertTriangle } from 'lucide-react';
 import { toast } from 'sonner';
 import { purgeUserData, clearLocalState } from '@/lib/accountCleanup';
 
 export default function TeacherAccountSettings({ teacher, onLogout, triggerLabel, triggerVariant = 'ghost', triggerSize = 'icon' }) {
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
-  const [mode, setMode] = useState(null); // 'deactivate' | 'delete'
+  const [showConfirm, setShowConfirm] = useState(false);
   const [confirmText, setConfirmText] = useState('');
   const [busy, setBusy] = useState(false);
-
-  const hasTeacher = teacher && teacher.id;
 
   const CONFIRM_WORDS = ['מחק', 'DELETE'];
   const isConfirmed = CONFIRM_WORDS.includes(confirmText.trim());
 
-  function openConfirm(m) {
-    setMode(m);
-    setConfirmText('');
-  }
-
   function closeConfirm() {
-    setMode(null);
+    setShowConfirm(false);
     setConfirmText('');
-  }
-
-  async function handleDeactivate() {
-    setBusy(true);
-    try {
-      if (hasTeacher) {
-        await base44.entities.Teacher.update(teacher.id, { is_active: false });
-      }
-      toast.success('החשבון הושבת בהצלחה');
-      clearLocalState();
-      base44.auth.logout('/teacher-login');
-    } catch (error) {
-      toast.error('שגיאה בהשבתת החשבון');
-      setBusy(false);
-      closeConfirm();
-      setOpen(false);
-    }
   }
 
   async function handleDelete() {
@@ -71,27 +47,20 @@ export default function TeacherAccountSettings({ teacher, onLogout, triggerLabel
       // Purge user-owned entities first (non-blocking — failures don't
       // abort the flow since deleteMe is the authoritative step).
       await purgeUserData(user);
-      // Teacher record is admin-only (RLS), so attempt deletion without
-      // blocking — a failure here must not prevent backend de-provisioning.
-      if (hasTeacher) {
-        await Promise.allSettled([base44.entities.Teacher.delete(teacher.id)]);
-      }
       // Explicitly await the SDK de-provisioning endpoint to cleanly remove
       // backend profile credentials and session database entries BEFORE
       // purging any local state.
       await base44.auth.deleteMe();
       clearLocalState();
-      toast.success('הפרופיל והחשבון נמחקו לצמיתות. מתנתק...');
+      toast.success('החשבון נמחק לצמיתות. מתנתק...');
       setTimeout(() => navigate('/register', { replace: true }), 1500);
     } catch (error) {
-      toast.error('שגיאה במחיקת הפרופיל');
+      toast.error('שגיאה במחיקת החשבון');
       setBusy(false);
       closeConfirm();
       setOpen(false);
     }
   }
-
-  const isDeactivate = mode === 'deactivate';
 
   return (
     <>
@@ -116,68 +85,37 @@ export default function TeacherAccountSettings({ teacher, onLogout, triggerLabel
               </div>
             </div>
 
-            {/* Prominent Delete Account — instantly visible for store compliance */}
-            <Button
-              variant="destructive"
-              className="w-full gap-2 font-semibold"
-              onClick={() => openConfirm('delete')}
-            >
-              <Trash2 className="w-4 h-4" /> מחיקת חשבון
-            </Button>
-
             <Button variant="outline" className="w-full gap-2" onClick={onLogout}>
               <LogOut className="w-4 h-4" /> התנתקות
             </Button>
 
-            {/* Deactivation */}
-            <div className="rounded-lg border border-amber-300/50 bg-amber-50 dark:bg-amber-950/20 p-3">
-              <p className="text-sm font-medium text-amber-700 dark:text-amber-400 mb-1 flex items-center gap-1.5">
-                <UserX className="w-4 h-4" /> השבתת חשבון
-              </p>
-              <p className="text-xs text-muted-foreground mb-3">
-                השבתת החשבון תסיר את הגישה שלך למערכת. ניתן לפנות למנהל המערכת לשחזור הגישה.
-              </p>
-              <Button
-                variant="outline"
-                size="sm"
-                className="w-full gap-2 border-amber-400 text-amber-700 dark:text-amber-400 hover:bg-amber-100 dark:hover:bg-amber-900/30"
-                onClick={() => openConfirm('deactivate')}
-              >
-                <UserX className="w-4 h-4" /> בקשת השבתת חשבון
-              </Button>
-            </div>
-
-            {/* Permanent deletion */}
+            {/* Permanent account deletion */}
             <div className="rounded-lg border border-destructive/30 bg-destructive/5 p-3">
               <p className="text-sm font-medium text-destructive mb-1 flex items-center gap-1.5">
-                <AlertTriangle className="w-4 h-4" /> מחיקת פרופיל לצמיתות
+                <AlertTriangle className="w-4 h-4" /> מחיקת חשבון לצמיתות
               </p>
               <p className="text-xs text-muted-foreground mb-3">
-                פעולה זו תמחק את פרופיל המורה שלך לצמיתות ולא ניתן לשחזרו. ודא שברצונך להמשיך.
+                פעולה זו תמחק את חשבונך וכל הנתונים המשויכים לצמיתות ולא ניתן לשחזרם. ודא שברצונך להמשיך.
               </p>
               <Button
                 variant="destructive"
                 size="sm"
                 className="w-full gap-2"
-                onClick={() => openConfirm('delete')}
+                onClick={() => { setConfirmText(''); setShowConfirm(true); }}
               >
-                <Trash2 className="w-4 h-4" /> מחיקת פרופיל לצמיתות
+                <Trash2 className="w-4 h-4" /> מחיקת חשבון לצמיתות
               </Button>
             </div>
           </div>
         </DialogContent>
       </Dialog>
 
-      <AlertDialog open={mode !== null} onOpenChange={(o) => { if (!o) closeConfirm(); }}>
+      <AlertDialog open={showConfirm} onOpenChange={(o) => { if (!o) closeConfirm(); }}>
         <AlertDialogContent dir="rtl">
           <AlertDialogHeader>
-            <AlertDialogTitle className={isDeactivate ? '' : 'text-destructive'}>
-              {isDeactivate ? 'השבתת חשבון' : 'מחיקת פרופיל - פעולה בלתי הפיכה'}
-            </AlertDialogTitle>
+            <AlertDialogTitle className="text-destructive">מחיקת חשבון - פעולה בלתי הפיכה</AlertDialogTitle>
             <AlertDialogDescription>
-              {isDeactivate
-                ? 'השבתת החשבון תסיר את הגישה שלך למערכת. ניתן לפנות למנהל המערכת לשחזור הגישה.'
-                : 'פרופיל המורה שלך יימחק לצמיתות ולא ניתן לשחזרו. פעולה זו בלתי הפיכה. האם אתה בטוח?'}
+              חשבונך וכל הנתונים המשויכים אליו יימחקו לצמיתות ולא ניתן לשחזרם. פעולה זו בלתי הפיכה. האם אתה בטוח?
             </AlertDialogDescription>
           </AlertDialogHeader>
           <div className="py-2">
@@ -198,18 +136,11 @@ export default function TeacherAccountSettings({ teacher, onLogout, triggerLabel
               disabled={!isConfirmed || busy}
               onClick={(e) => {
                 e.preventDefault();
-                if (isDeactivate) handleDeactivate();
-                else handleDelete();
+                handleDelete();
               }}
-              className={isDeactivate
-                ? 'border-amber-500 text-amber-700 hover:bg-amber-100 dark:text-amber-400 dark:hover:bg-amber-900/30'
-                : 'bg-destructive text-destructive-foreground hover:bg-destructive/90'}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
-              {busy
-                ? (isDeactivate ? 'משבית...' : 'מוחק...')
-                : <>{isDeactivate
-                  ? <><UserX className="w-4 h-4 ml-1" /> השבת חשבון</>
-                  : <><Trash2 className="w-4 h-4 ml-1" /> מחק פרופיל לצמיתות</>}</>}
+              {busy ? 'מוחק...' : <><Trash2 className="w-4 h-4 ml-1" /> מחק חשבון לצמיתות</>}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

@@ -50,19 +50,18 @@ export function ThemeProvider({ children }) {
     applyDarkClass(darkMode);
   }, [darkMode]);
 
-  // Listen to OS-level prefers-color-scheme changes so 'system' mode
-  // reacts in real-time without a page reload.
+  // When darkMode is 'system', register an active listener to
+  // prefers-color-scheme so the .dark class updates in real-time.
+  // Only active in system mode — explicit light/dark are static.
   useEffect(() => {
+    if (darkMode !== 'system') return;
     const mq = window.matchMedia('(prefers-color-scheme: dark)');
-    function handler() {
-      // Re-read from localStorage in case the user changed the mode in Settings
-      if (loadDarkMode() === 'system') {
-        applyDarkClass('system');
-      }
-    }
+    // Apply immediately for the current system state
+    applyDarkClass('system');
+    const handler = () => applyDarkClass('system');
     mq.addEventListener('change', handler);
     return () => mq.removeEventListener('change', handler);
-  }, []);
+  }, [darkMode]);
 
   // Sync CSS-variable theme from DB on mount (if user is authenticated)
   useEffect(() => {
