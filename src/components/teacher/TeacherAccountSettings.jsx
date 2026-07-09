@@ -68,10 +68,17 @@ export default function TeacherAccountSettings({ teacher, onLogout, triggerLabel
     setBusy(true);
     try {
       const user = await base44.auth.me();
+      // Purge user-owned entities first (non-blocking — failures don't
+      // abort the flow since deleteMe is the authoritative step).
       await purgeUserData(user);
+      // Teacher record is admin-only (RLS), so attempt deletion without
+      // blocking — a failure here must not prevent backend de-provisioning.
       if (hasTeacher) {
-        await base44.entities.Teacher.delete(teacher.id);
+        await Promise.allSettled([base44.entities.Teacher.delete(teacher.id)]);
       }
+      // Explicitly await the SDK de-provisioning endpoint to cleanly remove
+      // backend profile credentials and session database entries BEFORE
+      // purging any local state.
       await base44.auth.deleteMe();
       clearLocalState();
       toast.success('הפרופיל והחשבון נמחקו לצמיתות. מתנתק...');

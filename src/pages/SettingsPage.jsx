@@ -346,6 +346,9 @@ export default function SettingsPage() {
                  try {
                     const user = await base44.auth.me();
                     await purgeUserData(user);
+                    // Explicitly await the SDK de-provisioning endpoint to
+                    // cleanly delete backend profile credentials and session
+                    // database entries BEFORE purging local state.
                     await base44.auth.deleteMe();
                     clearLocalState();
                     toast.success('החשבון נמחק בהצלחה. מתנתק...');
