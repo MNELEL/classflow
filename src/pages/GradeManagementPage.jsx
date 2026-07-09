@@ -34,7 +34,7 @@ export default function GradeManagementPage() {
 
   return (
     <AppLayout>
-      <div ref={containerRef} className="relative p-4 max-w-3xl mx-auto overflow-y-auto h-full" dir="rtl">
+      <div ref={containerRef} data-pull-to-refresh className="relative p-4 max-w-3xl mx-auto overflow-y-auto h-full overscroll-y-contain" dir="rtl" style={{ touchAction: 'pan-y' }}>
         <PullToRefreshIndicator pullY={pullY} refreshing={refreshing} />
         <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="mb-6">
           <div className="flex items-center gap-2 mb-1">

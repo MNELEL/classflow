@@ -113,7 +113,7 @@ export default function LibraryPage() {
 
   return (
     <AppLayout>
-      <div ref={containerRef} className="relative p-4 space-y-4">
+      <div ref={containerRef} data-pull-to-refresh className="relative p-4 space-y-4 overflow-y-auto h-full overscroll-y-contain" style={{ touchAction: 'pan-y' }}>
         <PullToRefreshIndicator pullY={pullY} refreshing={refreshing} />
         <Tabs defaultValue="library">
           <TabsList className="w-full mb-2 flex overflow-x-auto no-scrollbar gap-1">
