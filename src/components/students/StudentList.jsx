@@ -10,6 +10,8 @@ import StudentForm from './StudentForm';
 import TaskManager from './TaskManager';
 import GradeManager from './GradeManager';
 import StudentPortfolio from '@/components/portfolio/StudentPortfolio';
+import PerformanceBadge from '@/components/students/PerformanceBadge';
+import { usePerformanceScores } from '@/hooks/usePerformanceScores';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const NEED_ICONS = {
@@ -36,10 +38,17 @@ export default function StudentList({ students, onSave, onDelete }) {
   const [gradeStudent, setGradeStudent] = useState(null);
   const [portfolioStudent, setPortfolioStudent] = useState(null);
 
+  const { scores, needsAttentionList } = usePerformanceScores(students);
+
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between">
-        <h2 className="text-lg font-bold">תלמידים ({students.length})</h2>
+        <div className="flex items-center gap-2">
+          <h2 className="text-lg font-bold">תלמידים ({students.length})</h2>
+          {needsAttentionList.length > 0 && (
+            <span className="text-xs text-amber-600 dark:text-amber-400 font-medium">⚠ {needsAttentionList.length} דורשים תשומת לב</span>
+          )}
+        </div>
         <Button size="sm" onClick={() => setAdding(true)}>
           <Plus className="w-4 h-4 ml-1" /> הוסף תלמיד
         </Button>
@@ -74,6 +83,13 @@ export default function StudentList({ students, onSave, onDelete }) {
                         ))}
                         {student.friends?.length > 0 && <span className="text-emerald-500 text-[11px] font-medium">💚 {student.friends.length}</span>}
                         {student.avoid?.length > 0 && <span className="text-red-500 text-[11px] font-medium">🚫 {student.avoid.length}</span>}
+                        {scores[student.id] && (
+                          <PerformanceBadge
+                            score={scores[student.id].score}
+                            trend={scores[student.id].trend}
+                            showTrend
+                          />
+                        )}
                       </div>
                     </div>
                   </div>

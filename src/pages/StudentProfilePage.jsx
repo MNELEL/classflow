@@ -17,6 +17,8 @@ import {
 } from 'lucide-react';
 import StudentTaskList from '@/components/students/StudentTaskList';
 import QuickPreferencesEditor from '@/components/students/QuickPreferencesEditor';
+import PerformanceBadge from '@/components/students/PerformanceBadge';
+import { calculatePerformanceScore } from '@/lib/performanceScore';
 import { format, parseISO, subMonths } from 'date-fns';
 import { he } from 'date-fns/locale';
 
@@ -71,6 +73,10 @@ export default function StudentProfilePage() {
   const { data: contacts = [] } = useQuery({
     queryKey: ['parent-contacts'],
     queryFn: () => base44.entities.ParentContact.list('-date', 100),
+  });
+  const { data: behaviorEvents = [] } = useQuery({
+    queryKey: ['behavior-events'],
+    queryFn: () => base44.entities.BehaviorEvent.list('-date', 500),
   });
   const { data: libraryItems = [] } = useQuery({
     queryKey: ['library'],
@@ -153,13 +159,19 @@ export default function StudentProfilePage() {
   }
 
   const lvl = LEVEL_CONFIG[student.academic_level];
+  const myBehavior = behaviorEvents.filter(b => b.student_id === id);
+  const perfScore = calculatePerformanceScore(student, myGrades, myAttendance, myBehavior);
 
   return (
     <AppLayout>
       <div className="max-w-xl mx-auto p-4 pb-8 space-y-4" dir="rtl">
 
         {/* Hero */}
-        <div className="bg-gradient-to-br from-primary/10 to-primary/5 border border-primary/15 rounded-2xl p-4 flex items-start gap-4">
+        <div className="relative bg-gradient-to-br from-primary/10 to-primary/5 border border-primary/15 rounded-2xl p-4 flex items-start gap-4">
+          {/* Performance badge top-left */}
+          <div className="absolute top-3 left-3">
+            <PerformanceBadge score={perfScore.score} trend={perfScore.trend} size="lg" showTrend />
+          </div>
           <div className="w-14 h-14 rounded-2xl bg-primary/15 flex items-center justify-center text-primary font-bold text-2xl shrink-0">
             {student.name.charAt(0)}
           </div>

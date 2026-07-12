@@ -128,7 +128,9 @@ ${problemsDesc || 'לא זוהו בעיות'}
           const student = students.find(s => s.name === m.student_name);
           const fromSeat = seats.find(s => s.row === m.from_row - 1 && s.col === m.from_col - 1);
           const toSeat = seats.find(s => s.row === m.to_row - 1 && s.col === m.to_col - 1);
+          // Skip moves involving locked seats — locked students stay put
           if (!student || !fromSeat || !toSeat) return null;
+          if (fromSeat.is_locked || toSeat.is_locked) return null;
           return { student, fromSeat, toSeat, reason: m.reason, groupName: m.group_name };
         }).filter(Boolean);
 

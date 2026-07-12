@@ -14,9 +14,11 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerTrigger } from '@/components/ui/drawer';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Lock, Unlock, EyeOff, SlidersHorizontal, Users, BarChart2, GripHorizontal } from 'lucide-react';
+import { Lock, Unlock, EyeOff, SlidersHorizontal, Users, BarChart2, GripHorizontal, Box, Sparkles } from 'lucide-react';
 import { toast } from 'sonner';
 import SatisfactionReport from '@/components/classroom/SatisfactionReport';
+import AISortExplainer from '@/components/classroom/AISortExplainer';
+import PresentationMode3D from '@/components/classroom/PresentationMode3D';
 import { usePullToRefresh } from '@/hooks/usePullToRefresh';
 import { useUrlOverlay } from '@/hooks/useUrlOverlay';
 import PullToRefreshIndicator from '@/components/ui/PullToRefreshIndicator';
@@ -59,6 +61,8 @@ export default function SeatingPage() {
   const [lastSaved, setLastSaved] = useState(null);
   const [quickEditMode, setQuickEditMode] = useState(false);
   const [quickEditSeat, setQuickEditSeat] = useState(null);
+  const [showExplainer, setShowExplainer] = useState(false);
+  const [showPresentation3D, setShowPresentation3D] = useState(false);
 
   // Undo / Redo history
   const historyRef = useRef([]);   // past states
@@ -524,7 +528,7 @@ ${overrideLines ? `\nהעדפות ייבוא נוספות:\n${overrideLines}` : 
             </Drawer>
           </div>
 
-          {/* Satisfaction score bar */}
+          {/* Satisfaction score bar + presentation mode */}
           <div className="flex items-center justify-between mb-2 px-1">
             <div className="flex items-center gap-2">
               <span className={`text-sm font-bold ${satisfactionScore >= 80 ? 'text-green-600' : satisfactionScore >= 50 ? 'text-yellow-600' : 'text-red-500'}`}>
@@ -532,9 +536,17 @@ ${overrideLines ? `\nהעדפות ייבוא נוספות:\n${overrideLines}` : 
               </span>
               <span className="text-xs text-muted-foreground">שביעות רצון</span>
             </div>
-            <Button size="sm" variant="outline" className="gap-1.5 text-xs h-7" onClick={() => dialogOverlay.open('satisfaction')}>
-              <BarChart2 className="w-3.5 h-3.5" /> דוח מפורט
-            </Button>
+            <div className="flex gap-1.5">
+              <Button size="sm" variant="outline" className="gap-1.5 text-xs h-7" onClick={() => setShowExplainer(true)}>
+                <Sparkles className="w-3.5 h-3.5" /> הסברי AI
+              </Button>
+              <Button size="sm" variant="outline" className="gap-1.5 text-xs h-7" onClick={() => dialogOverlay.open('satisfaction')}>
+                <BarChart2 className="w-3.5 h-3.5" /> דוח
+              </Button>
+              <Button size="sm" variant="outline" className="gap-1.5 text-xs h-7" onClick={() => setShowPresentation3D(true)}>
+                <Box className="w-3.5 h-3.5" /> 3D
+              </Button>
+            </div>
           </div>
 
           <ClassroomGrid
@@ -566,6 +578,24 @@ ${overrideLines ? `\nהעדפות ייבוא נוספות:\n${overrideLines}` : 
           <SatisfactionReport seats={seats} students={students} />
         </DialogContent>
       </Dialog>
+
+      {/* AI Sort Explainer */}
+      <AISortExplainer
+        seats={seats}
+        students={students}
+        open={showExplainer}
+        onOpenChange={setShowExplainer}
+      />
+
+      {/* 3D Presentation Mode */}
+      <PresentationMode3D
+        seats={seats}
+        students={students}
+        rows={rows}
+        cols={cols}
+        open={showPresentation3D}
+        onClose={() => setShowPresentation3D(false)}
+      />
 
       {/* Seat detail dialog */}
       <Dialog open={!!selectedSeat} onOpenChange={() => seatOverlay.close()}>
