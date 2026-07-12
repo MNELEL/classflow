@@ -134,7 +134,7 @@ ${JSON.stringify(libraryContext)}
 
   return (
     <AppLayout>
-      <div ref={containerRef} className="h-full overflow-y-auto">
+      <div ref={containerRef} className="min-h-full">
         <PullToRefreshIndicator pullY={pullY} refreshing={refreshing} />
         <div className="max-w-2xl mx-auto px-4 py-5 space-y-4">
           {/* Header */}

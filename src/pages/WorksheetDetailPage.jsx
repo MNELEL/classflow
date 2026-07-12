@@ -109,7 +109,7 @@ export default function WorksheetDetailPage() {
 
   return (
     <AppLayout>
-      <div ref={containerRef} className="p-4 max-w-2xl mx-auto overflow-y-auto h-full space-y-4" dir="rtl">
+      <div ref={containerRef} className="p-4 max-w-2xl mx-auto space-y-4" dir="rtl">
         <PullToRefreshIndicator pullY={pullY} refreshing={refreshing} />
 
         <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="flex items-center gap-2">

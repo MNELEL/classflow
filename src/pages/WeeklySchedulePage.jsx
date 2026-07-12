@@ -298,7 +298,7 @@ export default function WeeklySchedulePage() {
 
   return (
     <AppLayout>
-      <div ref={containerRef} className="min-h-full bg-background overflow-y-auto" dir="rtl" style={{ touchAction: 'pan-y' }}>
+      <div ref={containerRef} className="min-h-full bg-background" dir="rtl" style={{ touchAction: 'pan-y' }}>
         <PullToRefreshIndicator pullY={pullY} refreshing={refreshing} />
 
         {/* Header */}

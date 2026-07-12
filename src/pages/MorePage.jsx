@@ -60,17 +60,17 @@ export default function MorePage() {
   const { containerRef, pullY, refreshing } = usePullToRefresh(handleRefresh);
 
   useEffect(() => {
-    if (containerRef.current) {
-      containerRef.current.scrollTop = savedScroll.current;
-    }
+    const main = containerRef.current?.closest('main');
+    if (main) main.scrollTop = savedScroll.current;
     return () => {
-      if (containerRef.current) savedScroll.current = containerRef.current.scrollTop;
+      const m = containerRef.current?.closest('main');
+      if (m) savedScroll.current = m.scrollTop;
     };
   }, []);
 
   return (
     <AppLayout>
-      <div ref={containerRef} className="overflow-y-auto h-full min-h-full bg-background pb-6 relative" dir="rtl">
+      <div ref={containerRef} className="min-h-full bg-background pb-6 relative" dir="rtl">
         <PullToRefreshIndicator pullY={pullY} refreshing={refreshing} />
 
         {/* Header */}

@@ -193,7 +193,7 @@ export default function IngestPage() {
 
   return (
     <AppLayout>
-      <div ref={containerRef} data-pull-to-refresh className="overflow-y-auto h-full relative" style={{ touchAction: 'pan-y' }}>
+      <div ref={containerRef} data-pull-to-refresh className="relative" style={{ touchAction: 'pan-y' }}>
         <PullToRefreshIndicator pullY={pullY} refreshing={refreshing} />
         <div className="p-4 max-w-2xl mx-auto space-y-5 pb-8" dir="rtl">
 

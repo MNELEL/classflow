@@ -31,9 +31,14 @@ export function usePullToRefresh(onRefresh) {
     // Tag the container so global touch-action rules can exempt it
     el.setAttribute('data-pull-to-refresh', '');
 
+    // The actual scroll container is the <main> element in AppLayout.
+    // The page container itself should NOT be a scroll container —
+    // we check scrollTop on main to know if we're at the top.
+    const scrollContainer = el.closest('main') || el;
+
     function onTouchStart(e) {
-      // Only intercept when the container is scrolled to exactly 0
-      if (el.scrollTop !== 0) {
+      // Only intercept when the scroll container is at the top
+      if (scrollContainer.scrollTop !== 0) {
         startY.current = null;
         return;
       }
@@ -43,7 +48,7 @@ export function usePullToRefresh(onRefresh) {
     function onTouchMove(e) {
       if (startY.current === null) return;
       // Re-check scrollTop in case the user scrolled between touchstart and touchmove
-      if (el.scrollTop > 0) {
+      if (scrollContainer.scrollTop > 0) {
         startY.current = null;
         if (pullYRef.current !== 0) { pullYRef.current = 0; pullingRef.current = false; flush(); }
         return;

@@ -161,7 +161,7 @@ export default function WorksheetGeneratorPage() {
 
   return (
     <AppLayout>
-      <div ref={containerRef} className="p-4 max-w-2xl mx-auto overflow-y-auto h-full space-y-5" dir="rtl">
+      <div ref={containerRef} className="p-4 max-w-2xl mx-auto space-y-5" dir="rtl">
         <PullToRefreshIndicator pullY={pullY} refreshing={refreshing} />
         <div className="flex items-center gap-2">
           <div className="w-9 h-9 bg-primary/10 rounded-xl flex items-center justify-center">

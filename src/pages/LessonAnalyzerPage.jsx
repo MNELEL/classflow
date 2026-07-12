@@ -171,7 +171,7 @@ export default function LessonAnalyzerPage() {
 
   return (
     <AppLayout>
-      <div ref={containerRef} className="overflow-y-auto h-full">
+      <div ref={containerRef} className="min-h-full">
         <PullToRefreshIndicator pullY={pullY} refreshing={refreshing} />
         <div className="p-4 max-w-2xl mx-auto space-y-5 pb-8" dir="rtl">
 

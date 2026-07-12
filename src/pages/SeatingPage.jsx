@@ -484,7 +484,7 @@ ${overrideLines ? `\nהעדפות ייבוא נוספות:\n${overrideLines}` : 
         </div>
 
         {/* Main grid */}
-        <div ref={containerRef} data-pull-to-refresh className="flex-1 overflow-auto overflow-x-auto p-2 md:p-4 relative min-w-0 overscroll-y-contain" style={{ touchAction: 'pan-y', WebkitOverflowScrolling: 'touch', overscrollBehaviorY: 'contain' }}>
+        <div ref={containerRef} data-pull-to-refresh className="flex-1 overflow-x-auto p-2 md:p-4 relative min-w-0" style={{ touchAction: 'pan-y', WebkitOverflowScrolling: 'touch' }}>
           <PullToRefreshIndicator pullY={pullY} refreshing={refreshing} />
           {/* Mobile horizontal scroll hint */}
           <div className="md:hidden text-center text-[10px] text-muted-foreground/60 mb-1">

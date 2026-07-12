@@ -35,7 +35,7 @@ export default function HistoryPage() {
 
   return (
     <AppLayout>
-      <div ref={containerRef} className="max-w-3xl mx-auto p-6 overflow-y-auto h-full relative" dir="rtl">
+      <div ref={containerRef} className="max-w-3xl mx-auto p-6 relative" dir="rtl">
         <PullToRefreshIndicator pullY={pullY} refreshing={refreshing} />
         <h1 className="text-2xl font-bold mb-6 mt-0">היסטוריית ישיבה</h1>
 

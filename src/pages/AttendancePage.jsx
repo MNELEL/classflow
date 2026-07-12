@@ -30,7 +30,7 @@ export default function AttendancePage() {
 
   return (
     <AppLayout>
-      <div ref={containerRef} className="relative p-5 max-w-2xl mx-auto overflow-y-auto no-scrollbar h-full space-y-5" dir="rtl">
+      <div ref={containerRef} className="relative p-5 max-w-2xl mx-auto space-y-5" dir="rtl">
         <PullToRefreshIndicator pullY={pullY} refreshing={refreshing} />
         <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="flex items-center gap-2">
           <CalendarCheck className="w-6 h-6 text-primary" />

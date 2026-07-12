@@ -166,7 +166,7 @@ export default function StudentsPage() {
 
   return (
     <AppLayout>
-      <div ref={containerRef} data-pull-to-refresh className="max-w-2xl mx-auto p-6 overflow-y-auto h-full relative overscroll-y-contain" dir="rtl" style={{ touchAction: 'pan-y' }}>
+      <div ref={containerRef} data-pull-to-refresh className="max-w-2xl mx-auto p-6 relative" dir="rtl" style={{ touchAction: 'pan-y' }}>
         <PullToRefreshIndicator pullY={pullY} refreshing={refreshing} />
         {isLoading ? (
           <div className="flex justify-center py-12">

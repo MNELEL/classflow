@@ -35,7 +35,7 @@ export default function ParentPortalPage() {
 
   return (
     <AppLayout>
-      <div ref={containerRef} className="relative p-4 max-w-lg mx-auto space-y-4 overflow-y-auto h-full pb-8" dir="rtl">
+      <div ref={containerRef} className="relative p-4 max-w-lg mx-auto space-y-4 pb-8" dir="rtl">
         <PullToRefreshIndicator pullY={pullY} refreshing={refreshing} />
         <div className="flex items-center gap-2 mb-2">
           <div className="w-9 h-9 bg-blue-100 dark:bg-blue-900/30 rounded-xl flex items-center justify-center text-xl">👨‍👩‍👧</div>
