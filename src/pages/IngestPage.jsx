@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'framer-motion';
+import SmartIngestPanel from '@/components/ingest/SmartIngestPanel';
 
 const FILE_TYPES = {
   students: {
@@ -46,6 +47,7 @@ const FILE_TYPES = {
 };
 
 export default function IngestPage() {
+  const [mode, setMode] = useState('manual');
   const [fileType, setFileType] = useState('students');
   const [files, setFiles] = useState([]);
   const [dragOver, setDragOver] = useState(false);
@@ -206,6 +208,24 @@ export default function IngestPage() {
             </div>
           </div>
 
+          {/* Mode toggle */}
+          <div className="flex gap-1 p-1 bg-muted rounded-xl">
+            <button
+              onClick={() => setMode('manual')}
+              className={`flex-1 py-2 text-sm font-medium rounded-lg transition-all ${mode === 'manual' ? 'bg-card shadow-sm text-foreground' : 'text-muted-foreground'}`}
+            >העלאה רגילה</button>
+            <button
+              onClick={() => setMode('smart')}
+              className={`flex-1 py-2 text-sm font-medium rounded-lg transition-all flex items-center justify-center gap-1.5 ${mode === 'smart' ? 'bg-card shadow-sm text-foreground' : 'text-muted-foreground'}`}
+            >
+              <Sparkles className="w-3.5 h-3.5" /> העלאה חכמה
+            </button>
+          </div>
+
+          {mode === 'smart' ? (
+            <SmartIngestPanel />
+          ) : (
+          <>
           {/* File type selector */}
           <div>
             <p className="text-xs font-semibold text-muted-foreground mb-2">סוג תוכן</p>
@@ -376,6 +396,8 @@ export default function IngestPage() {
                 </Card>
               ))}
             </div>
+          )}
+          </>
           )}
 
         </div>
