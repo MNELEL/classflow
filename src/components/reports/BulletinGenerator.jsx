@@ -3,7 +3,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Sparkles, Loader2, Printer, ChevronDown, ChevronUp, FileDown, ClipboardCopy, Mail } from 'lucide-react';
+import { Sparkles, Loader2, Printer, ChevronDown, ChevronUp, FileDown, ClipboardCopy, Mail, Share2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { motion } from 'framer-motion';
 import { format } from 'date-fns';
@@ -15,6 +15,7 @@ export default function BulletinGenerator() {
   const [className, setClassName] = useState('');
   const [generating, setGenerating] = useState(false);
   const [bulletin, setBulletin] = useState(null);
+  const [bulletinId, setBulletinId] = useState(null);
   const [showRiddle, setShowRiddle] = useState(false);
 
   const { data: grades = [] } = useQuery({ queryKey: ['grades'], queryFn: () => base44.entities.Grade.list('-date', 100) });
@@ -182,11 +183,27 @@ ${context || 'שבוע לימודים רגיל'}
       });
 
       setBulletin(result);
+      setBulletinId(saved.id);
       toast.success('ניוזלטר נוצר בהצלחה!');
     } catch {
       toast.error('שגיאה ביצירת הניוזלטר');
     }
     setGenerating(false);
+  }
+
+  async function shareToParents() {
+    if (!bulletinId) { toast.error('צור ניוזלטר לפני שיתוף'); return; }
+    try {
+      const res = await base44.functions.invoke('bulletinFeedback', {
+        action: 'get_share_link',
+        bulletin_id: bulletinId,
+      });
+      const shareUrl = res.data.share_url;
+      await navigator.clipboard.writeText(shareUrl);
+      toast.success('הקישור להורים הועתק ללוח!');
+    } catch {
+      toast.error('שגיאה ביצירת קישור שיתוף');
+    }
   }
 
   return (
@@ -230,6 +247,9 @@ ${context || 'שבוע לימודים רגיל'}
               </Button>
               <Button size="sm" variant="outline" className="gap-1 text-xs h-7" onClick={sendCleanMail}>
                 <Mail className="w-3 h-3" /> שלח להנהלה
+              </Button>
+              <Button size="sm" variant="default" className="gap-1 text-xs h-7" onClick={shareToParents}>
+                <Share2 className="w-3 h-3" /> שתף להורים
               </Button>
             </div>
           </div>

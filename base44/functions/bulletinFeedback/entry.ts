@@ -1,10 +1,39 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
 
+// HMAC-SHA256 token for bulletin feedback authorization.
+// The token proves the caller received a valid share link from the teacher,
+// preventing unauthenticated feedback injection on arbitrary bulletins.
+async function generateBulletinToken(bulletinId) {
+  const secret = Deno.env.get("BASE44_APP_ID") || "bulletin-fallback-secret";
+  const key = await crypto.subtle.importKey(
+    "raw",
+    new TextEncoder().encode(secret),
+    { name: "HMAC", hash: "SHA-256" },
+    false,
+    ["sign"]
+  );
+  const sig = await crypto.subtle.sign("HMAC", key, new TextEncoder().encode(bulletinId));
+  return btoa(String.fromCharCode(...new Uint8Array(sig)))
+    .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+}
+
+// Constant-time comparison to prevent timing attacks
+async function validateBulletinToken(bulletinId, token) {
+  if (!token || typeof token !== 'string') return false;
+  const expected = await generateBulletinToken(bulletinId);
+  if (expected.length !== token.length) return false;
+  let diff = 0;
+  for (let i = 0; i < expected.length; i++) {
+    diff |= expected.charCodeAt(i) ^ token.charCodeAt(i);
+  }
+  return diff === 0;
+}
+
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
     const body = await req.json().catch(() => ({}));
-    const { action, bulletin_id, parent_name, rating, text } = body;
+    const { action, bulletin_id, parent_name, rating, text, token } = body;
 
     if (!bulletin_id) {
       return Response.json({ error: 'Missing bulletin_id' }, { status: 400 });
@@ -31,9 +60,25 @@ Deno.serve(async (req) => {
       });
     }
 
-    // ── POST: submit parent feedback ──
+    // ── Generate share link (authenticated — teacher only) ──
+    if (action === 'get_share_link') {
+      const user = await base44.auth.me();
+      if (!user) {
+        return Response.json({ error: 'Unauthorized' }, { status: 401 });
+      }
+      const shareToken = await generateBulletinToken(bulletin_id);
+      const origin = req.headers.get("origin") || "";
+      return Response.json({ share_url: `${origin}/feedback/${bulletin_id}?token=${shareToken}` });
+    }
+
+    // ── POST: submit parent feedback (requires valid token) ──
     if (action === 'submit') {
-      // Basic spam prevention: check existing feedbacks for recent submissions
+      // Validate token — only parents with a valid share link can submit
+      const isValid = await validateBulletinToken(bulletin_id, token);
+      if (!isValid) {
+        return Response.json({ error: 'קישור המשוב אינו תקין או שפג תוקפו. נא להשתמש בקישור שקיבלת מהמורה.' }, { status: 403 });
+      }
+
       const bulletin = await base44.asServiceRole.entities.WeeklyBulletin.get(bulletin_id);
       if (!bulletin) {
         return Response.json({ error: 'Bulletin not found' }, { status: 404 });
@@ -60,7 +105,7 @@ Deno.serve(async (req) => {
 
       // Append new feedback
       const newFeedback = {
-        parent_name: parent_name || '',
+        parent_name: (parent_name || '').slice(0, 100),
         rating: ratingNum,
         text: (text || '').slice(0, 1000),
         created_at: new Date().toISOString(),

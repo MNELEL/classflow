@@ -9,6 +9,7 @@ import { cn } from '@/lib/utils';
 
 export default function ParentFeedbackPage() {
   const { bulletinId } = useParams();
+  const feedbackToken = new URLSearchParams(window.location.search).get('token');
   const [bulletin, setBulletin] = useState(null);
   const [loading, setLoading] = useState(true);
   const [parentName, setParentName] = useState('');
@@ -45,6 +46,7 @@ export default function ParentFeedbackPage() {
       await base44.functions.invoke('bulletinFeedback', {
         action: 'submit',
         bulletin_id: bulletinId,
+        token: feedbackToken,
         parent_name: parentName,
         rating,
         text: feedbackText,
