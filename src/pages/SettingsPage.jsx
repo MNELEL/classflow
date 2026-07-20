@@ -17,6 +17,8 @@ import BrandingPanel from '@/components/settings/BrandingPanel';
 import SecuritySettings from '@/components/security/SecuritySettings';
 import AccountManagement from '@/components/settings/AccountManagement';
 import { purgeUserData, clearLocalState } from '@/lib/accountCleanup';
+import { exportAllUserData, downloadJson } from '@/lib/dataExport';
+import { Download } from 'lucide-react';
 import { useUrlOverlay } from '@/hooks/useUrlOverlay';
 
 const SETTINGS_KEY = 'classmanager_settings';
