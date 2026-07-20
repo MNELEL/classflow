@@ -322,6 +322,24 @@ export default function SettingsPage() {
           <SecuritySettings />
 
           {/* Account Management — deactivate / delete */}
+          {/* Data Export */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base flex items-center gap-2">
+                <Download className="w-4 h-4" /> ייצוא כל הנתונים שלי
+              </CardTitle>
+              <CardDescription>
+                מוריד קובץ JSON אחד עם כל הנתונים שלך (תלמידים, ציונים, נוכחות, חומרי לימוד ועוד) - לגיבוי או להעברה ידנית לכלי אחר. פעולת קריאה בלבד, לא משנה שום דבר במערכת.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Button onClick={handleExportData} disabled={isExporting} variant="outline">
+                <Download className="w-4 h-4 ml-2" />
+                {isExporting ? 'מייצא...' : 'ייצוא כל הנתונים שלי'}
+              </Button>
+            </CardContent>
+          </Card>
+
           <AccountManagement />
 
           {/* Danger Zone */}
