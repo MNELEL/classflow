@@ -18,10 +18,13 @@ export default function Contact() {
     e.preventDefault();
     setLoading(true);
     try {
+      // Sanitize user input — strip control characters and limit length
+      // to prevent content spoofing / email header injection
+      const sanitize = (str, max = 500) => (str || '').replace(/[\x00-\x1F\x7F]/g, ' ').slice(0, max).trim();
       await base44.integrations.Core.SendEmail({
         to: 'support@classflow.app',
-        subject: `הודעה חדשה מ-${name || 'אנונימי'}`,
-        body: `שם: ${name}\nאימייל: ${email}\n\n${message}`,
+        subject: `הודעה חדשה מ-${sanitize(name, 80) || 'אנונימי'}`,
+        body: `שם: ${sanitize(name, 100)}\nאימייל: ${sanitize(email, 100)}\n\n${sanitize(message, 2000)}`,
       });
       setSent(true);
       setName(''); setEmail(''); setMessage('');

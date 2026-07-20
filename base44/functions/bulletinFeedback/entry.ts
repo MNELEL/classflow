@@ -41,6 +41,11 @@ Deno.serve(async (req) => {
 
     // ── GET: return bulletin content for public feedback page ──
     if (action === 'get') {
+      // Validate token — only parents with a valid share link can view the bulletin
+      const isValid = await validateBulletinToken(bulletin_id, token);
+      if (!isValid) {
+        return Response.json({ error: 'קישור המשוב אינו תקין או שפג תוקפו. נא להשתמש בקישור שקיבלת מהמורה.' }, { status: 403 });
+      }
       const bulletin = await base44.asServiceRole.entities.WeeklyBulletin.get(bulletin_id);
       if (!bulletin) {
         return Response.json({ error: 'Bulletin not found' }, { status: 404 });

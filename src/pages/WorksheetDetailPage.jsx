@@ -42,11 +42,12 @@ export default function WorksheetDetailPage() {
 
   function printWorksheet() {
     if (!ws) return;
+    const esc = (str) => String(str ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
     const qs = ws.questions || [];
     const totalPoints = qs.reduce((s, q) => s + (q.points || 10), 0);
     const w = window.open('', '_blank');
     w.document.write(`
-      <html dir="rtl"><head><meta charset="utf-8"><title>${ws.title}</title>
+      <html dir="rtl"><head><meta charset="utf-8"><title>${esc(ws.title)}</title>
       <style>
         body { font-family: Arial, sans-serif; max-width: 800px; margin: 40px auto; padding: 0 20px; direction: rtl; }
         h1 { font-size: 22px; border-bottom: 2px solid #333; padding-bottom: 8px; }
@@ -60,21 +61,21 @@ export default function WorksheetDetailPage() {
         .total { text-align: left; font-weight: bold; margin-top: 20px; border-top: 1px solid #333; padding-top: 8px; }
         @media print { .no-print { display: none; } }
       </style></head><body>
-      <h1>${ws.title}</h1>
-      <div class="meta">מקצוע: ${ws.subject || ''} | נושא: ${ws.topic || ''} | שכבה: ${ws.grade_level || ''} | רמה: ${ws.difficulty || ''}</div>
-      ${ws.instructions ? `<div class="instructions">📋 ${ws.instructions}</div>` : ''}
+      <h1>${esc(ws.title)}</h1>
+      <div class="meta">מקצוע: ${esc(ws.subject || '')} | נושא: ${esc(ws.topic || '')} | שכבה: ${esc(ws.grade_level || '')} | רמה: ${esc(ws.difficulty || '')}</div>
+      ${ws.instructions ? `<div class="instructions">📋 ${esc(ws.instructions)}</div>` : ''}
       <div class="meta">שם תלמיד: __________________ כיתה: ________ תאריך: ________</div>
       ${qs.map((q, i) => `
         <div class="question">
-          <div class="question-header"><span>שאלה ${i + 1} — ${q.type}</span><span>${q.points || 10} נקודות</span></div>
-          <p>${q.question}</p>
-          ${q.options?.length ? `<ul class="options">${q.options.map((o, j) => `<li>${['א','ב','ג','ד'][j]}. ${o}</li>`).join('')}</ul>` : ''}
+          <div class="question-header"><span>שאלה ${i + 1} — ${esc(q.type)}</span><span>${esc(q.points || 10)} נקודות</span></div>
+          <p>${esc(q.question)}</p>
+          ${q.options?.length ? `<ul class="options">${q.options.map((o, j) => `<li>${['א','ב','ג','ד'][j]}. ${esc(o)}</li>`).join('')}</ul>` : ''}
           ${q.type === 'שאלה פתוחה' ? '<div class="answer-line"></div><div class="answer-line"></div>' : ''}
           ${q.type === 'נכון/לא נונק' ? '<p>נכון / לא נכון (הקף)</p>' : ''}
           ${q.type === 'השלמת משפט' ? '<div class="answer-line"></div>' : ''}
         </div>
       `).join('')}
-      <div class="total">סה"כ נקודות: ${totalPoints}</div>
+      <div class="total">סה"כ נקודות: ${esc(totalPoints)}</div>
       </body></html>`);
     w.document.close();
     w.print();
