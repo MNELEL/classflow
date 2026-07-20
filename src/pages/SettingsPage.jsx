@@ -63,6 +63,31 @@ export default function SettingsPage() {
   const navigate = useNavigate();
   const { data: categories = [] } = useQuery({ queryKey: ['categories'], queryFn: () => base44.entities.LessonCategory.list() });
   const [newCat, setNewCat] = useState({ name: '', description: '', icon: '', color_tag: '' });
+  const { data: currentUser } = useQuery({ queryKey: ['auth-me'], queryFn: () => base44.auth.me() });
+  const [isExporting, setIsExporting] = useState(false);
+
+  async function handleExportData() {
+    if (!currentUser?.id) {
+      toast.error('יש להתחבר כדי לייצא נתונים');
+      return;
+    }
+    setIsExporting(true);
+    try {
+      const result = await exportAllUserData(currentUser);
+      const dateStr = new Date().toISOString().slice(0, 10);
+      downloadJson(result, `export-classmanager-${dateStr}.json`);
+      const errorCount = Object.keys(result.errors || {}).length;
+      if (errorCount > 0) {
+        toast.warning(`הייצוא הושלם עם ${errorCount} אזהרות (ראה שדה errors בקובץ)`);
+      } else {
+        toast.success('הייצוא הושלם והורד בהצלחה');
+      }
+    } catch (err) {
+      toast.error('הייצוא נכשל: ' + (err?.message || 'שגיאה לא ידועה'));
+    } finally {
+      setIsExporting(false);
+    }
+  }
 
   const addCat = useMutation({
     mutationFn: (d) => base44.entities.LessonCategory.create(d),
