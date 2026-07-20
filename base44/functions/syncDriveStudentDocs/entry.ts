@@ -1,7 +1,37 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
 
+// Shared-secret verification for the Google Drive webhook. Google's push
+// notifications don't include a signature we can verify cryptographically,
+// but they do echo back whatever channel token we registered when calling
+// drive.files.watch(). We require that token here on every request, so an
+// attacker who doesn't know it (set via the DRIVE_WEBHOOK_TOKEN secret)
+// cannot trigger a sync just by guessing this function's URL.
+// IMPORTANT: when (re)creating the watch channel, pass
+// `token: Deno.env.get("DRIVE_WEBHOOK_TOKEN")` so Google echoes it back
+// in the `X-Goog-Channel-Token` header on every notification.
+function isAuthorizedDriveWebhook(req) {
+  const expected = Deno.env.get("DRIVE_WEBHOOK_TOKEN");
+  if (!expected) {
+    // No token configured — fail closed rather than silently accepting
+    // unauthenticated requests.
+    return false;
+  }
+  const provided = req.headers.get("x-goog-channel-token");
+  if (!provided || provided.length !== expected.length) return false;
+  // Constant-time comparison to avoid timing attacks.
+  let diff = 0;
+  for (let i = 0; i < expected.length; i++) {
+    diff |= expected.charCodeAt(i) ^ provided.charCodeAt(i);
+  }
+  return diff === 0;
+}
+
 Deno.serve(async (req) => {
   try {
+    if (!isAuthorizedDriveWebhook(req)) {
+      return Response.json({ error: 'Unauthorized webhook call' }, { status: 401 });
+    }
+
     const base44 = createClientFromRequest(req);
 
     const body = await req.json();
