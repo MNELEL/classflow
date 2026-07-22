@@ -27,18 +27,24 @@ Deno.serve(async (req) => {
       }, { status: 500 });
     }
 
-    // בונה את כתובת ה-webhook מתוך ה-URL האמיתי של הבקשה הנוכחית, כדי
-    // להימנע מהנחות שגויות לגבי מבנה הכתובת בסביבה הזו.
-    const currentUrl = new URL(req.url);
-    const webhookAddress = `${currentUrl.origin}${currentUrl.pathname.replace(
-      /registerDriveWatch\/?$/,
-      'syncDriveStudentDocs'
-    )}`;
+    // Allow webhookUrl to be passed explicitly — needed when the function
+    // is invoked through a dispatcher URL that doesn't contain the function name.
+    const body = await req.json().catch(() => ({}));
+    let webhookAddress = body.webhookUrl;
 
-    if (!webhookAddress.includes('syncDriveStudentDocs')) {
+    // Otherwise derive it from the request URL by swapping the function name.
+    if (!webhookAddress) {
+      const currentUrl = new URL(req.url);
+      webhookAddress = `${currentUrl.origin}${currentUrl.pathname.replace(
+        /registerDriveWatch\/?$/,
+        'syncDriveStudentDocs'
+      )}`;
+    }
+
+    if (!webhookAddress || !webhookAddress.includes('syncDriveStudentDocs')) {
       return Response.json({
-        error: 'Could not derive webhook address from request URL',
-        derived: webhookAddress,
+        error: 'Could not derive webhook address. Pass webhookUrl in the request body pointing to the syncDriveStudentDocs function URL.',
+        derived: webhookAddress || null,
         requestUrl: req.url,
       }, { status: 500 });
     }
