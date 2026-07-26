@@ -41,17 +41,19 @@ function buildExamHTML({ title, subtitle, instructions, questions, showAnswers, 
     ? questions.reduce((acc, q) => { const k = q.ws_subject || 'כללי'; if (!acc[k]) acc[k] = []; acc[k].push(q); return acc; }, {})
     : { all: questions };
 
+  function esc(v) { return escapeHtml(v); }
+
   function renderQuestion(q, num) {
     return `
       <div class="question">
         <div class="question-header">
           <div style="display:flex;align-items:flex-start;flex:1;gap:10px">
             <span class="q-number" style="background:${t.accentColor}">${num}</span>
-            <span class="q-text">${q.question}</span>
+            <span class="q-text">${esc(q.question)}</span>
           </div>
           <span class="points-badge">${q.points || 10} נק'</span>
         </div>
-        ${q.options?.length ? `<ul class="options">${q.options.map((o, j) => `<li><span class="option-letter" style="color:${t.accentColor}">${['א','ב','ג','ד'][j]}.</span>${o}</li>`).join('')}</ul>` : ''}
+        ${q.options?.length ? `<ul class="options">${q.options.map((o, j) => `<li><span class="option-letter" style="color:${t.accentColor}">${['א','ב','ג','ד'][j]}.</span>${esc(o)}</li>`).join('')}</ul>` : ''}
         ${q.type === 'שאלה פתוחה' ? `<div class="answer-lines"><div class="al"></div><div class="al"></div><div class="al"></div></div>` : ''}
         ${q.type === 'השלמת משפט' ? `<div class="answer-lines"><div class="al"></div></div>` : ''}
         ${q.type === 'נכון/לא נכון' ? `<div class="truefalse">☐ נכון &nbsp;&nbsp;&nbsp; ☐ לא נכון</div>` : ''}
@@ -59,20 +61,20 @@ function buildExamHTML({ title, subtitle, instructions, questions, showAnswers, 
   }
 
   const questionsHTML = isBooklet
-    ? Object.entries(grouped).map(([subj, qs]) => `<div class="subject-section"><div class="subject-header">${subj}</div>${qs.map((q, i) => renderQuestion(q, i + 1)).join('')}</div>`).join('')
+    ? Object.entries(grouped).map(([subj, qs]) => `<div class="subject-section"><div class="subject-header">${esc(subj)}</div>${qs.map((q, i) => renderQuestion(q, i + 1)).join('')}</div>`).join('')
     : (twoCol
         ? `<div class="two-col">${questions.map((q, i) => renderQuestion(q, i + 1)).join('')}</div>`
         : questions.map((q, i) => renderQuestion(q, i + 1)).join(''));
 
   const logoHTML = logoUrl
-    ? `<img src="${logoUrl}" style="width:60px;height:60px;object-fit:contain;border-radius:10px" />`
+    ? `<img src="${esc(logoUrl)}" style="width:60px;height:60px;object-fit:contain;border-radius:10px" />`
     : `<div class="header-logo" style="background:${t.bgGradient}">${t.emoji}</div>`;
 
   return `<!DOCTYPE html>
 <html dir="rtl" lang="he">
 <head>
 <meta charset="utf-8">
-<title>${title || 'מבחן'}</title>
+<title>${esc(title || 'מבחן')}</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800&display=swap');
   *{box-sizing:border-box;margin:0;padding:0}
@@ -117,13 +119,13 @@ function buildExamHTML({ title, subtitle, instructions, questions, showAnswers, 
   <div class="header">
     ${logoHTML}
     <div class="header-info">
-      ${schoolName ? `<div class="school-name">${schoolName}</div>` : ''}
-      <div class="header-title">${title || 'מבחן'}</div>
-      ${subtitle ? `<div class="header-subtitle">${subtitle}</div>` : ''}
+      ${schoolName ? `<div class="school-name">${esc(schoolName)}</div>` : ''}
+      <div class="header-title">${esc(title || 'מבחן')}</div>
+      ${subtitle ? `<div class="header-subtitle">${esc(subtitle)}</div>` : ''}
     </div>
     <div style="text-align:left;font-size:12px;color:#6b7280;min-width:80px">
-      ${date ? `<div style="font-weight:600">${date}</div>` : ''}
-      ${className ? `<div>כיתה ${className}</div>` : ''}
+      ${date ? `<div style="font-weight:600">${esc(date)}</div>` : ''}
+      ${className ? `<div>כיתה ${esc(className)}</div>` : ''}
       <div style="margin-top:4px;font-weight:700;color:${t.accentColor}">${totalPoints} נק'</div>
     </div>
   </div>
@@ -132,10 +134,10 @@ function buildExamHTML({ title, subtitle, instructions, questions, showAnswers, 
     <div class="sf"><label>כיתה</label><div class="fl"></div></div>
     <div class="sf"><label>ציון</label><div class="fl"></div></div>
   </div>
-  ${instructions ? `<div class="instructions-box">📋 ${instructions}</div>` : ''}
+  ${instructions ? `<div class="instructions-box">📋 ${esc(instructions)}</div>` : ''}
   ${questionsHTML}
   <div class="total-bar"><div class="total-box">סה"כ: ${totalPoints} נקודות</div></div>
-  ${showAnswers ? `<div class="answer-key"><h2>✅ מפתח תשובות</h2><div class="ak-grid">${questions.map((q, i) => `<div class="ak-item"><strong>שאלה ${i + 1}:</strong> ${q.answer || '—'}</div>`).join('')}</div></div>` : ''}
+  ${showAnswers ? `<div class="answer-key"><h2>✅ מפתח תשובות</h2><div class="ak-grid">${questions.map((q, i) => `<div class="ak-item"><strong>שאלה ${i + 1}:</strong> ${esc(q.answer || '—')}</div>`).join('')}</div></div>` : ''}
 </div>
 </body></html>`;
 }
