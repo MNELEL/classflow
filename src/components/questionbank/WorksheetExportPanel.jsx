@@ -8,6 +8,7 @@ import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
 import { loadBranding } from '@/lib/branding';
+import { escapeHtml } from '@/lib/htmlEscape';
 
 const TEMPLATE_KEY = 'exam_template_v1';
 
