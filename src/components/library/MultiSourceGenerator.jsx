@@ -194,10 +194,16 @@ ${opts.extraInstructions ? `- הוראות נוספות: ${opts.extraInstruction
 }
 
 // ─── Print / download helpers ────────────────────────────────────────────────
+function escapeHtml(str) {
+  return String(str ?? '').replace(/[&<>"']/g, (c) => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;',
+  }[c]));
+}
+
 function printContent(title, content) {
   const w = window.open('', '_blank');
   w.document.write(`
-    <html dir="rtl"><head><meta charset="utf-8"><title>${title}</title>
+    <html dir="rtl"><head><meta charset="utf-8"><title>${escapeHtml(title)}</title>
     <style>
       body { font-family: 'Arial', sans-serif; max-width: 800px; margin: 40px auto; padding: 0 20px; direction: rtl; line-height: 1.6; }
       h1 { font-size: 24px; border-bottom: 3px solid #6366f1; padding-bottom: 10px; color: #312e81; }
@@ -213,7 +219,12 @@ function printContent(title, content) {
     </style></head><body>
     <div id="content"></div>
     <script>
-      const md = ${JSON.stringify(content)};
+      function escapeHtml(str) {
+        return String(str ?? '').replace(/[&<>"']/g, (c) => ({
+          '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;',
+        }[c]));
+      }
+      const md = escapeHtml(${JSON.stringify(content)});
       document.getElementById('content').innerHTML = md
         .replace(/^### (.+)$/gm, '<h3>$1</h3>')
         .replace(/^## (.+)$/gm, '<h2>$1</h2>')
