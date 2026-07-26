@@ -345,7 +345,6 @@ export default function TasksHubPage() {
               })}
             </div>
           )}
-        </div>
       </div>
     </AppLayout>
   );
