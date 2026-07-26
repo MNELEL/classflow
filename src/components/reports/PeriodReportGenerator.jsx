@@ -10,6 +10,7 @@ import { toast } from 'sonner';
 import { format, subWeeks, subMonths, startOfMonth, endOfMonth, startOfYear, endOfYear } from 'date-fns';
 import { motion } from 'framer-motion';
 import { createPeriodReportWordDoc } from '@/lib/exportWord';
+import { escapeHtml } from '@/lib/htmlEscape';
 
 const PERIOD_OPTIONS = [
   { label: 'שבועי', value: 'weekly' },
@@ -51,6 +52,7 @@ function getDateRange(period) {
 
 function buildPeriodReportHTML(data, className, periodLabel, audienceLabel, teacherName, generatedAt) {
   const { summary, highlights, challenges, stats, classAchievements, subjectSummaries, recommendation } = data;
+  const esc = escapeHtml;
   return `<!DOCTYPE html>
 <html dir="rtl" lang="he">
 <head><meta charset="UTF-8"/>
@@ -94,17 +96,17 @@ function buildPeriodReportHTML(data, className, periodLabel, audienceLabel, teac
 <div class="page">
   <div class="header">
     <div>
-      <div class="header-title">📊 דוח ${periodLabel}</div>
-      <div class="header-sub">כיתה: ${className || 'כיתה'} · מיועד ל: ${audienceLabel}</div>
-      <div class="header-sub">הופק: ${generatedAt}${teacherName ? ` · מורה: ${teacherName}` : ''}</div>
+      <div class="header-title">📊 דוח ${esc(periodLabel)}</div>
+      <div class="header-sub">כיתה: ${esc(className || 'כיתה')} · מיועד ל: ${esc(audienceLabel)}</div>
+      <div class="header-sub">הופק: ${esc(generatedAt)}${teacherName ? ` · מורה: ${esc(teacherName)}` : ''}</div>
     </div>
     <div class="logo-box">🎓</div>
   </div>
 
   <div class="meta-row">
-    <span class="meta-chip">📅 ${periodLabel}</span>
-    <span class="meta-chip">👥 ${audienceLabel}</span>
-    ${stats.totalStudents ? `<span class="meta-chip">${stats.totalStudents} תלמידים</span>` : ''}
+    <span class="meta-chip">📅 ${esc(periodLabel)}</span>
+    <span class="meta-chip">👥 ${esc(audienceLabel)}</span>
+    ${stats.totalStudents ? `<span class="meta-chip">${esc(stats.totalStudents)} תלמידים</span>` : ''}
   </div>
 
   <div class="stats-grid">
@@ -113,12 +115,12 @@ function buildPeriodReportHTML(data, className, periodLabel, audienceLabel, teac
       { n: stats.avgGrade ? stats.avgGrade + '%' : '—', l: 'ממוצע ציונים' },
       { n: stats.topStudentsCount || '—', l: 'מצטיינים' },
       { n: stats.improvingStudentsCount || '—', l: 'משקיעים' },
-    ].map(s => `<div class="stat-box"><div class="stat-num">${s.n}</div><div class="stat-label">${s.l}</div></div>`).join('')}
+    ].map(s => `<div class="stat-box"><div class="stat-num">${esc(s.n)}</div><div class="stat-label">${esc(s.l)}</div></div>`).join('')}
   </div>
 
   <div class="section">
     <div class="section-title">📝 סיכום התקופה</div>
-    <div class="summary-box">${summary}</div>
+    <div class="summary-box">${esc(summary)}</div>
   </div>
 
   ${subjectSummaries?.length ? `
@@ -128,10 +130,10 @@ function buildPeriodReportHTML(data, className, periodLabel, audienceLabel, teac
       <thead><tr><th>מקצוע</th><th>נושאים שנלמדו</th><th>הישגים</th><th>הערות</th></tr></thead>
       <tbody>
         ${subjectSummaries.map(s => `<tr>
-          <td><b>${s.subject}</b></td>
-          <td>${s.topics || '—'}</td>
-          <td><span class="badge ${s.score >= 80 ? 'badge-green' : s.score >= 60 ? 'badge-yellow' : 'badge-red'}">${s.score || '—'}%</span></td>
-          <td>${s.note || ''}</td>
+          <td><b>${esc(s.subject)}</b></td>
+          <td>${esc(s.topics || '—')}</td>
+          <td><span class="badge ${s.score >= 80 ? 'badge-green' : s.score >= 60 ? 'badge-yellow' : 'badge-red'}">${esc(s.score || '—')}%</span></td>
+          <td>${esc(s.note || '')}</td>
         </tr>`).join('')}
       </tbody>
     </table>
@@ -140,11 +142,11 @@ function buildPeriodReportHTML(data, className, periodLabel, audienceLabel, teac
   <div class="excellence-grid">
     <div class="excellence-card">
       <h4>🏆 הישגים מיוחדים</h4>
-      <ul>${(highlights || []).map(h => `<li>${h}</li>`).join('') || '<li>לא הוגדרו הישגים</li>'}</ul>
+      <ul>${(highlights || []).map(h => `<li>${esc(h)}</li>`).join('') || '<li>לא הוגדרו הישגים</li>'}</ul>
     </div>
     <div class="excellence-card">
       <h4>💪 נקודות לשיפור</h4>
-      <ul>${(challenges || []).map(c => `<li>${c}</li>`).join('') || '<li>לא הוגדרו נקודות לשיפור</li>'}</ul>
+      <ul>${(challenges || []).map(c => `<li>${esc(c)}</li>`).join('') || '<li>לא הוגדרו נקודות לשיפור</li>'}</ul>
     </div>
   </div>
 
@@ -152,19 +154,19 @@ function buildPeriodReportHTML(data, className, periodLabel, audienceLabel, teac
   <div class="section" style="margin-top:20px">
     <div class="section-title">🌟 מצטייני הכיתה</div>
     <div class="excellence-card">
-      <ul>${classAchievements.map(a => `<li>${a}</li>`).join('')}</ul>
+      <ul>${classAchievements.map(a => `<li>${esc(a)}</li>`).join('')}</ul>
     </div>
   </div>` : ''}
 
   ${recommendation ? `
   <div class="section">
     <div class="section-title">💡 המלצות להמשך</div>
-    <div class="rec-box">${recommendation}</div>
+    <div class="rec-box">${esc(recommendation)}</div>
   </div>` : ''}
 
   <div class="footer">
     <span>ClassManager Pro — דוח אוטומטי</span>
-    <span>הופק: ${generatedAt}</span>
+    <span>הופק: ${esc(generatedAt)}</span>
   </div>
 </div>
 </body>

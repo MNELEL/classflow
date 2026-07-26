@@ -10,11 +10,13 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
+import { escapeHtml } from '@/lib/htmlEscape';
 
 function printWorksheet(item) {
+  const esc = escapeHtml;
   const questions = item.ai_review_questions || [];
   const html = `<!DOCTYPE html><html dir="rtl" lang="he"><head><meta charset="UTF-8"/>
-<title>דף עבודה – ${item.title}</title>
+<title>דף עבודה – ${esc(item.title)}</title>
 <style>
   body{font-family:'Arial',sans-serif;direction:rtl;margin:30px;font-size:14px;color:#111}
   h1{font-size:20px;border-bottom:2px solid #333;padding-bottom:8px;margin-bottom:4px}
@@ -27,13 +29,13 @@ function printWorksheet(item) {
   .open-line{border-bottom:1px solid #999;height:28px;margin-top:8px}
   @media print{body{margin:15mm}}
 </style></head><body>
-<h1>דף עבודה – ${item.title}</h1>
-<div class="meta">${item.subject ? `מקצוע: ${item.subject} &nbsp;|&nbsp;` : ''}תאריך: ${new Date(item.created_date).toLocaleDateString('he-IL')}</div>
+<h1>דף עבודה – ${esc(item.title)}</h1>
+<div class="meta">${item.subject ? `מקצוע: ${esc(item.subject)} &nbsp;|&nbsp;` : ''}תאריך: ${esc(new Date(item.created_date).toLocaleDateString('he-IL'))}</div>
 ${questions.map((q, i) => `
 <div class="question">
-  <p>שאלה ${i + 1}: ${q.question}</p>
-  ${q.options?.length ? `<div class="options">${q.options.map((o, j) => `<div class="option">${['א','ב','ג','ד'][j]}. ${o}</div>`).join('')}</div>` : `<div class="open-line"></div><div class="open-line"></div>`}
-  <div class="answer">✓ תשובה: ${q.answer}</div>
+  <p>שאלה ${i + 1}: ${esc(q.question)}</p>
+  ${q.options?.length ? `<div class="options">${q.options.map((o, j) => `<div class="option">${['א','ב','ג','ד'][j]}. ${esc(o)}</div>`).join('')}</div>` : `<div class="open-line"></div><div class="open-line"></div>`}
+  <div class="answer">✓ תשובה: ${esc(q.answer)}</div>
 </div>`).join('')}
 </body></html>`;
   const w = window.open('', '_blank');

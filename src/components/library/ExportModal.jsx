@@ -6,10 +6,11 @@ import { Label } from '@/components/ui/label';
 import { Download, FileText, File, Printer, Check, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
+import { escapeHtml } from '@/lib/htmlEscape';
 
 // Convert Markdown to clean HTML for export
 function markdownToHtml(md) {
-  return md
+  return escapeHtml(md)
     .replace(/^### (.+)$/gm, '<h3>$1</h3>')
     .replace(/^## (.+)$/gm, '<h2>$1</h2>')
     .replace(/^# (.+)$/gm, '<h1>$1</h1>')
@@ -27,7 +28,7 @@ function buildPrintHtml(title, content, opts = {}) {
 <html dir="rtl" lang="he">
 <head>
 <meta charset="utf-8">
-<title>${title}</title>
+<title>${escapeHtml(title)}</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;600;700&display=swap');
   * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -79,12 +80,12 @@ function buildPrintHtml(title, content, opts = {}) {
 <div class="page">
   <div class="header">
     <div>
-      <h1>${title}</h1>
-      ${opts.subtitle ? `<p style="font-size:12px;color:#6b7280;margin-top:4px">${opts.subtitle}</p>` : ''}
+      <h1>${escapeHtml(title)}</h1>
+      ${opts.subtitle ? `<p style="font-size:12px;color:#6b7280;margin-top:4px">${escapeHtml(opts.subtitle)}</p>` : ''}
     </div>
     <div class="meta">
-      ${opts.date ? `תאריך: ${opts.date}<br>` : ''}
-      ${opts.grade ? `שכבה: ${opts.grade}` : ''}
+      ${opts.date ? `תאריך: ${escapeHtml(opts.date)}<br>` : ''}
+      ${opts.grade ? `שכבה: ${escapeHtml(opts.grade)}` : ''}
     </div>
   </div>
   ${opts.studentFields ? `

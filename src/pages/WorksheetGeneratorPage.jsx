@@ -17,6 +17,7 @@ import { motion } from 'framer-motion';
 import ReactMarkdown from 'react-markdown';
 import { usePullToRefresh } from '@/hooks/usePullToRefresh';
 import PullToRefreshIndicator from '@/components/ui/PullToRefreshIndicator';
+import { escapeHtml } from '@/lib/htmlEscape';
 
 const QUESTION_TYPES = ['רב-ברירה', 'שאלה פתוחה', 'נכון/לא נכון', 'השלמת משפט'];
 const DIFFICULTIES = ['קל', 'בינוני', 'קשה'];
@@ -114,11 +115,12 @@ export default function WorksheetGeneratorPage() {
   }
 
   function printWorksheet() {
+    const esc = escapeHtml;
     const w = window.open('', '_blank');
     const qs = generated.questions || [];
     const totalPoints = qs.reduce((s, q) => s + (q.points || 10), 0);
     w.document.write(`
-      <html dir="rtl"><head><meta charset="utf-8"><title>${generated.title}</title>
+      <html dir="rtl"><head><meta charset="utf-8"><title>${esc(generated.title)}</title>
       <style>
         body { font-family: Arial, sans-serif; max-width: 800px; margin: 40px auto; padding: 0 20px; direction: rtl; }
         h1 { font-size: 22px; border-bottom: 2px solid #333; padding-bottom: 8px; }
@@ -132,15 +134,15 @@ export default function WorksheetGeneratorPage() {
         .total { text-align: left; font-weight: bold; margin-top: 20px; border-top: 1px solid #333; padding-top: 8px; }
         @media print { .no-print { display: none; } }
       </style></head><body>
-      <h1>${generated.title}</h1>
-      <div class="meta">מקצוע: ${generated.subject} | נושא: ${generated.topic} | שכבה: ${generated.grade_level} | רמה: ${generated.difficulty}</div>
-      ${generated.instructions ? `<div class="instructions">📋 ${generated.instructions}</div>` : ''}
+      <h1>${esc(generated.title)}</h1>
+      <div class="meta">מקצוע: ${esc(generated.subject)} | נושא: ${esc(generated.topic)} | שכבה: ${esc(generated.grade_level)} | רמה: ${esc(generated.difficulty)}</div>
+      ${generated.instructions ? `<div class="instructions">📋 ${esc(generated.instructions)}</div>` : ''}
       <div class="meta">שם תלמיד: __________________ כיתה: ________ תאריך: ________</div>
       ${qs.map((q, i) => `
         <div class="question">
-          <div class="question-header"><span>שאלה ${i + 1} — ${q.type}</span><span>${q.points || 10} נקודות</span></div>
-          <p>${q.question}</p>
-          ${q.options?.length ? `<ul class="options">${q.options.map((o, j) => `<li>${['א','ב','ג','ד'][j]}. ${o}</li>`).join('')}</ul>` : ''}
+          <div class="question-header"><span>שאלה ${i + 1} — ${esc(q.type)}</span><span>${esc(q.points || 10)} נקודות</span></div>
+          <p>${esc(q.question)}</p>
+          ${q.options?.length ? `<ul class="options">${q.options.map((o, j) => `<li>${['א','ב','ג','ד'][j]}. ${esc(o)}</li>`).join('')}</ul>` : ''}
           ${q.type === 'שאלה פתוחה' ? '<div class="answer-line"></div><div class="answer-line"></div>' : ''}
           ${q.type === 'נכון/לא נכון' ? '<p>נכון / לא נכון (הקף)</p>' : ''}
           ${q.type === 'השלמת משפט' ? '<div class="answer-line"></div>' : ''}

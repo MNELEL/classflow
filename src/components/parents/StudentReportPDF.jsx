@@ -1,6 +1,7 @@
 import React, { useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { FileDown, GraduationCap, CalendarCheck, Star, TrendingUp } from 'lucide-react';
+import { escapeHtml } from '@/lib/htmlEscape';
 
 function generatePDFHtml(student, grades, attendance, rewards) {
   const totalPoints = rewards.reduce((s, r) => s + (r.points || 0), 0);
