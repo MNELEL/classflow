@@ -344,11 +344,23 @@ export default function TeacherStylePage() {
                     פרופיל פעיל — AI ישתמש בסגנון שלך
                   </span>
                   <p className="text-xs text-emerald-600/70 dark:text-emerald-400/70">
-                    נותח מ-{profile.items_count} חומרים · {new Date(profile.generated_at).toLocaleDateString('he-IL', { day: 'numeric', month: 'long' })}
+                    נותח מ-{profile.items_count} חומרים · {profile.samples_chars ? `${Math.round(profile.samples_chars / 1000)}K תווים ` : ''}· {new Date(profile.generated_at).toLocaleDateString('he-IL', { day: 'numeric', month: 'long' })}
                   </p>
                 </div>
                 <Sparkles className="w-4 h-4 text-emerald-500 shrink-0" />
               </div>
+
+              {/* Analyzed materials preview */}
+              {profile.sample_titles?.length > 0 && (
+                <div className="flex flex-wrap gap-1 mt-1">
+                  {profile.sample_titles.slice(0, 6).map((t, i) => (
+                    <Badge key={i} variant="outline" className="text-[10px] font-normal truncate max-w-[120px]">{t}</Badge>
+                  ))}
+                  {profile.sample_titles.length > 6 && (
+                    <Badge variant="outline" className="text-[10px] font-normal">+{profile.sample_titles.length - 6}</Badge>
+                  )}
+                </div>
+              )}
 
               {/* Section tabs */}
               <div className="flex gap-1.5 overflow-x-auto no-scrollbar">

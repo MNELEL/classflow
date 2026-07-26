@@ -64,11 +64,9 @@ function getItemContent(item) {
 
 // ─── Core extraction ──────────────────────────────────────────────────────────
 /**
- * Full deep-analysis of all rich library items.
- * Calls the LLM twice:
- *   1. Lexical / stylistic fingerprint
- *   2. Pedagogical pattern analysis
- * Then merges into one comprehensive profile.
+ * Deep-analysis of all rich library items.
+ * Single LLM call with a comprehensive schema — produces a full style fingerprint.
+ * Includes validation + fallback so the profile is never empty.
  */
 export async function extractStyleFromLibrary(libraryItems, onProgress) {
   const richItems = libraryItems.filter(i =>
@@ -85,122 +83,105 @@ export async function extractStyleFromLibrary(libraryItems, onProgress) {
   const notes   = richItems.filter(i => classifyItem(i) === 'written_note');
   const other   = richItems.filter(i => classifyItem(i) === 'other');
 
-  // Pick best representatives (prioritize exams & written material — richest style signal)
   const pickBest = (arr, n, charsEach = 700) =>
     arr.slice(0, n).map(i => {
       const content = getItemContent(i).slice(0, charsEach);
       const type = classifyItem(i);
-      return `【${type === 'exam_or_worksheet' ? 'מבחן/דף עבודה' : type === 'spoken_lesson' ? 'שיעור מוקלט' : 'הערה כתובה'}】 "${i.title}" (${i.subject || i.category || ''})\n${content}`;
+      return `【${type === 'exam_or_worksheet' ? 'מבחן/דף עבודה' : type === 'spoken_lesson' ? 'שיעור מוקלט' : type === 'written_note' ? 'הערה כתובה' : 'חומר נוסף'}】 "${i.title}" (${i.subject || i.category || ''})\n${content}`;
     }).join('\n\n---\n\n');
 
-  const examSamples   = pickBest(exams,  4, 900);
-  const spokenSamples = pickBest(spoken, 3, 700);
-  const notesSamples  = pickBest(notes,  2, 600);
-  const otherSamples  = pickBest(other,  2, 500);
+  const examSamples   = pickBest(exams,  4, 1200);
+  const spokenSamples = pickBest(spoken, 3, 900);
+  const notesSamples  = pickBest(notes,  2, 800);
+  const otherSamples  = pickBest(other,  2, 600);
 
   const allSamples = [examSamples, spokenSamples, notesSamples, otherSamples]
     .filter(Boolean).join('\n\n═══\n\n');
 
-  onProgress?.('מנתח סגנון כתיבה...', 25);
+  // Keep short titles for debugging
+  const sampleTitles = richItems.slice(0, 10).map(i => i.title);
 
-  // ── Step 2a: Lexical / writing style analysis ──────────────────────────────
-  const styleResult = await base44.integrations.Core.InvokeLLM({
-    prompt: `אתה מומחה לניתוח סגנון כתיבה פדגוגי. לפניך חומרים שיצר מורה — מבחנים, דפי עבודה, שיעורים מוקלטים, הערות.
-נתח לעומק את הסגנון הייחודי של המורה הזה/הזאת.
+  onProgress?.('מנתח סגנון הוראה...', 25);
 
-חומרי המורה:
+  // ── Step 2: Single comprehensive LLM call ────────────────────────────────
+  const result = await base44.integrations.Core.InvokeLLM({
+    prompt: `אתה מומחה בכיר לניתוח סגנון הוראה וכתיבה פדגוגית. לפניך חומרים שיצר מורה — מבחנים, דפי עבודה, שיעורים מוקלטים, הערות כתובות.
+
+חומרי המורה לניתוח:
 ${allSamples}
 
-הוראות לניתוח:
-• בחן את השפה, המבנה, הטון, ואוצר המילים בכל סוג חומר
-• זהה דפוסים חוזרים בניסוח שאלות
-• שים לב לאורך משפטים, מורכבות, ואופן הסבר מושגים
-• זהה ביטויים ייחודיים שהמורה משתמש/ת בהם שוב ושוב
-• שים לב לאיך המורה פותח/ת ומסיים/ת יחידות
-• בדוק אם יש שימוש בדוגמאות מהחיים, אנלוגיות, הומור
+עליך לנתח לעומק את הסגנון הייחודי של המורה. הנחיות חיוניות:
+1. עבור כל שדה טקסט — כתוב לפחות 2-3 משפטים מפורטים. אסור להחזיר ערך ריק או null.
+2. עבור שדות מערך — החזר לפחות 3-5 פריטים. אסור להחזיר מערך ריק.
+3. הסתמך אך ורק על החומרים שלפניך. צטט ביטויים אמיתיים שמופיעים בחומר.
+4. התייחס לשפה, למבנה, לטון, לאוצר המילים, לדפוסי השאלות, לגישה הפדגוגית, ולמוטיבציה.
+5. שדה sample_sentences — כתוב 3 משפטים שמדמים בדיוק את סגנון הכתיבה של המורה (לא ציטוטים, אלא חיקוי סגנון).
+6. כל התשובות בעברית.
 
-החזר ניתוח מפורט:`,
+החזר אובייקט JSON מלא ומפורט:`,
     response_json_schema: {
       type: 'object',
       properties: {
-        language_style:         { type: 'string', description: 'תיאור מפורט של סגנון השפה' },
-        sentence_patterns:      { type: 'string', description: 'דפוסי משפטים אופייניים (ארוכים/קצרים, מבנה)' },
-        question_style:         { type: 'string', description: 'איך המורה מנסח/ת שאלות' },
-        question_openings:      { type: 'array', items: { type: 'string' }, description: 'פתיחות שאלות אופייניות' },
-        explanation_style:      { type: 'string', description: 'איך המורה מסביר/ה מושגים' },
-        structure_preference:   { type: 'string', description: 'העדפות מבניות' },
-        tone:                   { type: 'string', description: 'טון כללי' },
-        key_vocabulary:         { type: 'array', items: { type: 'string' }, description: 'מילות מפתח וביטויים אופייניים (עד 15)' },
-        recurring_phrases:      { type: 'array', items: { type: 'string' }, description: 'ביטויים חוזרים ייחודיים' },
-        sample_sentences:       { type: 'array', items: { type: 'string' }, description: '3 משפטים לדוגמה בסגנון המורה' },
-        formatting_habits:      { type: 'string', description: 'הרגלי עיצוב ופורמט' },
-      }
+        language_style:         { type: 'string', description: 'תיאור מפורט (2-3 משפטים) של סגנון השפה, רמת השפה, מאפיינים לשוניים' },
+        sentence_patterns:      { type: 'string', description: 'דפוסי משפטים אופייניים — אורך, מורכבות, מבנה' },
+        question_style:         { type: 'string', description: 'איך המורה מנסח/ת שאלות — סגנון, רמת חשיבה, סוגי שאלות' },
+        question_openings:      { type: 'array', items: { type: 'string' }, description: '5-8 פתיחות שאלות אופייניות שמופיעות אצל המורה' },
+        explanation_style:      { type: 'string', description: 'איך המורה מסביר/ה מושגים — דוגמאות, אנלוגיות, צעדים' },
+        structure_preference:   { type: 'string', description: 'העדפות מבניות בבניית מבחנים וחומרים' },
+        tone:                   { type: 'string', description: 'טון כללי — רשמי/חם/מעודד/קפדן וכו' },
+        formatting_habits:      { type: 'string', description: 'הרגלי עיצוב ופורמט — כותרות, מספור, חלוקה' },
+        key_vocabulary:         { type: 'array', items: { type: 'string' }, description: '8-15 מילות מפתח וביטויים אופייניים שחוזרים אצל המורה' },
+        recurring_phrases:      { type: 'array', items: { type: 'string' }, description: '4-8 ביטויים חוזרים ייחודיים של המורה' },
+        sample_sentences:       { type: 'array', items: { type: 'string' }, description: '3 משפטים שמדמים בדיוק את סגנון הכתיבה של המורה' },
+        pedagogical_approach:   { type: 'string', description: 'תיאור מפורט של הגישה הפדגוגית הכוללת' },
+        teaching_methods:       { type: 'array', items: { type: 'string' }, description: '4-8 שיטות הוראה מועדפות' },
+        difficulty_calibration: { type: 'string', description: 'רמת קושי אופיינית ושכבת גיל משוערת' },
+        topics_covered:         { type: 'array', items: { type: 'string' }, description: '5-10 נושאי הוראה מרכזיים' },
+        emphasis_patterns:      { type: 'string', description: 'מה המורה מדגיש/ה שוב ושבחומריו' },
+        assessment_style:       { type: 'string', description: 'אופי המבחנים ודפי העבודה — מה נבדק ואיך' },
+        learning_progression:   { type: 'string', description: 'כיצד בנויה הדרגתיות הלמידה בחומרים' },
+        motivational_elements:  { type: 'string', description: 'אלמנטים מעודדים ומניעים בחומרים' },
+      },
+      required: ['language_style', 'question_style', 'pedagogical_approach', 'tone', 'difficulty_calibration']
     },
     model: 'claude_sonnet_4_6'
   });
 
-  onProgress?.('מנתח גישה פדגוגית...', 60);
+  onProgress?.('מסכם פרופיל...', 85);
 
-  // ── Step 2b: Pedagogical analysis ─────────────────────────────────────────
-  const pedagResult = await base44.integrations.Core.InvokeLLM({
-    prompt: `אתה מומחה לפדגוגיה. נתח את הגישה הפדגוגית של המורה מהחומרים הבאים.
+  // ── Step 3: Validate + build profile ─────────────────────────────────────
+  const str = (v) => (typeof v === 'string' && v.trim()) ? v.trim() : '';
+  const arr = (v) => (Array.isArray(v) && v.length > 0) ? v.filter(s => s && typeof s === 'string') : [];
 
-חומרי המורה:
-${allSamples}
-
-נתח:
-• רמת קושי ושכבת גיל משוערת
-• שיטות הוראה מועדפות
-• כיצד בנויה הדרגתיות הלמידה
-• אופי הבדיקה והמשוב
-• נושאי הלב של המורה
-• מה המורה מדגיש/ה שוב ושוב`,
-    response_json_schema: {
-      type: 'object',
-      properties: {
-        pedagogical_approach:   { type: 'string' },
-        teaching_methods:       { type: 'array', items: { type: 'string' } },
-        difficulty_calibration: { type: 'string', description: 'רמת קושי אופיינית ושכבת גיל' },
-        topics_covered:         { type: 'array', items: { type: 'string' } },
-        emphasis_patterns:      { type: 'string', description: 'מה המורה מדגיש שוב ושוב' },
-        assessment_style:       { type: 'string', description: 'אופי המבחנים ודפי העבודה' },
-        learning_progression:   { type: 'string', description: 'כיצד בנויה הדרגתיות' },
-        motivational_elements:  { type: 'string', description: 'אלמנטים מעודדים ומניעים' },
-      }
-    },
-    model: 'claude_sonnet_4_6'
-  });
-
-  onProgress?.('מסכם פרופיל...', 90);
-
-  // ── Step 3: merge ──────────────────────────────────────────────────────────
   const profile = {
     // writing
-    language_style:         styleResult.language_style,
-    sentence_patterns:      styleResult.sentence_patterns,
-    question_style:         styleResult.question_style,
-    question_openings:      styleResult.question_openings || [],
-    explanation_style:      styleResult.explanation_style,
-    structure_preference:   styleResult.structure_preference,
-    tone:                   styleResult.tone,
-    key_vocabulary:         styleResult.key_vocabulary || [],
-    recurring_phrases:      styleResult.recurring_phrases || [],
-    sample_sentences:       styleResult.sample_sentences || [],
-    formatting_habits:      styleResult.formatting_habits,
+    language_style:         str(result.language_style),
+    sentence_patterns:      str(result.sentence_patterns),
+    question_style:         str(result.question_style),
+    question_openings:      arr(result.question_openings),
+    explanation_style:      str(result.explanation_style),
+    structure_preference:   str(result.structure_preference),
+    tone:                   str(result.tone),
+    formatting_habits:      str(result.formatting_habits),
+    key_vocabulary:         arr(result.key_vocabulary),
+    recurring_phrases:      arr(result.recurring_phrases),
+    sample_sentences:       arr(result.sample_sentences),
     // pedagogy
-    pedagogical_approach:   pedagResult.pedagogical_approach,
-    teaching_methods:       pedagResult.teaching_methods || [],
-    difficulty_calibration: pedagResult.difficulty_calibration,
-    topics_covered:         pedagResult.topics_covered || [],
-    emphasis_patterns:      pedagResult.emphasis_patterns,
-    assessment_style:       pedagResult.assessment_style,
-    learning_progression:   pedagResult.learning_progression,
-    motivational_elements:  pedagResult.motivational_elements,
+    pedagogical_approach:   str(result.pedagogical_approach),
+    teaching_methods:       arr(result.teaching_methods),
+    difficulty_calibration: str(result.difficulty_calibration),
+    topics_covered:         arr(result.topics_covered),
+    emphasis_patterns:      str(result.emphasis_patterns),
+    assessment_style:       str(result.assessment_style),
+    learning_progression:   str(result.learning_progression),
+    motivational_elements:  str(result.motivational_elements),
     // meta
-    items_count:  richItems.length,
-    exams_count:  exams.length,
-    spoken_count: spoken.length,
-    generated_at: new Date().toISOString(),
+    items_count:    richItems.length,
+    exams_count:    exams.length,
+    spoken_count:   spoken.length,
+    sample_titles:  sampleTitles,
+    samples_chars:  allSamples.length,
+    generated_at:   new Date().toISOString(),
   };
 
   await saveStyleProfile(profile);
