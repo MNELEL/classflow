@@ -2,6 +2,16 @@ import { toast } from 'sonner';
 import { loadBranding } from '@/lib/branding';
 import { convertOklchColors } from '@/lib/colorUtils';
 
+// Escape user-controlled text (student names, branding fields, titles) before
+// interpolating into HTML strings that get set via innerHTML. Without this,
+// a name/field containing markup (e.g. from a CSV import or shared branding
+// settings) could inject executable script into the page.
+function escapeHtml(str) {
+  return String(str ?? '').replace(/[&<>"']/g, (c) => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;',
+  }[c]));
+}
+
 // ── Excel / CSV Export ────────────────────────────────────────────────────────
 export async function exportToExcel(seats, students, rows, cols) {
   const studentMap = Object.fromEntries(students.map(s => [s.id, s]));
@@ -63,7 +73,7 @@ function buildSeatingTable(seats, students, rows, cols) {
       const rightPad = seat.pair_right ? 'padding-right:14px;' : '';
       const bottomPad = seat.pair_down ? 'padding-bottom:12px;' : '';
       const student = seat.student_id ? studentMap[seat.student_id] : null;
-      const name = student?.name || '';
+      const name = escapeHtml(student?.name || '');
       const bg = student ? '#f0edff' : '#fafafa';
       const border = student ? '1.5px solid #c4b5fd' : '1px solid #e5e7eb';
       const color = student ? '#1e1b4b' : '#d1d5db';
@@ -91,17 +101,17 @@ function buildSeatingTable(seats, students, rows, cols) {
 // ── Build branded header HTML ─────────────────────────────────────────────────
 function buildBrandedHeader(dateStr, rows, cols, docTitle) {
   const b = loadBranding();
-  const schoolName = b.school_name || 'ClassManager Pro';
-  const teacherLine = [b.teacher_name, b.class_name].filter(Boolean).join(' · ');
+  const schoolName = escapeHtml(b.school_name || 'ClassManager Pro');
+  const teacherLine = escapeHtml([b.teacher_name, b.class_name].filter(Boolean).join(' · '));
   const logoHtml = b.logo_url
-    ? `<img src="${b.logo_url}" style="height:48px;width:48px;object-fit:contain;border-radius:8px;" />`
+    ? `<img src="${escapeHtml(b.logo_url)}" style="height:48px;width:48px;object-fit:contain;border-radius:8px;" />`
     : `<div style="background:#ede9fe;border-radius:8px;padding:6px 16px;font-size:12px;color:#5b21b6;font-weight:600;">${schoolName}</div>`;
 
   return `
     <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:18px;border-bottom:2px solid #7c3aed;padding-bottom:12px;">
       <div>
-        <div style="font-size:22px;font-weight:800;color:#1e1b4b;">${docTitle}</div>
-        <div style="font-size:12px;color:#6b7280;margin-top:4px;">${dateStr} · ${rows} שורות × ${cols} טורים${teacherLine ? ' · ' + teacherLine : ''}</div>
+        <div style="font-size:22px;font-weight:800;color:#1e1b4b;">${escapeHtml(docTitle)}</div>
+        <div style="font-size:12px;color:#6b7280;margin-top:4px;">${escapeHtml(dateStr)} · ${rows} שורות × ${cols} טורים${teacherLine ? ' · ' + teacherLine : ''}</div>
       </div>
       ${logoHtml}
     </div>
@@ -219,7 +229,7 @@ export function printCleanSeating(seats, students, rows, cols, title = '') {
       }
       const colGapPad = seat.col_gap_after ? 'padding-left:14px;' : '';
       const student = seat.student_id ? studentMap[seat.student_id] : null;
-      const name = student?.name || '';
+      const name = escapeHtml(student?.name || '');
       cells += `<td style="width:${cellW}px;height:${cellH}px;max-width:${cellW}px;padding:2px;${colGapPad}">
         <div style="
           background:${name ? '#f8faff' : '#f5f5f5'};
