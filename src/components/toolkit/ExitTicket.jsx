@@ -4,6 +4,7 @@ import { Input } from '@/components/ui/input';
 import { base44 } from '@/api/base44Client';
 import { Sparkles, Loader2, ClipboardCheck, RefreshCw } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
+import { escapeHtml } from '@/lib/htmlEscape';
 
 const PRESETS = [
   { label: 'סיכום שיעור', prompt: 'צור 3 שאלות סיכום קצרות לשיעור על הנושא' },
@@ -69,7 +70,7 @@ export default function ExitTicket() {
             <ReactMarkdown>{result}</ReactMarkdown>
           </div>
           <Button size="sm" variant="outline" className="mt-2 h-7 text-xs w-full"
-            onClick={() => { const w = window.open('', '_blank'); w.document.write(`<html dir="rtl"><body style="font-family:sans-serif;padding:24px;direction:rtl"><pre style="white-space:pre-wrap">${result}</pre></body></html>`); w.print(); }}>
+            onClick={() => { const w = window.open('', '_blank'); w.document.write(`<html dir="rtl"><body style="font-family:sans-serif;padding:24px;direction:rtl"><pre style="white-space:pre-wrap">${escapeHtml(result)}</pre></body></html>`); w.print(); }}>
             🖨️ הדפס לתלמידים
           </Button>
         </div>
