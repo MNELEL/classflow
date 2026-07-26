@@ -159,6 +159,10 @@ ${allSamples}
       throw new Error('ניתוח הסגנון נכשל — תגובת ה-AI אינה בפורמט JSON תקין');
     }
   }
+  // Some models (e.g. claude_sonnet_4_6) wrap the result in { response: {...} }
+  if (result && typeof result === 'object' && !Array.isArray(result) && result.response && typeof result.response === 'object') {
+    result = result.response;
+  }
   if (!result || typeof result !== 'object' || Array.isArray(result)) {
     throw new Error('ניתוח הסגנון נכשל — תגובת ה-AI אינה אובייקט תקין');
   }
