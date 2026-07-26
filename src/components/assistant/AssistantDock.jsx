@@ -1,8 +1,9 @@
 import React, { useState, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Sparkles, Mic, X, Send, Loader2 } from 'lucide-react';
+import { Sparkles, Mic, X, Send, Loader2, ClipboardCheck } from 'lucide-react';
 import { toast } from 'sonner';
 import { useQueryClient } from '@tanstack/react-query';
+import { useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 
 const SUGGESTIONS = [
@@ -18,6 +19,7 @@ export default function AssistantDock() {
   const [loading, setLoading] = useState(false);
   const [listening, setListening] = useState(false);
   const qc = useQueryClient();
+  const navigate = useNavigate();
   const inputRef = useRef(null);
   const recogRef = useRef(null);
 
@@ -27,12 +29,20 @@ export default function AssistantDock() {
     try {
       const res = await base44.functions.invoke('aiAssistant', { command: text });
       const data = res.data || res;
-      if (data.success) {
+      if (data.success && data.pending) {
+        // AI created a pending proposal — redirect to review screen
+        qc.invalidateQueries({ queryKey: ['pendingUpdates'] });
+        toast.success('הצעה נוצרה! עבור למסך סקירה לאישור', {
+          action: {
+            label: 'לסקירה',
+            onClick: () => navigate('/review'),
+          },
+        });
+      } else if (data.success) {
         toast.success(data.message);
-        // Invalidate common query keys so UI reflects the change
         qc.invalidateQueries();
       } else {
-        toast.error(data.message || 'לא הצלחתי לבצע את הפקודה');
+        toast.error(data.message || 'לא הצלחתי להבין את הפקודה');
       }
       setInput('');
       setOpen(false);
@@ -41,7 +51,7 @@ export default function AssistantDock() {
     } finally {
       setLoading(false);
     }
-  }, [qc]);
+  }, [qc, navigate]);
 
   const toggleVoice = useCallback(() => {
     const SR = window.SpeechRecognition || window.webkitSpeechRecognition;

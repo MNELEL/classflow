@@ -40,6 +40,7 @@ const ROWS = [
   { path: '/exams',                icon: FileText,    label: 'מבחנים',            desc: 'נהל מבחנים, הזן ציונים וסטטוס',     color: 'bg-rose-100 text-rose-600 dark:bg-rose-900/30 dark:text-rose-400'         },
   { path: '/events',               icon: CalendarDays,label: 'אירועים',            desc: 'טיולים, אסיפות, מבחנים וחגיגות',   color: 'bg-teal-100 text-teal-600 dark:bg-teal-900/30 dark:text-teal-400'         },
   { path: '/behavior-timeline',    icon: GitBranch,   label: 'ציר התנהגות',       desc: 'תיעוד אירועי התנהגות לאורך זמן',    color: 'bg-indigo-100 text-indigo-600 dark:bg-indigo-900/30 dark:text-indigo-400'},
+  { path: '/review',              icon: ClipboardCheck,label: 'מסך סקירה',         desc: 'אשר או דחה עדכוני AI',           color: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400' },
   { path: '/fast-feedback',        icon: Zap,         label: 'משוב מהיר',         desc: 'שלח משוב מיידי לתלמיד',            color: 'bg-yellow-100 text-yellow-600 dark:bg-yellow-900/30 dark:text-yellow-400'},
   { path: '/raffle',               icon: Shuffle,     label: 'הגרלות',            desc: 'הגרל תלמיד, קבוצות או סדר אקראי',   color: 'bg-fuchsia-100 text-fuchsia-600 dark:bg-fuchsia-900/30 dark:text-fuchsia-400'},
   { path: '/generators',           icon: Sparkles,    label: 'מחוללים פדגוגיים',  desc: 'סיכומים ומשימות מותאמים עם AI',     color: 'bg-violet-100 text-violet-600 dark:bg-violet-900/30 dark:text-violet-400'},

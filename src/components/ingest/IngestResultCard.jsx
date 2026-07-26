@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Save, Loader2, CheckCircle2, FileText, BookOpen, Award, Mail } from 'lucide-react';
+import { ClipboardCheck, Loader2, CheckCircle2, FileText, BookOpen, Award, Mail } from 'lucide-react';
 import { CATEGORIES, REQUIRES_STUDENT, getCategoryConfig } from '@/lib/smartIngest';
 
 const ICON_MAP = { FileText, BookOpen, Award, Mail };
@@ -36,7 +36,7 @@ export default function IngestResultCard({ result, students, onSave, onUpdate, i
             {isSaved && (
               <div className="absolute top-2 right-2">
                 <Badge className="bg-green-500 text-white border-0 gap-1 text-[10px]">
-                  <CheckCircle2 className="w-3 h-3" /> נשמר
+                  <CheckCircle2 className="w-3 h-3" /> נשלח לסקירה
                 </Badge>
               </div>
             )}
@@ -150,8 +150,8 @@ export default function IngestResultCard({ result, students, onSave, onUpdate, i
             variant={isSaved ? 'outline' : 'default'}
             className="w-full gap-2"
           >
-            {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : isSaved ? <CheckCircle2 className="w-4 h-4" /> : <Save className="w-4 h-4" />}
-            {isSaving ? 'שומר...' : isSaved ? 'נשמר' : 'שמור'}
+            {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : isSaved ? <CheckCircle2 className="w-4 h-4" /> : <ClipboardCheck className="w-4 h-4" />}
+            {isSaving ? 'שולח...' : isSaved ? 'נשלח לסקירה' : 'שלח לסקירה'}
           </Button>
         </CardContent>
       </Card>

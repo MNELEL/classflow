@@ -1,0 +1,124 @@
+{
+  "name": "PendingUpdate",
+  "type": "object",
+  "properties": {
+    "intent": {
+      "type": "string",
+      "enum": [
+        "add_student",
+        "mark_attendance",
+        "add_grade",
+        "add_task",
+        "add_behavior",
+        "add_homework",
+        "document_ingest"
+      ],
+      "description": "\u05e1\u05d5\u05d2 \u05d4\u05e4\u05e2\u05d5\u05dc\u05d4 \u05d4\u05de\u05d5\u05e6\u05e2\u05ea"
+    },
+    "payload": {
+      "type": "object",
+      "description": "\u05e0\u05ea\u05d5\u05e0\u05d9 \u05d4\u05e4\u05e2\u05d5\u05dc\u05d4 \u05d4\u05de\u05d5\u05e6\u05e2\u05ea (JSON \u05de\u05dc\u05d0 \u05de\u05d4-AI)"
+    },
+    "summary": {
+      "type": "string",
+      "description": "\u05ea\u05d9\u05d0\u05d5\u05e8 \u05e7\u05e8\u05d9\u05d0 \u05e9\u05dc \u05de\u05d4 \u05d4-AI \u05de\u05e6\u05d9\u05e2 \u05dc\u05e2\u05e9\u05d5\u05ea"
+    },
+    "source": {
+      "type": "string",
+      "enum": [
+        "text_command",
+        "voice_command",
+        "file_upload"
+      ],
+      "default": "text_command"
+    },
+    "original_text": {
+      "type": "string",
+      "description": "\u05d4\u05e4\u05e7\u05d5\u05d3\u05d4 \u05d4\u05de\u05e7\u05d5\u05e8\u05d9\u05ea \u05e9\u05dc \u05d4\u05de\u05e9\u05ea\u05de\u05e9 \u05d0\u05d5 \u05e9\u05dd \u05d4\u05e7\u05d5\u05d1\u05e5"
+    },
+    "file_url": {
+      "type": "string",
+      "description": "URL \u05e9\u05dc \u05e7\u05d5\u05d1\u05e5 \u05e9\u05d4\u05d5\u05e2\u05dc\u05d4 (\u05d0\u05d5\u05e4\u05e6\u05d9\u05d5\u05e0\u05dc\u05d9)"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "approved",
+        "rejected"
+      ],
+      "default": "pending"
+    },
+    "student_name": {
+      "type": "string",
+      "description": "\u05e9\u05dd \u05d4\u05ea\u05dc\u05de\u05d9\u05d3 \u05d4\u05de\u05d6\u05d5\u05d4\u05d4 (\u05dc\u05ea\u05e6\u05d5\u05d2\u05d4)"
+    },
+    "category_label": {
+      "type": "string",
+      "description": "\u05ea\u05d5\u05d5\u05d9\u05ea \u05e7\u05d8\u05d2\u05d5\u05e8\u05d9\u05d4 \u05dc\u05ea\u05e6\u05d5\u05d2\u05d4"
+    },
+    "reviewed_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "review_notes": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "intent",
+    "payload",
+    "summary",
+    "status"
+  ],
+  "rls": {
+    "create": {
+      "$or": [
+        {
+          "created_by_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "read": {
+      "$or": [
+        {
+          "created_by_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "$or": [
+        {
+          "created_by_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "created_by_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
+}

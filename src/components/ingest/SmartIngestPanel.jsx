@@ -4,14 +4,17 @@ import { base44 } from '@/api/base44Client';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Upload, Loader2, Sparkles, X, CheckCircle2, Layers, FileStack, Image as ImageIcon, RotateCcw } from 'lucide-react';
+import { Upload, Loader2, Sparkles, X, CheckCircle2, Layers, FileStack, Image as ImageIcon, RotateCcw, ClipboardCheck } from 'lucide-react';
 import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
 import IngestResultCard from './IngestResultCard';
-import { CLASSIFICATION_PROMPT, CLASSIFICATION_SCHEMA, matchStudent, detectGrouping, saveResult, getCategoryConfig } from '@/lib/smartIngest';
+import { CLASSIFICATION_PROMPT, CLASSIFICATION_SCHEMA, matchStudent, detectGrouping, getCategoryConfig } from '@/lib/smartIngest';
+import { buildSummary } from '@/lib/pendingUpdateActions';
 
 export default function SmartIngestPanel() {
   const qc = useQueryClient();
+  const navigate = useNavigate();
   const [files, setFiles] = useState([]);
   const [dragOver, setDragOver] = useState(false);
   const [processing, setProcessing] = useState(false);
@@ -106,13 +109,35 @@ export default function SmartIngestPanel() {
     const student = students.find(s => s.id === result.selectedStudentId);
     setSavingIds(prev => new Set([...prev, result.id]));
     try {
-      await saveResult(result, student);
-      qc.invalidateQueries({ queryKey: ['grades'] });
-      qc.invalidateQueries({ queryKey: ['library'] });
-      qc.invalidateQueries({ queryKey: ['behavior'] });
-      qc.invalidateQueries({ queryKey: ['students'] });
+      const category = result.selectedCategory || result.category;
+      const payload = {
+        ...result,
+        selectedCategory: category,
+        selectedStudentId: result.selectedStudentId,
+        fileName: result.fileName,
+        fileUrl: result.fileUrl,
+        summary: result.summary,
+      };
+      const summary = buildSummary('document_ingest', payload);
+      await base44.entities.PendingUpdate.create({
+        intent: 'document_ingest',
+        payload,
+        summary,
+        source: 'file_upload',
+        original_text: result.fileName,
+        file_url: result.fileUrl,
+        status: 'pending',
+        student_name: student?.name || result.student_name || '',
+        category_label: getCategoryConfig(category)?.label || '',
+      });
+      qc.invalidateQueries({ queryKey: ['pendingUpdates'] });
       setSavedIds(prev => new Set([...prev, result.id]));
-      toast.success(`${result.fileName} נשמר בהצלחה`);
+      toast.success(`${result.fileName} נשלח לסקירה`, {
+        action: {
+          label: 'למסך סקירה',
+          onClick: () => navigate('/review'),
+        },
+      });
     } catch (err) {
       toast.error('שגיאה בשמירה: ' + err.message);
     }

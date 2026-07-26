@@ -61,72 +61,33 @@ ${JSON.stringify(studentRoster)}
       return Response.json({ success: false, message: 'לא הצלחתי להבין את הפקודה. נסה לנסח אחרת, למשל: "סמן את דני נעדר" או "הוסף תלמיד חדש בשם רוני".' });
     }
 
-    let result;
-    switch (action.intent) {
-      case 'add_student': {
-        const name = action.student_name?.trim();
-        if (!name) return Response.json({ success: false, message: 'חסר שם תלמיד' });
-        result = await base44.entities.Student.create({ name });
-        return Response.json({ success: true, message: `✅ נוסף תלמיד חדש: ${name}`, entity: 'Student' });
-      }
-      case 'mark_attendance': {
-        if (!action.student_id) return Response.json({ success: false, message: `לא מצאתי תלמיד בשם "${action.student_name || ''}".` });
-        const status = action.status || 'absent';
-        result = await base44.entities.Attendance.create({
-          student_id: action.student_id,
-          date: todayISO,
-          status,
-        });
-        const statusLabel = status === 'absent' ? 'נעדר' : status === 'late' ? 'מאחר' : 'נוכח';
-        return Response.json({ success: true, message: `📋 נרשמה נוכחות: ${action.student_name || ''} — ${statusLabel}`, entity: 'Attendance' });
-      }
-      case 'add_grade': {
-        if (!action.student_id) return Response.json({ success: false, message: `לא מצאתי תלמיד בשם "${action.student_name || ''}".` });
-        if (action.score == null) return Response.json({ success: false, message: 'חסר ציון' });
-        result = await base44.entities.Grade.create({
-          student_id: action.student_id,
-          subject: action.subject || 'כללי',
-          score: action.score,
-          date: action.due_date || todayISO,
-        });
-        return Response.json({ success: true, message: `🎓 נרשם ציון ${action.score} ב${action.subject || 'כללי'} ל${action.student_name || ''}`, entity: 'Grade' });
-      }
-      case 'add_task': {
-        if (!action.title) return Response.json({ success: false, message: 'חסר תוכן המשימה' });
-        result = await base44.entities.Task.create({
-          title: action.title,
-          student_id: action.student_id || undefined,
-          subject: action.subject || undefined,
-          due_date: action.due_date || undefined,
-          priority: action.priority || 'medium',
-          status: 'pending',
-        });
-        return Response.json({ success: true, message: `📝 נוספה משימה: ${action.title}`, entity: 'Task' });
-      }
-      case 'add_behavior': {
-        if (!action.student_id) return Response.json({ success: false, message: `לא מצאתי תלמיד בשם "${action.student_name || ''}".` });
-        result = await base44.entities.BehaviorEvent.create({
-          student_id: action.student_id,
-          student_name: action.student_name || '',
-          type: action.behavior_type || 'neutral',
-          description: action.description || action.title || '',
-          date: new Date().toISOString(),
-        });
-        return Response.json({ success: true, message: `📊 נרשם אירוע התנהגות עבור ${action.student_name || ''}`, entity: 'BehaviorEvent' });
-      }
-      case 'add_homework': {
-        if (!action.title) return Response.json({ success: false, message: 'חסר תוכן שיעור הבית' });
-        result = await base44.entities.HomeworkAssignment.create({
-          title: action.title,
-          subject: action.subject || undefined,
-          due_date: action.due_date || undefined,
-          type: 'homework',
-        });
-        return Response.json({ success: true, message: `📚 נוסף שיעור בית: ${action.title}`, entity: 'HomeworkAssignment' });
-      }
-      default:
-        return Response.json({ success: false, message: 'פעולה לא מוכרת' });
-    }
+    // Build human-readable summary
+    const summaries: Record<string, string> = {
+      add_grade: `ציון ${action.score ?? '—'} ב${action.subject || 'כללי'}${action.student_name ? ' — ' + action.student_name : ''}`,
+      mark_attendance: `נוכחות: ${action.student_name || ''} — ${action.status === 'absent' ? 'נעדר' : action.status === 'late' ? 'מאחר' : 'נוכח'}`,
+      add_behavior: `אירוע התנהגות: ${action.student_name || ''}${action.description ? ' — ' + action.description : ''}`,
+      add_task: `משימה: ${action.title || ''}`,
+      add_homework: `שיעור בית: ${action.title || ''}`,
+      add_student: `תלמיד חדש: ${action.student_name || ''}`,
+    };
+
+    // Save as pending update for review — does NOT execute yet
+    const pending = await base44.entities.PendingUpdate.create({
+      intent: action.intent,
+      payload: action,
+      summary: summaries[action.intent] || 'פעולה מוצעת',
+      source: 'text_command',
+      original_text: command,
+      status: 'pending',
+      student_name: action.student_name || '',
+    });
+
+    return Response.json({
+      success: true,
+      pending: true,
+      pending_id: pending.id,
+      message: `הצעה נוצרה: ${pending.summary}`,
+    });
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });
   }
