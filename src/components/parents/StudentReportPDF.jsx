@@ -11,21 +11,21 @@ function generatePDFHtml(student, grades, attendance, rewards) {
 
   const gradeRows = grades.slice(0, 15).map(g => `
     <tr>
-      <td>${g.test_name || '—'}</td>
-      <td>${g.subject || '—'}</td>
-      <td>${g.date || '—'}</td>
+      <td>${escapeHtml(g.test_name || '—')}</td>
+      <td>${escapeHtml(g.subject || '—')}</td>
+      <td>${escapeHtml(g.date || '—')}</td>
       <td style="font-weight:bold;color:${g.score >= 80 ? '#166534' : g.score >= 60 ? '#92400e' : '#991b1b'}">${g.score}</td>
     </tr>`).join('');
 
   const rewardRows = rewards.slice(0, 10).map(r => `
     <tr>
-      <td>${r.reason}</td>
-      <td>${r.date || '—'}</td>
+      <td>${escapeHtml(r.reason)}</td>
+      <td>${escapeHtml(r.date || '—')}</td>
       <td style="font-weight:bold;color:${r.points > 0 ? '#166534' : '#991b1b'}">${r.points > 0 ? '+' : ''}${r.points}</td>
     </tr>`).join('');
 
   return `<!DOCTYPE html><html dir="rtl" lang="he"><head><meta charset="UTF-8"/>
-<title>דוח תלמיד – ${student.name}</title>
+<title>דוח תלמיד – ${escapeHtml(student.name)}</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Heebo:wght@400;600;700&display=swap');
   body{font-family:'Heebo',Arial,sans-serif;direction:rtl;margin:0;padding:30px;font-size:13px;color:#1e293b;background:#fff}
