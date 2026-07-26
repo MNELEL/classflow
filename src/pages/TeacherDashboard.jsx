@@ -149,7 +149,7 @@ export default function TeacherDashboard() {
 
   return (
     <AppLayout>
-      <div className="p-4 max-w-5xl mx-auto overflow-y-auto h-full pb-8" dir="rtl">
+      <div className="p-4 max-w-5xl mx-auto pb-8" dir="rtl">
         {/* Header */}
         <motion.div 
           initial={{ opacity: 0, y: -10 }} 
