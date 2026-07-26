@@ -58,11 +58,17 @@ const PROVIDERS = [
 
 const STORAGE_KEY = 'classmanager_ai_providers';
 
+// Deliberately sessionStorage, not localStorage: these are raw third-party
+// API keys with no server-side vault behind them. sessionStorage clears when
+// the tab/browser closes, shrinking the window a stolen device or leftover
+// browser profile exposes them in. It does not protect against an active XSS
+// in the current session — if this feature is ever wired up to make real
+// calls, keys should move server-side instead of any browser storage.
 function loadKeys() {
-  try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}'); } catch { return {}; }
+  try { return JSON.parse(sessionStorage.getItem(STORAGE_KEY) || '{}'); } catch { return {}; }
 }
 function saveKeys(keys) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(keys));
+  sessionStorage.setItem(STORAGE_KEY, JSON.stringify(keys));
 }
 
 export default function AIProviderSettings({ open, onClose }) {
@@ -103,7 +109,7 @@ export default function AIProviderSettings({ open, onClose }) {
             הגדרות ספקי AI
           </DialogTitle>
           <p className="text-xs text-muted-foreground mt-1">
-            הזן מפתחות API כדי להתחבר לספקי AI שונים. המפתחות נשמרים רק במכשיר שלך.
+            הזן מפתחות API כדי להתחבר לספקי AI שונים. המפתחות נשמרים בזיכרון הדפדפן בלבד (אינם מוצפנים) ונמחקים בסגירת הטאב.
           </p>
         </DialogHeader>
 
@@ -205,7 +211,7 @@ export default function AIProviderSettings({ open, onClose }) {
 
         <div className="pt-2 border-t border-border">
           <p className="text-[10px] text-muted-foreground mb-3">
-            🔒 המפתחות נשמרים רק על המכשיר שלך ואינם נשלחים לשרתים חיצוניים
+            🔒 המפתחות נשמרים בלבד בזיכרון הדפדפן הנוכחית ולא נשלחים לשרתים חיצוניים — אבל הם אינם מוצפנים, ויימחקו כשתסגרו את הטאב/דפדפן. אל תשתמשו במכשיר ציבורי/משותף.
           </p>
           <Button className="w-full" onClick={handleSave}>
             <Check className="w-4 h-4 ml-1" />
