@@ -27,6 +27,7 @@ const STATUS_LABELS = { pending: 'ממתין', in_progress: 'בביצוע', done
 const PERIOD_LABELS = { weekly: 'שבועי', monthly: 'חודשי', exam: 'מבחן', quiz: 'בוחן', homework: 'שיעורי בית' };
 
 function buildReportHTML(student, grades, tasks, teacherName, period) {
+  const esc = escapeHtml;
   const avgBySubject = {};
   grades.forEach(g => {
     if (!avgBySubject[g.subject]) avgBySubject[g.subject] = { sum: 0, count: 0 };
@@ -95,23 +96,23 @@ function buildReportHTML(student, grades, tasks, teacherName, period) {
   <div class="header">
     <div>
       <div class="header-title">📋 דוח סיכום תקופתי</div>
-      <div class="header-sub">תקופה: ${period} | הופק: ${format(new Date(), 'dd/MM/yyyy', { locale: he })}</div>
-      ${teacherName ? `<div class="header-sub">מורה: ${teacherName}</div>` : ''}
+      <div class="header-sub">תקופה: ${esc(period)} | הופק: ${format(new Date(), 'dd/MM/yyyy', { locale: he })}</div>
+      ${teacherName ? `<div class="header-sub">מורה: ${esc(teacherName)}</div>` : ''}
     </div>
     <div class="logo-box">🎓</div>
   </div>
 
   <!-- Student card -->
   <div class="student-card">
-    <div class="student-avatar">${student.name.charAt(0)}</div>
+    <div class="student-avatar">${esc(student.name.charAt(0))}</div>
     <div style="flex:1">
-      <div class="student-name">${student.name}</div>
+      <div class="student-name">${esc(student.name)}</div>
       <div class="student-meta">
-        ${student.group ? `קבוצה: ${student.group} · ` : ''}
-        ${student.learning_group ? `קבוצת לימוד: ${student.learning_group}` : ''}
+        ${student.group ? `קבוצה: ${esc(student.group)} · ` : ''}
+        ${student.learning_group ? `קבוצת לימוד: ${esc(student.learning_group)}` : ''}
       </div>
       <span class="level-badge" style="background:${levelColor}">${LEVEL_LABELS[student.academic_level] || 'בינוני'}</span>
-      ${student.achievements ? `<div style="margin-top:8px;font-size:11px;color:#4338ca;">🏆 ${student.achievements}</div>` : ''}
+      ${student.achievements ? `<div style="margin-top:8px;font-size:11px;color:#4338ca;">🏆 ${esc(student.achievements)}</div>` : ''}
     </div>
   </div>
 
@@ -148,9 +149,9 @@ function buildReportHTML(student, grades, tasks, teacherName, period) {
           const pct = Math.round((g.score / (g.max_score || 100)) * 100);
           const cls = pct >= 80 ? 'score-high' : pct >= 60 ? 'score-mid' : 'score-low';
           return `<tr>
-            <td>${g.subject}</td>
-            <td>${g.test_name || '—'}</td>
-            <td>${PERIOD_LABELS[g.period] || g.period || '—'}</td>
+            <td>${esc(g.subject)}</td>
+            <td>${esc(g.test_name || '—')}</td>
+            <td>${esc(PERIOD_LABELS[g.period] || g.period || '—')}</td>
             <td>${g.date ? format(parseISO(g.date), 'dd/MM/yy') : '—'}</td>
             <td><span class="score-badge ${cls}">${g.score}/${g.max_score || 100}</span></td>
           </tr>`;
@@ -159,7 +160,7 @@ function buildReportHTML(student, grades, tasks, teacherName, period) {
           const avg = Math.round(d.sum / d.count);
           const cls = avg >= 80 ? 'score-high' : avg >= 60 ? 'score-mid' : 'score-low';
           return `<tr class="avg-row">
-            <td colspan="4">ממוצע — ${sub}</td>
+            <td colspan="4">ממוצע — ${esc(sub)}</td>
             <td><span class="score-badge ${cls}">${avg}%</span></td>
           </tr>`;
         }).join('')}
@@ -172,9 +173,9 @@ function buildReportHTML(student, grades, tasks, teacherName, period) {
     <div class="section-title">🧠 הערכה התנהגותית</div>
     ${(student.traits?.length || 0) === 0
       ? '<div class="no-data">לא תועדו תכונות</div>'
-      : `<div class="traits-wrap">${student.traits.map(t => `<span class="trait-chip">${TRAIT_LABELS[t] || t}</span>`).join('')}</div>`
+      : `<div class="traits-wrap">${student.traits.map(t => `<span class="trait-chip">${esc(TRAIT_LABELS[t] || t)}</span>`).join('')}</div>`
     }
-    ${student.notes ? `<div style="margin-top:10px;font-size:12px;color:#475569;border-right:2px solid #c7d2fe;padding-right:8px;">${student.notes}</div>` : ''}
+    ${student.notes ? `<div style="margin-top:10px;font-size:12px;color:#475569;border-right:2px solid #c7d2fe;padding-right:8px;">${esc(student.notes)}</div>` : ''}
   </div>
 
   <!-- Tasks -->
@@ -184,7 +185,7 @@ function buildReportHTML(student, grades, tasks, teacherName, period) {
     <ul class="tasks-list">
       ${tasks.slice(0, 12).map(t => `
         <li>
-          <span>${t.title}${t.subject ? ` <span style="color:#94a3b8;font-size:10px;">(${t.subject})</span>` : ''}</span>
+          <span>${esc(t.title)}${t.subject ? ` <span style="color:#94a3b8;font-size:10px;">(${esc(t.subject)})</span>` : ''}</span>
           <span class="${t.status === 'done' ? 'status-done' : t.status === 'in_progress' ? 'status-ip' : 'status-pending'}">${STATUS_LABELS[t.status] || t.status}</span>
         </li>`).join('')}
     </ul>
