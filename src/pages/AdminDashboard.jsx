@@ -597,9 +597,14 @@ export default function AdminDashboard() {
                       <p className="text-[11px] text-muted-foreground">{selectedTeacherForDetail.subject || 'ללא מקצוע'}</p>
                     </div>
                   </div>
-                  <button onClick={() => setSearchParams({}, { replace: true })} className="p-1.5 hover:bg-accent rounded-lg">
-                    <X className="w-4 h-4" />
-                  </button>
+                  <div className="flex items-center gap-1">
+                    <Button size="sm" variant="outline" onClick={() => navigate(`/teacher-profile/${selectedTeacherForDetail.id}`)} className="h-8 text-xs">
+                      פרופיל מלא
+                    </Button>
+                    <button onClick={() => setSearchParams({}, { replace: true })} className="p-1.5 hover:bg-accent rounded-lg">
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
                 </div>
 
                 <div className="p-4 space-y-4">
