@@ -253,7 +253,7 @@ export function printCleanSeating(seats, students, rows, cols, title = '') {
     <html dir="rtl" lang="he">
     <head>
       <meta charset="UTF-8">
-      <title>${docTitle}</title>
+      <title>${escapeHtml(docTitle)}</title>
       <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;600;700;800&display=swap" rel="stylesheet">
       <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -274,8 +274,8 @@ export function printCleanSeating(seats, students, rows, cols, title = '') {
     <body>
       <div class="header">
         <div>
-          <div class="title">${docTitle}</div>
-          <div class="subtitle">${dateStr}${schoolName ? ' · ' + schoolName : ''} · ${rows} שורות × ${cols} טורים</div>
+          <div class="title">${escapeHtml(docTitle)}</div>
+          <div class="subtitle">${escapeHtml(dateStr)}${schoolName ? ' · ' + escapeHtml(schoolName) : ''} · ${rows} שורות × ${cols} טורים</div>
         </div>
         ${logoHtml}
       </div>
@@ -295,10 +295,10 @@ export function printSeating(seats, students, rows, cols, title = '') {
   const dateStr = new Date().toLocaleDateString('he-IL');
   const { tableRows } = buildSeatingTable(seats, students, rows, cols);
   const docTitle = title || b.page_titles?.['/seating'] || 'מפת ישיבה';
-  const schoolName = b.school_name || 'ClassManager Pro';
-  const teacherLine = [b.teacher_name, b.class_name].filter(Boolean).join(' · ');
+  const schoolName = escapeHtml(b.school_name || 'ClassManager Pro');
+  const teacherLine = escapeHtml([b.teacher_name, b.class_name].filter(Boolean).join(' · '));
   const logoHtml = b.logo_url
-    ? `<img src="${b.logo_url}" style="height:44px;width:44px;object-fit:contain;border-radius:8px;" />`
+    ? `<img src="${escapeHtml(b.logo_url)}" style="height:44px;width:44px;object-fit:contain;border-radius:8px;" />`
     : `<div class="badge">${schoolName}</div>`;
 
   const printWindow = window.open('', '_blank');
