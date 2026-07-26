@@ -307,7 +307,7 @@ export function printSeating(seats, students, rows, cols, title = '') {
     <html dir="rtl" lang="he">
     <head>
       <meta charset="UTF-8">
-      <title>${docTitle}</title>
+      <title>${escapeHtml(docTitle)}</title>
       <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;600;700;800&display=swap" rel="stylesheet">
       <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -331,8 +331,8 @@ export function printSeating(seats, students, rows, cols, title = '') {
     <body>
       <div class="header">
         <div>
-          <div class="title">${docTitle}</div>
-          <div class="subtitle">${dateStr} · ${rows} שורות × ${cols} טורים${teacherLine ? ' · ' + teacherLine : ''}</div>
+          <div class="title">${escapeHtml(docTitle)}</div>
+          <div class="subtitle">${escapeHtml(dateStr)} · ${rows} שורות × ${cols} טורים${teacherLine ? ' · ' + teacherLine : ''}</div>
         </div>
         ${logoHtml}
       </div>
