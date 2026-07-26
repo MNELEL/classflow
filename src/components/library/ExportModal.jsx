@@ -104,7 +104,8 @@ function buildPrintHtml(title, content, opts = {}) {
 
 // Word export (RTF format that Word can open)
 function buildWordRtf(title, content) {
-  const clean = content
+  const rtfEsc = (s) => String(s ?? '').replace(/[\\{}]/g, (c) => '\\' + c);
+  const clean = rtfEsc(content)
     .replace(/^#+\s+(.+)$/gm, '$1')
     .replace(/\*\*(.+?)\*\*/g, '$1')
     .replace(/\*(.+?)\*/g, '$1')
