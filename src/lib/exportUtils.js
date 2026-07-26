@@ -1,16 +1,7 @@
 import { toast } from 'sonner';
 import { loadBranding } from '@/lib/branding';
 import { convertOklchColors } from '@/lib/colorUtils';
-
-// Escape user-controlled text (student names, branding fields, titles) before
-// interpolating into HTML strings that get set via innerHTML. Without this,
-// a name/field containing markup (e.g. from a CSV import or shared branding
-// settings) could inject executable script into the page.
-function escapeHtml(str) {
-  return String(str ?? '').replace(/[&<>"']/g, (c) => ({
-    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;',
-  }[c]));
-}
+import { escapeHtml } from '@/lib/htmlEscape';
 
 // ── Excel / CSV Export ────────────────────────────────────────────────────────
 export async function exportToExcel(seats, students, rows, cols) {
