@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
+import { escapeHtml } from '@/lib/htmlEscape';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -194,11 +195,6 @@ ${opts.extraInstructions ? `- הוראות נוספות: ${opts.extraInstruction
 }
 
 // ─── Print / download helpers ────────────────────────────────────────────────
-function escapeHtml(str) {
-  return String(str ?? '').replace(/[&<>"']/g, (c) => ({
-    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;',
-  }[c]));
-}
 
 function printContent(title, content) {
   const w = window.open('', '_blank');
