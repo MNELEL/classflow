@@ -104,7 +104,7 @@ export async function extractStyleFromLibrary(libraryItems, onProgress) {
   onProgress?.('מנתח סגנון הוראה...', 25);
 
   // ── Step 2: Single comprehensive LLM call ────────────────────────────────
-  const result = await base44.integrations.Core.InvokeLLM({
+  let result = await base44.integrations.Core.InvokeLLM({
     prompt: `אתה מומחה בכיר לניתוח סגנון הוראה וכתיבה פדגוגית. לפניך חומרים שיצר מורה — מבחנים, דפי עבודה, שיעורים מוקלטים, הערות כתובות.
 
 חומרי המורה לניתוח:
@@ -146,6 +146,28 @@ ${allSamples}
     },
     model: 'claude_sonnet_4_6'
   });
+
+  // ── Step 2b: Normalize + validate LLM result ────────────────────────────
+  // InvokeLLM should return a dict when response_json_schema is specified,
+  // but some responses come back as a JSON string (e.g. wrapped in code blocks).
+  // Without this check, a string result silently produces an all-empty profile.
+  if (typeof result === 'string') {
+    const cleaned = result.trim().replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/,'').trim();
+    try {
+      result = JSON.parse(cleaned);
+    } catch {
+      throw new Error('ניתוח הסגנון נכשל — תגובת ה-AI אינה בפורמט JSON תקין');
+    }
+  }
+  if (!result || typeof result !== 'object' || Array.isArray(result)) {
+    throw new Error('ניתוח הסגנון נכשל — תגובת ה-AI אינה אובייקט תקין');
+  }
+  // Verify at least key qualitative fields have meaningful content
+  const hasQualitative = ['language_style', 'question_style', 'pedagogical_approach', 'tone']
+    .some(k => typeof result[k] === 'string' && result[k].trim().length > 10);
+  if (!hasQualitative) {
+    throw new Error('ניתוח הסגנון נכשל — התגובה אינה מכילה תוכן איכותי מספק');
+  }
 
   onProgress?.('מסכם פרופיל...', 85);
 
