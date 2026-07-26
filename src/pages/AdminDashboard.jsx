@@ -155,16 +155,11 @@ export default function AdminDashboard() {
 
   const inviteTeacherMutation = useMutation({
     mutationFn: async (teacher) => {
-      const loginUrl = `${window.location.origin}/teacher-login`;
-      const body = `שלום ${teacher.full_name},\n\nהוזמנת להצטרף ל-ClassFlow — מערכת ניהול הכיתה.\n\nקוד הגישה האישי שלך: ${teacher.access_code}\n\nכניסה למערכת: ${loginUrl}\n\nבהצלחה!`;
-      return base44.integrations.Core.SendEmail({
-        to: teacher.email,
-        subject: 'הזמנה ל-ClassFlow — קוד הגישה שלך',
-        body,
-      });
+      if (!teacher.email) throw new Error('חסר אימייל למורה');
+      await base44.users.inviteUser(teacher.email, 'user');
     },
-    onSuccess: () => toast.success('ההזמנה נשלחה באימייל!'),
-    onError: (e) => toast.error('שגיאה בשליחה: ' + e.message),
+    onSuccess: () => toast.success('הזמנה נשלחה לאימייל של המורה!'),
+    onError: (e) => toast.error('שגיאה בשליחה: ' + (e.message || '')),
   });
 
   // Security check - only admins can access. Server-side RLS on entities
