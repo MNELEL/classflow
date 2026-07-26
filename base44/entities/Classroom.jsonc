@@ -16,7 +16,11 @@
     },
     "teacher_id": {
       "type": "string",
-      "description": "\u05de\u05d6\u05d4\u05d4 \u05d4\u05de\u05d5\u05e8\u05d4 \u05d4\u05d0\u05d7\u05e8\u05d0\u05d9"
+      "description": "\u05de\u05d6\u05d4\u05d4 \u05d9\u05e9\u05d5\u05ea \u05d4\u05de\u05d5\u05e8\u05d4 \u05d4\u05d0\u05d7\u05e8\u05d0\u05d9"
+    },
+    "teacher_user_id": {
+      "type": "string",
+      "description": "\u05de\u05d6\u05d4\u05d4 \u05d4\u05de\u05e9\u05ea\u05de\u05e9 \u05e9\u05dc \u05d4\u05de\u05d5\u05e8\u05d4 \u05d4\u05d0\u05d7\u05e8\u05d0\u05d9 (\u05dc-RLS)"
     },
     "teacher_name": {
       "type": "string",
@@ -48,9 +52,7 @@
     }
   },
   "required": [
-    "name",
-    "teacher_id",
-    "teacher_name"
+    "name"
   ],
   "rls": {
     "create": {
@@ -66,7 +68,7 @@
           }
         },
         {
-          "data.teacher_id": "{{user.id}}"
+          "data.teacher_user_id": "{{user.id}}"
         }
       ]
     },
@@ -78,7 +80,7 @@
           }
         },
         {
-          "data.teacher_id": "{{user.id}}"
+          "data.teacher_user_id": "{{user.id}}"
         }
       ]
     },
