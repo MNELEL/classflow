@@ -116,7 +116,7 @@ function buildWordRtf(title, content) {
 {\\fonttbl{\\f0\\froman\\fcharset177 Arial;}}
 {\\colortbl ;\\red99\\green102\\blue241;}
 \\paperw11906\\paperh16838\\margl1440\\margr1440\\margt1440\\margb1440
-\\rtlpar\\cf1\\f0\\fs28\\b ${title}\\b0\\par
+\\rtlpar\\cf1\\f0\\fs28\\b ${rtfEsc(title)}\\b0\\par
 \\cf0\\fs24\\par
 ${clean.replace(/\n/g, '\\par\n')}
 \\par}`;
