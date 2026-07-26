@@ -20,6 +20,10 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Unauthorized - must be called by a logged-in user' }, { status: 401 });
     }
 
+    if (user.role !== 'admin') {
+      return Response.json({ error: 'Forbidden - admin only' }, { status: 403 });
+    }
+
     const webhookToken = Deno.env.get('DRIVE_WEBHOOK_TOKEN');
     if (!webhookToken) {
       return Response.json({
@@ -27,24 +31,18 @@ Deno.serve(async (req) => {
       }, { status: 500 });
     }
 
-    // Allow webhookUrl to be passed explicitly — needed when the function
-    // is invoked through a dispatcher URL that doesn't contain the function name.
-    const body = await req.json().catch(() => ({}));
-    let webhookAddress = body.webhookUrl;
+    // Derive the webhook address from the request URL only — do NOT accept
+    // user-controlled input, as it could exfiltrate DRIVE_WEBHOOK_TOKEN to an
+    // attacker-controlled endpoint.
+    const currentUrl = new URL(req.url);
+    const webhookAddress = `${currentUrl.origin}${currentUrl.pathname.replace(
+      /registerDriveWatch\/?$/,
+      'syncDriveStudentDocs'
+    )}`;
 
-    // Otherwise derive it from the request URL by swapping the function name.
-    if (!webhookAddress) {
-      const currentUrl = new URL(req.url);
-      webhookAddress = `${currentUrl.origin}${currentUrl.pathname.replace(
-        /registerDriveWatch\/?$/,
-        'syncDriveStudentDocs'
-      )}`;
-    }
-
-    if (!webhookAddress || !webhookAddress.includes('syncDriveStudentDocs')) {
+    if (!webhookAddress.includes('syncDriveStudentDocs')) {
       return Response.json({
-        error: 'Could not derive webhook address. Pass webhookUrl in the request body pointing to the syncDriveStudentDocs function URL.',
-        derived: webhookAddress || null,
+        error: 'Could not derive webhook address from request URL.',
         requestUrl: req.url,
       }, { status: 500 });
     }

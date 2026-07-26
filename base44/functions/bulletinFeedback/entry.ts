@@ -4,7 +4,10 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
 // The token proves the caller received a valid share link from the teacher,
 // preventing unauthenticated feedback injection on arbitrary bulletins.
 async function generateBulletinToken(bulletinId) {
-  const secret = Deno.env.get("BASE44_APP_ID") || "bulletin-fallback-secret";
+  const secret = Deno.env.get("BULLETIN_TOKEN_SECRET");
+  if (!secret) {
+    throw new Error("BULLETIN_TOKEN_SECRET is not configured");
+  }
   const key = await crypto.subtle.importKey(
     "raw",
     new TextEncoder().encode(secret),
