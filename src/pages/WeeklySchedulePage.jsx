@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import { Plus, ChevronRight, ChevronLeft, Clock, BookOpen, Trash2, X } from 'lucide-react';
+import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 import { toast } from 'sonner';
 import { addWeeks, addDays, startOfWeek, format, isSameDay } from 'date-fns';
 import SmartBellTimer from '@/components/schedule/SmartBellTimer';
@@ -289,6 +290,37 @@ export default function WeeklySchedulePage() {
     toast('השיעור נמחק');
   }
 
+  // ── Drag & Drop: move a lesson between cells (day/hour) ──
+  function handleDragEnd(result) {
+    const { source, destination, draggableId } = result;
+    if (!destination || !plan) return;
+    if (source.droppableId === destination.droppableId) return;
+
+    const [srcDay] = source.droppableId.split('-');
+    const [destDay, destHourStr] = destination.droppableId.split('-');
+    const destHour = Number(destHourStr);
+
+    let moved = null;
+    const days = DAYS.map(d => {
+      const existing = plan?.days?.find(b => b.day_key === d.key);
+      const items = [...(existing?.items || [])];
+      if (d.key === srcDay) {
+        moved = items.find(i => i.id === draggableId);
+        return { day_key: d.key, items: items.filter(i => i.id !== draggableId) };
+      }
+      return { day_key: d.key, items };
+    });
+
+    if (!moved) return;
+    const destBlock = days.find(d => d.day_key === destDay);
+    if (destBlock) {
+      destBlock.items = [...destBlock.items, { ...moved, hour: destHour }];
+    }
+
+    updatePlan.mutate({ id: plan.id, data: { days } });
+    toast.success('השיעור הועבר');
+  }
+
   const totalLessons = useMemo(() => {
     if (!plan?.days) return 0;
     return plan.days.reduce((s, d) => s + (d.items?.length || 0), 0);
@@ -425,6 +457,7 @@ export default function WeeklySchedulePage() {
         </div>
 
         {/* Desktop full grid */}
+        <DragDropContext onDragEnd={handleDragEnd}>
         <div className="hidden md:block overflow-x-auto" style={{ WebkitOverflowScrolling: 'touch' }}>
           <div className="min-w-[640px] max-w-full px-2 pb-6" style={{ zoom: 'var(--timetable-zoom, 1)', transformOrigin: 'top center' }}>
 
@@ -455,40 +488,61 @@ export default function WeeklySchedulePage() {
                 {DAYS.map(day => {
                   const lessons = lessonMap[day.key]?.[hour.value] || [];
                   return (
-                    <div
-                      key={day.key}
-                      className="min-h-[64px] rounded-xl border border-border/50 bg-card/60 p-1 flex flex-col gap-1 group cursor-pointer hover:border-primary/30 hover:bg-accent/20 transition-colors"
-                      onClick={(e) => {
-                        if (e.target.closest('[data-no-cell]')) return;
-                        setAddDialog({ open: true, day: day.key, hour: hour.value });
-                      }}
-                    >
-                      {lessons.map(lesson => {
-                        const color = getSubjectColor(lesson.subject || '', subjectColorMap);
-                        const libItem = lesson.library_item_id ? libraryItems.find(l => l.id === lesson.library_item_id) : null;
-                        return (
-                          <div key={lesson.id} data-no-cell>
-                            <LessonCard
-                              lesson={lesson}
-                              color={color}
-                              libraryItem={libItem}
-                              onDelete={() => handleDeleteLesson(day.key, lesson.id)}
-                            />
-                          </div>
-                        );
-                      })}
-                      {lessons.length === 0 && (
-                        <div className="flex-1 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                          <Plus className="w-3.5 h-3.5 text-muted-foreground" />
+                    <Droppable key={day.key} droppableId={`${day.key}-${hour.value}`}>
+                      {(provided, snapshot) => (
+                        <div
+                          ref={provided.innerRef}
+                          {...provided.droppableProps}
+                          className={`min-h-[64px] rounded-xl border p-1 flex flex-col gap-1 group cursor-pointer transition-colors ${
+                            snapshot.isDraggingOver
+                              ? 'border-primary bg-accent/30'
+                              : 'border-border/50 bg-card/60 hover:border-primary/30 hover:bg-accent/20'
+                          }`}
+                          onClick={(e) => {
+                            if (e.target.closest('[data-no-cell]')) return;
+                            setAddDialog({ open: true, day: day.key, hour: hour.value });
+                          }}
+                        >
+                          {lessons.map((lesson, index) => {
+                            const color = getSubjectColor(lesson.subject || '', subjectColorMap);
+                            const libItem = lesson.library_item_id ? libraryItems.find(l => l.id === lesson.library_item_id) : null;
+                            return (
+                              <Draggable key={lesson.id} draggableId={lesson.id} index={index}>
+                                {(p, s) => (
+                                  <div
+                                    ref={p.innerRef}
+                                    {...p.draggableProps}
+                                    {...p.dragHandleProps}
+                                    data-no-cell
+                                    className={`cursor-grab active:cursor-grabbing ${s.isDragging ? 'opacity-90 shadow-lg ring-2 ring-primary/40 rounded-xl' : ''}`}
+                                  >
+                                    <LessonCard
+                                      lesson={lesson}
+                                      color={color}
+                                      libraryItem={libItem}
+                                      onDelete={() => handleDeleteLesson(day.key, lesson.id)}
+                                    />
+                                  </div>
+                                )}
+                              </Draggable>
+                            );
+                          })}
+                          {provided.placeholder}
+                          {lessons.length === 0 && (
+                            <div className="flex-1 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                              <Plus className="w-3.5 h-3.5 text-muted-foreground" />
+                            </div>
+                          )}
                         </div>
                       )}
-                    </div>
+                    </Droppable>
                   );
                 })}
               </div>
             ))}
           </div>
         </div>
+        </DragDropContext>
 
         <AddLessonDialog
           open={addDialog.open}
