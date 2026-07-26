@@ -133,7 +133,7 @@ export default function ReportsPage() {
 
   return (
     <AppLayout>
-      <div className="p-5 max-w-3xl mx-auto overflow-y-auto h-full space-y-5" dir="rtl">
+      <div className="p-5 max-w-3xl mx-auto space-y-5" dir="rtl">
 
         {/* Tabs */}
         <div role="tablist" className="flex gap-1 bg-muted/50 rounded-xl p-1">
