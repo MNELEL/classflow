@@ -46,8 +46,8 @@ function generatePDFHtml(student, grades, attendance, rewards) {
 </style></head><body>
 <div class="header">
   <div>
-    <h1>${student.name}</h1>
-    <p>${student.learning_group ? `קבוצה: ${student.learning_group}` : ''}</p>
+    <h1>${escapeHtml(student.name)}</h1>
+    <p>${student.learning_group ? `קבוצה: ${escapeHtml(student.learning_group)}` : ''}</p>
     <p>הופק: ${new Date().toLocaleDateString('he-IL')}</p>
   </div>
   <div style="font-size:40px">📊</div>
