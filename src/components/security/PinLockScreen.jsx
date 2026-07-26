@@ -1,89 +1,124 @@
 import React, { useState, useEffect } from 'react';
-import { Lock, Delete } from 'lucide-react';
+import { Lock, Delete, LogOut, Loader2 } from 'lucide-react';
+import { base44 } from '@/api/base44Client';
 import { verifyPin, unlock } from '@/lib/pinLock';
 
 export default function PinLockScreen({ onUnlock }) {
   const [entry, setEntry] = useState('');
   const [error, setError] = useState(false);
+  const [verifying, setVerifying] = useState(false);
 
   useEffect(() => {
-    if (entry.length === 4) {
-      if (verifyPin(entry)) {
-        unlock();
-        onUnlock?.();
-      } else {
-        setError(true);
-        const t = setTimeout(() => {
-          setEntry('');
-          setError(false);
-        }, 600);
-        return () => clearTimeout(t);
-      }
+    if (entry.length === 4 && !verifying) {
+      setVerifying(true);
+      verifyPin(entry).then(valid => {
+        if (valid) {
+          unlock();
+          onUnlock?.();
+        } else {
+          fail();
+        }
+      }).catch(() => fail());
     }
-  }, [entry, onUnlock]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [entry, verifying, onUnlock]);
+
+  function fail() {
+    setError(true);
+    setTimeout(() => {
+      setEntry('');
+      setError(false);
+      setVerifying(false);
+    }, 650);
+  }
 
   const press = (d) => {
-    if (entry.length < 4 && !error) setEntry(e => e + d);
+    if (entry.length < 4 && !error && !verifying) setEntry(e => e + d);
   };
 
   const backspace = () => {
-    if (!error) setEntry(e => e.slice(0, -1));
+    if (!error && !verifying) setEntry(e => e.slice(0, -1));
+  };
+
+  const handleLogout = () => {
+    base44.auth.logout();
   };
 
   const KEYS = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '', '0'];
 
   return (
     <div className="fixed inset-0 z-[100] bg-background flex flex-col items-center justify-center px-6 select-none" dir="rtl">
-      <div className="flex flex-col items-center mb-10">
+      <div className="w-full max-w-[340px] bg-card border border-border rounded-3xl shadow-xl p-8 flex flex-col items-center">
+        {/* Lock icon */}
         <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mb-4">
           <Lock className="w-8 h-8 text-primary" />
         </div>
-        <h1 className="text-xl font-bold text-foreground">ClassFlow נעול</h1>
-        <p className="text-sm text-muted-foreground mt-1">הזן קוד 4 ספרות לפתיחה</p>
-      </div>
 
-      <div className={`flex gap-4 mb-10 ${error ? 'animate-shake' : ''}`}>
-        {[0, 1, 2, 3].map(i => (
-          <div
-            key={i}
-            className={`w-4 h-4 rounded-full border-2 transition-colors ${
-              error
-                ? 'border-destructive bg-destructive'
-                : entry.length > i
-                  ? 'border-primary bg-primary'
-                  : 'border-muted-foreground/40'
-            }`}
-          />
-        ))}
-      </div>
+        {/* Title */}
+        <h1 className="text-xl font-bold text-foreground">לוח הבקרה נעול</h1>
+        <p className="text-sm text-muted-foreground mt-1 mb-8">הזן קוד 4 ספרות לפתיחה</p>
 
-      <div className="grid grid-cols-3 gap-3 max-w-[280px] w-full">
-        {KEYS.map((k, idx) => {
-          if (k === '') {
-            return <div key={idx} />;
-          }
-          return (
-            <button
-              key={idx}
-              onClick={() => press(k)}
-              className="h-16 rounded-2xl bg-card border border-border text-2xl font-semibold text-foreground hover:bg-accent active:scale-95 transition-all flex items-center justify-center"
+        {/* 4 boxes */}
+        <div className={`flex gap-3 mb-6 ${error ? 'animate-shake' : ''}`}>
+          {[0, 1, 2, 3].map(i => (
+            <div
+              key={i}
+              className={`w-12 h-14 rounded-xl border-2 flex items-center justify-center transition-colors ${
+                error
+                  ? 'border-destructive'
+                  : entry.length > i
+                    ? 'border-primary bg-primary/5'
+                    : 'border-border'
+              }`}
             >
-              {k}
-            </button>
-          );
-        })}
+              {verifying && entry.length > i ? (
+                <Loader2 className="w-5 h-5 text-primary animate-spin" />
+              ) : entry.length > i ? (
+                <div className={`w-3 h-3 rounded-full ${error ? 'bg-destructive' : 'bg-primary'}`} />
+              ) : null}
+            </div>
+          ))}
+        </div>
+
+        {/* Error message */}
+        {error && (
+          <p className="text-destructive text-sm mb-4">PIN שגוי</p>
+        )}
+
+        {/* Numpad */}
+        <div className="grid grid-cols-3 gap-3 w-full max-w-[280px]">
+          {KEYS.map((k, idx) => {
+            if (k === '') return <div key={idx} />;
+            return (
+              <button
+                key={idx}
+                onClick={() => press(k)}
+                disabled={verifying}
+                className="h-14 rounded-2xl bg-secondary/50 border border-border text-xl font-semibold text-foreground hover:bg-accent active:scale-95 transition-all flex items-center justify-center disabled:opacity-50"
+              >
+                {k}
+              </button>
+            );
+          })}
+          <button
+            onClick={backspace}
+            disabled={verifying}
+            className="h-14 rounded-2xl bg-secondary/50 border border-border text-foreground hover:bg-accent active:scale-95 transition-all flex items-center justify-center disabled:opacity-50"
+            aria-label="מחק"
+          >
+            <Delete className="w-5 h-5" />
+          </button>
+        </div>
+
+        {/* Logout link */}
         <button
-          onClick={backspace}
-          className="h-16 rounded-2xl bg-card border border-border text-foreground hover:bg-accent active:scale-95 transition-all flex items-center justify-center"
-          aria-label="מחק"
+          onClick={handleLogout}
+          className="mt-6 text-sm text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1.5"
         >
-          <Delete className="w-6 h-6" />
+          <LogOut className="w-3.5 h-3.5" />
+          יציאה מהחשבון
         </button>
       </div>
-
-      {error && (
-        <p className="text-destructive text-sm mt-6">קוד שגוי, נסה שוב</p>
-      )}
     </div>
   );
 }

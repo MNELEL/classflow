@@ -14,7 +14,7 @@ import { ThemeProvider } from '@/lib/themeContext';
 import { applyThemeClass, loadTheme } from '@/lib/themes';
 import { loadBrandingFromDB, loadBranding } from '@/lib/branding';
 import PinLockScreen from '@/components/security/PinLockScreen';
-import { isLocked } from '@/lib/pinLock';
+import { isLocked, refreshPinStatus } from '@/lib/pinLock';
 const AssistantDock = lazy(() => import('./components/assistant/AssistantDock'));
 
 // Lazy-loaded pages for code splitting
@@ -211,6 +211,13 @@ const AuthenticatedApp = () => {
   useEffect(() => {
     if (user && !localStorage.getItem('classflow_onboarding_done')) {
       setShowOnboarding(true);
+    }
+  }, [user]);
+
+  // Refresh PIN lock status from server (keeps cache in sync across devices/sessions)
+  useEffect(() => {
+    if (user) {
+      refreshPinStatus().then(() => setLocked(isLocked()));
     }
   }, [user]);
 
