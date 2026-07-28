@@ -11,7 +11,7 @@ import { Badge } from '@/components/ui/badge';
 import {
   Users, BookOpen, Plus, Copy, Check, Trash2, Edit,
   Shield, Key, School, Mail, Phone, UserCheck, UserX,
-  Stethoscope, X, Brain
+  Stethoscope, X, Brain, RefreshCw, Cloud
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
@@ -160,6 +160,27 @@ export default function AdminDashboard() {
     },
     onSuccess: () => toast.success('הזמנה נשלחה לאימייל של המורה!'),
     onError: (e) => toast.error('שגיאה בשליחה: ' + (e.message || '')),
+  });
+
+  // Registers/renews the Google Drive Changes watch channel used by
+  // syncDriveStudentDocs. MUST go through the SDK's functions.invoke (which
+  // attaches proper auth), never a raw fetch() from the console — a raw
+  // fetch() has no session context and the backend function will fail before
+  // it can even return its own 401, which is why this was previously 500ing
+  // when triggered manually. Google caps the channel at 7 days, so this may
+  // need to be re-run periodically until an automated renewal exists.
+  const registerDriveWatchMutation = useMutation({
+    mutationFn: async () => {
+      const res = await base44.functions.invoke('registerDriveWatch', {});
+      return res.data;
+    },
+    onSuccess: (data) => {
+      toast.success(`ערוץ מעקב Google Drive נרשם בהצלחה (בתוקף עד ${new Date(Number(data.expiration)).toLocaleDateString('he-IL')})`);
+    },
+    onError: (e) => {
+      const msg = e?.response?.data?.error || e.message || 'שגיאה לא ידועה';
+      toast.error('שגיאה ברישום ערוץ Drive: ' + msg);
+    },
   });
 
   // Security check - only admins can access. Server-side RLS on entities
@@ -670,6 +691,36 @@ export default function AdminDashboard() {
             </div>
           )}
         </AnimatePresence>
+
+        {/* System / Integrations Section */}
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.15 }}
+          className="mb-6"
+        >
+          <Card className="border-border/60">
+            <CardHeader className="pb-3 pt-4 px-4">
+              <CardTitle className="text-base flex items-center gap-2">
+                <Cloud className="w-4 h-4 text-primary" />
+                מערכת — סנכרון Google Drive
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="px-4 pb-4 space-y-2">
+              <p className="text-sm text-muted-foreground">
+                רישום/חידוש ערוץ ה-watch שמאפשר ל-Google Drive להודיע על שינויים בזמן אמת, במקום להסתמך על פולינג ידני. הערוץ תקף עד 7 ימים ויש לחדש לפני שהוא פג.
+              </p>
+              <Button
+                size="sm"
+                onClick={() => registerDriveWatchMutation.mutate()}
+                disabled={registerDriveWatchMutation.isPending}
+              >
+                <RefreshCw className={`w-4 h-4 ml-1 ${registerDriveWatchMutation.isPending ? 'animate-spin' : ''}`} />
+                {registerDriveWatchMutation.isPending ? 'רושם ערוץ...' : 'רשום/חדש ערוץ מעקב'}
+              </Button>
+            </CardContent>
+          </Card>
+        </motion.div>
 
         {/* Classroom Form Modal */}
         {showClassroomForm && (
