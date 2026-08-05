@@ -23,19 +23,30 @@ export default function AuditLogViewer() {
   const [dateFrom, setDateFrom] = useState('');
   const [dateTo, setDateTo] = useState('');
   const [actionFilter, setActionFilter] = useState('all');
+  const [institutionFilter, setInstitutionFilter] = useState('all');
 
   const { data: logs = [], isLoading } = useQuery({
     queryKey: ['audit-logs'],
     queryFn: () => base44.entities.AuditLog.list('-created_date', 200),
   });
 
+  // Distinct institution_ids present in the logs (for the filter dropdown)
+  const institutions = useMemo(() => {
+    const map = new Map();
+    logs.forEach(l => {
+      if (l.institution_id) map.set(l.institution_id, l.institution_name || l.institution_id);
+    });
+    return Array.from(map, ([id, label]) => ({ id, label }));
+  }, [logs]);
+
   const filteredLogs = useMemo(() => {
     let result = logs;
     if (dateFrom) result = result.filter(l => (l.created_date || '') >= dateFrom);
     if (dateTo) result = result.filter(l => (l.created_date || '') <= dateTo + 'T23:59:59');
     if (actionFilter !== 'all') result = result.filter(l => l.action === actionFilter);
+    if (institutionFilter !== 'all') result = result.filter(l => l.institution_id === institutionFilter);
     return result;
-  }, [logs, dateFrom, dateTo, actionFilter]);
+  }, [logs, dateFrom, dateTo, actionFilter, institutionFilter]);
 
   return (
     <Card className="border-border/60">
@@ -57,6 +68,17 @@ export default function AuditLogViewer() {
               </Button>
             ))}
           </div>
+          <select
+            value={institutionFilter}
+            onChange={e => setInstitutionFilter(e.target.value)}
+            className="h-8 text-xs rounded-md border border-input bg-transparent px-2"
+            aria-label="סינון לפי מוסד"
+          >
+            <option value="all">כל המוסדות</option>
+            {institutions.map(inst => (
+              <option key={inst.id} value={inst.id}>{inst.label}</option>
+            ))}
+          </select>
         </div>
 
         {isLoading ? (
