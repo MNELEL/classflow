@@ -1,9 +1,15 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Heart, Sparkles, Loader2, Clock, AlertCircle, Share2 } from 'lucide-react';
+import { Heart, Sparkles, Loader2, Clock, AlertCircle, Share2, Trash2 } from 'lucide-react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { cn } from '@/lib/utils';
+import { toast } from 'sonner';
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel,
+  AlertDialogContent, AlertDialogDescription, AlertDialogFooter,
+  AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 import ShareModal from './ShareModal';
 
 const SOURCE_ICONS = {
@@ -44,6 +50,22 @@ export default function LibraryItemCard({ item, onClick }) {
       return { previous };
     },
     onError: (_err, _vars, ctx) => { if (ctx?.previous) qc.setQueryData(['library'], ctx.previous); },
+    onSettled: () => qc.invalidateQueries({ queryKey: ['library'] }),
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: () => base44.entities.LibraryItem.delete(item.id),
+    onMutate: async () => {
+      await qc.cancelQueries({ queryKey: ['library'] });
+      const previous = qc.getQueryData(['library']);
+      qc.setQueryData(['library'], old => (old || []).filter(i => i.id !== item.id));
+      return { previous };
+    },
+    onError: (_err, _vars, ctx) => {
+      if (ctx?.previous) qc.setQueryData(['library'], ctx.previous);
+      toast.error('שגיאה במחיקת החומר');
+    },
+    onSuccess: () => toast.success('החומר נמחק מהספרייה'),
     onSettled: () => qc.invalidateQueries({ queryKey: ['library'] }),
   });
 
@@ -97,6 +119,31 @@ export default function LibraryItemCard({ item, onClick }) {
             className="text-muted-foreground hover:text-pink-500 transition-colors p-1.5">
             {item.is_favorite ? <Heart className="w-4 h-4 fill-pink-500 text-pink-500" /> : <Heart className="w-4 h-4" />}
           </button>
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <button onClick={e => e.stopPropagation()} aria-label="מחק חומר"
+                className="text-muted-foreground hover:text-destructive transition-colors p-1.5">
+                <Trash2 className="w-3.5 h-3.5" />
+              </button>
+            </AlertDialogTrigger>
+            <AlertDialogContent onClick={e => e.stopPropagation()}>
+              <AlertDialogHeader>
+                <AlertDialogTitle>מחיקת חומר מהספרייה</AlertDialogTitle>
+                <AlertDialogDescription>
+                  האם למחוק את "{title}"? פעולה זו אינה הפיכה.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>ביטול</AlertDialogCancel>
+                <AlertDialogAction
+                  onClick={() => deleteMutation.mutate()}
+                  disabled={deleteMutation.isPending}
+                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                  {deleteMutation.isPending ? 'מוחק...' : 'מחק'}
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
         </div>
       </div>
 
