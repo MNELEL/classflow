@@ -12,6 +12,12 @@ const SOURCE_ICONS = {
   external_link: '🔗', text_note: '✍️', image: '🖼️',
 };
 
+const SOURCE_LABELS = {
+  audio_recording: 'הקלטת שמע', audio_file: 'קובץ שמע', pdf: 'קובץ PDF', word_doc: 'מסמך Word',
+  presentation: 'מצגת', video_file: 'קובץ וידאו', youtube_link: 'סרטון יוטיוב',
+  external_link: 'קישור חיצוני', text_note: 'פתק טקסט', image: 'תמונה',
+};
+
 const DIFF_COLOR = {
   'קל': 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
   'בינוני': 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-500',
@@ -19,10 +25,10 @@ const DIFF_COLOR = {
 };
 
 const AI_STATUS = {
-  pending:    { icon: Clock,       color: 'text-muted-foreground', label: 'ממתין' },
-  processing: { icon: Loader2,     color: 'text-blue-500',         label: 'מנתח...', spin: true },
-  ready:      { icon: Sparkles,    color: 'text-purple-500',       label: 'נותח' },
-  error:      { icon: AlertCircle, color: 'text-destructive',      label: 'שגיאה' },
+  pending:    { icon: Clock,       color: 'text-muted-foreground', border: 'border-r-muted-foreground/40',  label: 'ממתין' },
+  processing: { icon: Loader2,     color: 'text-blue-500',         border: 'border-r-blue-500',             label: 'מנתח...', spin: true },
+  ready:      { icon: Sparkles,    color: 'text-purple-500',       border: 'border-r-purple-500',           label: 'נותח' },
+  error:      { icon: AlertCircle, color: 'text-destructive',      border: 'border-r-destructive',          label: 'שגיאה בניתוח' },
 };
 
 export default function LibraryItemCard({ item, onClick }) {
@@ -43,15 +49,40 @@ export default function LibraryItemCard({ item, onClick }) {
 
   const aiInfo = AI_STATUS[item.ai_status] || AI_STATUS.pending;
   const AiIcon = aiInfo.icon;
+  const title = item.ai_suggested_title || item.title;
+
+  const cardLabel = [
+    title,
+    item.difficulty ? `רמת קושי ${item.difficulty}` : null,
+    item.is_favorite ? 'במועדפים' : null,
+    `סטטוס ניתוח AI: ${aiInfo.label}`,
+  ].filter(Boolean).join(', ');
+
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      onClick?.();
+    }
+  };
 
   return (
-    <div onClick={onClick}
-      className="bg-card border border-border/70 rounded-2xl p-4 hover:border-primary/30 hover:shadow-md transition-all cursor-pointer group relative">
-      
+    <div
+      onClick={onClick}
+      onKeyDown={handleKeyDown}
+      role="button"
+      tabIndex={0}
+      aria-label={cardLabel}
+      className={cn(
+        "bg-card border border-border/70 border-r-4 rounded-2xl p-4 hover:border-primary/30 hover:shadow-md transition-all cursor-pointer group relative focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2",
+        aiInfo.border
+      )}
+    >
       {/* Header */}
       <div className="flex items-start justify-between gap-2 mb-3">
         <div className="flex items-center gap-2">
-          <span className="text-2xl">{SOURCE_ICONS[item.source_type] || '📎'}</span>
+          <span className="text-2xl" role="img" aria-label={SOURCE_LABELS[item.source_type] || 'קובץ'}>
+            {SOURCE_ICONS[item.source_type] || '📎'}
+          </span>
           {item.category && (
             <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full font-medium">{item.category}</span>
           )}
@@ -62,6 +93,7 @@ export default function LibraryItemCard({ item, onClick }) {
             <Share2 className="w-3.5 h-3.5" />
           </button>
           <button onClick={e => { e.stopPropagation(); favMutation.mutate(); }} aria-label={item.is_favorite ? 'הסר ממועדפים' : 'הוסף למועדפים'}
+            aria-pressed={!!item.is_favorite}
             className="text-muted-foreground hover:text-pink-500 transition-colors p-1.5">
             {item.is_favorite ? <Heart className="w-4 h-4 fill-pink-500 text-pink-500" /> : <Heart className="w-4 h-4" />}
           </button>
@@ -70,22 +102,29 @@ export default function LibraryItemCard({ item, onClick }) {
 
       {/* Title */}
       <p className="font-semibold text-sm leading-tight mb-1 line-clamp-2">
-        {item.ai_suggested_title || item.title}
+        {title}
       </p>
-      
+
       {/* Meta */}
       <div className="flex items-center gap-2 text-xs text-muted-foreground mb-3">
         {item.subject && <span>{item.subject}</span>}
         {item.difficulty && (
-          <span className={`px-1.5 py-0.5 rounded-full text-[10px] font-medium ${DIFF_COLOR[item.difficulty] || ''}`}>
+          <span
+            aria-label={`רמת קושי: ${item.difficulty}`}
+            className={`px-1.5 py-0.5 rounded-full text-[10px] font-medium ${DIFF_COLOR[item.difficulty] || ''}`}
+          >
             {item.difficulty}
           </span>
         )}
       </div>
 
       {/* AI Status */}
-      <div className={cn("flex items-center gap-1.5 text-xs mb-3", aiInfo.color)}>
-        <AiIcon className={cn("w-3.5 h-3.5", aiInfo.spin && "animate-spin")} />
+      <div
+        className={cn("flex items-center gap-1.5 text-xs mb-3", aiInfo.color)}
+        role="status"
+        aria-live="polite"
+      >
+        <AiIcon className={cn("w-3.5 h-3.5", aiInfo.spin && "animate-spin")} aria-hidden="true" />
         <span>{aiInfo.label}</span>
       </div>
 
@@ -94,7 +133,7 @@ export default function LibraryItemCard({ item, onClick }) {
         <div className="space-y-1 mb-3">
           {item.ai_key_points.slice(0, 2).map((pt, i) => (
             <p key={i} className="text-xs text-muted-foreground flex gap-1">
-              <span className="text-primary">•</span>
+              <span className="text-primary" aria-hidden="true">•</span>
               <span className="line-clamp-1">{pt}</span>
             </p>
           ))}
@@ -109,7 +148,7 @@ export default function LibraryItemCard({ item, onClick }) {
       {/* Artifacts count */}
       {item.generated_artifacts?.length > 0 && (
         <div className="flex items-center gap-1 text-xs text-muted-foreground border-t border-border/50 pt-2 mt-2">
-          <span>📄</span>
+          <span aria-hidden="true">📄</span>
           <span>{item.generated_artifacts.length} חומרים שנוצרו</span>
         </div>
       )}
