@@ -17,6 +17,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 import TeacherNotesEditor from '@/components/admin/TeacherNotesEditor';
 import TeacherMeetingManager from '@/components/admin/TeacherMeetingManager';
+import { logAudit } from '@/lib/auditLog';
 
 const generateAccessCode = () => {
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
@@ -93,7 +94,8 @@ export default function AdminDashboard() {
       });
       return teacher;
     },
-    onSuccess: () => {
+    onSuccess: (teacher) => {
+      logAudit('create', 'Teacher', teacher.id, teacher.full_name);
       queryClient.invalidateQueries(['teachers']);
       setSearchParams({}, { replace: true });
       setNewTeacher({ full_name: '', email: '', phone: '', subject: '' });
@@ -112,7 +114,8 @@ export default function AdminDashboard() {
       });
       return classroom;
     },
-    onSuccess: () => {
+    onSuccess: (classroom) => {
+      logAudit('create', 'Classroom', classroom.id, classroom.name);
       queryClient.invalidateQueries(['classrooms']);
       setSearchParams({}, { replace: true });
       setNewClassroom({ name: '', grade_level: '', school: '', year: new Date().getFullYear().toString(), notes: '' });
@@ -127,7 +130,8 @@ export default function AdminDashboard() {
     mutationFn: async (teacherId) => {
       await base44.entities.Teacher.delete(teacherId);
     },
-    onSuccess: () => {
+    onSuccess: (_data, teacherId) => {
+      logAudit('delete', 'Teacher', teacherId);
       queryClient.invalidateQueries(['teachers']);
       toast.success('המורה נמחק בהצלחה');
     },
@@ -137,7 +141,8 @@ export default function AdminDashboard() {
     mutationFn: async (classroomId) => {
       await base44.entities.Classroom.delete(classroomId);
     },
-    onSuccess: () => {
+    onSuccess: (_data, classroomId) => {
+      logAudit('delete', 'Classroom', classroomId);
       queryClient.invalidateQueries(['classrooms']);
       toast.success('הכיתה נמחקה בהצלחה');
     },
@@ -147,7 +152,8 @@ export default function AdminDashboard() {
     mutationFn: async ({ teacherId, currentStatus }) => {
       await base44.entities.Teacher.update(teacherId, { is_active: !currentStatus });
     },
-    onSuccess: () => {
+    onSuccess: (_data, { teacherId, currentStatus }) => {
+      logAudit('update', 'Teacher', teacherId, '', `שינוי סטטוס ל-${!currentStatus ? 'פעיל' : 'לא פעיל'}`);
       queryClient.invalidateQueries(['teachers']);
       toast.success('סטטוס המורה עודכן');
     },
