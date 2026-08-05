@@ -72,6 +72,7 @@ const TeachingStyleDashboard = lazy(() => import('./pages/TeachingStyleDashboard
 const ParentFeedbackPage = lazy(() => import('./pages/ParentFeedbackPage'));
 const ReviewPage              = lazy(() => import('./pages/ReviewPage'));
 const TeacherProfilePage       = lazy(() => import('./pages/TeacherProfilePage'));
+const AdminOverviewPage        = lazy(() => import('./pages/AdminOverviewPage'));
 
 // Direction-aware page transitions.
 // Forward (push): new screen enters from the right, old exits left → "to the left".
@@ -153,6 +154,7 @@ function AnimatedRoutes() {
 <Route path="/ingest" element={<IngestPage />} />
 <Route path="/teaching-style-dashboard" element={<TeachingStyleDashboard />} />
 <Route path="/teacher-profile/:id" element={<TeacherProfilePage />} />
+<Route path="/admin-overview" element={<AdminOverviewPage />} />
 <Route path="/teacher-login" element={<TeacherLogin />} />
 <Route path="/teacher-dashboard" element={<TeacherDashboard />} />
             </Route>
