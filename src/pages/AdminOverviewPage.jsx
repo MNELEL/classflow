@@ -10,9 +10,10 @@ import { Button } from '@/components/ui/button';
 import TeacherProgressCard from '@/components/admin/TeacherProgressCard';
 import AuditLogViewer from '@/components/admin/AuditLogViewer';
 import RlsTestPanel from '@/components/admin/RlsTestPanel';
+import AdminCharts from '@/components/admin/AdminCharts';
 import {
   Users, BookOpen, ClipboardList, School, ArrowRight,
-  CheckCircle2, Clock, AlertCircle, Archive, GraduationCap
+  CheckCircle2, Clock, AlertCircle, Archive, GraduationCap, FileText
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 
@@ -42,6 +43,7 @@ export default function AdminOverviewPage() {
   const { user } = useAuth();
   const isAdmin = user?.role === 'admin';
   const [classFilter, setClassFilter] = useState('active');
+  const [yearFilter, setYearFilter] = useState('all');
 
   const { data: teachers = [], isLoading } = useQuery({
     queryKey: ['teachers'],
@@ -64,18 +66,39 @@ export default function AdminOverviewPage() {
     enabled: isAdmin,
   });
 
+  // Distinct academic years present in classrooms (for the filter dropdown)
+  const yearsList = useMemo(() => {
+    const set = new Set(classrooms.map(c => c.year).filter(Boolean));
+    return Array.from(set).sort((a, b) => b.localeCompare(a));
+  }, [classrooms]);
+
+  // Scope the entire dashboard by the selected academic year — focused picture
+  const scopedClassrooms = useMemo(() => {
+    if (yearFilter === 'all') return classrooms;
+    return classrooms.filter(c => c.year === yearFilter);
+  }, [classrooms, yearFilter]);
+
+  const scopedStudentIds = useMemo(
+    () => new Set(scopedClassrooms.flatMap(c => c.student_ids || [])),
+    [scopedClassrooms]
+  );
+  const scopedTasks = useMemo(
+    () => allTasks.filter(t => scopedStudentIds.has(t.student_id)),
+    [allTasks, scopedStudentIds]
+  );
+
   const activeTeachers = teachers.filter(t => t.is_active !== false);
-  const activeClassrooms = classrooms.filter(c => c.is_active !== false);
-  const archivedClassrooms = classrooms.filter(c => c.is_active === false);
-  const pendingTasks = allTasks.filter(t => t.status === 'pending');
-  const inProgressTasks = allTasks.filter(t => t.status === 'in_progress');
-  const doneTasks = allTasks.filter(t => t.status === 'done');
+  const activeClassrooms = scopedClassrooms.filter(c => c.is_active !== false);
+  const archivedClassrooms = scopedClassrooms.filter(c => c.is_active === false);
+  const pendingTasks = scopedTasks.filter(t => t.status === 'pending');
+  const inProgressTasks = scopedTasks.filter(t => t.status === 'in_progress');
+  const doneTasks = scopedTasks.filter(t => t.status === 'done');
 
   const teacherProgress = useMemo(() => {
     return teachers.map(teacher => {
-      const teacherClassrooms = classrooms.filter(c => c.teacher_id === teacher.id);
+      const teacherClassrooms = scopedClassrooms.filter(c => c.teacher_id === teacher.id);
       const studentIds = teacherClassrooms.flatMap(c => c.student_ids || []);
-      const teacherTasks = allTasks.filter(t => studentIds.includes(t.student_id));
+      const teacherTasks = scopedTasks.filter(t => studentIds.includes(t.student_id));
       const doneCount = teacherTasks.filter(t => t.status === 'done').length;
       return {
         ...teacher,
@@ -86,15 +109,16 @@ export default function AdminOverviewPage() {
         completionRate: teacherTasks.length > 0 ? Math.round(doneCount / teacherTasks.length * 100) : 0,
       };
     });
-  }, [teachers, classrooms, allTasks]);
+  }, [teachers, scopedClassrooms, scopedTasks]);
 
   const filteredClassrooms = useMemo(() => {
     if (classFilter === 'active') return activeClassrooms;
     if (classFilter === 'archived') return archivedClassrooms;
-    return classrooms;
-  }, [classFilter, classrooms, activeClassrooms, archivedClassrooms]);
+    return scopedClassrooms;
+  }, [classFilter, scopedClassrooms, activeClassrooms, archivedClassrooms]);
 
   const studentMap = useMemo(() => Object.fromEntries(allStudents.map(s => [s.id, s])), [allStudents]);
+  const scopedStudentCount = scopedStudentIds.size;
 
   if (!isAdmin) {
     return (
@@ -123,22 +147,50 @@ export default function AdminOverviewPage() {
     <AppLayout>
       <div className="p-4 max-w-6xl mx-auto pb-8" dir="rtl">
         {/* Header */}
-        <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="mb-6">
-          <Button variant="ghost" size="sm" onClick={() => navigate('/admin')} className="mb-2 gap-1">
-            <ArrowRight className="w-4 h-4" /> חזרה לניהול
-          </Button>
-          <h1 className="text-2xl font-bold">דשבורד מרוכז</h1>
-          <p className="text-muted-foreground text-sm">תמונת מצב כללית: מורים, כיתות ומשימות</p>
+        <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="mb-6 flex items-center justify-between flex-wrap gap-3">
+          <div>
+            <Button variant="ghost" size="sm" onClick={() => navigate('/admin')} className="mb-2 gap-1">
+              <ArrowRight className="w-4 h-4" /> חזרה לניהול
+            </Button>
+            <h1 className="text-2xl font-bold">דשבורד מרוכז</h1>
+            <p className="text-muted-foreground text-sm">תמונת מצב כללית: מורים, כיתות ומשימות</p>
+          </div>
+          <div className="flex items-center gap-2 flex-wrap">
+            <Button variant="outline" size="sm" onClick={() => navigate('/monthly-reports')} className="gap-1">
+              <FileText className="w-4 h-4" /> תעודות חודשיות
+            </Button>
+            <div className="flex items-center gap-1">
+              <span className="text-xs text-muted-foreground">שנת לימודים:</span>
+              <select
+                value={yearFilter}
+                onChange={e => setYearFilter(e.target.value)}
+                className="h-8 text-xs rounded-md border border-input bg-transparent px-2"
+                aria-label="סינון לפי שנת לימודים"
+              >
+                <option value="all">הכל</option>
+                {yearsList.map(y => <option key={y} value={y}>{y}</option>)}
+              </select>
+            </div>
+          </div>
         </motion.div>
 
         {/* Stats Overview */}
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="grid grid-cols-2 md:grid-cols-3 gap-3 mb-6">
           <StatCard icon={Users} label="מורים" value={teachers.length} sub={`${activeTeachers.length} פעילים`} color="text-blue-600" />
           <StatCard icon={BookOpen} label="כיתות פעילות" value={activeClassrooms.length} sub={`${archivedClassrooms.length} בארכיון`} color="text-purple-600" />
-          <StatCard icon={School} label="תלמידים" value={allStudents.length} sub="סהכ במערכת" color="text-green-600" />
+          <StatCard icon={School} label="תלמידים" value={scopedStudentCount} sub={yearFilter === 'all' ? 'סהכ במערכת' : `בשנה ${yearFilter}`} color="text-green-600" />
           <StatCard icon={Clock} label="משימות ממתינות" value={pendingTasks.length} sub={`${inProgressTasks.length} בביצוע`} color="text-amber-600" />
-          <StatCard icon={CheckCircle2} label="משימות שהושלמו" value={doneTasks.length} sub={`מתוך ${allTasks.length} סה"כ`} color="text-emerald-600" />
+          <StatCard icon={CheckCircle2} label="משימות שהושלמו" value={doneTasks.length} sub={`מתוך ${scopedTasks.length} סה"כ`} color="text-emerald-600" />
           <StatCard icon={Archive} label="כיתות בארכיון" value={archivedClassrooms.length} sub="לא פעילות" color="text-muted-foreground" />
+        </motion.div>
+
+        {/* Charts */}
+        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.03 }} className="mb-6">
+          <h2 className="text-lg font-bold mb-3 flex items-center gap-2">
+            <ClipboardList className="w-5 h-5 text-primary" />
+            תרשימי התקדמות
+          </h2>
+          <AdminCharts teachers={teacherProgress} tasks={scopedTasks} />
         </motion.div>
 
         {/* Teachers' Progress */}
