@@ -71,6 +71,54 @@ export default function LibraryItemDetail({ itemId, onClose }) {
     if (selectedArtifact?.id === artifactId) setSelectedArtifact(null);
   }
 
+  async function analyzeItem() {
+    try {
+      updateMutation.mutate({ ai_status: 'processing' });
+      let text = (item.original_text || item.transcript || '').trim();
+      if (!text && item.file_url && ['image', 'pdf', 'word_doc', 'presentation'].includes(item.source_type)) {
+        const extracted = await base44.integrations.Core.ExtractDataFromUploadedFile({
+          file_url: item.file_url,
+          json_schema: { type: 'object', properties: { full_text: { type: 'string' } } },
+        });
+        text = (extracted?.output?.full_text || '').trim();
+        if (text) await base44.entities.LibraryItem.update(itemId, { original_text: text });
+      }
+      if (!text) {
+        toast.error('אין תוכן לניתוח. העלה תמלול או בצע סריקת OCR תחילה.');
+        await base44.entities.LibraryItem.update(itemId, { ai_status: 'pending' });
+        qc.invalidateQueries({ queryKey: ['library-item', itemId] });
+        return;
+      }
+      const res = await base44.integrations.Core.InvokeLLM({
+        prompt: `אתה מומחה חינוכי. נתח את התוכן הבא והפק סיכום, נקודות מפתח, כותרת מוצעת, תגיות וקטגוריה מוצעת. הסתמך אך ורק על התוכן המצורף — אל תמציא מידע שאינו בו.\n\nתוכן:\n"""\n${text.slice(0, 8000)}\n"""`,
+        response_json_schema: {
+          type: 'object',
+          properties: {
+            summary: { type: 'string' },
+            key_points: { type: 'array', items: { type: 'string' } },
+            suggested_title: { type: 'string' },
+            suggested_tags: { type: 'array', items: { type: 'string' } },
+            suggested_category: { type: 'string' },
+          },
+        },
+      });
+      await base44.entities.LibraryItem.update(itemId, {
+        ai_summary: res.summary || '',
+        ai_key_points: res.key_points || [],
+        ai_suggested_title: res.suggested_title || '',
+        ai_suggested_tags: res.suggested_tags || [],
+        ai_suggested_category: res.suggested_category || '',
+        ai_status: 'ready',
+      });
+      qc.invalidateQueries({ queryKey: ['library-item', itemId] });
+      toast.success('הניתוח הושלם!');
+    } catch (e) {
+      toast.error('שגיאה בניתוח: ' + (e.message || ''));
+      await base44.entities.LibraryItem.update(itemId, { ai_status: 'pending' }).catch(() => {});
+      qc.invalidateQueries({ queryKey: ['library-item', itemId] });
+    }
+  }
+
   if (!itemId) return null;
 
   return (
@@ -254,9 +302,7 @@ export default function LibraryItemDetail({ itemId, onClose }) {
               <div className="text-center py-8 text-muted-foreground">
                 <Sparkles className="w-8 h-8 mx-auto mb-2 opacity-30" />
                 <p className="text-sm">ניתוח AI טרם בוצע</p>
-                <Button size="sm" className="mt-3 gap-1" onClick={() => {
-                  updateMutation.mutate({ ai_status: 'processing' });
-                }}>
+                <Button size="sm" className="mt-3 gap-1" onClick={analyzeItem}>
                   <Sparkles className="w-3.5 h-3.5" /> נתח עכשיו
                 </Button>
               </div>

@@ -212,9 +212,17 @@ export default function ArtifactGenerator({ open, onClose, item }) {
       const config = ARTIFACT_CONFIG[artifactType];
       const prompt = config.prompt.replace('{count}', questionCount);
       const content = [
-        item.transcript, item.ai_summary,
+        item.original_text,
+        item.transcript,
+        item.ai_summary,
         ...(item.ai_key_points || [])
       ].filter(Boolean).join('\n\n');
+
+      if (!content.trim()) {
+        toast.error('אין תוכן לניתוח. נא לבצע סריקת OCR או להוסיף תמלול/טקסט לפריט תחילה.');
+        setGenerating(false);
+        return;
+      }
 
       const styleProfile = await loadStyleProfile();
       const styleInstruction = buildStyleInstruction(styleProfile);
@@ -223,7 +231,7 @@ export default function ArtifactGenerator({ open, onClose, item }) {
         prompt: `${styleInstruction ? styleInstruction + '\n\n' : ''}בהתבסס על חומר הלימוד הבא בלבד (אל תמציא מידע שאינו בחומר):
 כותרת: ${item.title}
 נושא: ${item.subject || item.category || ''}
-תוכן: ${content.slice(0, 3000)}
+תוכן: ${content.slice(0, 8000)}
 
 ${prompt}
 ${additionalInstructions ? `הוראות נוספות: ${additionalInstructions}` : ''}
