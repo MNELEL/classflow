@@ -1,10 +1,10 @@
-import React, { useState, useMemo, useCallback } from 'react';
+import React, { useState, useMemo, useCallback, useEffect } from 'react';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import LessonPlanningTab from '@/components/library/LessonPlanningTab';
 import PlaylistPanel from '@/components/library/PlaylistPanel';
 import WeeklyPlannerBoard from '@/components/library/WeeklyPlannerBoard';
 import CoverageTracker from '@/components/library/CoverageTracker';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient, useMutation } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import AppLayout from '@/components/layout/AppLayout';
 import LibraryItemCard from '@/components/library/LibraryItemCard';
@@ -12,7 +12,7 @@ import LibraryUploadModal from '@/components/library/LibraryUploadModal';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { MobileSelect, SelectItem } from '@/components/ui/MobileSelect';
-import { Plus, Search, BookOpen, Loader2, Library, Sparkles, BookOpenCheck, ListMusic, CalendarDays, BarChart2, Layers, Settings2, Bot, ExternalLink, Star, HardDrive, Download } from 'lucide-react';
+import { Plus, Search, BookOpen, Loader2, Library, Sparkles, BookOpenCheck, ListMusic, CalendarDays, BarChart2, Layers, Settings2, Bot, ExternalLink, Star, HardDrive, Download, Trash2 } from 'lucide-react';
 import MultiSourceGenerator from '@/components/library/MultiSourceGenerator';
 import AIProviderSettings from '@/components/library/AIProviderSettings';
 import LibrarySearch from '@/components/library/LibrarySearch';
@@ -20,6 +20,8 @@ import ExternalSourceSearch from '@/components/library/ExternalSourceSearch';
 import GoogleDrivePanel from '@/components/library/GoogleDrivePanel';
 import ImportFromSourceModal from '@/components/library/ImportFromSourceModal';
 import { motion, AnimatePresence } from 'framer-motion';
+import { toast } from 'sonner';
+import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogFooter, AlertDialogCancel, AlertDialogAction } from '@/components/ui/alert-dialog';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { usePullToRefresh } from '@/hooks/usePullToRefresh';
 import PullToRefreshIndicator from '@/components/ui/PullToRefreshIndicator';
@@ -52,6 +54,8 @@ export default function LibraryPage() {
   const [filterTag, setFilterTag] = useState('');
   const [showFavOnly, setShowFavOnly] = useState(false);
   const [playlistIds, setPlaylistIds] = useState([]);
+  const [page, setPage] = useState(1);
+  const [confirmDeleteId, setConfirmDeleteId] = useState(null);
 
   const { data: items = [], isLoading } = useQuery({
     queryKey: ['library'],
@@ -60,6 +64,11 @@ export default function LibraryPage() {
   });
 
   const qc = useQueryClient();
+  const deleteMutation = useMutation({
+    mutationFn: (id) => base44.entities.LibraryItem.delete(id),
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ['library'] }); toast.success('החומר נמחק'); setConfirmDeleteId(null); },
+    onError: () => toast.error('שגיאה במחיקה'),
+  });
   const handleRefresh = useCallback(async () => { await qc.invalidateQueries({ queryKey: ['library'] }); }, [qc]);
   const { containerRef, pullY, refreshing } = usePullToRefresh(handleRefresh);
 
@@ -105,6 +114,13 @@ export default function LibraryPage() {
     result = [...result.filter(i => i.is_favorite), ...result.filter(i => !i.is_favorite)];
     return result;
   }, [items, search, filterType, filterCategory, filterAI, filterSubject, filterTag, filterDifficulty, showFavOnly]);
+
+  const PAGE_SIZE = 12;
+  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  const safePage = Math.min(page, totalPages);
+  const pagedItems = filtered.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE);
+  useEffect(() => { setPage(safePage); }, [safePage]);
+  useEffect(() => { setPage(1); }, [search, filterType, filterCategory, filterAI, filterSubject, filterTag, filterDifficulty, showFavOnly]);
 
   const togglePlaylist = (id) => {
     setPlaylistIds(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
@@ -264,9 +280,10 @@ export default function LibraryPage() {
                 </Button>
               </div>
             ) : (
+              <>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <AnimatePresence>
-                  {filtered.map((item, i) => (
+                  {pagedItems.map((item, i) => (
                     <motion.div key={item.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: i * 0.04 }} className="relative">
                       <LibraryItemCard item={item} onClick={() => navigate('/library/' + item.id)} />
@@ -283,10 +300,27 @@ export default function LibraryPage() {
                       >
                         <ListMusic className="w-3 h-3" />
                       </button>
+                      {/* Quick delete button */}
+                      <button
+                        onClick={(e) => { e.stopPropagation(); setConfirmDeleteId(item.id); }}
+                        className="absolute top-2 left-9 w-6 h-6 rounded-full flex items-center justify-center text-xs transition-colors border bg-card border-border text-muted-foreground hover:border-destructive hover:text-destructive"
+                        title="מחק חומר"
+                        aria-label="מחק חומר"
+                      >
+                        <Trash2 className="w-3 h-3" />
+                      </button>
                     </motion.div>
                   ))}
                 </AnimatePresence>
               </div>
+              {totalPages > 1 && (
+                <div className="flex items-center justify-center gap-2 pt-1">
+                  <Button size="sm" variant="outline" disabled={safePage <= 1} onClick={() => setPage(p => p - 1)}>הקודם</Button>
+                  <span className="text-xs text-muted-foreground">עמוד {safePage} מ-{totalPages}</span>
+                  <Button size="sm" variant="outline" disabled={safePage >= totalPages} onClick={() => setPage(p => p + 1)}>הבא</Button>
+                </div>
+              )}
+              </>
             )}
           </TabsContent>
 
@@ -345,6 +379,23 @@ export default function LibraryPage() {
         <LibraryUploadModal open={showUpload} onClose={() => setModal(null)} />
         <AIProviderSettings open={showAISettings} onClose={() => setModal(null)} />
         <ImportFromSourceModal open={showImportModal} onClose={() => setModal(null)} />
+
+        <AlertDialog open={!!confirmDeleteId} onOpenChange={(o) => !o && setConfirmDeleteId(null)}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>מחיקת חומר</AlertDialogTitle>
+              <AlertDialogDescription>האם למחוק את החומר מהספרייה? פעולה זו בלתי הפיכה.</AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>ביטול</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={() => confirmDeleteId && deleteMutation.mutate(confirmDeleteId)}
+                className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                {deleteMutation.isPending ? 'מוחק…' : 'מחק'}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
 
       </div>
 
