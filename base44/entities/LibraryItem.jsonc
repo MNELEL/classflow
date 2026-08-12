@@ -34,6 +34,15 @@
       ],
       "description": "\u05e8\u05de\u05ea \u05e7\u05d5\u05e9\u05d9"
     },
+    "material_type": {
+      "type": "string",
+      "enum": [
+        "study",
+        "exam",
+        "prep"
+      ],
+      "description": "\u05e1\u05d5\u05d2 \u05d7\u05d5\u05de\u05e8: \u05d7\u05d5\u05de\u05e8\u05d9 \u05dc\u05d9\u05de\u05d5\u05d3 / \u05de\u05d1\u05d7\u05e0\u05d9\u05dd / \u05d4\u05db\u05e0\u05d4"
+    },
     "source_type": {
       "type": "string",
       "enum": [
@@ -73,6 +82,23 @@
     "transcript": {
       "type": "string",
       "description": "\u05ea\u05de\u05dc\u05d5\u05dc \u05d0\u05d5 \u05d8\u05e7\u05e1\u05d8"
+    },
+    "original_text": {
+      "type": "string",
+      "description": "\u05d4\u05d8\u05e7\u05e1\u05d8 \u05d4\u05de\u05e7\u05d5\u05e8\u05d9 \u05e9\u05d7\u05d5\u05dc\u05e5 \u05d1-OCR/\u05ea\u05de\u05dc\u05d5\u05dc \u2014 \u05dc\u05dc\u05d0 \u05e9\u05db\u05ea\u05d5\u05d1, \u05dc\u05d7\u05d9\u05e4\u05d5\u05e9 \u05d5\u05dc\u05e1\u05e7\u05d9\u05e8\u05d4"
+    },
+    "ocr_confidence": {
+      "type": "number",
+      "description": "\u05e8\u05de\u05ea \u05d5\u05d3\u05d0\u05d5\u05ea \u05d4-OCR (0-1)"
+    },
+    "classification_confidence": {
+      "type": "string",
+      "description": "\u05e8\u05de\u05ea \u05d1\u05d9\u05d8\u05d7\u05d5\u05df \u05d4\u05e1\u05d9\u05d5\u05d5\u05d2 \u05de\u05d4-AI (high/medium/low)"
+    },
+    "is_edited": {
+      "type": "boolean",
+      "default": false,
+      "description": "\u05d4\u05d0\u05dd \u05d4\u05de\u05e9\u05ea\u05de\u05e9 \u05e2\u05e8\u05da \u05d0\u05ea \u05d4\u05d8\u05e7\u05e1\u05d8/\u05d4\u05e1\u05d9\u05d5\u05d5\u05d2 \u05dc\u05e4\u05e0\u05d9 \u05d4\u05e9\u05de\u05d9\u05e8\u05d4"
     },
     "ai_status": {
       "type": "string",

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
@@ -7,7 +8,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import ReactMarkdown from 'react-markdown';
-import { X, Sparkles, Loader2, Plus, Trash2, Printer, Heart, Edit2, Check, BookOpen, Layers, GraduationCap, Star, Copy } from 'lucide-react';
+import { X, Sparkles, Loader2, Plus, Trash2, Printer, Heart, Edit2, Check, BookOpen, Layers, GraduationCap, Star, Copy, ScanText } from 'lucide-react';
 import { toast } from 'sonner';
 import ArtifactGenerator from './ArtifactGenerator';
 import ArtifactRenderer from './ArtifactRenderer';
@@ -35,6 +36,7 @@ const ARTIFACT_ICONS = {
 
 export default function LibraryItemDetail({ itemId, onClose }) {
   const qc = useQueryClient();
+  const navigate = useNavigate();
   const [showGenerator, setShowGenerator] = useState(false);
   const [selectedArtifact, setSelectedArtifact] = useState(null);
   const [editingTitle, setEditingTitle] = useState(false);
@@ -119,6 +121,12 @@ export default function LibraryItemDetail({ itemId, onClose }) {
             onClick={() => setActiveTab('artifacts')}>
             <Layers className="w-3 h-3" /> שלב חומרים
           </Button>
+          {(item.original_text || ['image', 'pdf', 'word_doc', 'presentation'].includes(item.source_type)) && (
+            <Button size="sm" variant="outline" className="gap-1 text-xs h-7 whitespace-nowrap"
+              onClick={() => navigate(`/ocr-review/${itemId}`)}>
+              <ScanText className="w-3 h-3" /> סקירת OCR
+            </Button>
+          )}
           <button
             onClick={() => updateMutation.mutate({ is_favorite: !item.is_favorite })}
             aria-label={item.is_favorite ? 'הסר ממועדפים' : 'הוסף למועדפים'}

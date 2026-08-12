@@ -15,6 +15,7 @@ import {
 import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'framer-motion';
 import SmartIngestPanel from '@/components/ingest/SmartIngestPanel';
+import { logIngestAudit } from '@/lib/smartIngest';
 
 const FILE_TYPES = {
   students: {
@@ -171,15 +172,33 @@ export default function IngestPage() {
     if (successResults.length > 0 && title.trim()) {
       try {
         for (const r of successResults) {
-          await base44.entities.LibraryItem.create({
+          const rows = r.rows || [];
+          const ocrConf = rows.length
+            ? Math.round(rows.reduce((s, row) => s + (row.confidence || 0), 0) / rows.length) / 100
+            : null;
+          const materialType = r.type === 'material' ? 'study' : null;
+          const finalCategory = r.type === 'students' ? 'תלמידים' : r.type === 'material' ? 'חומר לימוד' : '';
+          const created = await base44.entities.LibraryItem.create({
             title: title.trim() || r.name,
             source_type: r.type === 'audio' ? 'audio_file' : (r.name.endsWith('.pdf') ? 'pdf' : 'word_doc'),
             file_url: r.file_url,
             file_name: r.name,
             transcript: r.type === 'audio' ? r.extracted : undefined,
+            original_text: r.type !== 'audio' ? r.extracted : undefined,
+            ocr_confidence: r.type !== 'audio' ? ocrConf : null,
+            material_type: materialType,
             description: r.extracted?.slice(0, 500),
             ai_status: r.type === 'audio' ? 'ready' : 'pending',
-            category: r.type === 'students' ? 'תלמידים' : r.type === 'material' ? 'חומר לימוד' : undefined,
+            category: finalCategory || undefined,
+          });
+          await logIngestAudit({
+            file_name: r.name,
+            suggested_category: '',
+            final_category: finalCategory,
+            material_type: materialType,
+            was_changed: false,
+            original_text_length: (r.extracted || '').length,
+            item_id: created?.id,
           });
         }
         toast.success(`${successResults.length} קבצים נשמרו לספרייה`);

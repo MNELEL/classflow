@@ -1,5 +1,34 @@
 import { base44 } from '@/api/base44Client';
 
+// סף ביטחון: הסיווג האוטומטי מאושר כברירת מחדל רק כשרמת הביטחון ≥ הסף; מתחת לסף נדרשת בחירה ידנית.
+export const CONFIDENCE_THRESHOLD = 0.7;
+const CONFIDENCE_NUMERIC = { high: 0.9, medium: 0.6, low: 0.3 };
+export function confidenceNumeric(c) { return CONFIDENCE_NUMERIC[c] ?? 0.5; }
+export function shouldAutoConfirm(c) { return confidenceNumeric(c) >= CONFIDENCE_THRESHOLD; }
+
+export const MATERIAL_TYPES = [
+  { value: 'study', label: 'חומרי לימוד' },
+  { value: 'exam', label: 'מבחנים' },
+  { value: 'prep', label: 'הכנה' },
+];
+export const MATERIAL_TYPE_BY_CATEGORY = {
+  student_note: 'study',
+  class_journal: 'study',
+  grades_assessment: 'exam',
+  personal_letter: 'prep',
+};
+export function materialTypeForCategory(category) {
+  return MATERIAL_TYPE_BY_CATEGORY[category] || null;
+}
+
+export async function logIngestAudit(entry) {
+  try {
+    await base44.entities.IngestAuditLog.create(entry);
+  } catch (e) {
+    console.warn('ingest audit log failed', e);
+  }
+}
+
 export const CATEGORIES = [
   { value: 'student_note', label: 'הערה על תלמיד', icon: 'FileText', color: 'bg-amber-100 text-amber-600 dark:bg-amber-900/30 dark:text-amber-400' },
   { value: 'class_journal', label: 'יומן כיתה', icon: 'BookOpen', color: 'bg-emerald-100 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400' },
@@ -30,6 +59,8 @@ export const CLASSIFICATION_PROMPT = (studentNames) => `אתה עוזר הורא
 - למכתבים: זהה את הנמען (הורה או תלמיד) ואת שם ההורה אם מופיע
 - ליומן: זהה תאריך ונקודות מרכזיות
 
+בנוסף, החזר בשדה original_text את הטקסט המלא שחולץ מהמסמך — ללא שכתוב, ללא קיצור, מדויק כפי שמופיע במסמך.
+
 ענה בעברית בלבד.`;
 
 export const CLASSIFICATION_SCHEMA = {
@@ -49,7 +80,8 @@ export const CLASSIFICATION_SCHEMA = {
     recipient: { type: 'string', enum: ['parent', 'student', 'unknown'] },
     parent_name: { type: 'string', description: 'שם ההורה אם מופיע' },
     document_date: { type: 'string', description: 'תאריך בפורמט YYYY-MM-DD אם זוהה, אחרת ריק' },
-    key_points: { type: 'array', items: { type: 'string' }, description: 'נקודות מרכזיות מהמסמך' }
+    key_points: { type: 'array', items: { type: 'string' }, description: 'נקודות מרכזיות מהמסמך' },
+    original_text: { type: 'string', description: 'הטקסט המלא שחולץ מהמסמך — ללא שכתוב, ללא קיצור, מדויק כפי שמופיע' }
   }
 };
 

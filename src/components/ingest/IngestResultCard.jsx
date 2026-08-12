@@ -75,17 +75,25 @@ export default function IngestResultCard({ result, students, onSave, onUpdate, i
           {requiresStudent && (
             <div>
               <p className="text-[10px] font-semibold text-muted-foreground mb-1.5">תלמיד</p>
-              <select
-                value={result.selectedStudentId || ''}
-                onChange={e => onUpdate(result.id, { selectedStudentId: e.target.value })}
-                disabled={isSaving || isSaved}
-                className="w-full h-9 rounded-md border border-input bg-transparent px-3 text-sm disabled:opacity-50"
-              >
-                <option value="">בחר תלמיד...</option>
-                {students.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
-              </select>
-              {result.student_name && !result.selectedStudentId && (
-                <p className="text-[10px] text-amber-600 dark:text-amber-400 mt-1">זוהה במסמך: {result.student_name}</p>
+              {students.length === 0 ? (
+                <div className="bg-amber-50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-900/30 rounded-lg p-2.5 text-[11px] text-amber-700 dark:text-amber-400">
+                  אין תלמידים במערכת. לא ניתן לשמור מסמך מסוג זה — הוסף תלמידים או בחר קטגוריה שלא דורשת תלמיד (יומן כיתה).
+                </div>
+              ) : (
+                <>
+                  <select
+                    value={result.selectedStudentId || ''}
+                    onChange={e => onUpdate(result.id, { selectedStudentId: e.target.value })}
+                    disabled={isSaving || isSaved}
+                    className="w-full h-9 rounded-md border border-input bg-transparent px-3 text-sm disabled:opacity-50"
+                  >
+                    <option value="">בחר תלמיד...</option>
+                    {students.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
+                  </select>
+                  {result.student_name && !result.selectedStudentId && (
+                    <p className="text-[10px] text-amber-600 dark:text-amber-400 mt-1">זוהה במסמך: {result.student_name}</p>
+                  )}
+                </>
               )}
             </div>
           )}

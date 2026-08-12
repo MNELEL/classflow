@@ -9,7 +9,7 @@ import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import IngestResultCard from './IngestResultCard';
-import { CLASSIFICATION_PROMPT, CLASSIFICATION_SCHEMA, matchStudent, detectGrouping, getCategoryConfig } from '@/lib/smartIngest';
+import { CLASSIFICATION_PROMPT, CLASSIFICATION_SCHEMA, matchStudent, detectGrouping, getCategoryConfig, shouldAutoConfirm, materialTypeForCategory, logIngestAudit } from '@/lib/smartIngest';
 import { buildSummary } from '@/lib/pendingUpdateActions';
 
 export default function SmartIngestPanel() {
@@ -85,7 +85,7 @@ export default function SmartIngestPanel() {
           ...aiResult,
           matchedStudent,
           selectedStudentId: matchedStudent?.id || '',
-          selectedCategory: aiResult.category,
+          selectedCategory: shouldAutoConfirm(aiResult.confidence) ? aiResult.category : '',
           status: 'ready',
         });
       } catch (err) {
@@ -129,6 +129,17 @@ export default function SmartIngestPanel() {
         status: 'pending',
         student_name: student?.name || result.student_name || '',
         category_label: getCategoryConfig(category)?.label || '',
+      });
+      const finalCategory = result.selectedCategory || result.category;
+      const wasChanged = !!result.selectedCategory && result.selectedCategory !== result.category;
+      await logIngestAudit({
+        file_name: result.fileName,
+        suggested_category: result.category || '',
+        final_category: finalCategory || '',
+        confidence: result.confidence || '',
+        material_type: materialTypeForCategory(finalCategory),
+        was_changed: wasChanged,
+        original_text_length: (result.original_text || '').length,
       });
       qc.invalidateQueries({ queryKey: ['pendingUpdates'] });
       setSavedIds(prev => new Set([...prev, result.id]));
