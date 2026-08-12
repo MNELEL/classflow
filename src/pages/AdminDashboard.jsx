@@ -16,6 +16,7 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 import TeacherNotesEditor from '@/components/admin/TeacherNotesEditor';
+import TeacherFormModal from '@/components/admin/TeacherFormModal';
 import TeacherMeetingManager from '@/components/admin/TeacherMeetingManager';
 import { logAudit } from '@/lib/auditLog';
 
@@ -83,6 +84,8 @@ export default function AdminDashboard() {
   const showClassroomForm = searchParams.get('modal') === 'classroom-form';
   const teacherDetailId = searchParams.get('teacher');
   const selectedTeacherForDetail = teacherDetailId ? teachers.find(t => t.id === teacherDetailId) || null : null;
+  const editTeacherId = searchParams.get('edit');
+  const editingTeacher = editTeacherId ? teachers.find(t => t.id === editTeacherId) || null : null;
 
   const createTeacherMutation = useMutation({
     mutationFn: async (teacherData) => {
@@ -441,6 +444,14 @@ export default function AdminDashboard() {
                         <Button
                           size="sm"
                           variant="outline"
+                          onClick={() => setSearchParams({ modal: 'teacher-form', edit: teacher.id })}
+                          className="h-8 text-xs gap-1"
+                        >
+                          <Edit className="w-3.5 h-3.5" /> עריכה
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
                           onClick={() => toggleTeacherStatusMutation.mutate({
                             teacherId: teacher.id,
                             currentStatus: teacher.is_active !== false
@@ -553,57 +564,14 @@ export default function AdminDashboard() {
           </Card>
         </motion.div>
 
-        {/* Teacher Form Modal */}
+        {/* Teacher Form Modal (add / edit) */}
         {showTeacherForm && (
-          <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              className="bg-card rounded-xl border border-border w-full max-w-md p-6"
-            >
-              <h2 className="text-lg font-bold mb-4">הוסף מורה חדש</h2>
-              <form onSubmit={handleSubmitTeacher} className="space-y-4">
-                <div>
-                  <label className="text-sm font-medium mb-1 block">שם מלא *</label>
-                  <Input
-                    value={newTeacher.full_name}
-                    onChange={(e) => setNewTeacher({ ...newTeacher, full_name: e.target.value })}
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="text-sm font-medium mb-1 block">אימייל</label>
-                  <Input
-                    type="email"
-                    value={newTeacher.email}
-                    onChange={(e) => setNewTeacher({ ...newTeacher, email: e.target.value })}
-                  />
-                </div>
-                <div>
-                  <label className="text-sm font-medium mb-1 block">טלפון</label>
-                  <Input
-                    value={newTeacher.phone}
-                    onChange={(e) => setNewTeacher({ ...newTeacher, phone: e.target.value })}
-                  />
-                </div>
-                <div>
-                  <label className="text-sm font-medium mb-1 block">מקצוע עיקרי</label>
-                  <Input
-                    value={newTeacher.subject}
-                    onChange={(e) => setNewTeacher({ ...newTeacher, subject: e.target.value })}
-                  />
-                </div>
-                <div className="flex gap-2 pt-2">
-                  <Button type="submit" className="flex-1">
-                    <Plus className="w-4 h-4 ml-1" /> צור מורה
-                  </Button>
-                  <Button type="button" variant="outline" onClick={() => setSearchParams({}, { replace: true })} className="flex-1">
-                    ביטול
-                  </Button>
-                </div>
-              </form>
-            </motion.div>
-          </div>
+          <TeacherFormModal
+            open={showTeacherForm}
+            teacher={editingTeacher}
+            classrooms={classrooms}
+            onClose={() => setSearchParams({}, { replace: true })}
+          />
         )}
 
         {/* Teacher Detail Modal */}
