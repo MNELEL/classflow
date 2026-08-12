@@ -11,6 +11,7 @@ import { toast } from 'sonner';
 import { Loader2, Upload, X, Check, Link2, Globe, FileText, Mic, Video, Image, Music, File, Plus, CloudIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import GoogleDrivePicker from '@/components/library/GoogleDrivePicker';
+import { useNavigate } from 'react-router-dom';
 
 const CATEGORIES = ['גמרא', 'הלכה', 'חומש', 'נ"ך', 'תפילה', 'מחשבת ישראל', 'מדעים', 'מתמטיקה', 'שפה', 'אחר'];
 
@@ -95,6 +96,7 @@ async function analyzeItem(item, qc) {
 
 export default function LibraryUploadModal({ open, onClose }) {
   const qc = useQueryClient();
+  const navigate = useNavigate();
   const fileInputRef = useRef(null);
   const dropZoneRef = useRef(null);
   const [tab, setTab] = useState('files'); // 'files' | 'link' | 'text' | 'search' | 'drive'
@@ -198,10 +200,32 @@ export default function LibraryUploadModal({ open, onClose }) {
 
     setUploading(true);
     const progress = [];
+    const duplicateIds = [];
+
+    // Load existing items to detect duplicates (same file signature / URL / text)
+    let existing = [];
+    try { existing = await base44.entities.LibraryItem.list('-created_date', 500); } catch {}
+    const byFileSig = new Map();
+    const byUrl = new Map();
+    const byText = new Map();
+    for (const it of existing) {
+      if (it.file_name && it.file_size) byFileSig.set(`${it.file_name}|${it.file_size}`, it);
+      if (it.youtube_url) byUrl.set(it.youtube_url.trim(), it);
+      if (it.external_url) byUrl.set(it.external_url.trim(), it);
+      if (it.transcript) byText.set(it.transcript.trim(), it);
+    }
 
     try {
       // Upload files
       for (const fileObj of files) {
+        const sig = `${fileObj.file.name}|${fileObj.file.size}`;
+        const dup = byFileSig.get(sig);
+        if (dup) {
+          progress.push({ name: fileObj.title, status: 'duplicate' });
+          setUploadProgress([...progress]);
+          duplicateIds.push(dup.id);
+          continue;
+        }
         progress.push({ name: fileObj.title, status: 'uploading' });
         setUploadProgress([...progress]);
         try {
@@ -233,52 +257,75 @@ export default function LibraryUploadModal({ open, onClose }) {
 
       // Add link
       if (hasLink) {
-        progress.push({ name: linkUrl.slice(0, 40), status: 'uploading' });
-        setUploadProgress([...progress]);
-        const item = await base44.entities.LibraryItem.create({
-          title: subject || linkUrl.slice(0, 60) || 'קישור חדש',
-          category: category || null,
-          subject: subject || null,
-          source_type: linkType,
-          youtube_url: linkType === 'youtube_link' ? linkUrl : null,
-          external_url: linkType !== 'youtube_link' ? linkUrl : null,
-          ai_status: 'pending',
-          generated_artifacts: [],
-          lesson_log: [],
-          is_favorite: false,
-          is_archived: false,
-        });
-        analyzeItem(item, qc);
-        progress[progress.length - 1].status = 'done';
-        setUploadProgress([...progress]);
+        const dupLink = byUrl.get(hasLink);
+        if (dupLink) {
+          progress.push({ name: linkUrl.slice(0, 40), status: 'duplicate' });
+          setUploadProgress([...progress]);
+          duplicateIds.push(dupLink.id);
+        } else {
+          progress.push({ name: linkUrl.slice(0, 40), status: 'uploading' });
+          setUploadProgress([...progress]);
+          const item = await base44.entities.LibraryItem.create({
+            title: subject || linkUrl.slice(0, 60) || 'קישור חדש',
+            category: category || null,
+            subject: subject || null,
+            source_type: linkType,
+            youtube_url: linkType === 'youtube_link' ? linkUrl : null,
+            external_url: linkType !== 'youtube_link' ? linkUrl : null,
+            ai_status: 'pending',
+            generated_artifacts: [],
+            lesson_log: [],
+            is_favorite: false,
+            is_archived: false,
+          });
+          analyzeItem(item, qc);
+          progress[progress.length - 1].status = 'done';
+          setUploadProgress([...progress]);
+        }
       }
 
       // Add text
       if (hasText) {
-        progress.push({ name: subject || 'פתק טקסט', status: 'uploading' });
-        setUploadProgress([...progress]);
-        const item = await base44.entities.LibraryItem.create({
-          title: subject || 'פתק טקסט',
-          category: category || null,
-          subject: subject || null,
-          source_type: 'text_note',
-          transcript: textContent,
-          ai_status: 'pending',
-          generated_artifacts: [],
-          lesson_log: [],
-          is_favorite: false,
-          is_archived: false,
-        });
-        analyzeItem(item, qc);
-        progress[progress.length - 1].status = 'done';
-        setUploadProgress([...progress]);
+        const dupText = byText.get(hasText);
+        if (dupText) {
+          progress.push({ name: subject || 'פתק טקסט', status: 'duplicate' });
+          setUploadProgress([...progress]);
+          duplicateIds.push(dupText.id);
+        } else {
+          progress.push({ name: subject || 'פתק טקסט', status: 'uploading' });
+          setUploadProgress([...progress]);
+          const item = await base44.entities.LibraryItem.create({
+            title: subject || 'פתק טקסט',
+            category: category || null,
+            subject: subject || null,
+            source_type: 'text_note',
+            transcript: textContent,
+            ai_status: 'pending',
+            generated_artifacts: [],
+            lesson_log: [],
+            is_favorite: false,
+            is_archived: false,
+          });
+          analyzeItem(item, qc);
+          progress[progress.length - 1].status = 'done';
+          setUploadProgress([...progress]);
+        }
       }
 
       qc.invalidateQueries({ queryKey: ['library'] });
-      const total = progress.length;
-      toast.success(`${total} חומרים נוספו לספרייה ✓`);
+      const newCount = progress.filter(p => p.status === 'done').length;
       reset();
-      onClose();
+
+      if (duplicateIds.length && newCount === 0) {
+        // All uploads were duplicates — point to the existing material
+        toast.info('החומר כבר קיים בספרייה — עובר לחומר הקיים');
+        onClose();
+        navigate(`/library/${duplicateIds[0]}`);
+      } else {
+        if (duplicateIds.length) toast.info(`${duplicateIds.length} חומרים כבר קיימים — הושמטו כפילויות`);
+        if (newCount) toast.success(`${newCount} חומרים נוספו לספרייה ✓`);
+        onClose();
+      }
     } catch (e) {
       toast.error('שגיאה בהעלאה');
     }
@@ -400,6 +447,22 @@ export default function LibraryUploadModal({ open, onClose }) {
               open={drivePickerOpen}
               onClose={() => setDrivePickerOpen(false)}
               onImport={async (fileData) => {
+                // Dedup against existing library (same file signature or URL)
+                let existing = [];
+                try { existing = await base44.entities.LibraryItem.list('-created_date', 500); } catch {}
+                const sig = fileData.file_name && fileData.file_size ? `${fileData.file_name}|${fileData.file_size}` : null;
+                const url = fileData.youtube_url || fileData.external_url;
+                const dup = existing.find(it =>
+                  (sig && it.file_name && it.file_size && `${it.file_name}|${it.file_size}` === sig) ||
+                  (url && (it.youtube_url === url || it.external_url === url))
+                );
+                if (dup) {
+                  toast.info('החומר כבר קיים בספרייה — עובר לחומר הקיים');
+                  reset();
+                  onClose();
+                  navigate(`/library/${dup.id}`);
+                  return;
+                }
                 const item = await base44.entities.LibraryItem.create({
                   ...fileData,
                   category: category || null,
@@ -541,9 +604,10 @@ export default function LibraryUploadModal({ open, onClose }) {
                 {p.status === 'analyzing' && <Loader2 className="w-3.5 h-3.5 animate-spin text-purple-500" />}
                 {p.status === 'done' && <Check className="w-3.5 h-3.5 text-green-500" />}
                 {p.status === 'error' && <X className="w-3.5 h-3.5 text-destructive" />}
+                {p.status === 'duplicate' && <Link2 className="w-3.5 h-3.5 text-blue-500" />}
                 <span className="truncate">{p.name}</span>
                 <span className="text-muted-foreground shrink-0">
-                  {p.status === 'uploading' ? 'מעלה...' : p.status === 'analyzing' ? 'AI מנתח...' : p.status === 'done' ? 'הושלם ✓' : 'שגיאה'}
+                  {p.status === 'uploading' ? 'מעלה...' : p.status === 'analyzing' ? 'AI מנתח...' : p.status === 'done' ? 'הושלם ✓' : p.status === 'duplicate' ? 'קיים — מפנה' : 'שגיאה'}
                 </span>
               </div>
             ))}
