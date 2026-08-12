@@ -136,6 +136,33 @@ export default function MonthlyReportsPage() {
                 <h2 className="text-lg font-bold">{selectedClass?.name} — {monthLabel}</h2>
                 <Badge variant="outline">{reportRows.length} תלמידים</Badge>
               </div>
+              {reportRows.length > 0 && (() => {
+                const totalGrades = reportRows.reduce((s, r) => s + r.grades.length, 0);
+                const totalNotes = reportRows.reduce((s, r) => s + r.notes.length, 0);
+                const withGrades = reportRows.filter(r => r.avg !== null).length;
+                const avgs = reportRows.map(r => r.avg).filter(a => a !== null);
+                const classAvg = avgs.length ? Math.round(avgs.reduce((s, a) => s + a, 0) / avgs.length) : null;
+                return (
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-3">
+                    <div className="bg-muted/30 rounded-lg p-2 text-center">
+                      <p className="text-lg font-bold">{totalGrades}</p>
+                      <p className="text-[10px] text-muted-foreground">ציונים בחודש</p>
+                    </div>
+                    <div className="bg-muted/30 rounded-lg p-2 text-center">
+                      <p className="text-lg font-bold">{totalNotes}</p>
+                      <p className="text-[10px] text-muted-foreground">הערות מורים</p>
+                    </div>
+                    <div className="bg-muted/30 rounded-lg p-2 text-center">
+                      <p className="text-lg font-bold">{withGrades}</p>
+                      <p className="text-[10px] text-muted-foreground">תלמידים עם ציונים</p>
+                    </div>
+                    <div className="bg-muted/30 rounded-lg p-2 text-center">
+                      <p className="text-lg font-bold">{classAvg ?? '—'}</p>
+                      <p className="text-[10px] text-muted-foreground">ממוצע כיתתי</p>
+                    </div>
+                  </div>
+                );
+              })()}
 
               {reportRows.length === 0 ? (
                 <p className="text-sm text-muted-foreground text-center py-10">אין תלמידים בכיתה זו</p>
