@@ -6,14 +6,22 @@ import { Upload, FileText, Loader2, AlertCircle, CheckCircle2, UserPlus, Refresh
 import { base44 } from '@/api/base44Client';
 import { toast } from 'sonner';
 
-// File types supported by the ExtractDataFromUploadedFile integration
 const ACCEPTED = '.csv,.xlsx,.xls,.json,.html,.htm,.pdf,.png,.jpg,.jpeg,.txt,.docx';
 
-// Schema describing a single student record the extractor should return
-const STUDENT_SCHEMA = {
+// Known student entity fields (everything else goes to custom_fields)
+const KNOWN_KEYS = new Set([
+  'name', 'first_name', 'last_name', 'full_name', 'gender', 'height',
+  'row_preference', 'side_preference', 'special_needs', 'learning_group',
+  'academic_level', 'group', 'notes',
+]);
+
+// Schema for tabular extraction (csv/xlsx/json/html) — one row per student
+const ROW_SCHEMA = {
   type: 'object',
   properties: {
-    name: { type: 'string', description: 'שם מלא של התלמיד' },
+    name: { type: 'string', description: 'שם מלא (שם פרטי + שם משפחה משולב)' },
+    first_name: { type: 'string', description: 'שם פרטי' },
+    last_name: { type: 'string', description: 'שם משפחה' },
     gender: { type: 'string', enum: ['male', 'female', 'other'] },
     height: { type: 'string', enum: ['short', 'medium', 'tall'] },
     row_preference: { type: 'string', enum: ['front', 'middle', 'back', 'none'] },
@@ -23,16 +31,51 @@ const STUDENT_SCHEMA = {
     academic_level: { type: 'string', enum: ['weak', 'below_average', 'average', 'above_average', 'strong', 'excellent'] },
     group: { type: 'string' },
     notes: { type: 'string' },
+    custom_fields: {
+      type: 'object',
+      description: 'כל שאר העמודות בקובץ שאינן ברשימה לעיל (תעודת זהות, תאריך לידה, טלפון הורים וכו). מפתח = שם העמודה בקובץ, ערך = מחרוזת',
+      additionalProperties: { type: 'string' },
+    },
   },
-  required: ['name'],
 };
 
-// Normalize a Hebrew name for matching: trim, collapse spaces, lowercase
 function normName(n) {
-  return (n || '').trim().replace(/\s+/g, ' ').toLowerCase();
+  return (n || '').toString().trim().replace(/\s+/g, ' ').toLowerCase();
 }
 
-// Only keep non-empty scalar fields suitable for create/update
+function ext(name) {
+  return (name.split('.').pop() || '').toLowerCase();
+}
+
+function isPdfOrImage(name) {
+  return ['pdf', 'png', 'jpg', 'jpeg'].includes(ext(name));
+}
+
+function isTabular(name) {
+  return ['csv', 'xlsx', 'xls', 'json', 'html', 'htm', 'txt'].includes(ext(name));
+}
+
+// Combine first/last into name, collect unknown keys into custom_fields
+function normalizeRow(raw) {
+  const row = { ...raw };
+  let name = (row.name || row.full_name || '').toString().trim();
+  if (!name) {
+    const first = (row.first_name || '').toString().trim();
+    const last = (row.last_name || '').toString().trim();
+    name = [first, last].filter(Boolean).join(' ');
+  }
+  // Build custom_fields from explicit custom_fields object + unknown top-level keys
+  const custom = { ...(row.custom_fields || {}) };
+  Object.keys(row).forEach(k => {
+    if (k.startsWith('_')) return;
+    if (!KNOWN_KEYS.has(k) && k !== 'custom_fields') {
+      const v = row[k];
+      if (v !== null && v !== undefined && v !== '') custom[k] = String(v);
+    }
+  });
+  return { ...row, name, custom_fields: custom };
+}
+
 function toEntityFields(s) {
   const fields = { name: s.name, is_active: true };
   if (s.gender) fields.gender = s.gender;
@@ -44,14 +87,52 @@ function toEntityFields(s) {
   if (s.academic_level) fields.academic_level = s.academic_level;
   if (s.group) fields.group = s.group;
   if (s.notes) fields.notes = s.notes;
+  if (s.custom_fields && Object.keys(s.custom_fields).length) fields.custom_fields = s.custom_fields;
   return fields;
+}
+
+// PDF / image → InvokeLLM with file attachment + detailed prompt to capture ALL rows & ALL columns
+async function extractWithLLM(file_url, fileName) {
+  const prompt = `אתה מנתח מסמכים של רשימות תלמידים. הקובץ המצורף (${fileName}) מכיל טבלת תלמידים.
+
+חשוב מאוד:
+- חלץ את כל השורות בקובץ — כל תלמיד אחד הוא שורה נפרדת. אל תדלג על אף תלמיד ואל תמזג שורות.
+- אם יש עמודת שם פרטי ועמודת שם משפחה בנפרד, שלב אותן לשדה name (שם מלא).
+- זהה את העמודות המוכרות ומלא אותן: gender (male/female/other), height (short/medium/tall), row_preference (front/middle/back/none), side_preference (left/right/center/none), special_needs (מערך), learning_group, academic_level, group, notes.
+- כל עמודה אחרת שקיימת בקובץ (תעודת זהות, תאריך לידה, טלפון הורים, כתובת וכו) — הכנס לשדה custom_fields כאובייקט שבו המפתח הוא שם העמודה בקובץ והערך הוא מחרוזת. אל תשמיט אף עמודה.
+- החזר JSON עם שדה "students" שהוא מערך של כל התלמידים.`;
+
+  const res = await base44.integrations.Core.InvokeLLM({
+    prompt,
+    file_urls: [file_url],
+    response_json_schema: {
+      type: 'object',
+      properties: {
+        students: {
+          type: 'array',
+          items: { ...ROW_SCHEMA, additionalProperties: true },
+        },
+      },
+    },
+  });
+  return Array.isArray(res?.students) ? res.students : [];
+}
+
+// CSV / Excel / JSON / HTML → ExtractDataFromUploadedFile with a flexible schema
+async function extractTabular(file_url) {
+  const res = await base44.integrations.Core.ExtractDataFromUploadedFile({
+    file_url,
+    json_schema: ROW_SCHEMA,
+  });
+  if (res?.status !== 'success') throw new Error(res?.details || 'חילוץ הנתונים נכשל');
+  return Array.isArray(res.output) ? res.output : (res.output ? [res.output] : []);
 }
 
 export default function FileImportStudents({ open, onClose, students = [], onDone }) {
   const [file, setFile] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [rows, setRows] = useState([]); // extracted + matched rows
+  const [rows, setRows] = useState([]);
   const [saving, setSaving] = useState(false);
   const inputRef = useRef(null);
 
@@ -62,11 +143,7 @@ export default function FileImportStudents({ open, onClose, students = [], onDon
   }, [students]);
 
   function reset() {
-    setFile(null);
-    setLoading(false);
-    setError('');
-    setRows([]);
-    setSaving(false);
+    setFile(null); setLoading(false); setError(''); setRows([]); setSaving(false);
   }
 
   async function handleFile(f) {
@@ -79,23 +156,28 @@ export default function FileImportStudents({ open, onClose, students = [], onDon
       const up = await base44.integrations.Core.UploadFile({ file: f });
       const file_url = up?.file_url;
       if (!file_url) throw new Error('העלאת הקובץ נכשלה');
-      const res = await base44.integrations.Core.ExtractDataFromUploadedFile({
-        file_url,
-        json_schema: STUDENT_SCHEMA,
-      });
-      if (res?.status !== 'success') throw new Error(res?.details || 'חילוץ הנתונים נכשל');
-      let list = Array.isArray(res.output) ? res.output : (res.output ? [res.output] : []);
-      // Keep only rows with a usable name
-      list = list.map(r => ({ ...r, name: (r.name || '').toString().trim() })).filter(r => r.name);
+
+      let list = [];
+      if (isPdfOrImage(f.name)) {
+        list = await extractWithLLM(file_url, f.name);
+      } else if (isTabular(f.name)) {
+        list = await extractTabular(file_url);
+      } else {
+        // docx and other — try LLM as a fallback
+        list = await extractWithLLM(file_url, f.name);
+      }
+
+      list = list.map(normalizeRow).filter(r => r.name);
       if (!list.length) {
         setError('לא זוהו תלמידים בקובץ — ודא שהקובץ מכיל טבלת תלמידים עם עמודת שם');
         setLoading(false);
         return;
       }
-      const matched = list.map(r => {
-        const existing = existingByName[normName(r.name)];
-        return { ...r, _existing: existing || null, _checked: true };
-      });
+      const matched = list.map(r => ({
+        ...r,
+        _existing: existingByName[normName(r.name)] || null,
+        _checked: true,
+      }));
       setRows(matched);
     } catch (e) {
       setError(e?.message || 'שגיאה בעיבוד הקובץ');
@@ -123,20 +205,21 @@ export default function FileImportStudents({ open, onClose, students = [], onDon
       const toCreate = selected.filter(r => !r._existing);
       const toUpdate = selected.filter(r => r._existing);
 
-      // Create new students
       let created = [];
       if (toCreate.length) {
         created = await base44.entities.Student.bulkCreate(toCreate.map(toEntityFields));
       }
 
-      // Update existing students (only non-empty fields override current values)
       if (toUpdate.length) {
         await Promise.all(toUpdate.map(r => {
           const next = toEntityFields(r);
           delete next.is_active;
-          delete next.name; // don't overwrite name on update
+          delete next.name;
+          // merge custom_fields with existing ones (don't wipe previously stored)
+          if (r._existing.custom_fields && next.custom_fields) {
+            next.custom_fields = { ...r._existing.custom_fields, ...next.custom_fields };
+          }
           const merged = { ...r._existing, ...next };
-          // remove built-ins
           const { id, created_date, updated_date, created_by, created_by_id, ...rest } = merged;
           return base44.entities.Student.update(r._existing.id, rest);
         }));
@@ -154,6 +237,11 @@ export default function FileImportStudents({ open, onClose, students = [], onDon
 
   const newCount = rows.filter(r => r._checked && !r._existing).length;
   const updateCount = rows.filter(r => r._checked && r._existing).length;
+  const customKeys = useMemo(() => {
+    const keys = new Set();
+    rows.forEach(r => Object.keys(r.custom_fields || {}).forEach(k => keys.add(k)));
+    return [...keys];
+  }, [rows]);
 
   return (
     <Dialog open={open} onOpenChange={v => { if (!v) { reset(); onClose(); } }}>
@@ -163,7 +251,7 @@ export default function FileImportStudents({ open, onClose, students = [], onDon
             <FileText className="w-5 h-5" /> ייבוא ועדכון מקובץ
           </DialogTitle>
           <p className="text-xs text-muted-foreground font-normal">
-            כל פורמט: CSV, Excel, PDF, Word, תמונה, JSON, HTML. המערכת מחלצת את נתוני התלמידים, מזהה קיימים לפי שם ומעדכנת, ומוסיפה חדשים.
+            כל פורמט: CSV, Excel, PDF, Word, תמונה, JSON, HTML. המערכת מחלצת את כל השורות, משלבת שם פרטי+משפחה, מזהה קיימים לפי שם ומעדכנת, מוסיפה חדשים — ושומרת גם עמודות נוספות (ת"ז, תאריך לידה, טלפוני הורים ועוד) בשדות מותאמים.
           </p>
         </DialogHeader>
 
@@ -211,7 +299,7 @@ export default function FileImportStudents({ open, onClose, students = [], onDon
 
         {rows.length > 0 && (
           <div className="space-y-3">
-            <div className="flex items-center justify-between text-sm">
+            <div className="flex items-center justify-between text-sm flex-wrap gap-2">
               <span className="font-semibold">זוהו {rows.length} תלמידים</span>
               <div className="flex gap-1.5">
                 <Badge className="bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-400 border-0">
@@ -223,44 +311,53 @@ export default function FileImportStudents({ open, onClose, students = [], onDon
               </div>
             </div>
 
+            {customKeys.length > 0 && (
+              <div className="text-[11px] text-muted-foreground bg-muted/40 rounded-lg p-2">
+                <span className="font-semibold">עמודות נוספות שזוהו: </span>
+                {customKeys.map(k => (
+                  <span key={k} className="inline-block bg-card border border-border rounded px-1.5 py-0.5 ml-1 mt-1">{k}</span>
+                ))}
+              </div>
+            )}
+
             <div className="max-h-72 overflow-y-auto space-y-1.5 rounded-lg border border-border p-2">
-              {rows.map((r, i) => (
-                <div key={i} className={`rounded-md px-3 py-2 text-sm border ${r._checked ? 'bg-card border-border/60' : 'bg-muted/40 border-transparent opacity-60'}`}>
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="checkbox"
-                      checked={r._checked}
-                      onChange={() => toggleRow(i)}
-                      className="w-4 h-4 shrink-0 accent-primary"
-                    />
-                    <input
-                      value={r.name}
-                      onChange={e => editRowName(i, e.target.value)}
-                      className="flex-1 bg-transparent font-semibold outline-none focus:bg-muted/40 rounded px-1 -mx-1 min-w-0"
-                    />
-                    {r._existing ? (
-                      <Badge className="bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-400 border-0 text-[10px] shrink-0">
-                        <RefreshCw className="w-2.5 h-2.5 ml-0.5" /> עדכון
-                      </Badge>
-                    ) : (
-                      <Badge className="bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-400 border-0 text-[10px] shrink-0">
-                        <UserPlus className="w-2.5 h-2.5 ml-0.5" /> חדש
-                      </Badge>
-                    )}
-                  </div>
-                  {(r.row_preference || r.side_preference || r.special_needs?.length || r.academic_level || r.notes) && (
-                    <div className="flex flex-wrap gap-1 mt-1.5 pr-6 text-[10px] text-muted-foreground">
-                      {r.gender && <span>👤 {r.gender === 'male' ? 'זכר' : r.gender === 'female' ? 'נקבה' : 'אחר'}</span>}
-                      {r.height && <span>📏 {r.height === 'tall' ? 'גבוה' : r.height === 'short' ? 'נמוך' : 'בינוני'}</span>}
-                      {r.row_preference && r.row_preference !== 'none' && <span>📍 {r.row_preference === 'front' ? 'קדמי' : r.row_preference === 'back' ? 'אחורי' : 'אמצעי'}</span>}
-                      {r.side_preference && r.side_preference !== 'none' && <span>↔️ {r.side_preference === 'right' ? 'ימין' : r.side_preference === 'left' ? 'שמאל' : 'מרכז'}</span>}
-                      {r.special_needs?.length > 0 && <span>🏥 {r.special_needs.join(',')}</span>}
-                      {r.academic_level && <span>📊 {r.academic_level}</span>}
-                      {r.learning_group && <span>👥 {r.learning_group}</span>}
+              {rows.map((r, i) => {
+                const cf = r.custom_fields || {};
+                const cfKeys = Object.keys(cf);
+                return (
+                  <div key={i} className={`rounded-md px-3 py-2 text-sm border ${r._checked ? 'bg-card border-border/60' : 'bg-muted/40 border-transparent opacity-60'}`}>
+                    <div className="flex items-center gap-2">
+                      <input type="checkbox" checked={r._checked} onChange={() => toggleRow(i)} className="w-4 h-4 shrink-0 accent-primary" />
+                      <input
+                        value={r.name}
+                        onChange={e => editRowName(i, e.target.value)}
+                        className="flex-1 bg-transparent font-semibold outline-none focus:bg-muted/40 rounded px-1 -mx-1 min-w-0"
+                      />
+                      {r._existing ? (
+                        <Badge className="bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-400 border-0 text-[10px] shrink-0">
+                          <RefreshCw className="w-2.5 h-2.5 ml-0.5" /> עדכון
+                        </Badge>
+                      ) : (
+                        <Badge className="bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-400 border-0 text-[10px] shrink-0">
+                          <UserPlus className="w-2.5 h-2.5 ml-0.5" /> חדש
+                        </Badge>
+                      )}
                     </div>
-                  )}
-                </div>
-              ))}
+                    {(r.row_preference || r.side_preference || r.special_needs?.length || r.academic_level || r.notes || r.gender || r.height || r.learning_group || cfKeys.length) ? (
+                      <div className="flex flex-wrap gap-1 mt-1.5 pr-6 text-[10px] text-muted-foreground">
+                        {r.gender && <span>👤 {r.gender === 'male' ? 'זכר' : r.gender === 'female' ? 'נקבה' : 'אחר'}</span>}
+                        {r.height && <span>📏 {r.height === 'tall' ? 'גבוה' : r.height === 'short' ? 'נמוך' : 'בינוני'}</span>}
+                        {r.row_preference && r.row_preference !== 'none' && <span>📍 {r.row_preference === 'front' ? 'קדמי' : r.row_preference === 'back' ? 'אחורי' : 'אמצעי'}</span>}
+                        {r.side_preference && r.side_preference !== 'none' && <span>↔️ {r.side_preference === 'right' ? 'ימין' : r.side_preference === 'left' ? 'שמאל' : 'מרכז'}</span>}
+                        {r.special_needs?.length > 0 && <span>🏥 {r.special_needs.join(',')}</span>}
+                        {r.academic_level && <span>📊 {r.academic_level}</span>}
+                        {r.learning_group && <span>👥 {r.learning_group}</span>}
+                        {cfKeys.map(k => <span key={k} className="bg-muted rounded px-1">📎 {k}: {String(cf[k]).slice(0, 18)}</span>)}
+                      </div>
+                    ) : null}
+                  </div>
+                );
+              })}
             </div>
 
             {error && (
