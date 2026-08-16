@@ -317,21 +317,25 @@ function renderClassroom(scene, seats, students, rows, cols, anonymous, lowPower
                       student?.academic_level === 'below_average' ? 0xf97316 :
                       0x6b7280;
 
-        // Body (torso)
-        const bodyGeo = new THREE.CapsuleGeometry(0.15, 0.3, 4, 8);
+        // Body (torso) — fewer segments on low-power devices
+        const bodyGeo = lowPower
+          ? new THREE.CapsuleGeometry(0.15, 0.3, 2, 5)
+          : new THREE.CapsuleGeometry(0.15, 0.3, 4, 8);
         const bodyMat = new THREE.MeshStandardMaterial({ color, roughness: 0.6 });
         const body = new THREE.Mesh(bodyGeo, bodyMat);
         body.position.set(x, 0.9, z);
-        body.castShadow = true;
+        body.castShadow = !lowPower;
         body.userData.isSeat = true;
         scene.add(body);
 
         // Head
-        const headGeo = new THREE.SphereGeometry(0.12, 12, 12);
+        const headGeo = lowPower
+          ? new THREE.SphereGeometry(0.12, 6, 6)
+          : new THREE.SphereGeometry(0.12, 12, 12);
         const headMat = new THREE.MeshStandardMaterial({ color: 0xf0c8a0, roughness: 0.5 });
         const head = new THREE.Mesh(headGeo, headMat);
         head.position.set(x, 1.25, z);
-        head.castShadow = true;
+        head.castShadow = !lowPower;
         head.userData.isSeat = true;
         scene.add(head);
 
