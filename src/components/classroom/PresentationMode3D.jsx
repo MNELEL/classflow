@@ -20,6 +20,8 @@ export default function PresentationMode3D({ seats, students, rows, cols, open, 
   const labelsRef = useRef([]);
   const [anonymous, setAnonymous] = useState(false);
   const [currentCamera, setCurrentCamera] = useState('front');
+  const lowPowerRef = useRef(false);
+  const needsRenderRef = useRef(true);
 
   // Setup scene
   useEffect(() => {
