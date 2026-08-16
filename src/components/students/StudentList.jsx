@@ -7,6 +7,7 @@ import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from '@/components/u
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useNavigate } from 'react-router-dom';
 import StudentForm from './StudentForm';
+import StudentCustomFields from './StudentCustomFields';
 import TaskManager from './TaskManager';
 import GradeManager from './GradeManager';
 import StudentPortfolio from '@/components/portfolio/StudentPortfolio';
@@ -91,6 +92,7 @@ export default function StudentList({ students, onSave, onDelete }) {
                           />
                         )}
                       </div>
+                      <StudentCustomFields student={student} />
                     </div>
                   </div>
                   <div className="flex gap-1 opacity-60 md:opacity-60 md:group-hover:opacity-100 touch-show transition-opacity shrink-0">

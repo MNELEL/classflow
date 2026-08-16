@@ -9,8 +9,8 @@ import { base44 } from '@/api/base44Client';
 const SUGGESTIONS = [
   'סמן את דני נעדר',
   'הוסף תלמיד חדש בשם רוני',
-  'תן ציון 90 במתמטיקה לדני',
-  'הוסף משימה: להתקשר להורים של דני',
+  'מה יום הולדת של דני?',
+  'תן לי את טלפון ההורים של רוני',
 ];
 
 export default function AssistantDock() {

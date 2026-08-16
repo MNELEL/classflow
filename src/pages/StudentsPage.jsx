@@ -10,7 +10,7 @@ import { usePullToRefresh } from '@/hooks/usePullToRefresh';
 import PullToRefreshIndicator from '@/components/ui/PullToRefreshIndicator';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
-import { Upload, Wand2, Users, FileDown, FileUp, FileText, SortAsc, SortDesc, Calendar } from 'lucide-react';
+import { Upload, Wand2, Users, FileDown, FileUp, FileText, SortAsc, SortDesc, Calendar, Cake } from 'lucide-react';
 import CsvImportModal, { exportToCSV } from '@/components/data/CsvImportModal';
 import FileImportStudents from '@/components/students/FileImportStudents';
 import { useUrlOverlay } from '@/hooks/useUrlOverlay';
@@ -18,7 +18,7 @@ import { useUrlOverlay } from '@/hooks/useUrlOverlay';
 export default function StudentsPage() {
   const qc = useQueryClient();
   const { isOpen, open: openDialog, close: closeDialog } = useUrlOverlay('dialog');
-  const [sortMode, setSortMode] = useState('created'); // 'created' | 'firstName' | 'lastName'
+  const [sortMode, setSortMode] = useState('created'); // 'created' | 'firstName' | 'lastName' | 'birthday'
 
   const { data: students = [], isLoading, refetch } = useQuery({
     queryKey: ['students'],
@@ -38,6 +38,27 @@ export default function StudentsPage() {
       });
     } else if (sortMode === 'created') {
       sorted.sort((a, b) => new Date(b.created_date) - new Date(a.created_date));
+    } else if (sortMode === 'birthday') {
+      // Sort by next upcoming birthday (month/day) extracted from custom_fields.birth_date
+      const today = new Date();
+      const nowMonth = today.getMonth(); // 0-11
+      const nowDay = today.getDate();
+      const dayOfYear = (m, d) => m * 31 + d;
+      const keyOf = (s) => {
+        const raw = s?.custom_fields?.birth_date;
+        if (!raw) return Infinity;
+        let m = -1, d = -1;
+        const iso = String(raw).match(/^(\d{4})-(\d{1,2})-(\d{1,2})/);
+        const dmy = String(raw).match(/^(\d{1,2})[/.\-](\d{1,2})[/.\-](\d{2,4})/);
+        if (iso) { m = +iso[2] - 1; d = +iso[3]; }
+        else if (dmy) { d = +dmy[1]; m = +dmy[2] - 1; }
+        if (m < 0 || d < 1) return Infinity;
+        const todayKey = dayOfYear(nowMonth, nowDay);
+        let k = dayOfYear(m, d);
+        if (k < todayKey) k += 400; // wrap to next year
+        return k;
+      };
+      sorted.sort((a, b) => keyOf(a) - keyOf(b));
     }
     return sorted;
   }, [students, sortMode]);
@@ -216,6 +237,12 @@ export default function StudentsPage() {
                 className={`px-3 py-1.5 rounded-lg border text-xs font-medium transition-all flex items-center gap-1.5 ${sortMode === 'lastName' ? 'bg-primary text-primary-foreground border-primary' : 'border-border hover:bg-muted'}`}
               >
                 <SortDesc className="w-3.5 h-3.5" /> לפי שם משפחה (א-ת)
+              </button>
+              <button
+                onClick={() => setSortMode('birthday')}
+                className={`px-3 py-1.5 rounded-lg border text-xs font-medium transition-all flex items-center gap-1.5 ${sortMode === 'birthday' ? 'bg-primary text-primary-foreground border-primary' : 'border-border hover:bg-muted'}`}
+              >
+                <Cake className="w-3.5 h-3.5" /> ימי הולדת קרובים
               </button>
             </div>
 
