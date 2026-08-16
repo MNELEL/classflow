@@ -1,0 +1,115 @@
+{
+  "name": "SchoolCalendarRule",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "\u05e9\u05dd \u05d4\u05db\u05dc\u05dc / \u05ea\u05d9\u05d0\u05d5\u05e8 \u05e7\u05e6\u05e8"
+    },
+    "rule_type": {
+      "type": "string",
+      "enum": [
+        "daily_hours",
+        "early_dismissal",
+        "no_school"
+      ],
+      "description": "\u05e1\u05d5\u05d2 \u05db\u05dc\u05dc: \u05e9\u05e2\u05d5\u05ea \u05d9\u05d5\u05dd \u05dc\u05d9\u05de\u05d5\u05d3 / \u05e1\u05d9\u05d5\u05dd \u05de\u05d5\u05e7\u05d3\u05dd / \u05d9\u05d5\u05dd \u05dc\u05dc\u05d0 \u05dc\u05d9\u05de\u05d5\u05d3\u05d9\u05dd"
+    },
+    "day_of_week": {
+      "type": "number",
+      "description": "\u05d9\u05d5\u05dd \u05d1\u05e9\u05d1\u05d5\u05e2 \u05d7\u05d5\u05d6\u05e8 (0=\u05e8\u05d0\u05e9\u05d5\u05df ... 6=\u05e9\u05d1\u05ea) \u2014 \u05dc\u05db\u05dc\u05dc\u05d9\u05dd \u05d7\u05d5\u05d6\u05e8\u05d9\u05dd \u05db\u05de\u05d5 \u05db\u05dc \u05e9\u05d9\u05e9\u05d9"
+    },
+    "hebrew_event": {
+      "type": "string",
+      "enum": [
+        "rosh_chodesh",
+        "erev_chag",
+        "chag",
+        "vacation"
+      ],
+      "description": "\u05d0\u05d9\u05e8\u05d5\u05e2 \u05d1\u05dc\u05d5\u05d7 \u05d4\u05e9\u05e0\u05d4 \u05d4\u05e2\u05d1\u05e8\u05d9 \u05d7\u05d5\u05d6\u05e8 (\u05e8\u05d0\u05e9 \u05d7\u05d5\u05d3\u05e9 / \u05e2\u05e8\u05d1 \u05d7\u05d2 / \u05d7\u05d2 / \u05d7\u05d5\u05e4\u05e9\u05d4)"
+    },
+    "specific_date": {
+      "type": "string",
+      "format": "date",
+      "description": "\u05ea\u05d0\u05e8\u05d9\u05da \u05e1\u05e4\u05e6\u05d9\u05e4\u05d9 (\u05dc\u05d9\u05d5\u05dd \u05d7\u05d5\u05e4\u05e9 \u05d7\u05d3-\u05e4\u05e2\u05de\u05d9)"
+    },
+    "start_time": {
+      "type": "string",
+      "description": "\u05e9\u05e2\u05ea \u05ea\u05d7\u05d9\u05dc\u05ea \u05dc\u05d9\u05de\u05d5\u05d3\u05d9\u05dd \u05d9\u05d5\u05de\u05d9\u05ea (HH:MM)"
+    },
+    "end_time": {
+      "type": "string",
+      "description": "\u05e9\u05e2\u05ea \u05e1\u05d9\u05d5\u05dd \u05dc\u05d9\u05de\u05d5\u05d3\u05d9\u05dd \u05d9\u05d5\u05de\u05d9\u05ea (HH:MM)"
+    },
+    "dismissal_time": {
+      "type": "string",
+      "description": "\u05e9\u05e2\u05ea \u05e1\u05d9\u05d5\u05dd \u05de\u05d5\u05e7\u05d3\u05dd (HH:MM) \u2014 \u05dc\u05db\u05dc\u05dc \u05e1\u05d9\u05d5\u05dd \u05de\u05d5\u05e7\u05d3\u05dd"
+    },
+    "notes": {
+      "type": "string",
+      "description": "\u05d4\u05e2\u05e8\u05d5\u05ea"
+    },
+    "is_active": {
+      "type": "boolean",
+      "default": true,
+      "description": "\u05d4\u05d0\u05dd \u05d4\u05db\u05dc\u05dc \u05e4\u05e2\u05d9\u05dc"
+    }
+  },
+  "required": [
+    "name",
+    "rule_type"
+  ],
+  "rls": {
+    "create": {
+      "$or": [
+        {
+          "created_by_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "read": {
+      "$or": [
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "user"
+          }
+        }
+      ]
+    },
+    "update": {
+      "$or": [
+        {
+          "created_by_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "created_by_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
+}

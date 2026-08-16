@@ -76,6 +76,7 @@ const TeacherProfilePage       = lazy(() => import('./pages/TeacherProfilePage')
 const AdminOverviewPage        = lazy(() => import('./pages/AdminOverviewPage'));
 const MonthlyReportsPage       = lazy(() => import('./pages/MonthlyReportsPage'));
 const OcrReviewPage            = lazy(() => import('./pages/OcrReviewPage'));
+const SchoolCalendarPage       = lazy(() => import('./pages/SchoolCalendarPage'));
 
 // Direction-aware page transitions.
 // Forward (push): new screen enters from the right, old exits left → "to the left".
@@ -160,6 +161,7 @@ function AnimatedRoutes() {
 <Route path="/admin-overview" element={<AdminOverviewPage />} />
 <Route path="/monthly-reports" element={<MonthlyReportsPage />} />
 <Route path="/ocr-review/:itemId" element={<OcrReviewPage />} />
+<Route path="/school-calendar" element={<SchoolCalendarPage />} />
 <Route path="/teacher-login" element={<TeacherLogin />} />
 <Route path="/teacher-dashboard" element={<TeacherDashboard />} />
 <Route path="/certificates" element={<CertificatesPage />} />

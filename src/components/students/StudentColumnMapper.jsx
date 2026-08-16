@@ -33,42 +33,73 @@ const ENUMS = {
   academic_level: ['weak', 'below_average', 'average', 'above_average', 'strong', 'excellent'],
 };
 
-export function defaultTargetFor(col) {
-  if (col.isCustom) return 'keep';
-  const k = col.key;
-  if (k === 'name') return 'k:name';
-  if (['gender', 'height', 'row_preference', 'side_preference', 'special_needs',
-       'learning_group', 'academic_level', 'group', 'notes'].includes(k)) return 'k:' + k;
+// Hebrew → enum value normalization
+const ENUM_NORMALIZE = {
+  gender: { 'זכר': 'male', 'ז': 'male', 'בן': 'male', 'male': 'male', 'm': 'male', 'נקבה': 'female', 'נ': 'female', 'בת': 'female', 'female': 'female', 'f': 'female', 'אחר': 'other', 'other': 'other' },
+  height: { 'נמוך': 'short', 'short': 'short', 'בינוני': 'medium', 'medium': 'medium', 'גבוה': 'tall', 'tall': 'tall' },
+  row_preference: { 'קדמי': 'front', 'קדימה': 'front', 'front': 'front', 'אמצע': 'middle', 'middle': 'middle', 'אחורי': 'back', 'אחורה': 'back', 'back': 'back', 'none': 'none' },
+  side_preference: { 'ימין': 'right', 'right': 'right', 'שמאל': 'left', 'left': 'left', 'מרכז': 'center', 'center': 'center', 'none': 'none' },
+  academic_level: { 'חלש': 'weak', 'weak': 'weak', 'מתחת לממוצע': 'below_average', 'below_average': 'below_average', 'ממוצע': 'average', 'average': 'average', 'מעל ממוצע': 'above_average', 'above_average': 'above_average', 'חזק': 'strong', 'strong': 'strong', 'מצטיין': 'excellent', 'excellent': 'excellent' },
+};
+
+function normEnum(field, val) {
+  const map = ENUM_NORMALIZE[field];
+  if (!map) return val;
+  const v = String(val).trim();
+  return map[v] || map[v.toLowerCase()] || v;
+}
+
+// Auto-guess a target from the original column header (Hebrew + English keywords).
+export function guessTarget(key) {
+  const he = (key || '').trim();
+  const lo = he.toLowerCase();
+  if (/שם|name|פרטי|משפחה|first|last|surname|full name/.test(he + ' ' + lo)) return 'k:name';
+  if (/תעודת זהות|ת\.ז|ת"ז|תז|id|identity|identity number/.test(he + ' ' + lo)) return 'c:id_number';
+  if (/תאריך לידה|לידה|birth|date of birth|dob/.test(he + ' ' + lo)) return 'c:birth_date';
+  if (/טלפון|פלאפון|נייד|phone|mobile|tel/.test(he + ' ' + lo)) return 'c:parent_phone';
+  if (/כתובת|address/.test(he + ' ' + lo)) return 'c:address';
+  if (/אימייל|מייל|email|mail/.test(he + ' ' + lo)) return 'c:email';
+  if (/מגדר|מין|gender|sex/.test(he + ' ' + lo)) return 'k:gender';
+  if (/גובה|height/.test(he + ' ' + lo)) return 'k:height';
+  if (/שורה|row/.test(he + ' ' + lo)) return 'k:row_preference';
+  if (/צד|side/.test(he + ' ' + lo)) return 'k:side_preference';
+  if (/צרכים מיוחדים|צרכים|special|needs/.test(he + ' ' + lo)) return 'k:special_needs';
+  if (/קבוצת לימוד|learning group|קבוצת/.test(he + ' ' + lo)) return 'k:learning_group';
+  if (/רמה|level|אקדמי/.test(he + ' ' + lo)) return 'k:academic_level';
+  if (/הערות|הערה|notes|note|comment/.test(he + ' ' + lo)) return 'k:notes';
   return 'keep';
 }
 
-// Apply the user's column mapping to the extracted raw rows → final entity fields.
-export function applyMapping(rawRows, sourceColumns, mapping) {
+// Apply the user's column mapping to the raw extracted rows → final entity fields.
+export function applyMapping(rawRows, columns, mapping) {
   return rawRows.map(row => {
     const entity = { is_active: true };
     const custom = {};
     const nameParts = [];
-    for (const sc of sourceColumns) {
-      const target = mapping[sc.key] ?? defaultTargetFor(sc);
+    for (const col of columns) {
+      const target = mapping[col.key] ?? guessTarget(col.key);
       if (!target || target === 'ignore') continue;
-      const val = sc.isCustom ? (row.custom_fields?.[sc.key]) : row[sc.key];
-      if (val === '' || val == null) continue;
-      if (target === 'keep') { custom[sc.key] = String(val); continue; }
-      if (target === 'k:name') { nameParts.push(String(val)); continue; }
+      const raw = row[col.key];
+      if (raw === '' || raw == null) continue;
+      const val = String(raw).trim();
+      if (!val) continue;
+      if (target === 'keep') { custom[col.key] = val; continue; }
+      if (target === 'k:name') { nameParts.push(val); continue; }
       if (target.startsWith('k:')) {
         const field = target.slice(2);
         if (field === 'special_needs') {
-          const arr = Array.isArray(val) ? val : String(val).split(/[,;]/).map(s => s.trim()).filter(Boolean);
+          const arr = val.split(/[,;]/).map(s => s.trim()).filter(Boolean);
           if (arr.length) entity.special_needs = arr;
           continue;
         }
-        if (ENUMS[field] && !ENUMS[field].includes(val)) continue; // skip invalid enum value
-        entity[field] = val;
+        const norm = normEnum(field, val);
+        if (ENUMS[field] && !ENUMS[field].includes(norm)) continue;
+        entity[field] = norm;
         continue;
       }
-      if (target.startsWith('c:')) { custom[target.slice(2)] = String(val); continue; }
+      if (target.startsWith('c:')) { custom[target.slice(2)] = val; continue; }
     }
-    const name = nameParts.join(' ').trim() || (row.name || '').toString().trim();
+    const name = nameParts.join(' ').trim();
     if (!name) return null;
     entity.name = name;
     if (Object.keys(custom).length) entity.custom_fields = custom;
@@ -84,18 +115,18 @@ export default function StudentColumnMapper({ sourceColumns, mapping, onMappingC
     <div className="space-y-2">
       <div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-1">
         <ArrowLeftRight className="w-3.5 h-3.5" />
-        לכל עמודה בקובץ, בחר/י לאיזה שדה במערכת היא תוכנס.
+        לכל עמודה בקובץ, בחר/י לאיזה שדה במערכת היא תוכנס. המערכת כבר ניחשה לפי שם העמודה — ניתן לשנות.
       </div>
       {sourceColumns.map(col => (
-        <div key={col.key + (col.isCustom ? '|c' : '|k')} className="flex items-center gap-2 bg-card border border-border/60 rounded-lg px-2.5 py-2">
+        <div key={col.key} className="flex items-center gap-2 bg-card border border-border/60 rounded-lg px-2.5 py-2">
           <div className="flex-1 min-w-0">
             <div className="text-sm font-medium truncate">{col.key}</div>
             {col.sample ? <div className="text-[11px] text-muted-foreground truncate">דוגמה: {col.sample}</div> : null}
           </div>
           <select
-            value={mapping[col.key] ?? defaultTargetFor(col)}
+            value={mapping[col.key] ?? guessTarget(col.key)}
             onChange={e => onMappingChange(col.key, e.target.value)}
-            className="text-xs rounded-md border border-input bg-background px-2 py-1.5 max-w-[45%] shrink-0 focus:outline-none focus:ring-1 focus:ring-ring"
+            className="text-xs rounded-md border border-input bg-background px-2 py-1.5 max-w-[48%] shrink-0 focus:outline-none focus:ring-1 focus:ring-ring"
           >
             {Object.entries(groups).map(([gName, opts]) => (
               <optgroup key={gName} label={gName}>

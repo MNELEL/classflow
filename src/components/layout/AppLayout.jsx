@@ -37,7 +37,7 @@ export default function AppLayout({ children }) {
     '/question-bank','/lesson-analyzer','/curriculum','/homework','/sound-board',
     '/student-view','/reports','/analytics','/events','/exams','/fast-feedback',
     '/behavior-timeline','/weekly-schedule','/bell-schedule','/study-plan-generator',
-    '/raffle','/daily-summary','/exam-scanner','/more','/settings','/tasks-hub',
+    '/raffle','/daily-summary','/exam-scanner','/school-calendar','/more','/settings','/tasks-hub',
     '/history','/admin','/generators','/admin-generators','/teacher-insights',
     '/ingest','/teaching-style-dashboard','/teacher-style','/teacher-login',
     '/teacher-dashboard',

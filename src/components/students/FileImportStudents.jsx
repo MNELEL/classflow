@@ -1,96 +1,20 @@
-import React, { useState, useRef, useMemo } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Upload, FileText, Loader2, AlertCircle, CheckCircle2, UserPlus, RefreshCw, X, ArrowLeft, ArrowLeftRight } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { toast } from 'sonner';
-import StudentColumnMapper, { defaultTargetFor, applyMapping } from './StudentColumnMapper';
+import StudentColumnMapper, { guessTarget, applyMapping } from './StudentColumnMapper';
+import { extractStudentsFromFile } from '@/lib/studentFileImport';
 
-const ACCEPTED = '.csv,.xlsx,.xls,.json,.html,.htm,.pdf,.png,.jpg,.jpeg,.txt,.docx';
-
-// Known student entity fields (everything else goes to custom_fields)
-const KNOWN_KEYS = new Set([
-  'name', 'first_name', 'last_name', 'full_name', 'gender', 'height',
-  'row_preference', 'side_preference', 'special_needs', 'learning_group',
-  'academic_level', 'group', 'notes',
-]);
-
-const ROW_SCHEMA = {
-  type: 'object',
-  properties: {
-    name: { type: 'string', description: 'שם מלא (שם פרטי + שם משפחה משולב)' },
-    first_name: { type: 'string', description: 'שם פרטי' },
-    last_name: { type: 'string', description: 'שם משפחה' },
-    gender: { type: 'string', enum: ['male', 'female', 'other'] },
-    height: { type: 'string', enum: ['short', 'medium', 'tall'] },
-    row_preference: { type: 'string', enum: ['front', 'middle', 'back', 'none'] },
-    side_preference: { type: 'string', enum: ['left', 'right', 'center', 'none'] },
-    special_needs: { type: 'array', items: { type: 'string' } },
-    learning_group: { type: 'string' },
-    academic_level: { type: 'string', enum: ['weak', 'below_average', 'average', 'above_average', 'strong', 'excellent'] },
-    group: { type: 'string' },
-    notes: { type: 'string' },
-    custom_fields: {
-      type: 'object',
-      description: 'כל שאר העמודות בקובץ שאינן ברשימה לעיל (תעודת זהות, תאריך לידה, טלפון הורים וכו). מפתח = שם העמודה בקובץ, ערך = מחרוזת',
-      additionalProperties: { type: 'string' },
-    },
-  },
-};
+const ACCEPTED = '.csv,.xlsx,.xls,.json,.txt,.pdf,.png,.jpg,.jpeg,.docx,.html,.htm';
 
 function normName(n) { return (n || '').toString().trim().replace(/\s+/g, ' ').toLowerCase(); }
-function ext(name) { return (name.split('.').pop() || '').toLowerCase(); }
-function isPdfOrImage(name) { return ['pdf', 'png', 'jpg', 'jpeg'].includes(ext(name)); }
-function isTabular(name) { return ['csv', 'xlsx', 'xls', 'json', 'html', 'htm', 'txt'].includes(ext(name)); }
 
-// Combine first/last into name; drop intermediate keys; collect unknown keys into custom_fields.
-function normalizeRow(raw) {
-  const { first_name, last_name, full_name, custom_fields, ...rest } = raw;
-  let name = (rest.name || full_name || '').toString().trim();
-  if (!name) {
-    name = [(first_name || '').toString().trim(), (last_name || '').toString().trim()].filter(Boolean).join(' ');
-  }
-  const custom = { ...(custom_fields || {}) };
-  Object.keys(rest).forEach(k => {
-    if (k.startsWith('_')) return;
-    if (!KNOWN_KEYS.has(k)) {
-      const v = rest[k];
-      if (v !== null && v !== undefined && v !== '') custom[k] = String(v);
-      delete rest[k];
-    }
-  });
-  return { ...rest, name, custom_fields: custom };
-}
-
-async function extractWithLLM(file_url, fileName) {
-  const prompt = `אתה מנתח מסמכים של רשימות תלמידים. הקובץ המצורף (${fileName}) מכיל טבלת תלמידים.
-
-חשוב מאוד:
-- חלץ את כל השורות בקובץ — כל תלמיד אחד הוא שורה נפרדת. אל תדלג על אף תלמיד ואל תמזג שורות.
-- אם יש עמודת שם פרטי ועמודת שם משפחה בנפרד, שלב אותן לשדה name (שם מלא).
-- זהה את העמודות המוכרות ומלא אותן: gender (male/female/other), height (short/medium/tall), row_preference (front/middle/back/none), side_preference (left/right/center/none), special_needs (מערך), learning_group, academic_level, group, notes.
-- כל עמודה אחרת שקיימת בקובץ (תעודת זהות, תאריך לידה, טלפון הורים, כתובת וכו) — הכנס לשדה custom_fields כאובייקט שבו המפתח הוא שם העמודה בקובץ והערך הוא מחרוזת. אל תשמיט אף עמודה.
-- החזר JSON עם שדה "students" שהוא מערך של כל התלמידים.`;
-  const res = await base44.integrations.Core.InvokeLLM({
-    prompt, file_urls: [file_url],
-    response_json_schema: {
-      type: 'object',
-      properties: { students: { type: 'array', items: { ...ROW_SCHEMA, additionalProperties: true } } },
-    },
-  });
-  return Array.isArray(res?.students) ? res.students : [];
-}
-
-async function extractTabular(file_url) {
-  const res = await base44.integrations.Core.ExtractDataFromUploadedFile({ file_url, json_schema: ROW_SCHEMA });
-  if (res?.status !== 'success') throw new Error(res?.details || 'חילוץ הנתונים נכשל');
-  return Array.isArray(res.output) ? res.output : (res.output ? [res.output] : []);
-}
-
-function sampleValue(rows, key, isCustom) {
+function sampleValue(rows, key) {
   for (const r of rows) {
-    const v = isCustom ? r.custom_fields?.[key] : r[key];
+    const v = r[key];
     if (v !== '' && v != null) return String(v).slice(0, 24);
   }
   return '';
@@ -106,7 +30,6 @@ export default function FileImportStudents({ open, onClose, students = [], onDon
   const [mapping, setMapping] = useState({});
   const [rows, setRows] = useState([]);
   const [saving, setSaving] = useState(false);
-  const inputRef = useRef(null);
 
   const existingByName = useMemo(() => {
     const map = {};
@@ -126,43 +49,22 @@ export default function FileImportStudents({ open, onClose, students = [], onDon
     setLoading(true);
     setError('');
     try {
-      const up = await base44.integrations.Core.UploadFile({ file: f });
-      const file_url = up?.file_url;
-      if (!file_url) throw new Error('העלאת הקובץ נכשלה');
-
-      let list = [];
-      if (isPdfOrImage(f.name)) list = await extractWithLLM(file_url, f.name);
-      else if (isTabular(f.name)) list = await extractTabular(file_url);
-      else list = await extractWithLLM(file_url, f.name);
-
-      list = list.map(normalizeRow).filter(r => r.name);
-      if (!list.length) {
-        setError('לא זוהו תלמידים בקובץ — ודא שהקובץ מכיל טבלת תלמידים עם עמודת שם');
+      const { rows: raw } = await extractStudentsFromFile(f);
+      if (!raw.length) {
+        setError('לא זוהו תלמידים בקובץ — ודא שהקובץ מכיל טבלת תלמידים עם שורת כותרת ועמודת שם');
         setLoading(false);
         return;
       }
-
-      // Build source columns from detected keys
-      const keySet = new Set();
-      const customSet = new Set();
-      list.forEach(r => {
-        Object.keys(r).forEach(k => {
-          if (k.startsWith('_') || k === 'custom_fields') return;
-          if (r[k] !== '' && r[k] != null) keySet.add(k);
-        });
-        Object.keys(r.custom_fields || {}).forEach(k => customSet.add(k));
-      });
-      const cols = [
-        ...[...keySet].map(k => ({ key: k, isCustom: false, sample: sampleValue(list, k, false) })),
-        ...[...customSet].map(k => ({ key: k, isCustom: true, sample: sampleValue(list, k, true) })),
-      ];
-      // Ensure 'name' is first
-      cols.sort((a, b) => (a.key === 'name' ? -1 : b.key === 'name' ? 1 : 0));
+      // Source columns = union of keys across rows, in first-row order
+      const keyOrder = [];
+      const seen = new Set();
+      raw.forEach(r => Object.keys(r).forEach(k => { if (!seen.has(k)) { seen.add(k); keyOrder.push(k); } }));
+      const cols = keyOrder.map(k => ({ key: k, sample: sampleValue(raw, k) }));
 
       const defaultMap = {};
-      cols.forEach(c => { defaultMap[c.key] = defaultTargetFor(c); });
+      cols.forEach(c => { defaultMap[c.key] = guessTarget(c.key); });
 
-      setRawRows(list);
+      setRawRows(raw);
       setSourceColumns(cols);
       setMapping(defaultMap);
       setStep('mapping');
@@ -179,7 +81,7 @@ export default function FileImportStudents({ open, onClose, students = [], onDon
   function confirmMapping() {
     const finalRows = applyMapping(rawRows, sourceColumns, mapping);
     if (!finalRows.length) {
-      setError('מיפוי לא תקין — ודא שעמודת שם ממופה לשדה "שם מלא"');
+      setError('מיפוי לא תקין — ודא שלפחות עמודת שם ממופה לשדה "שם מלא"');
       return;
     }
     const matched = finalRows.map(r => ({
@@ -199,8 +101,7 @@ export default function FileImportStudents({ open, onClose, students = [], onDon
   function editRowName(i, value) {
     setRows(rs => rs.map((r, idx) => {
       if (idx !== i) return r;
-      const existing = existingByName[normName(value)];
-      return { ...r, name: value, _existing: existing || null };
+      return { ...r, name: value, _existing: existingByName[normName(value)] || null };
     }));
   }
 
@@ -254,7 +155,7 @@ export default function FileImportStudents({ open, onClose, students = [], onDon
           </DialogTitle>
           {step === 'upload' && (
             <p className="text-xs text-muted-foreground font-normal">
-              כל פורמט: CSV, Excel, PDF, Word, תמונה, JSON, HTML. המערכת מחלצת את כל השורות, משלבת שם פרטי+משפחה, מזהה קיימים לפי שם ומעדכנת, מוסיפה חדשים. לאחר החילוץ תוכל/י למפות כל עמודה לשדה הנכון (ת"ז, טלפון, תאריך לידה ועוד).
+              כל פורמט: CSV, Excel, PDF, Word, תמונה, JSON, HTML. המערכת מחלצת את כל השורות עם שמות העמודות המקוריים, מזהה קיימים לפי שם ומעדכנת, מוסיפה חדשים. לאחר החילוץ תוכל/י למפות כל עמודה לשדה הנכון.
             </p>
           )}
           {step === 'mapping' && (
@@ -266,15 +167,14 @@ export default function FileImportStudents({ open, onClose, students = [], onDon
 
         {step === 'upload' && (
           <div className="space-y-3">
-            <div
+            <label
               className="border-2 border-dashed rounded-xl p-8 flex flex-col items-center gap-3 cursor-pointer transition-colors text-center border-border hover:border-primary/40 hover:bg-accent/20"
-              onClick={() => inputRef.current?.click()}
             >
-              <input ref={inputRef} type="file" accept={ACCEPTED} className="hidden" onChange={e => handleFile(e.target.files?.[0])} />
+              <input type="file" accept={ACCEPTED} className="hidden" onChange={e => handleFile(e.target.files?.[0])} />
               {loading ? (
                 <>
                   <Loader2 className="w-8 h-8 text-primary animate-spin" />
-                  <p className="text-sm font-medium">מעלה ומחלץ נתונים...</p>
+                  <p className="text-sm font-medium">מחלץ נתונים מהקובץ...</p>
                   <p className="text-xs text-muted-foreground">זה עשוי לקחת כמה שניות</p>
                 </>
               ) : file ? (
@@ -290,7 +190,7 @@ export default function FileImportStudents({ open, onClose, students = [], onDon
                   <p className="text-[11px] text-muted-foreground">CSV · Excel · PDF · Word · תמונה · JSON · HTML</p>
                 </>
               )}
-            </div>
+            </label>
             {error && (
               <div className="flex items-start gap-2 text-destructive text-sm bg-destructive/10 rounded-lg p-3">
                 <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" /> <span>{error}</span>

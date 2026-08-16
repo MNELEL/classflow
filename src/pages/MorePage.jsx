@@ -29,6 +29,7 @@ const ROWS = [
   { path: '/analytics',       icon: BarChart2,  label: 'ניתוח ציונים',    desc: 'גרפים, נושאים ומגמות',            color: 'bg-violet-100 text-violet-600 dark:bg-violet-900/30 dark:text-violet-400' },
   { path: '/weekly-schedule', icon: Clock,      label: 'לוח שבועי',       desc: 'מערכי שיעור לפי ימים ושעות',      color: 'bg-indigo-100 text-indigo-600 dark:bg-indigo-900/30 dark:text-indigo-400' },
   { path: '/curriculum',      icon: Clock,      label: 'מערכת שעות',      desc: 'תכנון שבועי ויעדי לימוד',         color: 'bg-indigo-100 text-indigo-600 dark:bg-indigo-900/30 dark:text-indigo-400' },
+  { path: '/school-calendar', icon: CalendarDays, label: 'לוח שנה עברי',  desc: 'ימי חופש, סיום מוקדם ושעות יום',  color: 'bg-teal-100 text-teal-600 dark:bg-teal-900/30 dark:text-teal-400'             },
   { path: '/question-bank',   icon: Layers,     label: 'בנק שאלות',       desc: 'שאלות לפי נושא ורמה',            color: 'bg-pink-100 text-pink-600 dark:bg-pink-900/30 dark:text-pink-400'         },
   { path: '/lesson-analyzer', icon: Mic,        label: 'ניתוח שיעורים',   desc: 'סיכום, תמלול וחומרי לימוד',      color: 'bg-rose-100 text-rose-600 dark:bg-rose-900/30 dark:text-rose-400'         },
   { path: '/ingest',             icon: Upload,     label: 'העלאת קבצים',      desc: 'תמונות, PDF ואודיו לניתוח',       color: 'bg-cyan-100 text-cyan-600 dark:bg-cyan-900/30 dark:text-cyan-400'         },
