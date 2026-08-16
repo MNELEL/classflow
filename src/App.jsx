@@ -162,6 +162,7 @@ function AnimatedRoutes() {
 <Route path="/ocr-review/:itemId" element={<OcrReviewPage />} />
 <Route path="/teacher-login" element={<TeacherLogin />} />
 <Route path="/teacher-dashboard" element={<TeacherDashboard />} />
+<Route path="/certificates" element={<CertificatesPage />} />
             </Route>
 
             <Route path="*" element={<PageNotFound />} />
