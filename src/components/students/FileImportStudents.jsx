@@ -2,10 +2,11 @@ import React, { useState, useMemo } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Upload, FileText, Loader2, AlertCircle, CheckCircle2, UserPlus, RefreshCw, X, ArrowLeft, ArrowLeftRight } from 'lucide-react';
+import { Upload, FileText, Loader2, AlertCircle, CheckCircle2, UserPlus, RefreshCw, X, ArrowLeft, ArrowLeftRight, Merge, AlertTriangle } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { toast } from 'sonner';
 import StudentColumnMapper, { guessTarget, applyMapping } from './StudentColumnMapper';
+import DuplicateMergeModal from './DuplicateMergeModal';
 import { extractStudentsFromFile } from '@/lib/studentFileImport';
 
 const ACCEPTED = '.csv,.xlsx,.xls,.json,.txt,.pdf,.png,.jpg,.jpeg,.docx,.html,.htm';
@@ -20,6 +21,28 @@ function sampleValue(rows, key) {
   return '';
 }
 
+const DUP_ID_KEYS = ['id_number', 'father_id', 'mother_id'];
+
+// Detect duplicate rows within the batch (same name OR same ID field) via union-find.
+function findDuplicateGroups(rows) {
+  const parent = rows.map((_, i) => i);
+  const find = (x) => { while (parent[x] !== x) { parent[x] = parent[parent[x]]; x = parent[x]; } return x; };
+  const union = (a, b) => { parent[find(a)] = find(b); };
+  const byName = {};
+  rows.forEach((r, i) => { const k = normName(r.name); if (k) { (byName[k] ||= []).push(i); } });
+  Object.values(byName).forEach(idxs => { for (let j = 1; j < idxs.length; j++) union(idxs[0], idxs[j]); });
+  DUP_ID_KEYS.forEach(key => {
+    const byId = {};
+    rows.forEach((r, i) => { const v = r.custom_fields?.[key]; if (v && String(v).trim()) { const k = String(v).trim(); (byId[k] ||= []).push(i); } });
+    Object.values(byId).forEach(idxs => { for (let j = 1; j < idxs.length; j++) union(idxs[0], idxs[j]); });
+  });
+  const groups = {};
+  rows.forEach((_, i) => { const root = find(i); (groups[root] ||= []).push(i); });
+  return Object.values(groups)
+    .filter(g => g.length > 1)
+    .map(g => g.map(i => ({ index: i, row: rows[i] })));
+}
+
 export default function FileImportStudents({ open, onClose, students = [], onDone }) {
   const [file, setFile] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -30,6 +53,10 @@ export default function FileImportStudents({ open, onClose, students = [], onDon
   const [mapping, setMapping] = useState({});
   const [rows, setRows] = useState([]);
   const [saving, setSaving] = useState(false);
+  const [mergeGroup, setMergeGroup] = useState(null);
+
+  const groups = useMemo(() => findDuplicateGroups(rows), [rows]);
+  const groupIndexSet = useMemo(() => new Set(groups.flatMap(g => g.map(x => x.index))), [groups]);
 
   const existingByName = useMemo(() => {
     const map = {};
@@ -103,6 +130,12 @@ export default function FileImportStudents({ open, onClose, students = [], onDon
       if (idx !== i) return r;
       return { ...r, name: value, _existing: existingByName[normName(value)] || null };
     }));
+  }
+
+  function applyMerge(mergedRow) {
+    const removeIdx = new Set((mergeGroup || []).map(x => x.index));
+    setRows(rs => [...rs.filter((_, i) => !removeIdx.has(i)), mergedRow]);
+    setMergeGroup(null);
   }
 
   async function handleImport() {
@@ -241,8 +274,38 @@ export default function FileImportStudents({ open, onClose, students = [], onDon
               </div>
             )}
 
+            {groups.length > 0 && (
+              <div className="space-y-2">
+                <div className="flex items-center gap-1.5 text-xs font-semibold text-amber-600 dark:text-amber-400">
+                  <AlertTriangle className="w-3.5 h-3.5" /> זוהו {groups.length} קבוצות כפילויות — מומלץ למזג לכרטיס אחד
+                </div>
+                {groups.map((g, gi) => (
+                  <div key={gi} className="border border-amber-300/50 dark:border-amber-700/40 rounded-lg p-2 bg-amber-50/40 dark:bg-amber-900/10">
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-[11px] font-medium text-muted-foreground">{g.length} רשומות זהות</span>
+                      <Button size="sm" variant="outline" className="h-6 text-[11px] px-2" onClick={() => setMergeGroup(g)}>
+                        <Merge className="w-3 h-3 ml-1" /> מזג לכרטיס אחד
+                      </Button>
+                    </div>
+                    <div className="space-y-1">
+                      {g.map((item) => (
+                        <div key={item.index} className="text-xs bg-card rounded px-2 py-1 border border-border/40">
+                          <span className="font-semibold">{item.row.name}</span>
+                          {item.row._existing && <span className="text-[10px] text-blue-600 mr-1">• קיים</span>}
+                          {item.row.custom_fields && Object.keys(item.row.custom_fields).length > 0 && (
+                            <span className="text-[10px] text-muted-foreground mr-1">• {Object.keys(item.row.custom_fields).join(', ')}</span>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
             <div className="max-h-72 overflow-y-auto space-y-1.5 rounded-lg border border-border p-2">
               {rows.map((r, i) => {
+                if (groupIndexSet.has(i)) return null;
                 const cf = r.custom_fields || {};
                 const cfKeys = Object.keys(cf);
                 return (
@@ -295,6 +358,8 @@ export default function FileImportStudents({ open, onClose, students = [], onDon
             </DialogFooter>
           </div>
         )}
+
+        <DuplicateMergeModal open={!!mergeGroup} group={mergeGroup} onClose={() => setMergeGroup(null)} onMerge={applyMerge} />
       </DialogContent>
     </Dialog>
   );

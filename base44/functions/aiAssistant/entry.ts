@@ -34,10 +34,14 @@ ${JSON.stringify(studentRoster)}
 כללים:
 - זהה את הכוונה (intent) מתוך: add_student, mark_attendance, add_grade, add_task, add_behavior, add_homework, query_student_info, unknown
 - עבור תלמיד קיים, התאם את השם ל-ID מהרשימה ומלא את student_id. אם השם לא נמצא, השאר את student_id ריק ושים את השם ב-student_name.
-- עבור query_student_info: המשתמש שואל על פרטי תלמיד — יום הולדת, טלפון הורים, תעודת זהות, אימייל או כתובת. מלא את student_id ואת query_field לפי השאלה:
+- עבור query_student_info: המשתמש שואל על פרטי תלמיד — יום הולדת, טלפון אב/אם, ת"ז אב/אם/תלמיד, אימייל או כתובת. מלא את student_id ואת query_field לפי השאלה:
     • יום הולדת / מתי נולד → query_field="birth_date"
+    • טלפון אב / טלפון האב / אבא → query_field="father_phone"
+    • טלפון אם / טלפון האם / אמא → query_field="mother_phone"
     • טלפון הורים / טלפון / פלאפון → query_field="parent_phone"
-    • תעודת זהות / ת"ז → query_field="id_number"
+    • ת"ז אב / תעודת זהות אב → query_field="father_id"
+    • ת"ז אם / תעודת זהות אם → query_field="mother_id"
+    • תעודת זהות / ת"ז (תלמיד) → query_field="id_number"
     • אימייל / מייל → query_field="email"
     • כתובת → query_field="address"
     • כל הפרטים / פרטים → query_field="all"
@@ -53,7 +57,7 @@ ${JSON.stringify(studentRoster)}
           intent: { type: 'string', enum: ['add_student', 'mark_attendance', 'add_grade', 'add_task', 'add_behavior', 'add_homework', 'query_student_info', 'unknown'] },
           student_id: { type: 'string' },
           student_name: { type: 'string' },
-          query_field: { type: 'string', enum: ['birth_date', 'parent_phone', 'id_number', 'email', 'address', 'all'] },
+          query_field: { type: 'string', enum: ['birth_date', 'parent_phone', 'father_phone', 'mother_phone', 'id_number', 'father_id', 'mother_id', 'email', 'address', 'all'] },
           status: { type: 'string', enum: ['present', 'absent', 'late'] },
           subject: { type: 'string' },
           score: { type: 'number' },
@@ -78,7 +82,11 @@ ${JSON.stringify(studentRoster)}
       const FIELD_LABELS: Record<string, string> = {
         birth_date: 'יום הולדת',
         parent_phone: 'טלפון הורים',
+        father_phone: 'טלפון אב',
+        mother_phone: 'טלפון אם',
         id_number: 'תעודת זהות',
+        father_id: 'ת"ז אב',
+        mother_id: 'ת"ז אם',
         email: 'אימייל',
         address: 'כתובת',
       };

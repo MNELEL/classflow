@@ -4,7 +4,11 @@ import { Cake, Phone, Hash, Mail, MapPin, IdCard } from 'lucide-react';
 // Known custom field keys → friendly label + icon
 const KNOWN = {
   birth_date: { icon: Cake, label: 'יום הולדת', color: 'text-pink-600 dark:text-pink-400' },
+  father_phone: { icon: Phone, label: 'טלפון אב', color: 'text-emerald-600 dark:text-emerald-400' },
+  mother_phone: { icon: Phone, label: 'טלפון אם', color: 'text-teal-600 dark:text-teal-400' },
   parent_phone: { icon: Phone, label: 'טלפון הורה', color: 'text-emerald-600 dark:text-emerald-400' },
+  father_id: { icon: Hash, label: 'ת"ז אב', color: 'text-indigo-600 dark:text-indigo-400' },
+  mother_id: { icon: Hash, label: 'ת"ז אם', color: 'text-violet-600 dark:text-violet-400' },
   id_number: { icon: Hash, label: 'ת"ז', color: 'text-indigo-600 dark:text-indigo-400' },
   email: { icon: Mail, label: 'אימייל', color: 'text-blue-600 dark:text-blue-400' },
   address: { icon: MapPin, label: 'כתובת', color: 'text-amber-600 dark:text-amber-400' },
@@ -13,7 +17,11 @@ const KNOWN = {
 // Friendly Hebrew label for any custom field key (for the AI assistant / generic display)
 export const CUSTOM_FIELD_LABELS = {
   birth_date: 'יום הולדת',
+  father_phone: 'טלפון אב',
+  mother_phone: 'טלפון אם',
   parent_phone: 'טלפון הורים',
+  father_id: 'ת"ז אב',
+  mother_id: 'ת"ז אם',
   id_number: 'תעודת זהות',
   email: 'אימייל',
   address: 'כתובת',

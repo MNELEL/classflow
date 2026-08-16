@@ -18,9 +18,13 @@ export const TARGETS = [
   { value: 'k:academic_level', label: 'רמה אקדמית', group: 'שדות מערכת' },
   { value: 'k:group', label: 'קבוצה', group: 'שדות מערכת' },
   { value: 'k:notes', label: 'הערות', group: 'שדות מערכת' },
-  { value: 'c:id_number', label: 'תעודת זהות', group: 'שדות מותאמים' },
   { value: 'c:birth_date', label: 'תאריך לידה', group: 'שדות מותאמים' },
-  { value: 'c:parent_phone', label: 'טלפון הורה', group: 'שדות מותאמים' },
+  { value: 'c:father_phone', label: 'טלפון אב', group: 'שדות מותאמים' },
+  { value: 'c:mother_phone', label: 'טלפון אם', group: 'שדות מותאמים' },
+  { value: 'c:father_id', label: 'ת"ז אב', group: 'שדות מותאמים' },
+  { value: 'c:mother_id', label: 'ת"ז אם', group: 'שדות מותאמים' },
+  { value: 'c:id_number', label: 'תעודת זהות (תלמיד)', group: 'שדות מותאמים' },
+  { value: 'c:parent_phone', label: 'טלפון הורה (כללי)', group: 'שדות מותאמים' },
   { value: 'c:address', label: 'כתובת', group: 'שדות מותאמים' },
   { value: 'c:email', label: 'אימייל', group: 'שדות מותאמים' },
 ];
@@ -53,20 +57,26 @@ function normEnum(field, val) {
 export function guessTarget(key) {
   const he = (key || '').trim();
   const lo = he.toLowerCase();
-  if (/שם|name|פרטי|משפחה|first|last|surname|full name/.test(he + ' ' + lo)) return 'k:name';
-  if (/תעודת זהות|ת\.ז|ת"ז|תז|id|identity|identity number/.test(he + ' ' + lo)) return 'c:id_number';
-  if (/תאריך לידה|לידה|birth|date of birth|dob/.test(he + ' ' + lo)) return 'c:birth_date';
-  if (/טלפון|פלאפון|נייד|phone|mobile|tel/.test(he + ' ' + lo)) return 'c:parent_phone';
-  if (/כתובת|address/.test(he + ' ' + lo)) return 'c:address';
-  if (/אימייל|מייל|email|mail/.test(he + ' ' + lo)) return 'c:email';
-  if (/מגדר|מין|gender|sex/.test(he + ' ' + lo)) return 'k:gender';
-  if (/גובה|height/.test(he + ' ' + lo)) return 'k:height';
-  if (/שורה|row/.test(he + ' ' + lo)) return 'k:row_preference';
-  if (/צד|side/.test(he + ' ' + lo)) return 'k:side_preference';
-  if (/צרכים מיוחדים|צרכים|special|needs/.test(he + ' ' + lo)) return 'k:special_needs';
-  if (/קבוצת לימוד|learning group|קבוצת/.test(he + ' ' + lo)) return 'k:learning_group';
-  if (/רמה|level|אקדמי/.test(he + ' ' + lo)) return 'k:academic_level';
-  if (/הערות|הערה|notes|note|comment/.test(he + ' ' + lo)) return 'k:notes';
+  const s = he + ' ' + lo;
+  // Father / mother specific — must precede generic id/phone detection
+  if (/טלפון אב|טלפון האב|אבא|father.?phone|father_phone|phone.*father/.test(s)) return 'c:father_phone';
+  if (/טלפון אם|טלפון האם|אמא|mother.?phone|mother_phone|phone.*mother/.test(s)) return 'c:mother_phone';
+  if (/ת"ז אב|תז אב|תעודת זהות אב|ת\.ז אב|father.?id|father_id|id.*father/.test(s)) return 'c:father_id';
+  if (/ת"ז אם|תז אם|תעודת זהות אם|ת\.ז אם|mother.?id|mother_id|id.*mother/.test(s)) return 'c:mother_id';
+  if (/שם|name|פרטי|משפחה|first|last|surname|full name/.test(s)) return 'k:name';
+  if (/תעודת זהות|ת\.ז|ת"ז|תז|id|identity|identity number/.test(s)) return 'c:id_number';
+  if (/תאריך לידה|לידה|birth|date of birth|dob/.test(s)) return 'c:birth_date';
+  if (/טלפון|פלאפון|נייד|phone|mobile|tel/.test(s)) return 'c:parent_phone';
+  if (/כתובת|address/.test(s)) return 'c:address';
+  if (/אימייל|מייל|email|mail/.test(s)) return 'c:email';
+  if (/מגדר|מין|gender|sex/.test(s)) return 'k:gender';
+  if (/גובה|height/.test(s)) return 'k:height';
+  if (/שורה|row/.test(s)) return 'k:row_preference';
+  if (/צד|side/.test(s)) return 'k:side_preference';
+  if (/צרכים מיוחדים|צרכים|special|needs/.test(s)) return 'k:special_needs';
+  if (/קבוצת לימוד|learning group|קבוצת/.test(s)) return 'k:learning_group';
+  if (/רמה|level|אקדמי/.test(s)) return 'k:academic_level';
+  if (/הערות|הערה|notes|note|comment/.test(s)) return 'k:notes';
   return 'keep';
 }
 

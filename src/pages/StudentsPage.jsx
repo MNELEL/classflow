@@ -3,15 +3,14 @@ import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import AppLayout from '@/components/layout/AppLayout';
 import StudentList from '@/components/students/StudentList';
-import ImportStudentsModal from '@/components/students/ImportStudentsModal';
 import FreeTextImport from '@/components/students/FreeTextImport';
 import GroupsManager from '@/components/students/GroupsManager';
 import { usePullToRefresh } from '@/hooks/usePullToRefresh';
 import PullToRefreshIndicator from '@/components/ui/PullToRefreshIndicator';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
-import { Upload, Wand2, Users, FileDown, FileUp, FileText, SortAsc, SortDesc, Calendar, Cake } from 'lucide-react';
-import CsvImportModal, { exportToCSV } from '@/components/data/CsvImportModal';
+import { Wand2, Users, FileDown, FileText, SortAsc, SortDesc, Calendar, Cake } from 'lucide-react';
+import { exportToCSV } from '@/components/data/CsvImportModal';
 import FileImportStudents from '@/components/students/FileImportStudents';
 import { useUrlOverlay } from '@/hooks/useUrlOverlay';
 
@@ -207,12 +206,6 @@ export default function StudentsPage() {
               <Button variant="outline" size="sm" onClick={() => openDialog('file-import')} className="gap-1.5">
                 <FileText className="w-4 h-4" /> ייבוא מקובץ
               </Button>
-              <Button variant="outline" size="sm" onClick={() => openDialog('import')} className="gap-1.5">
-                <Upload className="w-4 h-4" /> ייבוא JSON
-              </Button>
-              <Button variant="outline" size="sm" onClick={() => openDialog('csv-import')} className="gap-1.5">
-                <FileUp className="w-4 h-4" /> ייבוא CSV
-              </Button>
               <Button variant="outline" size="sm" onClick={() => exportToCSV(students.map(s=>({name:s.name,gender:s.gender||'',height:s.height||'medium',learning_group:s.learning_group||'',notes:s.notes||'',academic_level:s.academic_level||'average'})), 'students.csv')} className="gap-1.5">
                 <FileDown className="w-4 h-4" /> ייצוא CSV
               </Button>
@@ -255,29 +248,11 @@ export default function StudentsPage() {
         )}
       </div>
 
-      <CsvImportModal
-        open={isOpen('csv-import')}
-        onClose={closeDialog}
-        mode="students"
-        students={students}
-        onImportStudents={async (rows) => {
-          const created = await Promise.all(rows.map(r => base44.entities.Student.create({ name: r.name, gender: r.gender||undefined, height: r.height||'medium', learning_group: r.learning_group||undefined, notes: r.notes||undefined, academic_level: r.academic_level||'average', is_active: true })));
-          qc.invalidateQueries({ queryKey: ['students'] });
-          toast.success(`יובאו ${created.length} תלמידים`);
-        }}
-      />
-
       <FileImportStudents
         open={isOpen('file-import')}
         onClose={closeDialog}
         students={students}
         onDone={() => qc.invalidateQueries({ queryKey: ['students'] })}
-      />
-
-      <ImportStudentsModal
-        open={isOpen('import')}
-        onClose={closeDialog}
-        onImport={handleImport}
       />
 
       <FreeTextImport
