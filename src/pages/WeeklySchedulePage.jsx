@@ -5,7 +5,7 @@ import AppLayout from '@/components/layout/AppLayout';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
-import { Plus, ChevronRight, ChevronLeft, Clock, BookOpen, Trash2, X } from 'lucide-react';
+import { Plus, ChevronRight, ChevronLeft, Clock, BookOpen, Trash2, X, CalendarPlus } from 'lucide-react';
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 import { toast } from 'sonner';
 import { addWeeks, addDays, startOfWeek, format, isSameDay } from 'date-fns';
@@ -188,6 +188,7 @@ export default function WeeklySchedulePage() {
   const { containerRef, pullY, refreshing } = usePullToRefresh(handleRefresh);
   const [weekOffset, setWeekOffset] = useState(0);
   const [addDialog, setAddDialog] = useState({ open: false, day: null, hour: null });
+  const [syncing, setSyncing] = useState(false);
   const [mobileDay, setMobileDay] = useState(() => {
     const d = new Date().getDay();
     return d > 4 ? 0 : d; // Sunday–Thursday = 0–4; Friday/Saturday → Sunday
@@ -252,6 +253,19 @@ export default function WeeklySchedulePage() {
     }
     return map;
   }, [plan]);
+
+  async function handleSyncCalendar() {
+    setSyncing(true);
+    try {
+      const res = await base44.functions.invoke('syncScheduleToCalendar', { week_start: weekKey });
+      const d = res.data || {};
+      toast.success(`סונכרן ליומן ✓ נוצרו ${d.created || 0} · עודכנו ${d.updated || 0} · נמחקו ${d.deleted || 0}`);
+    } catch (e) {
+      toast.error('סנכרון נכשל: ' + (e?.message || ''));
+    } finally {
+      setSyncing(false);
+    }
+  }
 
   async function handleAddLesson(form) {
     const newItem = {
@@ -357,6 +371,9 @@ export default function WeeklySchedulePage() {
                 className="w-8 h-8 rounded-lg border border-border flex items-center justify-center hover:bg-accent transition-colors">
                 <ChevronLeft className="w-4 h-4" />
               </button>
+              <Button size="icon" variant="outline" className="h-8 w-8" aria-label="סנכרן ליומן Google" onClick={handleSyncCalendar} disabled={syncing}>
+                <CalendarPlus className={`w-4 h-4 ${syncing ? 'animate-pulse' : ''}`} />
+              </Button>
               <Button size="sm" className="gap-1 mr-1" onClick={() => setAddDialog({ open: true, day: 'sun', hour: 8 })}>
                 <Plus className="w-4 h-4" /> הוסף
               </Button>
