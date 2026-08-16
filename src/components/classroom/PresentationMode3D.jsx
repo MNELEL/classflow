@@ -179,6 +179,7 @@ export default function PresentationMode3D({ seats, students, rows, cols, open, 
       const currentTarget = new THREE.Vector3().lerpVectors(startTarget, endTarget, eased);
       camera.lookAt(currentTarget);
       camera.userData.target = endTarget;
+      needsRenderRef.current = true;
       if (t < 1) requestAnimationFrame(step);
     }
     step();
