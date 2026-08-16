@@ -154,7 +154,8 @@ export default function PresentationMode3D({ seats, students, rows, cols, open, 
   // Update labels when anonymous toggle changes
   useEffect(() => {
     if (!sceneRef.current || !open) return;
-    renderClassroom(sceneRef.current, seats, students, rows, cols, anonymous);
+    renderClassroom(sceneRef.current, seats, students, rows, cols, anonymous, lowPowerRef.current);
+    needsRenderRef.current = true;
   }, [anonymous, seats, students, rows, cols, open]);
 
   // Camera transition
