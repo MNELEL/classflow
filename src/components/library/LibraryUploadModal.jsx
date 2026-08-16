@@ -12,6 +12,7 @@ import { Loader2, Upload, X, Check, Link2, Globe, FileText, Mic, Video, Image, M
 import { cn } from '@/lib/utils';
 import GoogleDrivePicker from '@/components/library/GoogleDrivePicker';
 import { useNavigate } from 'react-router-dom';
+import { validateExtractedText, buildQualityNote } from '@/lib/aiAnalysis';
 
 const CATEGORIES = ['גמרא', 'הלכה', 'חומש', 'נ"ך', 'תפילה', 'מחשבת ישראל', 'מדעים', 'מתמטיקה', 'שפה', 'אחר'];
 
@@ -52,13 +53,29 @@ async function analyzeItem(item, qc) {
       }
     }
 
+    // אימות איכות הטקסט לפני ניתוח — מונע סיכומים מתוך תוכן חסר/רועש
+    const rawText = (item.original_text || transcript || '').trim();
+    const validation = validateExtractedText(rawText, item.ocr_confidence);
+    if (!validation.isValid) {
+      await base44.entities.LibraryItem.update(item.id, {
+        ai_status: 'pending',
+        ai_summary: `ממתין לחילוץ טקסט איכותי: ${validation.issues.join(', ')}. לחץ "נתח כעת" בפריט להרצת OCR וניתוח מלא.`,
+      });
+      qc.invalidateQueries({ queryKey: ['library'] });
+      qc.invalidateQueries({ queryKey: ['library-item', item.id] });
+      return;
+    }
+    const cleanedText = validation.cleanedText;
+    const qualityNote = buildQualityNote(validation);
+
     const result = await base44.integrations.Core.InvokeLLM({
       prompt: `נתח את החומר הלימודי הבא ותחזיר JSON בלבד:
 כותרת: "${item.title}"
 סוג: "${item.source_type}"
 קטגוריה: "${item.category || 'לא ידוע'}"
 נושא: "${item.subject || 'לא ידוע'}"
-טקסט/תוכן: "${transcript.slice(0, 3000)}"
+טקסט/תוכן: "${cleanedText.slice(0, 8000)}"
+${qualityNote}
 
 בצע ניתוח מעמיק:
 - זהה את הנושא הלימודי המרכזי

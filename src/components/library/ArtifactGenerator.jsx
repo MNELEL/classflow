@@ -10,6 +10,7 @@ import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 import { loadStyleProfile, buildStyleInstruction } from '@/lib/teacherStyle';
+import { validateExtractedText, buildQualityNote, verifyArtifactGrounding, filterUnsupported } from '@/lib/aiAnalysis';
 
 const ARTIFACT_TYPES = [
   { id: 'lesson_summary',            label: 'סיכום שיעור',            icon: '📋' },
@@ -211,9 +212,19 @@ export default function ArtifactGenerator({ open, onClose, item }) {
     try {
       const config = ARTIFACT_CONFIG[artifactType];
       const prompt = config.prompt.replace('{count}', questionCount);
+      // אימות איכות הטקסט שחולץ לפני הפקת חומרים — מונע יצירה מתוך טקסט רועש/חסר
+      const rawText = (item.original_text || item.transcript || '').trim();
+      const validation = validateExtractedText(rawText, item.ocr_confidence);
+      if (!validation.isValid) {
+        toast.error(`הטקסט שחולץ לא איכותי מספיק לניתוח: ${validation.issues.join(', ')}`);
+        setGenerating(false);
+        return;
+      }
+      const sourceText = validation.cleanedText;
+      const qualityNote = buildQualityNote(validation);
+
       const content = [
-        item.original_text,
-        item.transcript,
+        sourceText,
         item.ai_summary,
         ...(item.ai_key_points || [])
       ].filter(Boolean).join('\n\n');
@@ -232,7 +243,7 @@ export default function ArtifactGenerator({ open, onClose, item }) {
 כותרת: ${item.title}
 נושא: ${item.subject || item.category || ''}
 תוכן: ${content.slice(0, 8000)}
-
+${qualityNote ? qualityNote + '\n' : ''}
 ${prompt}
 ${additionalInstructions ? `הוראות נוספות: ${additionalInstructions}` : ''}
 
@@ -240,13 +251,32 @@ ${additionalInstructions ? `הוראות נוספות: ${additionalInstructions}
         response_json_schema: config.schema,
       });
 
+      // אימות הישענות: סינון שאלות/תשובות שאינן נתמכות בטקסט המקור (מונע הזיות)
+      let finalStructured = typeof result === 'object' ? result : null;
+      let validationReport = null;
+      const isVerifiableType = ['review_questions_with', 'review_questions_without', 'quiz', 'flashcards', 'worksheet'].includes(artifactType);
+      if (isVerifiableType && finalStructured) {
+        const verification = await verifyArtifactGrounding({ sourceText, structuredData: finalStructured });
+        if (verification) {
+          const { structuredData: filtered, removedCount } = filterUnsupported(finalStructured, verification);
+          if (removedCount > 0) finalStructured = filtered;
+          validationReport = {
+            supported: verification.supported_count,
+            unsupported: verification.unsupported_count,
+            removed: removedCount,
+            notes: verification.notes || '',
+          };
+        }
+      }
+
       const newArtifact = {
         id: Date.now().toString(),
         type: artifactType,
         title: `${ARTIFACT_TYPES.find(t => t.id === artifactType)?.label} — ${item.title}`,
-        content: typeof result === 'string' ? result : JSON.stringify(result, null, 2),
-        structured_data: typeof result === 'object' ? result : null,
+        content: typeof result === 'string' ? result : (finalStructured ? JSON.stringify(finalStructured, null, 2) : JSON.stringify(result, null, 2)),
+        structured_data: finalStructured || (typeof result === 'object' ? result : null),
         includes_answers: artifactType.includes('_with') || artifactType === 'quiz',
+        validation: validationReport,
         created_at: format(new Date(), 'yyyy-MM-dd'),
       };
 
@@ -257,7 +287,11 @@ ${additionalInstructions ? `הוראות נוספות: ${additionalInstructions}
 
       qc.invalidateQueries({ queryKey: ['library'] });
       qc.invalidateQueries({ queryKey: ['library-item', item.id] });
-      toast.success('חומר נוצר בהצלחה!');
+      if (validationReport && validationReport.removed > 0) {
+        toast.success(`חומר נוצר ✓ סוננו ${validationReport.removed} פריטים לא-נתמכים במקור`);
+      } else {
+        toast.success('חומר נוצר בהצלחה!');
+      }
       onClose(newArtifact);
     } catch {
       toast.error('שגיאה ביצירת חומר');

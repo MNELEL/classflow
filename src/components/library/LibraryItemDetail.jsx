@@ -12,6 +12,7 @@ import { X, Sparkles, Loader2, Plus, Trash2, Printer, Heart, Edit2, Check, BookO
 import { toast } from 'sonner';
 import ArtifactGenerator from './ArtifactGenerator';
 import ArtifactRenderer from './ArtifactRenderer';
+import { validateExtractedText, buildQualityNote } from '@/lib/aiAnalysis';
 import { motion } from 'framer-motion';
 import { format } from 'date-fns';
 
@@ -89,8 +90,21 @@ export default function LibraryItemDetail({ itemId, onClose }) {
         qc.invalidateQueries({ queryKey: ['library-item', itemId] });
         return;
       }
+      // אימות איכות הטקסט שחולץ — מונע ניתוח מתוך טקסט רועש/חסר
+      const validation = validateExtractedText(text, item.ocr_confidence);
+      if (!validation.isValid) {
+        toast.error(`הטקסט שחולץ לא איכותי: ${validation.issues.join(', ')}`);
+        await base44.entities.LibraryItem.update(itemId, {
+          ai_status: 'error',
+          ai_summary: `חילוץ לא איכותי — ${validation.issues.join(', ')}. מומלץ לבצע OCR מחדש או לערוך את הטקסט.`,
+        });
+        qc.invalidateQueries({ queryKey: ['library-item', itemId] });
+        return;
+      }
+      text = validation.cleanedText;
+      const qualityNote = buildQualityNote(validation);
       const res = await base44.integrations.Core.InvokeLLM({
-        prompt: `אתה מומחה חינוכי. נתח את התוכן הבא והפק סיכום, נקודות מפתח, כותרת מוצעת, תגיות וקטגוריה מוצעת. הסתמך אך ורק על התוכן המצורף — אל תמציא מידע שאינו בו.\n\nתוכן:\n"""\n${text.slice(0, 8000)}\n"""`,
+        prompt: `אתה מומחה חינוכי. נתח את התוכן הבא והפק סיכום, נקודות מפתח, כותרת מוצעת, תגיות וקטגוריה מוצעת. הסתמך אך ורק על התוכן המצורף — אל תמציא מידע שאינו בו.\n${qualityNote ? qualityNote + '\n' : ''}\nתוכן:\n"""\n${text.slice(0, 8000)}\n"""`,
         response_json_schema: {
           type: 'object',
           properties: {
