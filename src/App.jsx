@@ -50,6 +50,7 @@ const WeeklySchedulePage   = lazy(() => import('./pages/WeeklySchedulePage'));
 const BellSchedulePage     = lazy(() => import('./pages/BellSchedulePage'));
 const StudyPlanGeneratorPage = lazy(() => import('./pages/StudyPlanGeneratorPage'));
 const RafflePage            = lazy(() => import('./pages/RafflePage'));
+const CertificatesPage       = lazy(() => import('./pages/CertificatesPage'));
 const FastFeedbackPage      = lazy(() => import('./pages/FastFeedbackPage'));
 const BehaviorTimelinePage  = lazy(() => import('./pages/BehaviorTimelinePage'));
 const ExamsPage             = lazy(() => import('./pages/ExamsPage'));
