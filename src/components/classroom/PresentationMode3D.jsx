@@ -107,12 +107,18 @@ export default function PresentationMode3D({ seats, students, rows, cols, open, 
     cameraRef.current = camera;
 
     // Render seats + students
-    renderClassroom(scene, seats, students, rows, cols, false);
+    renderClassroom(scene, seats, students, rows, cols, false, lowPower);
 
-    // Animation loop
+    // Render-on-demand loop: only redraws while something has changed
+    // (initial load, seat/anonymity update, or an in-progress camera move).
+    // A static scene stops consuming GPU/battery instead of rendering forever.
+    needsRenderRef.current = true;
     function animate() {
       animRef.current = requestAnimationFrame(animate);
-      renderer.render(scene, camera);
+      if (needsRenderRef.current) {
+        renderer.render(scene, camera);
+        needsRenderRef.current = false;
+      }
     }
     animate();
 
@@ -124,6 +130,7 @@ export default function PresentationMode3D({ seats, students, rows, cols, open, 
       rendererRef.current.setSize(w, h);
       cameraRef.current.aspect = w / h;
       cameraRef.current.updateProjectionMatrix();
+      needsRenderRef.current = true;
     }
     window.addEventListener('resize', handleResize);
 
