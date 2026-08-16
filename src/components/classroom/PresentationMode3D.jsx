@@ -225,13 +225,27 @@ export default function PresentationMode3D({ seats, students, rows, cols, open, 
   );
 }
 
-function renderClassroom(scene, seats, students, rows, cols, anonymous) {
-  // Remove old seat meshes + labels
+function disposeObject3D(obj) {
+  if (obj.geometry) obj.geometry.dispose();
+  if (obj.material) {
+    const materials = Array.isArray(obj.material) ? obj.material : [obj.material];
+    materials.forEach((m) => {
+      if (m.map) m.map.dispose();
+      m.dispose();
+    });
+  }
+}
+
+function renderClassroom(scene, seats, students, rows, cols, anonymous, lowPower = false) {
+  // Remove old seat meshes + labels, releasing their GPU resources
   const toRemove = [];
   scene.traverse((obj) => {
     if (obj.userData.isSeat || obj.userData.isLabel) toRemove.push(obj);
   });
-  toRemove.forEach(obj => scene.remove(obj));
+  toRemove.forEach((obj) => {
+    scene.remove(obj);
+    disposeObject3D(obj);
+  });
 
   const studentMap = Object.fromEntries(students.map(s => [s.id, s]));
   const offsetX = -(cols - 1) * 1.2 / 2;
