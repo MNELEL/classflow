@@ -275,8 +275,8 @@ function renderClassroom(scene, seats, students, rows, cols, anonymous, lowPower
       const deskMat = new THREE.MeshStandardMaterial({ color: 0xc4a96a, roughness: 0.7 });
       const desk = new THREE.Mesh(deskGeo, deskMat);
       desk.position.set(x, 0.55, z);
-      desk.castShadow = true;
-      desk.receiveShadow = true;
+      desk.castShadow = !lowPower;
+      desk.receiveShadow = !lowPower;
       desk.userData.isSeat = true;
       scene.add(desk);
 
@@ -286,7 +286,7 @@ function renderClassroom(scene, seats, students, rows, cols, anonymous, lowPower
       [[-0.35, -0.22], [0.35, -0.22], [-0.35, 0.22], [0.35, 0.22]].forEach(([lx, lz]) => {
         const leg = new THREE.Mesh(legGeo, legMat);
         leg.position.set(x + lx, 0.275, z + lz);
-        leg.castShadow = true;
+        leg.castShadow = !lowPower;
         leg.userData.isSeat = true;
         scene.add(leg);
       });
@@ -296,14 +296,14 @@ function renderClassroom(scene, seats, students, rows, cols, anonymous, lowPower
       const chairMat = new THREE.MeshStandardMaterial({ color: 0x4a6578, roughness: 0.8 });
       const chairBack = new THREE.Mesh(chairBackGeo, chairMat);
       chairBack.position.set(x, 0.5, z + 0.4);
-      chairBack.castShadow = true;
+      chairBack.castShadow = !lowPower;
       chairBack.userData.isSeat = true;
       scene.add(chairBack);
 
       const chairSeatGeo = new THREE.BoxGeometry(0.5, 0.04, 0.45);
       const chairSeat = new THREE.Mesh(chairSeatGeo, chairMat);
       chairSeat.position.set(x, 0.45, z + 0.2);
-      chairSeat.castShadow = true;
+      chairSeat.castShadow = !lowPower;
       chairSeat.userData.isSeat = true;
       scene.add(chairSeat);
 
