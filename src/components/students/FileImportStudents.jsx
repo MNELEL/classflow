@@ -2,9 +2,10 @@ import React, { useState, useRef, useMemo } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Upload, FileText, Loader2, AlertCircle, CheckCircle2, UserPlus, RefreshCw, X } from 'lucide-react';
+import { Upload, FileText, Loader2, AlertCircle, CheckCircle2, UserPlus, RefreshCw, X, ArrowLeft, ArrowLeftRight } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { toast } from 'sonner';
+import StudentColumnMapper, { defaultTargetFor, applyMapping } from './StudentColumnMapper';
 
 const ACCEPTED = '.csv,.xlsx,.xls,.json,.html,.htm,.pdf,.png,.jpg,.jpeg,.txt,.docx';
 
@@ -15,7 +16,6 @@ const KNOWN_KEYS = new Set([
   'academic_level', 'group', 'notes',
 ]);
 
-// Schema for tabular extraction (csv/xlsx/json/html) — one row per student
 const ROW_SCHEMA = {
   type: 'object',
   properties: {
@@ -39,59 +39,30 @@ const ROW_SCHEMA = {
   },
 };
 
-function normName(n) {
-  return (n || '').toString().trim().replace(/\s+/g, ' ').toLowerCase();
-}
+function normName(n) { return (n || '').toString().trim().replace(/\s+/g, ' ').toLowerCase(); }
+function ext(name) { return (name.split('.').pop() || '').toLowerCase(); }
+function isPdfOrImage(name) { return ['pdf', 'png', 'jpg', 'jpeg'].includes(ext(name)); }
+function isTabular(name) { return ['csv', 'xlsx', 'xls', 'json', 'html', 'htm', 'txt'].includes(ext(name)); }
 
-function ext(name) {
-  return (name.split('.').pop() || '').toLowerCase();
-}
-
-function isPdfOrImage(name) {
-  return ['pdf', 'png', 'jpg', 'jpeg'].includes(ext(name));
-}
-
-function isTabular(name) {
-  return ['csv', 'xlsx', 'xls', 'json', 'html', 'htm', 'txt'].includes(ext(name));
-}
-
-// Combine first/last into name, collect unknown keys into custom_fields
+// Combine first/last into name; drop intermediate keys; collect unknown keys into custom_fields.
 function normalizeRow(raw) {
-  const row = { ...raw };
-  let name = (row.name || row.full_name || '').toString().trim();
+  const { first_name, last_name, full_name, custom_fields, ...rest } = raw;
+  let name = (rest.name || full_name || '').toString().trim();
   if (!name) {
-    const first = (row.first_name || '').toString().trim();
-    const last = (row.last_name || '').toString().trim();
-    name = [first, last].filter(Boolean).join(' ');
+    name = [(first_name || '').toString().trim(), (last_name || '').toString().trim()].filter(Boolean).join(' ');
   }
-  // Build custom_fields from explicit custom_fields object + unknown top-level keys
-  const custom = { ...(row.custom_fields || {}) };
-  Object.keys(row).forEach(k => {
+  const custom = { ...(custom_fields || {}) };
+  Object.keys(rest).forEach(k => {
     if (k.startsWith('_')) return;
-    if (!KNOWN_KEYS.has(k) && k !== 'custom_fields') {
-      const v = row[k];
+    if (!KNOWN_KEYS.has(k)) {
+      const v = rest[k];
       if (v !== null && v !== undefined && v !== '') custom[k] = String(v);
+      delete rest[k];
     }
   });
-  return { ...row, name, custom_fields: custom };
+  return { ...rest, name, custom_fields: custom };
 }
 
-function toEntityFields(s) {
-  const fields = { name: s.name, is_active: true };
-  if (s.gender) fields.gender = s.gender;
-  if (s.height) fields.height = s.height;
-  if (s.row_preference) fields.row_preference = s.row_preference;
-  if (s.side_preference) fields.side_preference = s.side_preference;
-  if (Array.isArray(s.special_needs) && s.special_needs.length) fields.special_needs = s.special_needs;
-  if (s.learning_group) fields.learning_group = s.learning_group;
-  if (s.academic_level) fields.academic_level = s.academic_level;
-  if (s.group) fields.group = s.group;
-  if (s.notes) fields.notes = s.notes;
-  if (s.custom_fields && Object.keys(s.custom_fields).length) fields.custom_fields = s.custom_fields;
-  return fields;
-}
-
-// PDF / image → InvokeLLM with file attachment + detailed prompt to capture ALL rows & ALL columns
 async function extractWithLLM(file_url, fileName) {
   const prompt = `אתה מנתח מסמכים של רשימות תלמידים. הקובץ המצורף (${fileName}) מכיל טבלת תלמידים.
 
@@ -101,37 +72,38 @@ async function extractWithLLM(file_url, fileName) {
 - זהה את העמודות המוכרות ומלא אותן: gender (male/female/other), height (short/medium/tall), row_preference (front/middle/back/none), side_preference (left/right/center/none), special_needs (מערך), learning_group, academic_level, group, notes.
 - כל עמודה אחרת שקיימת בקובץ (תעודת זהות, תאריך לידה, טלפון הורים, כתובת וכו) — הכנס לשדה custom_fields כאובייקט שבו המפתח הוא שם העמודה בקובץ והערך הוא מחרוזת. אל תשמיט אף עמודה.
 - החזר JSON עם שדה "students" שהוא מערך של כל התלמידים.`;
-
   const res = await base44.integrations.Core.InvokeLLM({
-    prompt,
-    file_urls: [file_url],
+    prompt, file_urls: [file_url],
     response_json_schema: {
       type: 'object',
-      properties: {
-        students: {
-          type: 'array',
-          items: { ...ROW_SCHEMA, additionalProperties: true },
-        },
-      },
+      properties: { students: { type: 'array', items: { ...ROW_SCHEMA, additionalProperties: true } } },
     },
   });
   return Array.isArray(res?.students) ? res.students : [];
 }
 
-// CSV / Excel / JSON / HTML → ExtractDataFromUploadedFile with a flexible schema
 async function extractTabular(file_url) {
-  const res = await base44.integrations.Core.ExtractDataFromUploadedFile({
-    file_url,
-    json_schema: ROW_SCHEMA,
-  });
+  const res = await base44.integrations.Core.ExtractDataFromUploadedFile({ file_url, json_schema: ROW_SCHEMA });
   if (res?.status !== 'success') throw new Error(res?.details || 'חילוץ הנתונים נכשל');
   return Array.isArray(res.output) ? res.output : (res.output ? [res.output] : []);
+}
+
+function sampleValue(rows, key, isCustom) {
+  for (const r of rows) {
+    const v = isCustom ? r.custom_fields?.[key] : r[key];
+    if (v !== '' && v != null) return String(v).slice(0, 24);
+  }
+  return '';
 }
 
 export default function FileImportStudents({ open, onClose, students = [], onDone }) {
   const [file, setFile] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [step, setStep] = useState('upload'); // 'upload' | 'mapping' | 'preview'
+  const [rawRows, setRawRows] = useState([]);
+  const [sourceColumns, setSourceColumns] = useState([]);
+  const [mapping, setMapping] = useState({});
   const [rows, setRows] = useState([]);
   const [saving, setSaving] = useState(false);
   const inputRef = useRef(null);
@@ -143,7 +115,8 @@ export default function FileImportStudents({ open, onClose, students = [], onDon
   }, [students]);
 
   function reset() {
-    setFile(null); setLoading(false); setError(''); setRows([]); setSaving(false);
+    setFile(null); setLoading(false); setError(''); setStep('upload');
+    setRawRows([]); setSourceColumns([]); setMapping({}); setRows([]); setSaving(false);
   }
 
   async function handleFile(f) {
@@ -158,14 +131,9 @@ export default function FileImportStudents({ open, onClose, students = [], onDon
       if (!file_url) throw new Error('העלאת הקובץ נכשלה');
 
       let list = [];
-      if (isPdfOrImage(f.name)) {
-        list = await extractWithLLM(file_url, f.name);
-      } else if (isTabular(f.name)) {
-        list = await extractTabular(file_url);
-      } else {
-        // docx and other — try LLM as a fallback
-        list = await extractWithLLM(file_url, f.name);
-      }
+      if (isPdfOrImage(f.name)) list = await extractWithLLM(file_url, f.name);
+      else if (isTabular(f.name)) list = await extractTabular(file_url);
+      else list = await extractWithLLM(file_url, f.name);
 
       list = list.map(normalizeRow).filter(r => r.name);
       if (!list.length) {
@@ -173,16 +141,55 @@ export default function FileImportStudents({ open, onClose, students = [], onDon
         setLoading(false);
         return;
       }
-      const matched = list.map(r => ({
-        ...r,
-        _existing: existingByName[normName(r.name)] || null,
-        _checked: true,
-      }));
-      setRows(matched);
+
+      // Build source columns from detected keys
+      const keySet = new Set();
+      const customSet = new Set();
+      list.forEach(r => {
+        Object.keys(r).forEach(k => {
+          if (k.startsWith('_') || k === 'custom_fields') return;
+          if (r[k] !== '' && r[k] != null) keySet.add(k);
+        });
+        Object.keys(r.custom_fields || {}).forEach(k => customSet.add(k));
+      });
+      const cols = [
+        ...[...keySet].map(k => ({ key: k, isCustom: false, sample: sampleValue(list, k, false) })),
+        ...[...customSet].map(k => ({ key: k, isCustom: true, sample: sampleValue(list, k, true) })),
+      ];
+      // Ensure 'name' is first
+      cols.sort((a, b) => (a.key === 'name' ? -1 : b.key === 'name' ? 1 : 0));
+
+      const defaultMap = {};
+      cols.forEach(c => { defaultMap[c.key] = defaultTargetFor(c); });
+
+      setRawRows(list);
+      setSourceColumns(cols);
+      setMapping(defaultMap);
+      setStep('mapping');
     } catch (e) {
       setError(e?.message || 'שגיאה בעיבוד הקובץ');
     }
     setLoading(false);
+  }
+
+  function updateMapping(key, value) {
+    setMapping(m => ({ ...m, [key]: value }));
+  }
+
+  function confirmMapping() {
+    const finalRows = applyMapping(rawRows, sourceColumns, mapping);
+    if (!finalRows.length) {
+      setError('מיפוי לא תקין — ודא שעמודת שם ממופה לשדה "שם מלא"');
+      return;
+    }
+    const matched = finalRows.map(r => ({
+      ...r,
+      _existing: existingByName[normName(r.name)] || null,
+      _checked: true,
+    }));
+    setError('');
+    setRows(matched);
+    setStep('preview');
   }
 
   function toggleRow(i) {
@@ -206,22 +213,15 @@ export default function FileImportStudents({ open, onClose, students = [], onDon
       const toUpdate = selected.filter(r => r._existing);
 
       let created = [];
-      if (toCreate.length) {
-        created = await base44.entities.Student.bulkCreate(toCreate.map(toEntityFields));
-      }
+      if (toCreate.length) created = await base44.entities.Student.bulkCreate(toCreate);
 
       if (toUpdate.length) {
         await Promise.all(toUpdate.map(r => {
-          const next = toEntityFields(r);
-          delete next.is_active;
-          delete next.name;
-          // merge custom_fields with existing ones (don't wipe previously stored)
-          if (r._existing.custom_fields && next.custom_fields) {
-            next.custom_fields = { ...r._existing.custom_fields, ...next.custom_fields };
+          const { id, created_date, updated_date, created_by, created_by_id, _existing, _checked, ...next } = r;
+          if (_existing.custom_fields && next.custom_fields) {
+            next.custom_fields = { ..._existing.custom_fields, ...next.custom_fields };
           }
-          const merged = { ...r._existing, ...next };
-          const { id, created_date, updated_date, created_by, created_by_id, ...rest } = merged;
-          return base44.entities.Student.update(r._existing.id, rest);
+          return base44.entities.Student.update(_existing.id, next);
         }));
       }
 
@@ -243,31 +243,34 @@ export default function FileImportStudents({ open, onClose, students = [], onDon
     return [...keys];
   }, [rows]);
 
+  const titleByStep = step === 'mapping' ? 'זיהוי עמודות' : step === 'preview' ? 'תצוגה מקדימה' : 'ייבוא ועדכון מקובץ';
+
   return (
     <Dialog open={open} onOpenChange={v => { if (!v) { reset(); onClose(); } }}>
       <DialogContent className="max-w-[95vw] sm:max-w-lg max-h-[90vh] overflow-y-auto" dir="rtl">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <FileText className="w-5 h-5" /> ייבוא ועדכון מקובץ
+            <FileText className="w-5 h-5" /> {titleByStep}
           </DialogTitle>
-          <p className="text-xs text-muted-foreground font-normal">
-            כל פורמט: CSV, Excel, PDF, Word, תמונה, JSON, HTML. המערכת מחלצת את כל השורות, משלבת שם פרטי+משפחה, מזהה קיימים לפי שם ומעדכנת, מוסיפה חדשים — ושומרת גם עמודות נוספות (ת"ז, תאריך לידה, טלפוני הורים ועוד) בשדות מותאמים.
-          </p>
+          {step === 'upload' && (
+            <p className="text-xs text-muted-foreground font-normal">
+              כל פורמט: CSV, Excel, PDF, Word, תמונה, JSON, HTML. המערכת מחלצת את כל השורות, משלבת שם פרטי+משפחה, מזהה קיימים לפי שם ומעדכנת, מוסיפה חדשים. לאחר החילוץ תוכל/י למפות כל עמודה לשדה הנכון (ת"ז, טלפון, תאריך לידה ועוד).
+            </p>
+          )}
+          {step === 'mapping' && (
+            <p className="text-xs text-muted-foreground font-normal">
+              זוהו {sourceColumns.length} עמודות בקובץ. בחר/י לכל עמודה לאיזה שדה במערכת היא תוכנס, כדי שהנתונים יישמרו במקום הנכון.
+            </p>
+          )}
         </DialogHeader>
 
-        {!rows.length && (
+        {step === 'upload' && (
           <div className="space-y-3">
             <div
               className="border-2 border-dashed rounded-xl p-8 flex flex-col items-center gap-3 cursor-pointer transition-colors text-center border-border hover:border-primary/40 hover:bg-accent/20"
               onClick={() => inputRef.current?.click()}
             >
-              <input
-                ref={inputRef}
-                type="file"
-                accept={ACCEPTED}
-                className="hidden"
-                onChange={e => handleFile(e.target.files?.[0])}
-              />
+              <input ref={inputRef} type="file" accept={ACCEPTED} className="hidden" onChange={e => handleFile(e.target.files?.[0])} />
               {loading ? (
                 <>
                   <Loader2 className="w-8 h-8 text-primary animate-spin" />
@@ -288,7 +291,6 @@ export default function FileImportStudents({ open, onClose, students = [], onDon
                 </>
               )}
             </div>
-
             {error && (
               <div className="flex items-start gap-2 text-destructive text-sm bg-destructive/10 rounded-lg p-3">
                 <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" /> <span>{error}</span>
@@ -297,7 +299,26 @@ export default function FileImportStudents({ open, onClose, students = [], onDon
           </div>
         )}
 
-        {rows.length > 0 && (
+        {step === 'mapping' && (
+          <div className="space-y-3">
+            <StudentColumnMapper sourceColumns={sourceColumns} mapping={mapping} onMappingChange={updateMapping} />
+            {error && (
+              <div className="flex items-start gap-2 text-destructive text-sm bg-destructive/10 rounded-lg p-3">
+                <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" /> <span>{error}</span>
+              </div>
+            )}
+            <DialogFooter className="flex-row-reverse gap-2">
+              <Button onClick={confirmMapping}>
+                <ArrowLeftRight className="w-4 h-4 ml-1" /> המשך לתצוגה מקדימה
+              </Button>
+              <Button variant="outline" onClick={() => { reset(); onClose(); }}>
+                <X className="w-4 h-4 ml-1" /> ביטול
+              </Button>
+            </DialogFooter>
+          </div>
+        )}
+
+        {step === 'preview' && (
           <div className="space-y-3">
             <div className="flex items-center justify-between text-sm flex-wrap gap-2">
               <span className="font-semibold">זוהו {rows.length} תלמידים</span>
@@ -313,7 +334,7 @@ export default function FileImportStudents({ open, onClose, students = [], onDon
 
             {customKeys.length > 0 && (
               <div className="text-[11px] text-muted-foreground bg-muted/40 rounded-lg p-2">
-                <span className="font-semibold">עמודות נוספות שזוהו: </span>
+                <span className="font-semibold">שדות מותאמים שיישמרו: </span>
                 {customKeys.map(k => (
                   <span key={k} className="inline-block bg-card border border-border rounded px-1.5 py-0.5 ml-1 mt-1">{k}</span>
                 ))}
@@ -343,7 +364,7 @@ export default function FileImportStudents({ open, onClose, students = [], onDon
                         </Badge>
                       )}
                     </div>
-                    {(r.row_preference || r.side_preference || r.special_needs?.length || r.academic_level || r.notes || r.gender || r.height || r.learning_group || cfKeys.length) ? (
+                    {(r.gender || r.height || r.row_preference || r.side_preference || r.special_needs?.length || r.academic_level || r.learning_group || cfKeys.length) ? (
                       <div className="flex flex-wrap gap-1 mt-1.5 pr-6 text-[10px] text-muted-foreground">
                         {r.gender && <span>👤 {r.gender === 'male' ? 'זכר' : r.gender === 'female' ? 'נקבה' : 'אחר'}</span>}
                         {r.height && <span>📏 {r.height === 'tall' ? 'גבוה' : r.height === 'short' ? 'נמוך' : 'בינוני'}</span>}
@@ -360,12 +381,6 @@ export default function FileImportStudents({ open, onClose, students = [], onDon
               })}
             </div>
 
-            {error && (
-              <div className="flex items-start gap-2 text-destructive text-sm bg-destructive/10 rounded-lg p-3">
-                <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" /> <span>{error}</span>
-              </div>
-            )}
-
             <DialogFooter className="flex-row-reverse gap-2">
               <Button onClick={handleImport} disabled={saving || (newCount + updateCount) === 0}>
                 {saving ? (
@@ -374,8 +389,8 @@ export default function FileImportStudents({ open, onClose, students = [], onDon
                   <><CheckCircle2 className="w-4 h-4 ml-1" /> הוסף {newCount} · עדכן {updateCount}</>
                 )}
               </Button>
-              <Button variant="outline" onClick={() => { reset(); onClose(); }}>
-                <X className="w-4 h-4 ml-1" /> ביטול
+              <Button variant="outline" onClick={() => setStep('mapping')}>
+                <ArrowLeft className="w-4 h-4 ml-1" /> חזור למיפוי
               </Button>
             </DialogFooter>
           </div>

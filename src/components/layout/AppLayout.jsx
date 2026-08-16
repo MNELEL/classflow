@@ -151,7 +151,7 @@ export default function AppLayout({ children }) {
   const isMoreActive = isMoreSubPath(location.pathname);
 
   return (
-    <div className="min-h-screen bg-background flex flex-col" dir="rtl">
+    <div className="h-[100dvh] overflow-hidden bg-background flex flex-col" dir="rtl">
       {/* Top Header */}
       <header
         className="bg-background/95 backdrop-blur-xl border-b border-border/60 flex items-center justify-between sticky top-0 z-50 shadow-[0_1px_12px_rgba(0,120,130,0.06)]"
@@ -212,7 +212,8 @@ export default function AppLayout({ children }) {
       {/* Main Content */}
       <main
         ref={mainRef}
-        className="flex-1 overflow-y-auto no-scrollbar overscroll-y-contain pb-[calc(64px+env(safe-area-inset-bottom))]"
+        className="flex-1 min-h-0 overflow-y-auto no-scrollbar overscroll-y-contain touch-pan-y pb-[calc(64px+env(safe-area-inset-bottom))]"
+        style={{ WebkitOverflowScrolling: 'touch' }}
       >
         {children}
       </main>

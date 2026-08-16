@@ -98,7 +98,7 @@ function AnimatedRoutes() {
   const isBack = useNavigationType() === 'POP';
   return (
     <AnimatePresence mode="wait" custom={isBack}>
-      <motion.div key={location.pathname} variants={pageVariants} initial="initial" animate="animate" exit="exit" custom={isBack} style={{ height: '100%' }}>
+      <motion.div key={location.pathname} variants={pageVariants} initial="initial" animate="animate" exit="exit" custom={isBack} style={{ minHeight: '100%' }}>
         <Suspense fallback={<PageLoader />}>
           <Routes location={location}>
             {/* Public auth routes */}
