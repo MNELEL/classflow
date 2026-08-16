@@ -10,8 +10,9 @@ import { usePullToRefresh } from '@/hooks/usePullToRefresh';
 import PullToRefreshIndicator from '@/components/ui/PullToRefreshIndicator';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
-import { Upload, Wand2, Users, FileDown, FileUp, SortAsc, SortDesc, Calendar } from 'lucide-react';
+import { Upload, Wand2, Users, FileDown, FileUp, FileText, SortAsc, SortDesc, Calendar } from 'lucide-react';
 import CsvImportModal, { exportToCSV } from '@/components/data/CsvImportModal';
+import FileImportStudents from '@/components/students/FileImportStudents';
 import { useUrlOverlay } from '@/hooks/useUrlOverlay';
 
 export default function StudentsPage() {
@@ -182,6 +183,9 @@ export default function StudentsPage() {
               <Button variant="outline" size="sm" onClick={() => openDialog('free-text')} className="gap-1.5">
                 <Wand2 className="w-4 h-4" /> עדכון (AI)
               </Button>
+              <Button variant="outline" size="sm" onClick={() => openDialog('file-import')} className="gap-1.5">
+                <FileText className="w-4 h-4" /> ייבוא מקובץ
+              </Button>
               <Button variant="outline" size="sm" onClick={() => openDialog('import')} className="gap-1.5">
                 <Upload className="w-4 h-4" /> ייבוא JSON
               </Button>
@@ -234,6 +238,13 @@ export default function StudentsPage() {
           qc.invalidateQueries({ queryKey: ['students'] });
           toast.success(`יובאו ${created.length} תלמידים`);
         }}
+      />
+
+      <FileImportStudents
+        open={isOpen('file-import')}
+        onClose={closeDialog}
+        students={students}
+        onDone={() => qc.invalidateQueries({ queryKey: ['students'] })}
       />
 
       <ImportStudentsModal
