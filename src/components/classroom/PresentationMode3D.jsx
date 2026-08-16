@@ -31,6 +31,14 @@ export default function PresentationMode3D({ seats, students, rows, cols, open, 
     const width = mount.clientWidth;
     const height = mount.clientHeight;
 
+    // Detect weak devices so we can scale quality down automatically
+    const lowPower = (
+      (navigator.hardwareConcurrency && navigator.hardwareConcurrency <= 4) ||
+      (navigator.deviceMemory && navigator.deviceMemory <= 4) ||
+      (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches)
+    );
+    lowPowerRef.current = lowPower;
+
     // Scene
     const scene = new THREE.Scene();
     scene.background = new THREE.Color(0x1a202c);
@@ -42,11 +50,11 @@ export default function PresentationMode3D({ seats, students, rows, cols, open, 
     camera.position.set(...preset.pos);
     camera.lookAt(...preset.target);
 
-    // Renderer
-    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    // Renderer — cap pixel ratio at 1.5 (imperceptible vs 2, notably lighter on GPU)
+    const renderer = new THREE.WebGLRenderer({ antialias: !lowPower });
     renderer.setSize(width, height);
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-    renderer.shadowMap.enabled = true;
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
+    renderer.shadowMap.enabled = !lowPower;
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     mount.appendChild(renderer.domElement);
 
@@ -56,9 +64,9 @@ export default function PresentationMode3D({ seats, students, rows, cols, open, 
 
     const ceilingLight = new THREE.DirectionalLight(0xffffff, 0.8);
     ceilingLight.position.set(0, 15, 5);
-    ceilingLight.castShadow = true;
-    ceilingLight.shadow.mapSize.width = 1024;
-    ceilingLight.shadow.mapSize.height = 1024;
+    ceilingLight.castShadow = !lowPower;
+    ceilingLight.shadow.mapSize.width = lowPower ? 512 : 1024;
+    ceilingLight.shadow.mapSize.height = lowPower ? 512 : 1024;
     ceilingLight.shadow.camera.near = 0.5;
     ceilingLight.shadow.camera.far = 40;
     ceilingLight.shadow.camera.left = -15;
