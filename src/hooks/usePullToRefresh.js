@@ -58,9 +58,15 @@ export function usePullToRefresh(onRefresh) {
         if (pullYRef.current !== 0) { pullYRef.current = 0; pullingRef.current = false; flush(); }
         return;
       }
-      // Reliably cancel the browser's native pull-to-refresh / overscroll
-      // on Android WebView by calling preventDefault within a non-passive listener.
-      e.preventDefault();
+      // NOTE: we intentionally do NOT call preventDefault here.
+      // On Android WebView, a single preventDefault on a non-passive touchmove
+      // locks the whole gesture and suppresses native scrolling in BOTH
+      // directions until the finger is lifted — making the top of the page
+      // feel unresponsive ("can't scroll up/down from the top"). Instead we
+      // track the pull distance for our indicator and let native scrolling
+      // run freely; overscroll-behavior-y: contain (set on <main> and the
+      // data-pull-to-refresh container) suppresses the browser's own
+      // pull-to-refresh / overscroll glow.
       pullingRef.current = true;
       pullYRef.current = Math.min(dy / RESISTANCE, THRESHOLD * 1.5);
       flush();
@@ -93,7 +99,7 @@ export function usePullToRefresh(onRefresh) {
     }
 
     el.addEventListener('touchstart', onTouchStart, { passive: true });
-    el.addEventListener('touchmove', onTouchMove, { passive: false });
+    el.addEventListener('touchmove', onTouchMove, { passive: true });
     el.addEventListener('touchend', onTouchEnd, { passive: true });
     return () => {
       el.removeEventListener('touchstart', onTouchStart);
