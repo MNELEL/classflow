@@ -92,7 +92,7 @@ export default function PresentationMode3D({ seats, students, rows, cols, open, 
     const boardMat = new THREE.MeshStandardMaterial({ color: 0x2d5a4a, roughness: 0.3 });
     const board = new THREE.Mesh(boardGeo, boardMat);
     board.position.set(0, 2, -rows * 0.8 - 0.5);
-    board.castShadow = true;
+    board.castShadow = !lowPower;
     scene.add(board);
 
     // Board frame
