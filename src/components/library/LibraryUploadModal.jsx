@@ -14,7 +14,7 @@ import GoogleDrivePicker from '@/components/library/GoogleDrivePicker';
 import { useNavigate } from 'react-router-dom';
 import { validateExtractedText, buildQualityNote } from '@/lib/aiAnalysis';
 
-const CATEGORIES = ['גמרא', 'הלכה', 'חומש', 'נ"ך', 'תפילה', 'מחשבת ישראל', 'מדעים', 'מתמטיקה', 'שפה', 'אחר'];
+const CATEGORIES = ['גמרא', 'הלכה', 'חומש', 'נ"ך', 'תפילה', 'מחשבת ישראל', 'מדעים', 'מתמטיקה', 'שפה', 'תבנית תעודה', 'תבנית חוברת קשר', 'אחר'];
 
 // Detect source type from file MIME or extension
 function detectSourceType(file) {
