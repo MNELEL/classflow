@@ -56,3 +56,22 @@ export function toHebrewFull(date) {
     return '';
   }
 }
+
+function hebrewDayOfMonth(date) {
+  try {
+    const s = new Intl.DateTimeFormat('en-US-u-ca-hebrew', { day: 'numeric' }).format(new Date(date));
+    return parseInt(s, 10);
+  } catch {
+    return null;
+  }
+}
+
+export function isRoshChodesh(date) {
+  const d = hebrewDayOfMonth(date);
+  if (d === 1) return true;
+  if (d === 30) {
+    const next = hebrewDayOfMonth(new Date(new Date(date).getTime() + 86400000));
+    return next === 1;
+  }
+  return false;
+}

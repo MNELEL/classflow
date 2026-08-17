@@ -5,7 +5,9 @@ import AppLayout from '@/components/layout/AppLayout';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
-import { Plus, ChevronRight, ChevronLeft, Clock, BookOpen, Trash2, X, CalendarPlus } from 'lucide-react';
+import { Plus, ChevronRight, ChevronLeft, Clock, BookOpen, Trash2, X, CalendarPlus, CalendarOff, CalendarClock } from 'lucide-react';
+import { getDayStatus, dismissalHour } from '@/lib/scheduleRules';
+import { toHebrewFull } from '@/lib/hebrewDate';
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 import { toast } from 'sonner';
 import { addWeeks, addDays, startOfWeek, format, isSameDay } from 'date-fns';
@@ -20,6 +22,7 @@ const DAYS = [
   { key: 'tue', label: 'שלישי' },
   { key: 'wed', label: 'רביעי' },
   { key: 'thu', label: 'חמישי' },
+  { key: 'fri', label: 'שישי' },
 ];
 
 const HOURS = Array.from({ length: 10 }, (_, i) => {
@@ -191,7 +194,7 @@ export default function WeeklySchedulePage() {
   const [syncing, setSyncing] = useState(false);
   const [mobileDay, setMobileDay] = useState(() => {
     const d = new Date().getDay();
-    return d > 4 ? 0 : d; // Sunday–Thursday = 0–4; Friday/Saturday → Sunday
+    return d > 5 ? 0 : d; // Sunday–Friday = 0–5; Saturday → Sunday
   });
 
   const weekStart = useMemo(() => getWeekStart(addWeeks(new Date(), weekOffset)), [weekOffset]);
@@ -212,6 +215,22 @@ export default function WeeklySchedulePage() {
     queryKey: ['library-items-light'],
     queryFn: () => base44.entities.LibraryItem.list('-updated_date', 100),
   });
+
+  // Load school calendar rules (no-school days, early dismissal, Rosh Chodesh, etc.)
+  const { data: calendarRules = [] } = useQuery({
+    queryKey: ['schoolCalendarRules'],
+    queryFn: () => base44.entities.SchoolCalendarRule.list(),
+  });
+
+  // Per-day status for the displayed week
+  const dayStatuses = useMemo(() => {
+    return DAYS.map((d, i) => {
+      const date = addDays(weekStart, i);
+      const status = getDayStatus(calendarRules, date);
+      const maxHour = status.earlyDismissal ? (dismissalHour(status.earlyDismissal.dismissal_time) ?? 16) : 16;
+      return { ...status, date, hebrew: toHebrewFull(date), maxHour };
+    });
+  }, [calendarRules, weekStart]);
 
   // Use first matching plan, or create if needed
   const plan = plans[0] || null;
@@ -421,6 +440,7 @@ export default function WeeklySchedulePage() {
             const day = DAYS[mobileDay];
             const date = addDays(weekStart, mobileDay);
             const isToday = isSameDay(date, new Date());
+            const status = dayStatuses[mobileDay] || {};
             return (
               <>
                 <div className="flex items-center justify-between gap-2 mb-2">
@@ -428,46 +448,63 @@ export default function WeeklySchedulePage() {
                     className="w-8 h-8 rounded-lg border border-border flex items-center justify-center disabled:opacity-30">
                     <ChevronRight className="w-4 h-4" />
                   </button>
-                  <div className={`text-center py-1 px-4 rounded-xl text-sm font-bold ${isToday ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'}`}>
+                  <div className={`text-center py-1 px-4 rounded-xl text-sm font-bold ${status.noSchool ? 'bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-300' : isToday ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'}`}>
                     {day.label} · {format(date, 'd/M')}
+                    <span className={`block text-[10px] font-normal mt-0.5 ${isToday ? 'text-primary-foreground/70' : 'text-muted-foreground/70'}`}>{status.hebrew}</span>
                   </div>
                   <button onClick={() => setMobileDay(d => Math.min(DAYS.length - 1, d + 1))} disabled={mobileDay === DAYS.length - 1}
                     className="w-8 h-8 rounded-lg border border-border flex items-center justify-center disabled:opacity-30">
                     <ChevronLeft className="w-4 h-4" />
                   </button>
                 </div>
-                {HOURS.map(hour => {
-                  const lessons = lessonMap[day.key]?.[hour.value] || [];
-                  return (
-                    <div key={hour.value} className="flex gap-1 mb-1">
-                      <div className="w-12 shrink-0 flex items-start justify-center pt-2">
-                        <span className="text-[11px] text-muted-foreground font-medium">{hour.label}</span>
+                {status.noSchool ? (
+                  <div className="flex flex-col items-center justify-center text-center py-10 px-4 rounded-xl border border-rose-200 bg-rose-50/50 dark:border-rose-900/40 dark:bg-rose-900/10">
+                    <CalendarOff className="w-7 h-7 text-rose-500 mb-2" />
+                    <div className="text-sm font-bold text-rose-700 dark:text-rose-300">אין לימודים</div>
+                    {status.noSchool.name && <div className="text-xs text-muted-foreground mt-1">{status.noSchool.name}</div>}
+                    <div className="text-[11px] text-muted-foreground mt-0.5">{status.hebrew}</div>
+                  </div>
+                ) : (
+                  <>
+                    {status.earlyDismissal && (
+                      <div className="text-[11px] text-amber-700 dark:text-amber-400 bg-amber-50/60 dark:bg-amber-900/15 rounded-lg px-2 py-1 mb-1 flex items-center gap-1">
+                        <CalendarClock className="w-3.5 h-3.5" /> סיום מוקדם ב-{status.earlyDismissal.dismissal_time || ''}
                       </div>
-                      <div
-                        className="flex-1 min-h-[56px] rounded-xl border border-border/50 bg-card/60 p-1 flex flex-col gap-1 cursor-pointer hover:border-primary/30 hover:bg-accent/20 transition-colors"
-                        onClick={(e) => {
-                          if (e.target.closest('[data-no-cell]')) return;
-                          setAddDialog({ open: true, day: day.key, hour: hour.value });
-                        }}
-                      >
-                        {lessons.map(lesson => {
-                          const color = getSubjectColor(lesson.subject || '', subjectColorMap);
-                          const libItem = lesson.library_item_id ? libraryItems.find(l => l.id === lesson.library_item_id) : null;
-                          return (
-                            <div key={lesson.id} data-no-cell>
-                              <LessonCard
-                                lesson={lesson}
-                                color={color}
-                                libraryItem={libItem}
-                                onDelete={() => handleDeleteLesson(day.key, lesson.id)}
-                              />
-                            </div>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  );
-                })}
+                    )}
+                    {HOURS.filter(h => h.value <= (status.maxHour || 16)).map(hour => {
+                      const lessons = lessonMap[day.key]?.[hour.value] || [];
+                      return (
+                        <div key={hour.value} className="flex gap-1 mb-1">
+                          <div className="w-12 shrink-0 flex items-start justify-center pt-2">
+                            <span className="text-[11px] text-muted-foreground font-medium">{hour.label}</span>
+                          </div>
+                          <div
+                            className="flex-1 min-h-[56px] rounded-xl border border-border/50 bg-card/60 p-1 flex flex-col gap-1 cursor-pointer hover:border-primary/30 hover:bg-accent/20 transition-colors"
+                            onClick={(e) => {
+                              if (e.target.closest('[data-no-cell]')) return;
+                              setAddDialog({ open: true, day: day.key, hour: hour.value });
+                            }}
+                          >
+                            {lessons.map(lesson => {
+                              const color = getSubjectColor(lesson.subject || '', subjectColorMap);
+                              const libItem = lesson.library_item_id ? libraryItems.find(l => l.id === lesson.library_item_id) : null;
+                              return (
+                                <div key={lesson.id} data-no-cell>
+                                  <LessonCard
+                                    lesson={lesson}
+                                    color={color}
+                                    libraryItem={libItem}
+                                    onDelete={() => handleDeleteLesson(day.key, lesson.id)}
+                                  />
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </>
+                )}
               </>
             );
           })()}
@@ -476,18 +513,22 @@ export default function WeeklySchedulePage() {
         {/* Desktop full grid */}
         <DragDropContext onDragEnd={handleDragEnd}>
         <div className="hidden md:block overflow-x-auto" style={{ WebkitOverflowScrolling: 'touch' }}>
-          <div className="min-w-[640px] max-w-full px-2 pb-6" style={{ zoom: 'var(--timetable-zoom, 1)', transformOrigin: 'top center' }}>
+          <div className="min-w-[720px] max-w-full px-2 pb-6" style={{ zoom: 'var(--timetable-zoom, 1)', transformOrigin: 'top center' }}>
 
             {/* Day headers */}
-            <div className="grid gap-1 mt-3 mb-1" style={{ gridTemplateColumns: '48px repeat(5, 1fr)' }}>
+            <div className="grid gap-1 mt-3 mb-1" style={{ gridTemplateColumns: '48px repeat(6, 1fr)' }}>
               <div />
               {DAYS.map((d, i) => {
                 const date = addDays(weekStart, i);
                 const isToday = isSameDay(date, new Date());
+                const st = dayStatuses[i] || {};
                 return (
-                  <div key={d.key} className={`text-center py-2 rounded-xl text-xs font-bold ${isToday ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'}`}>
+                  <div key={d.key} className={`text-center py-2 rounded-xl text-xs font-bold ${st.noSchool ? 'bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-300' : isToday ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'}`}>
                     <div>{d.label}</div>
                     <div className={`text-[11px] font-normal mt-0.5 ${isToday ? 'text-primary-foreground/70' : 'text-muted-foreground/60'}`}>{format(date, 'd/M')}</div>
+                    {st.earlyDismissal && !st.noSchool && (
+                      <div className="text-[9px] mt-0.5 text-amber-600 dark:text-amber-400 font-normal">סיום {st.earlyDismissal.dismissal_time || ''}</div>
+                    )}
                   </div>
                 );
               })}
@@ -495,15 +536,29 @@ export default function WeeklySchedulePage() {
 
             {/* Hour rows */}
             {HOURS.map(hour => (
-              <div key={hour.value} className="grid gap-1 mb-1" style={{ gridTemplateColumns: '48px repeat(5, 1fr)' }}>
+              <div key={hour.value} className="grid gap-1 mb-1" style={{ gridTemplateColumns: '48px repeat(6, 1fr)' }}>
                 {/* Hour label */}
                 <div className="flex items-start justify-center pt-2">
                   <span className="text-[11px] text-muted-foreground font-medium">{hour.label}</span>
                 </div>
 
                 {/* Day cells */}
-                {DAYS.map(day => {
+                {DAYS.map((day, di) => {
+                  const st = dayStatuses[di] || {};
                   const lessons = lessonMap[day.key]?.[hour.value] || [];
+                  const ended = st.maxHour != null && hour.value > st.maxHour;
+                  if (st.noSchool || ended) {
+                    return (
+                      <div key={day.key} className="min-h-[64px] rounded-xl border border-dashed border-border/40 bg-muted/20 flex items-center justify-center">
+                        {st.noSchool && hour.value === HOURS[0].value && (
+                          <div className="text-center px-1">
+                            <div className="text-[11px] font-bold text-rose-600 dark:text-rose-400">אין לימודים</div>
+                            <div className="text-[9px] text-muted-foreground mt-0.5">{st.noSchool.name}</div>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  }
                   return (
                     <Droppable key={day.key} droppableId={`${day.key}-${hour.value}`}>
                       {(provided, snapshot) => (
