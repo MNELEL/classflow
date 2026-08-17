@@ -166,6 +166,7 @@ function AnimatedRoutes() {
 <Route path="/teacher-login" element={<TeacherLogin />} />
 <Route path="/teacher-dashboard" element={<TeacherDashboard />} />
 <Route path="/certificates" element={<CertificatesPage />} />
+<Route path="/templates" element={<TemplateLibraryPage />} />
             </Route>
 
             <Route path="*" element={<PageNotFound />} />
