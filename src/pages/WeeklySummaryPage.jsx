@@ -1,19 +1,21 @@
-import React, { useState, useMemo } from 'react';
+import React, { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import AppLayout from '@/components/layout/AppLayout';
-import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { CalendarCheck, GraduationCap, ClipboardCheck, ChevronRight, ChevronLeft, CheckCircle2, Clock, XCircle, BookOpen } from 'lucide-react';
+import { GraduationCap, ClipboardCheck, CheckCircle2, Clock, XCircle, BookOpen } from 'lucide-react';
 import { toHebrewFull } from '@/lib/hebrewDate';
 import { formatDate } from '@/lib/formatDate';
+import { useSelectedDate } from '@/lib/dateContext';
+import HebrewDateNavigator from '@/components/ui/HebrewDateNavigator';
 
 function startOfWeek(d) { const x = new Date(d); x.setHours(0, 0, 0, 0); x.setDate(x.getDate() - x.getDay()); return x; }
 function addDays(d, n) { const x = new Date(d); x.setDate(x.getDate() + n); return x; }
 function ymd(d) { return d.toISOString().slice(0, 10); }
 
 export default function WeeklySummaryPage() {
-  const [weekStart, setWeekStart] = useState(startOfWeek(new Date()));
+  const { selectedDate } = useSelectedDate();
+  const weekStart = useMemo(() => startOfWeek(new Date(selectedDate + 'T00:00:00')), [selectedDate]);
   const weekEnd = addDays(weekStart, 6);
   const start = ymd(weekStart), end = ymd(weekEnd);
   const inWeek = (d) => { const x = (d || '').slice(0, 10); return x >= start && x <= end; };
@@ -53,11 +55,7 @@ export default function WeeklySummaryPage() {
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" onClick={() => setWeekStart(addDays(weekStart, -7))}><ChevronRight className="w-4 h-4" /></Button>
-          <Button variant="outline" size="sm" onClick={() => setWeekStart(startOfWeek(new Date()))}>השבוע</Button>
-          <Button variant="outline" size="sm" onClick={() => setWeekStart(addDays(weekStart, 7))}><ChevronLeft className="w-4 h-4" /></Button>
-        </div>
+        <HebrewDateNavigator />
 
         {/* KPI row */}
         <div className="grid grid-cols-4 gap-2">
