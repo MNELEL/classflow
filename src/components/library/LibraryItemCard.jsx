@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Heart, Sparkles, Loader2, Clock, AlertCircle, Share2, Trash2 } from 'lucide-react';
+import { Heart, Sparkles, Loader2, Clock, AlertCircle, Share2, Trash2, MoreVertical } from 'lucide-react';
+import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { cn } from '@/lib/utils';
@@ -40,6 +41,7 @@ const AI_STATUS = {
 export default function LibraryItemCard({ item, onClick }) {
   const qc = useQueryClient();
   const [showShare, setShowShare] = useState(false);
+  const [showDelete, setShowDelete] = useState(false);
 
   const favMutation = useMutation({
     mutationFn: () => base44.entities.LibraryItem.update(item.id, { is_favorite: !item.is_favorite }),
@@ -110,40 +112,26 @@ export default function LibraryItemCard({ item, onClick }) {
           )}
         </div>
         <div className="flex items-center gap-1 touch-show">
-          <button onClick={e => { e.stopPropagation(); setShowShare(true); }} aria-label="שתף חומר לימוד"
-            className="text-muted-foreground hover:text-primary transition-colors p-1.5 rounded">
-            <Share2 className="w-3.5 h-3.5" />
-          </button>
           <button onClick={e => { e.stopPropagation(); favMutation.mutate(); }} aria-label={item.is_favorite ? 'הסר ממועדפים' : 'הוסף למועדפים'}
             aria-pressed={!!item.is_favorite}
             className="text-muted-foreground hover:text-pink-500 transition-colors p-1.5">
             {item.is_favorite ? <Heart className="w-4 h-4 fill-pink-500 text-pink-500" /> : <Heart className="w-4 h-4" />}
           </button>
-          <AlertDialog>
-            <AlertDialogTrigger asChild>
-              <button onClick={e => e.stopPropagation()} aria-label="מחק חומר"
-                className="text-muted-foreground hover:text-destructive transition-colors p-1.5">
-                <Trash2 className="w-3.5 h-3.5" />
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button onClick={e => e.stopPropagation()} aria-label="פעולות"
+                className="text-muted-foreground hover:text-primary transition-colors p-1.5 rounded">
+                <MoreVertical className="w-4 h-4" />
               </button>
-            </AlertDialogTrigger>
-            <AlertDialogContent onClick={e => e.stopPropagation()}>
-              <AlertDialogHeader>
-                <AlertDialogTitle>מחיקת חומר מהספרייה</AlertDialogTitle>
-                <AlertDialogDescription>
-                  האם למחוק את "{title}"? פעולה זו אינה הפיכה.
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel>ביטול</AlertDialogCancel>
-                <AlertDialogAction
-                  onClick={() => deleteMutation.mutate()}
-                  disabled={deleteMutation.isPending}
-                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-                  {deleteMutation.isPending ? 'מוחק...' : 'מחק'}
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-40" onClick={e => e.stopPropagation()}>
+              <DropdownMenuItem onClick={() => setShowShare(true)}><Share2 className="w-4 h-4 ml-2" /> שיתוף</DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem className="text-destructive focus:text-destructive" onClick={() => setShowDelete(true)}>
+                <Trash2 className="w-4 h-4 ml-2" /> מחיקה
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
 
@@ -212,6 +200,26 @@ export default function LibraryItemCard({ item, onClick }) {
       {showShare && (
         <ShareModal item={item} type="library" onClose={() => setShowShare(false)} />
       )}
+
+      <AlertDialog open={showDelete} onOpenChange={setShowDelete}>
+        <AlertDialogContent onClick={e => e.stopPropagation()}>
+          <AlertDialogHeader>
+            <AlertDialogTitle>מחיקת חומר מהספרייה</AlertDialogTitle>
+            <AlertDialogDescription>
+              האם למחוק את "{title}"? פעולה זו אינה הפיכה.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>ביטול</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => deleteMutation.mutate()}
+              disabled={deleteMutation.isPending}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              {deleteMutation.isPending ? 'מוחק...' : 'מחק'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

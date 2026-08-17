@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Edit2, Trash2, Plus, Eye, Volume2, Zap, CheckSquare, TrendingUp, FolderOpen, User } from 'lucide-react';
+import { Edit2, Trash2, Plus, Eye, Volume2, Zap, CheckSquare, TrendingUp, FolderOpen, User, MoreVertical } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from '@/components/ui/drawer';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useNavigate } from 'react-router-dom';
@@ -95,26 +96,30 @@ export default function StudentList({ students, onSave, onDelete }) {
                       <StudentCustomFields student={student} />
                     </div>
                   </div>
-                  <div className="flex gap-1 opacity-60 md:opacity-60 md:group-hover:opacity-100 touch-show transition-opacity shrink-0">
-                     <Button size="icon" variant="ghost" className="h-7 w-7 min-h-[44px] min-w-[44px]" aria-label="פרופיל תלמיד" title="פרופיל תלמיד" onClick={() => navigate(`/students/${student.id}`)}>
-                       <User className="w-3.5 h-3.5 text-primary" />
-                     </Button>
-                     <Button size="icon" variant="ghost" className="h-7 w-7 min-h-[44px] min-w-[44px]" aria-label="משימות" title="משימות" onClick={() => setTaskStudent(student)}>
-                       <CheckSquare className="w-3.5 h-3.5" />
-                     </Button>
-                     <Button size="icon" variant="ghost" className="h-7 w-7 min-h-[44px] min-w-[44px]" aria-label="ציונים" title="ציונים" onClick={() => setGradeStudent(student)}>
-                       <TrendingUp className="w-3.5 h-3.5" />
-                     </Button>
-                     <Button size="icon" variant="ghost" className="h-7 w-7 min-h-[44px] min-w-[44px]" aria-label="תיק אישי" title="תיק אישי" onClick={() => setPortfolioStudent(portfolioStudent?.id === student.id ? null : student)}>
-                       <FolderOpen className={`w-3.5 h-3.5 ${portfolioStudent?.id === student.id ? 'text-primary' : ''}`} />
-                     </Button>
-                     <Button size="icon" variant="ghost" className="h-7 w-7 min-h-[44px] min-w-[44px]" aria-label="עריכת תלמיד" onClick={() => setEditing(student)}>
-                       <Edit2 className="w-3.5 h-3.5" />
-                     </Button>
-                     <Button size="icon" variant="ghost" className="h-7 w-7 min-h-[44px] min-w-[44px] text-destructive/60 hover:text-destructive" aria-label="מחיקת תלמיד" onClick={() => onDelete(student.id)}>
-                       <Trash2 className="w-3.5 h-3.5" />
-                     </Button>
-                   </div>
+                  <div className="flex items-center gap-1 shrink-0">
+                    <Button size="icon" variant="ghost" className="h-8 w-8 min-h-[44px] min-w-[44px]" aria-label="פרופיל תלמיד" title="פרופיל" onClick={() => navigate(`/students/${student.id}`)}>
+                      <User className="w-4 h-4 text-primary" />
+                    </Button>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button size="icon" variant="ghost" className="h-8 w-8 min-h-[44px] min-w-[44px]" aria-label="פעולות נוספות" title="פעולות">
+                          <MoreVertical className="w-4 h-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end" className="w-44">
+                        <DropdownMenuItem onClick={() => setTaskStudent(student)}><CheckSquare className="w-4 h-4 ml-2" /> משימות</DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => setGradeStudent(student)}><TrendingUp className="w-4 h-4 ml-2" /> ציונים</DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => setPortfolioStudent(portfolioStudent?.id === student.id ? null : student)}>
+                          <FolderOpen className={`w-4 h-4 ml-2 ${portfolioStudent?.id === student.id ? 'text-primary' : ''}`} /> תיק אישי
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => setEditing(student)}><Edit2 className="w-4 h-4 ml-2" /> עריכה</DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem className="text-destructive focus:text-destructive" onClick={() => onDelete(student.id)}>
+                          <Trash2 className="w-4 h-4 ml-2" /> מחיקה
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
                 </div>
                 <StudentPortfolio student={student} open={portfolioStudent?.id === student.id} />
               </motion.div>
