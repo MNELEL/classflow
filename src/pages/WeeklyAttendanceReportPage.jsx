@@ -1,10 +1,11 @@
-import React, { useState, useMemo } from 'react';
+import React, { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import AppLayout from '@/components/layout/AppLayout';
-import { Button } from '@/components/ui/button';
-import { CalendarCheck, ChevronRight, ChevronLeft, Clock, XCircle, CheckCircle2 } from 'lucide-react';
+import { CalendarCheck, Clock, XCircle, CheckCircle2 } from 'lucide-react';
 import { toHebrewDate, toHebrewFull, isRoshChodesh } from '@/lib/hebrewDate';
+import { useSelectedDate } from '@/lib/dateContext';
+import HebrewDateNavigator from '@/components/ui/HebrewDateNavigator';
 
 function startOfWeek(d) {
   const x = new Date(d);
@@ -17,7 +18,8 @@ function addDays(d, n) { const x = new Date(d); x.setDate(x.getDate() + n); retu
 function ymd(d) { return d.toISOString().slice(0, 10); }
 
 export default function WeeklyAttendanceReportPage() {
-  const [weekStart, setWeekStart] = useState(startOfWeek(new Date()));
+  const { selectedDate } = useSelectedDate();
+  const weekStart = useMemo(() => startOfWeek(new Date(selectedDate + 'T00:00:00')), [selectedDate]);
 
   const { data: students = [] } = useQuery({ queryKey: ['students'], queryFn: () => base44.entities.Student.list() });
   const { data: attendance = [] } = useQuery({ queryKey: ['attendance'], queryFn: () => base44.entities.Attendance.list('-date', 1000) });
@@ -80,11 +82,7 @@ export default function WeeklyAttendanceReportPage() {
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" onClick={() => setWeekStart(addDays(weekStart, -7))}><ChevronRight className="w-4 h-4" /></Button>
-          <Button variant="outline" size="sm" onClick={() => setWeekStart(startOfWeek(new Date()))}>השבוע</Button>
-          <Button variant="outline" size="sm" onClick={() => setWeekStart(addDays(weekStart, 7))}><ChevronLeft className="w-4 h-4" /></Button>
-        </div>
+        <HebrewDateNavigator />
 
         {noSchoolDays.size > 0 && (
           <div className="text-xs bg-amber-50/60 dark:bg-amber-900/15 text-amber-700 dark:text-amber-400 rounded-lg p-2.5">

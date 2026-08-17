@@ -1,16 +1,18 @@
-import React, { useState, useMemo } from 'react';
+import React, { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import AppLayout from '@/components/layout/AppLayout';
-import { Button } from '@/components/ui/button';
-import { CalendarCheck, ChevronRight, ChevronLeft, Clock, XCircle, CheckCircle2 } from 'lucide-react';
+import { CalendarCheck, Clock, XCircle, CheckCircle2 } from 'lucide-react';
 import { toHebrewMonthYear } from '@/lib/hebrewDate';
+import { useSelectedDate } from '@/lib/dateContext';
+import HebrewDateNavigator from '@/components/ui/HebrewDateNavigator';
 
 function startOfMonth(d) { const x = new Date(d); x.setDate(1); x.setHours(0, 0, 0, 0); return x; }
 function ymd(d) { return d.toISOString().slice(0, 10); }
 
 export default function MonthlyAttendanceReportPage() {
-  const [monthStart, setMonthStart] = useState(startOfMonth(new Date()));
+  const { selectedDate } = useSelectedDate();
+  const monthStart = useMemo(() => startOfMonth(new Date(selectedDate + 'T00:00:00')), [selectedDate]);
 
   const { data: students = [] } = useQuery({ queryKey: ['students'], queryFn: () => base44.entities.Student.list() });
   const { data: attendance = [] } = useQuery({ queryKey: ['attendance'], queryFn: () => base44.entities.Attendance.list('-date', 2000) });
@@ -56,11 +58,7 @@ export default function MonthlyAttendanceReportPage() {
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" onClick={() => setMonthStart(new Date(monthStart.getFullYear(), monthStart.getMonth() - 1, 1))}><ChevronRight className="w-4 h-4" /></Button>
-          <Button variant="outline" size="sm" onClick={() => setMonthStart(startOfMonth(new Date()))}>החודש</Button>
-          <Button variant="outline" size="sm" onClick={() => setMonthStart(new Date(monthStart.getFullYear(), monthStart.getMonth() + 1, 1))}><ChevronLeft className="w-4 h-4" /></Button>
-        </div>
+        <HebrewDateNavigator />
 
         <div className="grid grid-cols-3 gap-2">
           <div className="bg-card border rounded-2xl p-3 text-center">
