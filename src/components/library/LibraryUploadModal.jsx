@@ -134,7 +134,7 @@ export default function LibraryUploadModal({ open, onClose, defaultCategory = ''
   function reset() {
     setTab('files'); setFiles([]); setLinkUrl(''); setLinkType('youtube_link');
     setTextContent(''); setSearchQuery(''); setSearchResults([]);
-    setCategory(''); setSubject(''); setUploadProgress([]);
+    setCategory(defaultCategory); setSubject(''); setUploadProgress([]);
   }
 
   // ── File handling ──────────────────────────────────────────────────────────
