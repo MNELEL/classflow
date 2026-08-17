@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, parseISO, subMonths } from 'date-fns';
 import { he } from 'date-fns/locale';
+import { toHebrewMonthYear } from '@/lib/hebrewDate';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, LineChart, Line, CartesianGrid, Legend } from 'recharts';
 import { MobileSelect, SelectItem } from '@/components/ui/MobileSelect';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -20,7 +21,7 @@ export default function AttendanceChart({ students }) {
   const targetMonth = subMonths(new Date(), monthOffset);
   const monthStart = startOfMonth(targetMonth);
   const monthEnd = endOfMonth(targetMonth);
-  const monthLabel = format(targetMonth, 'MMMM yyyy', { locale: he });
+  const monthLabel = toHebrewMonthYear(targetMonth);
 
   // Per-day data for single student
   const studentDailyData = useMemo(() => {
@@ -76,7 +77,7 @@ export default function AttendanceChart({ students }) {
 
   const MONTHS = Array.from({ length: 6 }, (_, i) => ({
     offset: i,
-    label: format(subMonths(new Date(), i), 'MMMM yyyy', { locale: he }),
+    label: toHebrewMonthYear(subMonths(new Date(), i)),
   }));
 
   const activeStudents = students.filter(s => s.is_active !== false);

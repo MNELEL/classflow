@@ -8,6 +8,7 @@ import { MobileSelect, SelectItem } from '@/components/ui/MobileSelect';
 import { ClipboardCheck, Plus, CheckCircle2, Circle, Bell, Loader2, ChevronDown, ChevronUp, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'framer-motion';
+import { formatDate } from '@/lib/formatDate';
 
 const TYPE_LABELS = { homework: 'שיעורי בית', exam: 'מבחן', project: 'פרויקט', quiz: 'חידון' };
 const TYPE_COLORS = {
@@ -31,7 +32,7 @@ function AssignmentCard({ assignment, students, onToggleSubmit, onDelete }) {
     const names = pending.map(s => s.student_name).join(', ');
     // Build WhatsApp message
     const msg = encodeURIComponent(
-      `תזכורת: המטלה "${assignment.title}" (${assignment.subject || ''}) לא הוגשה עד ${assignment.due_date}.\nנא להגיש בהקדם האפשרי.`
+      `תזכורת: המטלה "${assignment.title}" (${assignment.subject || ''}) לא הוגשה עד ${formatDate(assignment.due_date)}.\nנא להגיש בהקדם האפשרי.`
     );
     const waUrl = `https://wa.me/?text=${msg}`;
     window.open(waUrl, '_blank');
@@ -52,7 +53,7 @@ function AssignmentCard({ assignment, students, onToggleSubmit, onDelete }) {
             </div>
             <div className="flex items-center gap-3 mt-1">
               {assignment.subject && <span className="text-xs text-muted-foreground">{assignment.subject}</span>}
-              <span className="text-xs text-muted-foreground">הגשה: {assignment.due_date}</span>
+              <span className="text-xs text-muted-foreground">הגשה: {formatDate(assignment.due_date)}</span>
             </div>
             {total > 0 && (
               <div className="flex items-center gap-2 mt-2">
@@ -98,7 +99,7 @@ function AssignmentCard({ assignment, students, onToggleSubmit, onDelete }) {
                     {sub.student_name}
                   </span>
                   {sub.submitted && sub.submitted_at && (
-                    <span className="text-[10px] text-muted-foreground mr-auto">{new Date(sub.submitted_at).toLocaleDateString('he-IL')}</span>
+                    <span className="text-[10px] text-muted-foreground mr-auto">{formatDate(sub.submitted_at)}</span>
                   )}
                 </button>
               ))}

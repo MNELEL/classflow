@@ -11,6 +11,7 @@ import { usePullToRefresh } from '@/hooks/usePullToRefresh';
 import PullToRefreshIndicator from '@/components/ui/PullToRefreshIndicator';
 import StudentReportPDF from '@/components/parents/StudentReportPDF';
 import SharedLessonsPanel from '@/components/parents/SharedLessonsPanel';
+import { formatDate } from '@/lib/formatDate';
 
 const STATUS_LABELS = { present: 'נוכח', absent: 'נעדר', late: 'איחר' };
 const STATUS_COLOR = { present: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400', absent: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400', late: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400' };
@@ -99,7 +100,7 @@ export default function ParentPortalPage() {
                         <div key={g.id} className="flex justify-between items-center text-sm">
                           <span className="text-muted-foreground">{g.test_name || g.subject}</span>
                           <div className="flex items-center gap-2">
-                            <span className="text-xs text-muted-foreground">{g.date}</span>
+                            <span className="text-xs text-muted-foreground">{formatDate(g.date)}</span>
                             <span className={`font-bold w-10 text-center rounded-lg px-1 py-0.5 text-xs ${g.score >= 80 ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' : g.score >= 60 ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400' : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'}`}>
                               {g.score}
                             </span>
@@ -117,7 +118,7 @@ export default function ParentPortalPage() {
                     <div className="flex flex-wrap gap-1.5">
                       {sAttendance.slice(0, 14).map(a => (
                         <div key={a.id} className={`px-2 py-1 rounded-lg text-[10px] font-medium ${STATUS_COLOR[a.status] || 'bg-muted'}`}>
-                          {a.date?.slice(5)} {STATUS_LABELS[a.status]}
+                          {formatDate(a.date)} {STATUS_LABELS[a.status]}
                         </div>
                       ))}
                     </div>
@@ -128,7 +129,7 @@ export default function ParentPortalPage() {
                 {bulletins[0] && (
                   <div className="bg-card border border-border/70 rounded-2xl p-4">
                     <p className="text-sm font-semibold mb-2 flex items-center gap-1.5"><BookOpen className="w-4 h-4 text-primary" /> ניוזלטר אחרון</p>
-                    <p className="text-xs text-muted-foreground mb-2">{bulletins[0].start_date} – {bulletins[0].end_date}</p>
+                    <p className="text-xs text-muted-foreground mb-2">{formatDate(bulletins[0].start_date)} – {formatDate(bulletins[0].end_date)}</p>
                     {bulletins[0].digest_summary && <p className="text-sm leading-relaxed">{bulletins[0].digest_summary}</p>}
                   </div>
                 )}

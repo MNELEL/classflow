@@ -8,6 +8,7 @@ import { toast } from 'sonner';
 import { Sparkles, Loader2, Calendar, TrendingUp, Users, BookOpen, Award, Download, RefreshCw } from 'lucide-react';
 import { motion } from 'framer-motion';
 import ReactMarkdown from 'react-markdown';
+import { formatDate, formatDateLong } from '@/lib/formatDate';
 
 export default function DailySummaryPage() {
   const [summary, setSummary] = useState(null);
@@ -34,7 +35,7 @@ export default function DailySummaryPage() {
     setSummary(null);
 
     const context = {
-      date: new Date().toLocaleDateString('he-IL', { weekday: 'long', day: 'numeric', month: 'long' }),
+      date: formatDateLong(new Date()),
       studentsCount: students.filter(s => s.is_active !== false).length,
       attendanceToday: {
         present: todayAttendance.filter(a => a.status === 'present').length,
@@ -77,7 +78,7 @@ export default function DailySummaryPage() {
 
   function exportSummary() {
     if (!summary) return;
-    const blob = new Blob([`# סיכום יומי - ${new Date().toLocaleDateString('he-IL')}\n\n${summary}`], { type: 'text/plain;charset=utf-8' });
+    const blob = new Blob([`# סיכום יומי - ${formatDate(new Date())}\n\n${summary}`], { type: 'text/plain;charset=utf-8' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url; a.download = `סיכום-${today}.md`; a.click();
@@ -99,7 +100,7 @@ export default function DailySummaryPage() {
           </div>
           <div className="flex-1">
             <h1 className="font-bold text-lg">סיכום יומי</h1>
-            <p className="text-xs text-muted-foreground">{new Date().toLocaleDateString('he-IL', { weekday: 'long', day: 'numeric', month: 'long' })}</p>
+            <p className="text-xs text-muted-foreground">{formatDateLong(new Date())}</p>
           </div>
         </div>
 

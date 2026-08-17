@@ -7,6 +7,7 @@ import WeekGoalCard from './WeekGoalCard';
 import { base44 } from '@/api/base44Client';
 import { useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
+import { formatDateLong } from '@/lib/formatDate';
 
 const STATUS_MAP = {
   planned: { label: 'מתוכנן', color: 'bg-muted text-muted-foreground' },
@@ -49,7 +50,7 @@ export default function WeekCard({ week, onDelete }) {
             <BookMarked className="w-5 h-5 text-indigo-600" />
           </div>
           <div>
-            <p className="text-sm font-bold">{week.week_label || new Date(week.week_start).toLocaleDateString('he-IL', { day: 'numeric', month: 'long', year: 'numeric' })}</p>
+            <p className="text-sm font-bold">{week.week_label || formatDateLong(week.week_start)}</p>
             <div className="flex items-center gap-2 mt-0.5">
               {week.subject && <span className="text-[11px] text-muted-foreground">{week.subject}</span>}
               <Badge className={`${status.color} border-0 text-[10px]`}>{status.label}</Badge>

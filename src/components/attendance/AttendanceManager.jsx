@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Check, X, Clock, ChevronRight, ChevronLeft, Search } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
+import { formatDateLong } from '@/lib/formatDate';
 
 const STATUS_CONFIG = {
   present: { label: 'נוכח', icon: Check, color: 'bg-emerald-500 hover:bg-emerald-600 text-white', badge: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400' },
@@ -96,7 +97,7 @@ export default function AttendanceManager({ students }) {
         </button>
         <div className="text-center">
           <p className="font-bold text-base">
-            {format(parseISO(selectedDate), 'EEEE, d בMMMM yyyy', { locale: he })}
+            {formatDateLong(selectedDate)}
           </p>
           {selectedDate === todayStr() && <Badge className="text-[10px] mt-0.5 bg-primary/10 text-primary border-0">היום</Badge>}
         </div>

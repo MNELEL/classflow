@@ -10,6 +10,7 @@ import { toast } from 'sonner';
 import { FileText, Plus, Calendar, Users, Trophy, BarChart3, Save, X, Check, Trash2 } from 'lucide-react';
 import { useUrlOverlay } from '@/hooks/useUrlOverlay';
 import { motion } from 'framer-motion';
+import { formatDate } from '@/lib/formatDate';
 
 export default function ExamsPage() {
   const qc = useQueryClient();
@@ -144,7 +145,7 @@ export default function ExamsPage() {
                     <Badge variant="outline" className={`text-[10px] ${meta.bg} ${meta.color} border-0`}>{meta.label}</Badge>
                   </div>
                   <div className="flex items-center gap-3 text-xs text-muted-foreground mb-2">
-                    <span className="flex items-center gap-1"><Calendar className="w-3 h-3" /> {new Date(exam.date).toLocaleDateString('he-IL')}</span>
+                    <span className="flex items-center gap-1"><Calendar className="w-3 h-3" /> {formatDate(exam.date)}</span>
                     <span className="flex items-center gap-1"><Users className="w-3 h-3" /> {exam.student_ids?.length || 0}</span>
                     {exam.duration_minutes && <span>⏱ {exam.duration_minutes} דק׳</span>}
                     <span>📊 מקסימום {exam.max_score}</span>

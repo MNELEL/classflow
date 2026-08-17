@@ -9,6 +9,7 @@ import { BookMarked, Plus, Sparkles, Loader2, X, Search } from 'lucide-react';
 import { toast } from 'sonner';
 import { AnimatePresence, motion } from 'framer-motion';
 import WeekCard from '@/components/curriculum/WeekCard';
+import { formatDate } from '@/lib/formatDate';
 import AppLayout from '@/components/layout/AppLayout';
 import TractateSelector from '@/components/curriculum/TractateSelector';
 import { usePullToRefresh } from '@/hooks/usePullToRefresh';
@@ -111,7 +112,7 @@ ${JSON.stringify(libraryContext)}
       const goals = (result.goals || []).map((g, i) => ({ ...g, id: g.id || String(Date.now() + i), is_completed: false }));
 
       await base44.entities.CurriculumWeek.create({
-        week_label: weekLabel || `שבוע ${new Date(weekStart).toLocaleDateString('he-IL', { day: 'numeric', month: 'long' })}`,
+        week_label: weekLabel || `שבוע ${formatDate(weekStart)}`,
         week_start: weekStart,
         subject: subject || undefined,
         free_text_goals: freeText,

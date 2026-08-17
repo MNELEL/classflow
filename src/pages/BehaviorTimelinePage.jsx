@@ -11,6 +11,7 @@ import { toast } from 'sonner';
 import { GitBranch, Plus, TrendingUp, TrendingDown, Minus, ChevronLeft } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
+import { formatDateLong } from '@/lib/formatDate';
 
 const TYPE_META = {
   positive: { label: 'חיובי', color: 'text-emerald-600', bg: 'bg-emerald-100 dark:bg-emerald-900/30', icon: TrendingUp, dot: 'bg-emerald-500' },
@@ -50,7 +51,7 @@ export default function BehaviorTimelinePage() {
   const grouped = useMemo(() => {
     const g = {};
     filtered.forEach(e => {
-      const date = new Date(e.date).toLocaleDateString('he-IL');
+      const date = formatDateLong(e.date);
       if (!g[date]) g[date] = [];
       g[date].push(e);
     });

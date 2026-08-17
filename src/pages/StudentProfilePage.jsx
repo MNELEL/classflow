@@ -21,6 +21,7 @@ import PerformanceBadge from '@/components/students/PerformanceBadge';
 import { calculatePerformanceScore } from '@/lib/performanceScore';
 import { CUSTOM_FIELD_LABELS } from '@/components/students/StudentCustomFields';
 import { toHebrewDate } from '@/lib/hebrewDate';
+import { formatDate } from '@/lib/formatDate';
 import { format, parseISO, subMonths } from 'date-fns';
 import { he } from 'date-fns/locale';
 
@@ -277,7 +278,7 @@ export default function StudentProfilePage() {
                   <div key={g.id} className="flex items-center justify-between bg-card border border-border rounded-xl px-3.5 py-2.5">
                     <div>
                       <p className="text-sm font-medium">{g.test_name || g.subject}</p>
-                      <p className="text-xs text-muted-foreground">{g.subject} · {g.date && format(parseISO(g.date), 'd MMM yyyy', { locale: he })}</p>
+                      <p className="text-xs text-muted-foreground">{g.subject} · {g.date && formatDate(g.date)}</p>
                     </div>
                     <div className={`text-lg font-bold ${g.score >= 80 ? 'text-emerald-600' : g.score >= 60 ? 'text-amber-600' : 'text-red-600'}`}>
                       {g.score}
@@ -307,7 +308,7 @@ export default function StudentProfilePage() {
                         </div>
                       </div>
                       <p className="text-xs text-muted-foreground">
-                        {a.date && format(parseISO(a.date), 'd MMM yyyy', { locale: he })}
+                        {a.date && formatDate(a.date)}
                       </p>
                     </div>
                   );
@@ -359,7 +360,7 @@ export default function StudentProfilePage() {
                     <div className="flex items-center justify-between mb-1">
                       <Badge variant="outline" className="text-xs">{c.type}</Badge>
                       <span className="text-xs text-muted-foreground">
-                        {c.date && format(parseISO(c.date), 'd MMM yyyy', { locale: he })}
+                        {c.date && formatDate(c.date)}
                       </span>
                     </div>
                     <p className="text-sm text-foreground">{c.summary}</p>
@@ -387,7 +388,7 @@ export default function StudentProfilePage() {
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium truncate">{item.title}</p>
-                      <p className="text-xs text-muted-foreground">{item.type} · {item.date && format(parseISO(item.date), 'd MMM yyyy', { locale: he })}</p>
+                      <p className="text-xs text-muted-foreground">{item.type} · {item.date && formatDate(item.date)}</p>
                     </div>
                     {item.file_url && (
                       <a href={item.file_url} target="_blank" rel="noreferrer">
