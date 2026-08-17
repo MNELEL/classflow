@@ -8,7 +8,7 @@ import {
   CalendarCheck, GraduationCap, Trophy, Wrench,
   Contact, FileText, Layers, Mic, ClipboardCheck,
   Music, Eye, Clock, UserCircle, ChevronLeft, BarChart2, Brain,
-  BookOpen, Home, Bell, BookMarked, Shuffle, Zap, GitBranch, CalendarDays, Sparkles, Shield, Upload, Award
+  BookOpen, Home, Bell, BookMarked, Shuffle, Zap, GitBranch, CalendarDays, Sparkles, Shield, Upload, Award, LayoutTemplate
 } from 'lucide-react';
 import AppLayout from '@/components/layout/AppLayout';
 
