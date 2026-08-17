@@ -19,6 +19,7 @@ import StudentTaskList from '@/components/students/StudentTaskList';
 import QuickPreferencesEditor from '@/components/students/QuickPreferencesEditor';
 import PerformanceBadge from '@/components/students/PerformanceBadge';
 import { calculatePerformanceScore } from '@/lib/performanceScore';
+import { CUSTOM_FIELD_LABELS } from '@/components/students/StudentCustomFields';
 import { format, parseISO, subMonths } from 'date-fns';
 import { he } from 'date-fns/locale';
 
@@ -212,6 +213,23 @@ export default function StudentProfilePage() {
             color="text-violet-600"
           />
         </div>
+
+        {/* Personal details (custom fields) */}
+        {student.custom_fields && Object.keys(student.custom_fields).filter(k => student.custom_fields[k]).length > 0 && (
+          <Card>
+            <CardHeader className="pb-1 pt-3 px-4">
+              <CardTitle className="text-sm">פרטים אישיים</CardTitle>
+            </CardHeader>
+            <CardContent className="px-4 pb-3 grid grid-cols-2 gap-2">
+              {Object.keys(student.custom_fields).filter(k => student.custom_fields[k]).map(k => (
+                <div key={k} className="bg-muted/30 rounded-lg px-2.5 py-1.5">
+                  <div className="text-[10px] text-muted-foreground">{CUSTOM_FIELD_LABELS[k] || k}</div>
+                  <div className="text-xs font-medium truncate">{String(student.custom_fields[k])}</div>
+                </div>
+              ))}
+            </CardContent>
+          </Card>
+        )}
 
         {/* Quick preferences editor */}
         <QuickPreferencesEditor student={student} />

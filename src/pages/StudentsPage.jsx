@@ -9,9 +9,10 @@ import { usePullToRefresh } from '@/hooks/usePullToRefresh';
 import PullToRefreshIndicator from '@/components/ui/PullToRefreshIndicator';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
-import { Wand2, Users, FileDown, FileText, SortAsc, SortDesc, Calendar, Cake } from 'lucide-react';
+import { Wand2, Users, FileDown, FileText, SortAsc, SortDesc, Calendar, Cake, Merge } from 'lucide-react';
 import { exportToCSV } from '@/components/data/CsvImportModal';
 import FileImportStudents from '@/components/students/FileImportStudents';
+import MergeDuplicatesModal from '@/components/students/MergeDuplicatesModal';
 import { useUrlOverlay } from '@/hooks/useUrlOverlay';
 
 export default function StudentsPage() {
@@ -206,6 +207,9 @@ export default function StudentsPage() {
               <Button variant="outline" size="sm" onClick={() => openDialog('file-import')} className="gap-1.5">
                 <FileText className="w-4 h-4" /> ייבוא מקובץ
               </Button>
+              <Button variant="outline" size="sm" onClick={() => openDialog('merge')} className="gap-1.5">
+                <Merge className="w-4 h-4" /> מיזוג כפילויות
+              </Button>
               <Button variant="outline" size="sm" onClick={() => exportToCSV(students.map(s=>({name:s.name,gender:s.gender||'',height:s.height||'medium',learning_group:s.learning_group||'',notes:s.notes||'',academic_level:s.academic_level||'average'})), 'students.csv')} className="gap-1.5">
                 <FileDown className="w-4 h-4" /> ייצוא CSV
               </Button>
@@ -266,6 +270,13 @@ export default function StudentsPage() {
         open={isOpen('groups')}
         onClose={closeDialog}
         students={students}
+      />
+
+      <MergeDuplicatesModal
+        open={isOpen('merge')}
+        onClose={closeDialog}
+        students={students}
+        onMerged={() => qc.invalidateQueries({ queryKey: ['students'] })}
       />
     </AppLayout>
   );
