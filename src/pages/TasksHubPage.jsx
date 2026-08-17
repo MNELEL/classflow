@@ -10,6 +10,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { format, parseISO, differenceInCalendarDays } from 'date-fns';
 import { he } from 'date-fns/locale';
 import TaskAlertsBanner from '@/components/tasks/TaskAlertsBanner';
+import WeeklyTasksManager from '@/components/tasks/WeeklyTasksManager';
 
 const STATUS_LABELS = { pending: 'ממתין', in_progress: 'בביצוע', done: 'הושלם' };
 const STATUS_ICONS = { pending: Clock, in_progress: Clock, done: CheckCircle2 };
@@ -142,6 +143,9 @@ export default function TasksHubPage() {
               </p>
             </div>
           </div>
+
+          {/* Weekly management center */}
+          <WeeklyTasksManager />
 
           {/* Daily alerts */}
           <TaskAlertsBanner classData={classData} />
