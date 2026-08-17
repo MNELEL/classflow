@@ -8,9 +8,10 @@ import AIGradeInput from '@/components/grades/AIGradeInput';
 import AIGradeQuery from '@/components/grades/AIGradeQuery';
 import GradeReportPanel from '@/components/grades/GradeReportPanel';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Sparkles, MessageSquare, FileBarChart2, GraduationCap, FileUp, FileDown, Camera } from 'lucide-react';
+import { Sparkles, MessageSquare, FileBarChart2, GraduationCap, FileUp, FileDown, Camera, ChevronDown } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
+import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from '@/components/ui/dropdown-menu';
 import { motion } from 'framer-motion';
 import { usePullToRefresh } from '@/hooks/usePullToRefresh';
 import PullToRefreshIndicator from '@/components/ui/PullToRefreshIndicator';
@@ -42,16 +43,19 @@ export default function GradeManagementPage() {
             <h1 className="text-2xl font-bold">ניהול ציונים</h1>
           </div>
           <p className="text-muted-foreground text-sm">הזנת ציונים חכמה, שאילתות AI ודוחות מפורטים</p>
-          <div className="flex gap-2 mt-3 flex-wrap">
-            <Button size="sm" onClick={() => navigate('/exam-scanner')} className="gap-1.5 text-xs">
-              <Camera className="w-3.5 h-3.5" /> סרוק מבחן (AI)
-            </Button>
-            <Button size="sm" variant="outline" onClick={() => setShowCsvImport(true)} className="gap-1.5 text-xs">
-              <FileUp className="w-3.5 h-3.5" /> ייבוא CSV
-            </Button>
-            <Button size="sm" variant="outline" onClick={() => exportToCSV(grades.map(g => ({ student_id: g.student_id, subject: g.subject, test_name: g.test_name || '', score: g.score, max_score: g.max_score || 100, date: g.date || '', period: g.period || 'exam' })), 'grades.csv')} className="gap-1.5 text-xs">
-              <FileDown className="w-3.5 h-3.5" /> ייצוא CSV
-            </Button>
+          <div className="flex gap-2 mt-3">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button size="sm" variant="outline" className="gap-1.5 text-xs">
+                  <Sparkles className="w-3.5 h-3.5" /> פעולות ציונים <ChevronDown className="w-3.5 h-3.5 opacity-60" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start" className="w-48">
+                <DropdownMenuItem onClick={() => navigate('/exam-scanner')}><Camera className="w-4 h-4 ml-2" /> סרוק מבחן (AI)</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setShowCsvImport(true)}><FileUp className="w-4 h-4 ml-2" /> ייבוא CSV</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => exportToCSV(grades.map(g => ({ student_id: g.student_id, subject: g.subject, test_name: g.test_name || '', score: g.score, max_score: g.max_score || 100, date: g.date || '', period: g.period || 'exam' })), 'grades.csv')}><FileDown className="w-4 h-4 ml-2" /> ייצוא CSV</DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </motion.div>
 

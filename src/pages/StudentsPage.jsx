@@ -10,6 +10,7 @@ import PullToRefreshIndicator from '@/components/ui/PullToRefreshIndicator';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Wand2, Users, FileDown, FileText, SortAsc, SortDesc, Calendar, Cake, Merge, ChevronDown, Copy, Printer } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { exportToCSV } from '@/components/data/CsvImportModal';
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
 import FileImportStudents from '@/components/students/FileImportStudents';
@@ -17,6 +18,7 @@ import MergeDuplicatesModal from '@/components/students/MergeDuplicatesModal';
 import { useUrlOverlay } from '@/hooks/useUrlOverlay';
 
 export default function StudentsPage() {
+  const navigate = useNavigate();
   const qc = useQueryClient();
   const { isOpen, open: openDialog, close: closeDialog } = useUrlOverlay('dialog');
   const [sortMode, setSortMode] = useState('created'); // 'created' | 'firstName' | 'lastName' | 'birthday'
@@ -235,6 +237,7 @@ export default function StudentsPage() {
                   <DropdownMenuItem onClick={() => openDialog('free-text')}><Wand2 className="w-4 h-4 ml-2" /> עדכון (AI)</DropdownMenuItem>
                   <DropdownMenuItem onClick={() => openDialog('file-import')}><FileText className="w-4 h-4 ml-2" /> ייבוא מקובץ</DropdownMenuItem>
                   <DropdownMenuItem onClick={() => openDialog('merge')}><Merge className="w-4 h-4 ml-2" /> מיזוג כפילויות</DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => navigate('/birthdays-report')}><Cake className="w-4 h-4 ml-2" /> דוח ימי הולדת</DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuLabel className="text-xs">רשימת שמות בלבד</DropdownMenuLabel>
                   <DropdownMenuItem onClick={copyNames}><Copy className="w-4 h-4 ml-2" /> העתקת שמות</DropdownMenuItem>

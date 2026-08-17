@@ -8,7 +8,8 @@ import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { MobileSelect, SelectItem } from '@/components/ui/MobileSelect';
 import { toast } from 'sonner';
-import { Plus, Bell, Trash2, Play, Pause, Clock, Music, ToggleLeft, ToggleRight, Volume2 } from 'lucide-react';
+import { Plus, Bell, Trash2, Play, Pause, Clock, Music, ToggleLeft, ToggleRight, Volume2, MoreVertical } from 'lucide-react';
+import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
 import { motion, AnimatePresence } from 'framer-motion';
 import { usePullToRefresh } from '@/hooks/usePullToRefresh';
 import PullToRefreshIndicator from '@/components/ui/PullToRefreshIndicator';
@@ -423,18 +424,22 @@ function BellCard({ bell, onEdit, onDelete, onToggle, onPreview, inactive }) {
         </div>
       </div>
       <div className="flex items-center gap-1 shrink-0">
-        <button onClick={onPreview} aria-label="השמע צלצול" className="w-8 h-8 rounded-xl hover:bg-accent flex items-center justify-center transition-colors">
-          <Play className="w-3.5 h-3.5 text-primary" />
-        </button>
         <button onClick={() => onToggle(bell)} aria-label={bell.is_active ? 'השבת צלצול' : 'הפעל צלצול'} className="w-8 h-8 rounded-xl hover:bg-accent flex items-center justify-center transition-colors">
           {bell.is_active ? <ToggleRight className="w-4 h-4 text-green-500" /> : <ToggleLeft className="w-4 h-4 text-muted-foreground" />}
         </button>
-        <button onClick={() => onEdit(bell)} aria-label="ערוך צלצול" className="w-8 h-8 rounded-xl hover:bg-accent flex items-center justify-center transition-colors">
-          <Music className="w-3.5 h-3.5 text-muted-foreground" />
-        </button>
-        <button onClick={() => onDelete(bell.id)} aria-label="מחק צלצול" className="w-8 h-8 rounded-xl hover:bg-destructive/10 flex items-center justify-center transition-colors">
-          <Trash2 className="w-3.5 h-3.5 text-destructive" />
-        </button>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <button aria-label="פעולות" className="w-8 h-8 rounded-xl hover:bg-accent flex items-center justify-center transition-colors">
+              <MoreVertical className="w-4 h-4" />
+            </button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-40">
+            <DropdownMenuItem onClick={onPreview}><Play className="w-4 h-4 ml-2" /> השמע</DropdownMenuItem>
+            <DropdownMenuItem onClick={() => onEdit(bell)}><Music className="w-4 h-4 ml-2" /> עריכה</DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem className="text-destructive focus:text-destructive" onClick={() => onDelete(bell.id)}><Trash2 className="w-4 h-4 ml-2" /> מחיקה</DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
     </motion.div>
   );

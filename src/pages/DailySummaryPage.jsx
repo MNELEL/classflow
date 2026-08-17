@@ -9,6 +9,7 @@ import { Sparkles, Loader2, Calendar, TrendingUp, Users, BookOpen, Award, Downlo
 import { motion } from 'framer-motion';
 import ReactMarkdown from 'react-markdown';
 import { formatDate, formatDateLong } from '@/lib/formatDate';
+import HebrewDateNavigator from '@/components/ui/HebrewDateNavigator';
 
 export default function DailySummaryPage() {
   const [summary, setSummary] = useState(null);
@@ -22,7 +23,7 @@ export default function DailySummaryPage() {
   const { data: behaviorEvents = [] } = useQuery({ queryKey: ['behavior-events'], queryFn: () => base44.entities.BehaviorEvent.list('-date', 20) });
   const { data: exams = [] } = useQuery({ queryKey: ['exams'], queryFn: () => base44.entities.Exam.list('-date', 10) });
 
-  const today = new Date().toISOString().split('T')[0];
+  const [today, setToday] = useState(() => new Date().toISOString().split('T')[0]);
   const todayGrades = grades.filter(g => g.date === today);
   const todayAttendance = attendance.filter(a => a.date === today);
   const todayRewards = rewards.filter(r => r.date === today);
@@ -35,7 +36,7 @@ export default function DailySummaryPage() {
     setSummary(null);
 
     const context = {
-      date: formatDateLong(new Date()),
+      date: formatDateLong(today),
       studentsCount: students.filter(s => s.is_active !== false).length,
       attendanceToday: {
         present: todayAttendance.filter(a => a.status === 'present').length,
@@ -78,7 +79,7 @@ export default function DailySummaryPage() {
 
   function exportSummary() {
     if (!summary) return;
-    const blob = new Blob([`# סיכום יומי - ${formatDate(new Date())}\n\n${summary}`], { type: 'text/plain;charset=utf-8' });
+    const blob = new Blob([`# סיכום יומי - ${formatDate(today)}\n\n${summary}`], { type: 'text/plain;charset=utf-8' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url; a.download = `סיכום-${today}.md`; a.click();
@@ -100,9 +101,11 @@ export default function DailySummaryPage() {
           </div>
           <div className="flex-1">
             <h1 className="font-bold text-lg">סיכום יומי</h1>
-            <p className="text-xs text-muted-foreground">{formatDateLong(new Date())}</p>
+            <p className="text-xs text-muted-foreground">{formatDateLong(today)}</p>
           </div>
         </div>
+
+        <HebrewDateNavigator selectedDate={today} onChange={setToday} />
 
         {/* Today stats */}
         <div className="grid grid-cols-4 gap-2">

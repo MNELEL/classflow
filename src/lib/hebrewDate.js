@@ -57,6 +57,15 @@ export function toHebrewFull(date) {
   }
 }
 
+export function hebrewDayNumber(date) {
+  try {
+    const s = new Intl.DateTimeFormat('en-US-u-ca-hebrew', { day: 'numeric' }).format(new Date(date));
+    return parseInt(s, 10);
+  } catch {
+    return null;
+  }
+}
+
 function hebrewDayOfMonth(date) {
   try {
     const s = new Intl.DateTimeFormat('en-US-u-ca-hebrew', { day: 'numeric' }).format(new Date(date));

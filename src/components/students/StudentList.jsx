@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Edit2, Trash2, Plus, Eye, Volume2, Zap, CheckSquare, TrendingUp, FolderOpen, User, MoreVertical } from 'lucide-react';
+import { Edit2, Trash2, Plus, Eye, Volume2, Zap, CheckSquare, TrendingUp, FolderOpen, User, MoreVertical, Phone } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from '@/components/ui/drawer';
@@ -15,6 +15,19 @@ import StudentPortfolio from '@/components/portfolio/StudentPortfolio';
 import PerformanceBadge from '@/components/students/PerformanceBadge';
 import { usePerformanceScores } from '@/hooks/usePerformanceScores';
 import { motion, AnimatePresence } from 'framer-motion';
+
+function primaryPhone(student) {
+  const cf = student?.custom_fields || {};
+  const keys = Object.keys(cf);
+  for (const k of keys) {
+    const kl = k.toLowerCase();
+    if (kl.includes('phone') || kl.includes('טלפון')) {
+      const digits = String(cf[k]).replace(/[^\d+]/g, '');
+      if (digits.length >= 7) return digits;
+    }
+  }
+  return null;
+}
 
 const NEED_ICONS = {
   vision: <Eye className="w-3 h-3" />,
@@ -100,6 +113,12 @@ export default function StudentList({ students, onSave, onDelete }) {
                     <Button size="icon" variant="ghost" className="h-8 w-8 min-h-[44px] min-w-[44px]" aria-label="פרופיל תלמיד" title="פרופיל" onClick={() => navigate(`/students/${student.id}`)}>
                       <User className="w-4 h-4 text-primary" />
                     </Button>
+                    {primaryPhone(student) && (
+                      <a href={`tel:${primaryPhone(student)}`} onClick={e => e.stopPropagation()} aria-label="חיוג להורה" title="חיוג להורה"
+                        className="inline-flex items-center justify-center h-8 w-8 min-h-[44px] min-w-[44px] rounded-md hover:bg-emerald-50 dark:hover:bg-emerald-900/20 text-emerald-600 transition-colors">
+                        <Phone className="w-4 h-4" />
+                      </a>
+                    )}
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
                         <Button size="icon" variant="ghost" className="h-8 w-8 min-h-[44px] min-w-[44px]" aria-label="פעולות נוספות" title="פעולות">
