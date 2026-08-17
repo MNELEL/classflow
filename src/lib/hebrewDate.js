@@ -5,7 +5,7 @@
 
 export function toHebrewDate(date) {
   try {
-    return new Intl.DateTimeFormat('he-IL-u-ca-hebrew', {
+    return new Intl.DateTimeFormat('he-IL-u-ca-hebrew-nu-hebr', {
       day: 'numeric',
       month: 'long',
     }).format(new Date(date));
@@ -16,7 +16,7 @@ export function toHebrewDate(date) {
 
 export function toHebrewDay(date) {
   try {
-    return new Intl.DateTimeFormat('he-IL-u-ca-hebrew', {
+    return new Intl.DateTimeFormat('he-IL-u-ca-hebrew-nu-hebr', {
       day: 'numeric',
     }).format(new Date(date));
   } catch {
@@ -26,7 +26,7 @@ export function toHebrewDay(date) {
 
 export function toHebrewMonth(date) {
   try {
-    return new Intl.DateTimeFormat('he-IL-u-ca-hebrew', {
+    return new Intl.DateTimeFormat('he-IL-u-ca-hebrew-nu-hebr', {
       month: 'long',
     }).format(new Date(date));
   } catch {
@@ -36,7 +36,7 @@ export function toHebrewMonth(date) {
 
 export function toHebrewMonthYear(date) {
   try {
-    return new Intl.DateTimeFormat('he-IL-u-ca-hebrew', {
+    return new Intl.DateTimeFormat('he-IL-u-ca-hebrew-nu-hebr', {
       month: 'long',
       year: 'numeric',
     }).format(new Date(date));
@@ -47,7 +47,7 @@ export function toHebrewMonthYear(date) {
 
 export function toHebrewFull(date) {
   try {
-    return new Intl.DateTimeFormat('he-IL-u-ca-hebrew', {
+    return new Intl.DateTimeFormat('he-IL-u-ca-hebrew-nu-hebr', {
       day: 'numeric',
       month: 'long',
       year: 'numeric',
