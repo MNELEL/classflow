@@ -1,12 +1,23 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
 
-// HMAC-SHA256 hash for PIN — uses BASE44_APP_ID as server-side secret.
-// The hash is never sent to the client; only this function can compute/compare it.
-async function hashPin(pin) {
+// Generate a random 32-byte salt, returned as base64url.
+function generateSalt() {
+  const bytes = new Uint8Array(32);
+  crypto.getRandomValues(bytes);
+  return btoa(String.fromCharCode(...bytes))
+    .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+}
+
+// HMAC-SHA256 hash for PIN.
+// The key material combines the server-side BASE44_APP_ID secret with a
+// per-user salt. When salt is null/empty (legacy records), falls back to the
+// old shared-key behaviour so existing hashes can still be verified.
+async function hashPin(pin, salt) {
   const secret = Deno.env.get("BASE44_APP_ID") || "pin-security-fallback";
+  const keyMaterial = salt ? `${secret}:${salt}` : secret;
   const key = await crypto.subtle.importKey(
     "raw",
-    new TextEncoder().encode(secret),
+    new TextEncoder().encode(keyMaterial),
     { name: "HMAC", hash: "SHA-256" },
     false,
     ["sign"]
@@ -47,17 +58,19 @@ Deno.serve(async (req) => {
       return Response.json({ pin_enabled: record ? !!record.pin_enabled : false });
     }
 
-    // ── set_pin: enable PIN lock with a new PIN ──
+    // ── set_pin: enable PIN lock with a new PIN (generates a fresh salt) ──
     if (action === 'set_pin') {
       if (!pin || !/^\d{4}$/.test(String(pin))) {
         return Response.json({ error: 'PIN חייב להכיל 4 ספרות' }, { status: 400 });
       }
-      const hash = await hashPin(String(pin));
+      const salt = generateSalt();
+      const hash = await hashPin(String(pin), salt);
       const now = new Date().toISOString();
       if (record) {
         await base44.asServiceRole.entities.TeacherSecurity.update(record.id, {
           pin_enabled: true,
           pin_hash: hash,
+          pin_salt: salt,
           updated_at: now,
         });
       } else {
@@ -65,6 +78,7 @@ Deno.serve(async (req) => {
           uid: user.id,
           pin_enabled: true,
           pin_hash: hash,
+          pin_salt: salt,
           updated_at: now,
         });
       }
@@ -72,6 +86,8 @@ Deno.serve(async (req) => {
     }
 
     // ── verify_pin: check if the provided PIN is correct ──
+    // For legacy records (no pin_salt), verifies against the old shared-key
+    // hash and, on success, upgrades to a salted hash.
     if (action === 'verify_pin') {
       if (!pin || !/^\d{4}$/.test(String(pin))) {
         return Response.json({ valid: false });
@@ -79,9 +95,24 @@ Deno.serve(async (req) => {
       if (!record || !record.pin_enabled || !record.pin_hash) {
         return Response.json({ valid: false });
       }
-      const hash = await hashPin(String(pin));
-      const valid = safeEqual(hash, record.pin_hash);
-      return Response.json({ valid });
+      const salt = record.pin_salt;
+      if (salt) {
+        const hash = await hashPin(String(pin), salt);
+        return Response.json({ valid: safeEqual(hash, record.pin_hash) });
+      }
+      // Legacy: verify with old shared-key hash, then upgrade to salted
+      const legacyHash = await hashPin(String(pin), null);
+      if (!safeEqual(legacyHash, record.pin_hash)) {
+        return Response.json({ valid: false });
+      }
+      const newSalt = generateSalt();
+      const newHash = await hashPin(String(pin), newSalt);
+      await base44.asServiceRole.entities.TeacherSecurity.update(record.id, {
+        pin_hash: newHash,
+        pin_salt: newSalt,
+        updated_at: new Date().toISOString(),
+      });
+      return Response.json({ valid: true });
     }
 
     // ── disable_pin: verify current PIN then disable ──
@@ -92,13 +123,17 @@ Deno.serve(async (req) => {
       if (!record || !record.pin_enabled || !record.pin_hash) {
         return Response.json({ valid: false });
       }
-      const hash = await hashPin(String(pin));
+      const salt = record.pin_salt;
+      const hash = salt
+        ? await hashPin(String(pin), salt)
+        : await hashPin(String(pin), null);
       if (!safeEqual(hash, record.pin_hash)) {
         return Response.json({ valid: false });
       }
       await base44.asServiceRole.entities.TeacherSecurity.update(record.id, {
         pin_enabled: false,
         pin_hash: '',
+        pin_salt: '',
         updated_at: new Date().toISOString(),
       });
       return Response.json({ valid: true, success: true, pin_enabled: false });

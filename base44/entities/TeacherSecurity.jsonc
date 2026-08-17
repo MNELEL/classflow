@@ -15,6 +15,10 @@
       "type": "string",
       "description": "Hash \u05e9\u05dc \u05d4-PIN (HMAC-SHA256, \u05dc\u05e2\u05d5\u05dc\u05dd \u05dc\u05d0 \u05d8\u05e7\u05e1\u05d8 \u05d2\u05dc\u05d5\u05d9)"
     },
+    "pin_salt": {
+      "type": "string",
+      "description": "Salt \u05e8\u05e0\u05d3\u05d5\u05de\u05dc\u05d9 per-user (32 \u05d1\u05ea\u05d9\u05dd, base64url) \u2014 \u05e0\u05d5\u05e6\u05e8 \u05d1-set_pin \u05d5\u05de\u05e9\u05d5\u05dc\u05d1 \u05d1\u05de\u05e4\u05ea\u05d7 \u05d4-HMAC \u05d9\u05d7\u05d3 \u05e2\u05dd BASE44_APP_ID"
+    },
     "updated_at": {
       "type": "string",
       "format": "date-time"

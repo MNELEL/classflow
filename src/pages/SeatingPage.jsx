@@ -67,6 +67,7 @@ export default function SeatingPage() {
   // Undo / Redo history
   const historyRef = useRef([]);   // past states
   const futureRef  = useRef([]);   // redo states
+  const arrangementIdRef = useRef(null); // entity record id for SeatingArrangement
   const [canUndo, setCanUndo] = useState(false);
   const [canRedo, setCanRedo]  = useState(false);
 
@@ -99,7 +100,7 @@ export default function SeatingPage() {
     toast('↪️ פעולה שוחזרה');
   }
 
-  // Load from localStorage on mount
+  // Load: instant from localStorage cache, then sync from SeatingArrangement entity (source of truth)
   useEffect(() => {
     const { seats: savedSeats, arrangement } = loadFromStorage();
     setRows(arrangement.rows);
@@ -109,15 +110,56 @@ export default function SeatingPage() {
     } else {
       setSeats(buildInitialSeats(arrangement.rows, arrangement.cols));
     }
+
+    (async () => {
+      try {
+        const recs = await base44.entities.SeatingArrangement.filter({ is_active: true }, '-updated_date', 10);
+        const active = Array.isArray(recs) && recs.length > 0 ? recs[0] : null;
+        if (active) {
+          arrangementIdRef.current = active.id;
+          if (Array.isArray(active.seats) && active.seats.length > 0) {
+            setRows(active.rows || arrangement.rows);
+            setCols(active.cols || arrangement.cols);
+            setSeats(active.seats);
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(active.seats));
+            localStorage.setItem(ARRANGEMENT_KEY, JSON.stringify({ rows: active.rows || arrangement.rows, cols: active.cols || arrangement.cols }));
+          }
+        }
+      } catch (e) {
+        // keep local cache
+      }
+    })();
   }, []);
 
-  // Auto-save to localStorage
+  // Auto-save: localStorage (instant cache) + SeatingArrangement entity (source of truth, debounced)
   useEffect(() => {
     if (seats.length === 0) return;
     localStorage.setItem(STORAGE_KEY, JSON.stringify(seats));
     localStorage.setItem(ARRANGEMENT_KEY, JSON.stringify({ rows, cols }));
     setLastSaved(new Date());
-  }, [seats, rows, cols]);
+
+    const t = setTimeout(() => {
+      (async () => {
+        try {
+          const score = calcSatisfactionScore(seats, students);
+          if (arrangementIdRef.current) {
+            await base44.entities.SeatingArrangement.update(arrangementIdRef.current, {
+              rows, cols, seats, satisfaction_score: score,
+            });
+          } else {
+            const created = await base44.entities.SeatingArrangement.create({
+              name: 'ברירת מחדל',
+              rows, cols, seats, is_active: true, satisfaction_score: score,
+            });
+            if (created?.id) arrangementIdRef.current = created.id;
+          }
+        } catch (e) {
+          // silent — localStorage cache still holds the data
+        }
+      })();
+    }, 800);
+    return () => clearTimeout(t);
+  }, [seats, rows, cols, students]);
 
   // Rebuild grid when size changes
   function handleRowsChange(newRows) {
