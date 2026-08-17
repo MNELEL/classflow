@@ -9,7 +9,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { toast } from 'sonner';
 import { CalendarDays, Plus, MapPin, Clock, Trash2, X } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { toHebrewDate } from '@/lib/hebrewDate';
+import { formatDateBoth } from '@/lib/formatDate';
 
 const TYPE_META = {
   trip: { label: 'טיול', color: 'text-emerald-600', bg: 'bg-emerald-100 dark:bg-emerald-900/30', emoji: '🚌' },
@@ -122,7 +122,7 @@ export default function EventsPage() {
                       <div className="flex items-center gap-2 mt-1 flex-wrap">
                         <Badge variant="outline" className={`text-[10px] ${meta.bg} ${meta.color} border-0`}>{meta.label}</Badge>
                         <span className="text-xs text-muted-foreground flex items-center gap-1">
-                          <Clock className="w-3 h-3" /> {toHebrewDate(event.start_date)}
+                          <Clock className="w-3 h-3" /> {formatDateBoth(event.start_date)}
                         </span>
                         {event.location && <span className="text-xs text-muted-foreground flex items-center gap-1"><MapPin className="w-3 h-3" /> {event.location}</span>}
                       </div>
@@ -151,7 +151,7 @@ export default function EventsPage() {
                   <div key={event.id} className="bg-card border rounded-xl p-2.5 flex items-center gap-2">
                     <span>{meta.emoji}</span>
                     <span className="text-sm flex-1 truncate">{event.title}</span>
-                    <span className="text-[10px] text-muted-foreground">{toHebrewDate(event.start_date)}</span>
+                    <span className="text-[10px] text-muted-foreground">{formatDateBoth(event.start_date)}</span>
                     <button onClick={() => deleteMutation.mutate(event.id)} className="p-1 hover:bg-destructive/10 rounded-lg">
                       <X className="w-3 h-3 text-destructive" />
                     </button>

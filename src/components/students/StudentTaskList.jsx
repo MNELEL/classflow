@@ -12,7 +12,7 @@ import {
 import { parseISO, isPast, isToday } from 'date-fns';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
-import { toHebrewDate } from '@/lib/hebrewDate';
+import { formatDateFull } from '@/lib/formatDate';
 
 const PRIORITY_CONFIG = {
   low:    { label: 'נמוכה', color: 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400' },
@@ -243,7 +243,7 @@ export default function StudentTaskList({ studentId }) {
                       <span className={cn('text-xs flex items-center gap-0.5',
                         isOverdue ? 'text-red-500 font-medium' : isDueToday ? 'text-amber-500 font-medium' : 'text-muted-foreground')}>
                         <Calendar className="w-3 h-3" />
-                        {toHebrewDate(task.due_date)}
+                        {formatDateFull(task.due_date)}
                         {isOverdue && ' • באיחור'}
                         {isDueToday && !isOverdue && ' • היום'}
                       </span>

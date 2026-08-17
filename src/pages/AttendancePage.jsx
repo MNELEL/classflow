@@ -41,9 +41,17 @@ export default function AttendancePage() {
               <p className="text-muted-foreground text-sm">{students.filter(s => s.is_active !== false).length} תלמידים פעילים</p>
             </div>
           </div>
-          <Link to="/weekly-attendance-report" className="text-xs font-medium text-primary border border-primary/30 rounded-lg px-3 py-2 hover:bg-primary/5 transition-colors flex items-center gap-1.5">
-            <FileText className="w-4 h-4" /> דוח שבועי
-          </Link>
+          <div className="flex flex-col gap-1.5 items-end">
+            <Link to="/weekly-attendance-report" className="text-xs font-medium text-primary border border-primary/30 rounded-lg px-3 py-1.5 hover:bg-primary/5 transition-colors flex items-center gap-1.5">
+              <FileText className="w-4 h-4" /> דוח שבועי
+            </Link>
+            <Link to="/monthly-attendance-report" className="text-xs font-medium text-primary border border-primary/30 rounded-lg px-3 py-1.5 hover:bg-primary/5 transition-colors flex items-center gap-1.5">
+              <FileText className="w-4 h-4" /> דוח חודשי
+            </Link>
+            <Link to="/weekly-summary" className="text-xs font-medium text-primary border border-primary/30 rounded-lg px-3 py-1.5 hover:bg-primary/5 transition-colors flex items-center gap-1.5">
+              <FileText className="w-4 h-4" /> סיכום שבועי
+            </Link>
+          </div>
         </motion.div>
 
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }}>

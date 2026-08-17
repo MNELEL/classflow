@@ -1,6 +1,6 @@
 import React from 'react';
 import { Cake, Phone, Hash, Mail, MapPin, IdCard } from 'lucide-react';
-import { toHebrewDate } from '@/lib/hebrewDate';
+import { formatDateBoth } from '@/lib/formatDate';
 
 // Known custom field keys → friendly label + icon
 const KNOWN = {
@@ -41,8 +41,7 @@ export default function StudentCustomFields({ student, max = 4 }) {
         const meta = KNOWN[k];
         const Icon = meta?.icon || IdCard;
         const raw = String(cf[k]).trim();
-        const hebrew = k === 'birth_date' ? toHebrewDate(cf[k]) : '';
-        const val = hebrew || raw;
+        const val = k === 'birth_date' ? (formatDateBoth(cf[k]) || raw) : raw;
         return (
           <span key={k} className={`inline-flex items-center gap-1 text-[10px] font-medium bg-muted/50 rounded-full px-1.5 py-0.5 ${meta?.color || 'text-muted-foreground'}`} title={meta ? meta.label : k}>
             <Icon className="w-2.5 h-2.5 shrink-0" />
