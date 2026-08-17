@@ -7,7 +7,8 @@ import AttendanceChart from '@/components/attendance/AttendanceChart';
 import { usePullToRefresh } from '@/hooks/usePullToRefresh';
 import PullToRefreshIndicator from '@/components/ui/PullToRefreshIndicator';
 import { motion } from 'framer-motion';
-import { CalendarCheck } from 'lucide-react';
+import { CalendarCheck, FileText } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 export default function AttendancePage() {
   const { data: students = [], isLoading, refetch } = useQuery({
@@ -32,12 +33,17 @@ export default function AttendancePage() {
     <AppLayout>
       <div ref={containerRef} className="relative p-5 max-w-2xl mx-auto space-y-5" dir="rtl">
         <PullToRefreshIndicator pullY={pullY} refreshing={refreshing} />
-        <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="flex items-center gap-2">
-          <CalendarCheck className="w-6 h-6 text-primary" />
-          <div>
-            <h1 className="text-2xl font-bold">ניהול נוכחות</h1>
-            <p className="text-muted-foreground text-sm">{students.filter(s => s.is_active !== false).length} תלמידים פעילים</p>
+        <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="flex items-center gap-2 justify-between">
+          <div className="flex items-center gap-2">
+            <CalendarCheck className="w-6 h-6 text-primary" />
+            <div>
+              <h1 className="text-2xl font-bold">ניהול נוכחות</h1>
+              <p className="text-muted-foreground text-sm">{students.filter(s => s.is_active !== false).length} תלמידים פעילים</p>
+            </div>
           </div>
+          <Link to="/weekly-attendance-report" className="text-xs font-medium text-primary border border-primary/30 rounded-lg px-3 py-2 hover:bg-primary/5 transition-colors flex items-center gap-1.5">
+            <FileText className="w-4 h-4" /> דוח שבועי
+          </Link>
         </motion.div>
 
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }}>

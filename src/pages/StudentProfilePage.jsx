@@ -20,6 +20,7 @@ import QuickPreferencesEditor from '@/components/students/QuickPreferencesEditor
 import PerformanceBadge from '@/components/students/PerformanceBadge';
 import { calculatePerformanceScore } from '@/lib/performanceScore';
 import { CUSTOM_FIELD_LABELS } from '@/components/students/StudentCustomFields';
+import { toHebrewDate } from '@/lib/hebrewDate';
 import { format, parseISO, subMonths } from 'date-fns';
 import { he } from 'date-fns/locale';
 
@@ -224,7 +225,7 @@ export default function StudentProfilePage() {
               {Object.keys(student.custom_fields).filter(k => student.custom_fields[k]).map(k => (
                 <div key={k} className="bg-muted/30 rounded-lg px-2.5 py-1.5">
                   <div className="text-[10px] text-muted-foreground">{CUSTOM_FIELD_LABELS[k] || k}</div>
-                  <div className="text-xs font-medium truncate">{String(student.custom_fields[k])}</div>
+                  <div className="text-xs font-medium truncate">{k === 'birth_date' ? (toHebrewDate(student.custom_fields[k]) || String(student.custom_fields[k])) : String(student.custom_fields[k])}</div>
                 </div>
               ))}
             </CardContent>

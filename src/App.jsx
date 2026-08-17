@@ -25,6 +25,7 @@ const DashboardPage        = lazy(() => import('./pages/DashboardPage'));
 const SettingsPage         = lazy(() => import('./pages/SettingsPage'));
 const ReportsPage          = lazy(() => import('./pages/ReportsPage'));
 const AttendancePage       = lazy(() => import('./pages/AttendancePage'));
+const WeeklyAttendanceReportPage = lazy(() => import('./pages/WeeklyAttendanceReportPage'));
 const GradeManagementPage  = lazy(() => import('./pages/GradeManagementPage'));
 const LibraryPage          = lazy(() => import('./pages/LibraryPage'));
 const LibraryItemPage      = lazy(() => import('./pages/LibraryItemPage'));
@@ -122,6 +123,7 @@ function AnimatedRoutes() {
               <Route path="/settings" element={<SettingsPage />} />
               <Route path="/reports" element={<ReportsPage />} />
               <Route path="/attendance" element={<AttendancePage />} />
+              <Route path="/weekly-attendance-report" element={<WeeklyAttendanceReportPage />} />
               <Route path="/grades" element={<GradeManagementPage />} />
               <Route path="/library" element={<LibraryPage />} />
               <Route path="/library/:itemId" element={<LibraryItemPage />} />

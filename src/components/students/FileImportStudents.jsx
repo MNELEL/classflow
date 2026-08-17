@@ -64,6 +64,23 @@ export default function FileImportStudents({ open, onClose, students = [], onDon
     return map;
   }, [students]);
 
+  const existingById = useMemo(() => {
+    const map = {};
+    students.forEach(s => {
+      const v = s.custom_fields?.id_number;
+      if (v && String(v).trim()) map[String(v).trim()] = s;
+    });
+    return map;
+  }, [students]);
+
+  function matchExisting(row) {
+    const byName = existingByName[normName(row.name)];
+    if (byName) return byName;
+    const idv = row.custom_fields?.id_number;
+    if (idv && String(idv).trim()) return existingById[String(idv).trim()] || null;
+    return null;
+  }
+
   function reset() {
     setFile(null); setLoading(false); setError(''); setStep('upload');
     setRawRows([]); setSourceColumns([]); setMapping({}); setRows([]); setSaving(false);
@@ -113,7 +130,7 @@ export default function FileImportStudents({ open, onClose, students = [], onDon
     }
     const matched = finalRows.map(r => ({
       ...r,
-      _existing: existingByName[normName(r.name)] || null,
+      _existing: matchExisting(r),
       _checked: true,
     }));
     setError('');
@@ -128,7 +145,7 @@ export default function FileImportStudents({ open, onClose, students = [], onDon
   function editRowName(i, value) {
     setRows(rs => rs.map((r, idx) => {
       if (idx !== i) return r;
-      return { ...r, name: value, _existing: existingByName[normName(value)] || null };
+      return { ...r, name: value, _existing: matchExisting({ ...r, name: value }) };
     }));
   }
 
