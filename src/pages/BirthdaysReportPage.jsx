@@ -5,6 +5,7 @@ import AppLayout from '@/components/layout/AppLayout';
 import { Button } from '@/components/ui/button';
 import { Cake, Printer } from 'lucide-react';
 import { toHebrewDate, toHebrewMonth, hebrewDayNumber } from '@/lib/hebrewDate';
+import { useSelectedDate } from '@/lib/dateContext';
 
 function parseBirth(raw) {
   if (!raw) return null;
@@ -46,8 +47,9 @@ export default function BirthdaysReportPage() {
     });
   }, [rows]);
 
+  const { selectedDate } = useSelectedDate();
   const [active, setActive] = useState(null);
-  const currentHebrewMonth = useMemo(() => monthKey(toHebrewMonth(new Date())), []);
+  const currentHebrewMonth = useMemo(() => monthKey(toHebrewMonth(new Date(selectedDate + 'T00:00:00'))), [selectedDate]);
   const visible = active ? byMonth.filter(m => monthKey(m.name) === active) : byMonth;
 
   function printReport() {
