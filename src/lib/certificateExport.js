@@ -43,11 +43,28 @@ export const CERTIFICATE_TEMPLATES = {
 
 function buildCertificateHtml(cert) {
   const b = loadBranding();
-  const tpl = CERTIFICATE_TEMPLATES[cert.template] || CERTIFICATE_TEMPLATES.custom;
+
+  // A template-based certificate borrows its accent color and default
+  // wording from an AI-analyzed CertificateTemplate record (cert.templateData),
+  // instead of one of the four fixed built-in templates.
+  const templateData = cert.templateData;
+  const isTemplateBased = cert.template === 'template_based' && templateData;
+
+  const tpl = isTemplateBased
+    ? {
+        label: templateData.name || 'תבנית מותאמת אישית',
+        defaultTitle: templateData.detected_title || 'תעודת הוקרה',
+        defaultBody: templateData.detected_body_text || '',
+        accent: templateData.accent_color || '#7c3aed',
+        accentLight: `${templateData.accent_color || '#7c3aed'}22`,
+        icon: '🎖',
+      }
+    : (CERTIFICATE_TEMPLATES[cert.template] || CERTIFICATE_TEMPLATES.custom);
+
   const title = escapeHtml(cert.title || tpl.defaultTitle);
   const bodyText = escapeHtml(cert.body_text || tpl.defaultBody);
   const studentName = escapeHtml(cert.student_name || '');
-  const subject = escapeHtml(cert.subject || '');
+  const subject = escapeHtml(cert.subject || (cert.subjects || []).join('• ') || '');
   const signedBy = escapeHtml(cert.signed_by || b.teacher_name || '');
   const schoolName = escapeHtml(b.school_name || '');
   const dateStr = cert.date
