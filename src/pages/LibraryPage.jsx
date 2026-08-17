@@ -36,6 +36,7 @@ export default function LibraryPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
   const showUpload = searchParams.get('modal') === 'upload';
+  const uploadDefaultCategory = searchParams.get('category') || '';
   const showPlaylist = searchParams.get('modal') === 'playlist';
   const showAISettings = searchParams.get('modal') === 'ai-settings';
   const showImportModal = searchParams.get('modal') === 'import';
