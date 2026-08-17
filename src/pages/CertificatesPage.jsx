@@ -1,15 +1,16 @@
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import AppLayout from '@/components/layout/AppLayout';
 import { usePullToRefresh } from '@/hooks/usePullToRefresh';
 import PullToRefreshIndicator from '@/components/ui/PullToRefreshIndicator';
 import { motion } from 'framer-motion';
-import { Award, Download, Loader2, Users, User as UserIcon } from 'lucide-react';
+import { Award, Download, Loader2, Users, User as UserIcon, LayoutTemplate } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Link } from 'react-router-dom';
 import { toast } from 'sonner';
 import { CERTIFICATE_TEMPLATES, exportCertificatePDF, exportCertificateBatchPDF } from '@/lib/certificateExport';
 
@@ -21,6 +22,11 @@ export default function CertificatesPage() {
     queryFn: () => base44.entities.Student.list(),
   });
 
+  const { data: customTemplates = [] } = useQuery({
+    queryKey: ['certificate-templates', 'ready'],
+    queryFn: () => base44.entities.CertificateTemplate.filter({ kind: 'certificate', status: 'ready' }),
+  });
+
   const handleRefresh = useCallback(async () => { await refetch(); }, [refetch]);
   const { containerRef, pullY, refreshing } = usePullToRefresh(handleRefresh);
 
@@ -30,15 +36,33 @@ export default function CertificatesPage() {
   );
 
   const [template, setTemplate] = useState('excellence');
+  const [customTemplateId, setCustomTemplateId] = useState('');
   const [title, setTitle] = useState('');
   const [bodyText, setBodyText] = useState('');
-  const [subject, setSubject] = useState('');
+  const [subjects, setSubjects] = useState([]);
+  const [subjectFreeText, setSubjectFreeText] = useState('');
   const [signedBy, setSignedBy] = useState('');
   const [selectedIds, setSelectedIds] = useState([]);
   const [generatingSingle, setGeneratingSingle] = useState(null);
   const [generatingBatch, setGeneratingBatch] = useState(false);
 
-  const tpl = CERTIFICATE_TEMPLATES[template];
+  const isCustom = template === 'template_based';
+  const activeCustomTemplate = customTemplates.find((t) => t.id === customTemplateId);
+  const tpl = isCustom
+    ? {
+        label: activeCustomTemplate?.name || 'תבנית מותאמת אישית',
+        defaultTitle: activeCustomTemplate?.detected_title || '',
+        defaultBody: activeCustomTemplate?.detected_body_text || '',
+      }
+    : CERTIFICATE_TEMPLATES[template];
+
+  // When switching to a custom template, pre-fill the subject checkboxes
+  // from what the AI detected in the original image.
+  useEffect(() => {
+    if (isCustom && activeCustomTemplate) {
+      setSubjects(activeCustomTemplate.detected_subjects || []);
+    }
+  }, [isCustom, activeCustomTemplate]);
 
   const logMutation = useMutation({
     mutationFn: (records) => Promise.all(records.map((r) => base44.entities.Certificate.create(r))),
@@ -46,25 +70,41 @@ export default function CertificatesPage() {
   });
 
   function buildCert(student, batchId) {
+    const allSubjects = subjectFreeText.trim()
+      ? [...subjects, subjectFreeText.trim()]
+      : subjects;
     return {
       student_id: student.id,
       student_name: student.name,
       template,
       title: title || tpl.defaultTitle,
       body_text: bodyText || tpl.defaultBody,
-      subject,
+      subject: allSubjects.join(' ו'),
+      subjects: allSubjects,
       signed_by: signedBy,
       date: new Date().toISOString().slice(0, 10),
+      source_template_item_id: isCustom ? activeCustomTemplate?.library_item_id : undefined,
+      // Not persisted on the entity — only used in-memory to render this export
+      templateData: isCustom ? activeCustomTemplate : undefined,
       ...(batchId ? { batch_id: batchId } : {}),
     };
   }
 
+  function stripTransientFields(cert) {
+    const { templateData, ...rest } = cert;
+    return rest;
+  }
+
   async function handleSingle(student) {
+    if (isCustom && !activeCustomTemplate) {
+      toast.error('בחר/י תבנית מוכנה');
+      return;
+    }
     setGeneratingSingle(student.id);
     try {
       const cert = buildCert(student);
       await exportCertificatePDF(cert);
-      await logMutation.mutateAsync([cert]);
+      await logMutation.mutateAsync([stripTransientFields(cert)]);
     } catch (e) {
       toast.error('שגיאה בהפקת התעודה');
     } finally {
@@ -73,6 +113,10 @@ export default function CertificatesPage() {
   }
 
   async function handleBatch() {
+    if (isCustom && !activeCustomTemplate) {
+      toast.error('בחר/י תבנית מוכנה');
+      return;
+    }
     const chosen = activeStudents.filter(s => selectedIds.includes(s.id));
     if (chosen.length === 0) {
       toast.error('בחר/י לפחות תלמיד אחד');
@@ -83,7 +127,7 @@ export default function CertificatesPage() {
       const batchId = `batch_${Date.now()}`;
       const certs = chosen.map((s) => buildCert(s, batchId));
       await exportCertificateBatchPDF(certs, tpl.label);
-      await logMutation.mutateAsync(certs);
+      await logMutation.mutateAsync(certs.map(stripTransientFields));
     } catch (e) {
       toast.error('שגיאה בהפקת התעודות');
     } finally {
@@ -93,6 +137,10 @@ export default function CertificatesPage() {
 
   function toggleAll() {
     setSelectedIds(selectedIds.length === activeStudents.length ? [] : activeStudents.map(s => s.id));
+  }
+
+  function toggleSubject(s) {
+    setSubjects((prev) => prev.includes(s) ? prev.filter((x) => x !== s) : [...prev, s]);
   }
 
   if (isLoading) {
@@ -125,7 +173,7 @@ export default function CertificatesPage() {
         >
           <div>
             <label className="text-xs font-semibold text-muted-foreground mb-1.5 block">סוג תעודה</label>
-            <Select value={template} onValueChange={(v) => { setTemplate(v); setTitle(''); setBodyText(''); }}>
+            <Select value={template} onValueChange={(v) => { setTemplate(v); setTitle(''); setBodyText(''); if (v !== 'template_based') setSubjects([]); }}>
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
@@ -133,9 +181,36 @@ export default function CertificatesPage() {
                 {Object.entries(CERTIFICATE_TEMPLATES).map(([key, t]) => (
                   <SelectItem key={key} value={key}>{t.icon} {t.label}</SelectItem>
                 ))}
+                {customTemplates.length > 0 && (
+                  <SelectItem value="template_based">🎖 לפי תבנית אישית שהעליתי</SelectItem>
+                )}
               </SelectContent>
             </Select>
           </div>
+
+          {isCustom && (
+            <div>
+              <label className="text-xs font-semibold text-muted-foreground mb-1.5 block">איזו תבנית?</label>
+              {customTemplates.length === 0 ? (
+                <div className="text-xs text-muted-foreground bg-muted/50 rounded-lg p-3 flex items-center gap-2">
+                  <LayoutTemplate className="w-3.5 h-3.5 shrink-0" />
+                  לא נותחה עדיין תבנית. אפשר להעלות ולנתח אחת
+                  <Link to="/templates" className="text-primary font-medium underline shrink-0">כאן</Link>
+                </div>
+              ) : (
+                <Select value={customTemplateId} onValueChange={setCustomTemplateId}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="בחר/י תבנית" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {customTemplates.map((t) => (
+                      <SelectItem key={t.id} value={t.id}>{t.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
+            </div>
+          )}
 
           <div>
             <label className="text-xs font-semibold text-muted-foreground mb-1.5 block">כותרת (אופציונלי)</label>
@@ -147,10 +222,34 @@ export default function CertificatesPage() {
             <Textarea value={bodyText} onChange={(e) => setBodyText(e.target.value)} placeholder={tpl.defaultBody} rows={3} />
           </div>
 
+          {isCustom && activeCustomTemplate?.detected_subjects?.length > 0 && (
+            <div>
+              <label className="text-xs font-semibold text-muted-foreground mb-1.5 block">מקצועות שזוהו בתבנית</label>
+              <div className="flex flex-wrap gap-2">
+                {activeCustomTemplate.detected_subjects.map((s) => (
+                  <button
+                    key={s}
+                    type="button"
+                    onClick={() => toggleSubject(s)}
+                    className={`text-xs px-3 py-1.5 rounded-full border transition-colors ${
+                      subjects.includes(s)
+                        ? 'bg-primary text-primary-foreground border-primary'
+                        : 'bg-background border-border text-muted-foreground'
+                    }`}
+                  >
+                    {s}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="text-xs font-semibold text-muted-foreground mb-1.5 block">מקצוע / נושא</label>
-              <Input value={subject} onChange={(e) => setSubject(e.target.value)} placeholder="לדוגמה: גמרא" />
+              <label className="text-xs font-semibold text-muted-foreground mb-1.5 block">
+                {isCustom ? 'מקצוע נוסף (אופציונלי)' : 'מקצוע / נושא'}
+              </label>
+              <Input value={subjectFreeText} onChange={(e) => setSubjectFreeText(e.target.value)} placeholder="לדוגמה: גמרא" />
             </div>
             <div>
               <label className="text-xs font-semibold text-muted-foreground mb-1.5 block">שם החותם</label>
