@@ -111,7 +111,7 @@ ${qualityNote}
   }
 }
 
-export default function LibraryUploadModal({ open, onClose }) {
+export default function LibraryUploadModal({ open, onClose, defaultCategory = '' }) {
   const qc = useQueryClient();
   const navigate = useNavigate();
   const fileInputRef = useRef(null);
@@ -125,7 +125,7 @@ export default function LibraryUploadModal({ open, onClose }) {
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState([]);
   const [searching, setSearching] = useState(false);
-  const [category, setCategory] = useState('');
+  const [category, setCategory] = useState(defaultCategory);
   const [subject, setSubject] = useState('');
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState([]); // [{name, status}]
