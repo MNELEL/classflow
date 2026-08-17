@@ -1,5 +1,6 @@
 import React, { useMemo } from 'react';
 import { toHebrewDay } from '@/lib/hebrewDate';
+import { useSelectedDate } from '@/lib/dateContext';
 import { cn } from '@/lib/utils';
 import { ChevronRight, ChevronLeft } from 'lucide-react';
 
@@ -7,7 +8,10 @@ const WEEKDAY = ['א', 'ב', 'ג', 'ד', 'ה', 'ו', 'ש'];
 function ymd(d) { return d.toISOString().slice(0, 10); }
 function addDays(d, n) { const x = new Date(d); x.setDate(x.getDate() + n); return x; }
 
-export default function HebrewDateNavigator({ selectedDate, onChange, days = 15 }) {
+export default function HebrewDateNavigator({ selectedDate: selProp, onChange: onChangeProp, days = 15 }) {
+  const { selectedDate: ctxDate, setSelectedDate: ctxSet } = useSelectedDate();
+  const selectedDate = selProp ?? ctxDate;
+  const onChange = onChangeProp ?? ctxSet;
   const base = selectedDate ? new Date(selectedDate + 'T00:00:00') : new Date();
   const todayStr = ymd(new Date());
 

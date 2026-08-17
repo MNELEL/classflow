@@ -111,7 +111,7 @@ function AssignmentCard({ assignment, students, onToggleSubmit, onDelete }) {
   );
 }
 
-export default function HomeworkTracker({ students }) {
+export default function HomeworkTracker({ students, focusDate }) {
   const qc = useQueryClient();
   const [showForm, setShowForm] = useState(false);
   const [title, setTitle] = useState('');
@@ -219,7 +219,23 @@ export default function HomeworkTracker({ students }) {
         )}
       </AnimatePresence>
 
-      <div className="space-y-3">
+        {focusDate && assignments.some(a => a.due_date === focusDate) && (
+          <div className="rounded-2xl border border-primary/30 bg-primary/5 p-3 space-y-1.5 mb-3">
+            <p className="text-xs font-bold text-primary flex items-center gap-1"><ClipboardCheck className="w-3.5 h-3.5" /> ליום הנבחר · {formatDate(focusDate)}</p>
+            {assignments.filter(a => a.due_date === focusDate).map(a => {
+              const submitted = (a.submissions || []).filter(s => s.submitted).length;
+              const total = (a.submissions || []).length;
+              return (
+                <div key={a.id} className="flex items-center justify-between text-xs">
+                  <span className="font-medium">{a.title}</span>
+                  <span className="text-muted-foreground">{total > 0 ? `${submitted}/${total}` : '—'}</span>
+                </div>
+              );
+            })}
+          </div>
+        )}
+
+        <div className="space-y-3">
         {assignments.map(a => (
           <AssignmentCard
             key={a.id}

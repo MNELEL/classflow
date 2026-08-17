@@ -9,6 +9,8 @@ import { ClipboardCheck, Calendar } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { usePullToRefresh } from '@/hooks/usePullToRefresh';
 import PullToRefreshIndicator from '@/components/ui/PullToRefreshIndicator';
+import HebrewDateNavigator from '@/components/ui/HebrewDateNavigator';
+import { useSelectedDate } from '@/lib/dateContext';
 
 export default function HomeworkPage() {
   const { data: students = [] } = useQuery({
@@ -17,6 +19,7 @@ export default function HomeworkPage() {
   });
 
   const qc = useQueryClient();
+  const { selectedDate } = useSelectedDate();
   const handleRefresh = useCallback(async () => { await qc.invalidateQueries({ queryKey: ['homework'] }); }, [qc]);
   const { containerRef, pullY, refreshing } = usePullToRefresh(handleRefresh);
 
@@ -34,6 +37,10 @@ export default function HomeworkPage() {
           </div>
         </motion.div>
 
+        <div className="mb-4">
+          <HebrewDateNavigator />
+        </div>
+
         <Tabs defaultValue="homework" dir="rtl">
           <TabsList className="w-full grid grid-cols-2 mb-4">
             <TabsTrigger value="homework" className="gap-1.5 text-xs">
@@ -45,7 +52,7 @@ export default function HomeworkPage() {
           </TabsList>
 
           <TabsContent value="homework">
-            <HomeworkTracker students={students} />
+            <HomeworkTracker students={students} focusDate={selectedDate} />
           </TabsContent>
 
           <TabsContent value="calendar">

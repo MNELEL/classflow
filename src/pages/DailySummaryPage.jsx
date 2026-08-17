@@ -10,6 +10,7 @@ import { motion } from 'framer-motion';
 import ReactMarkdown from 'react-markdown';
 import { formatDate, formatDateLong } from '@/lib/formatDate';
 import HebrewDateNavigator from '@/components/ui/HebrewDateNavigator';
+import { useSelectedDate } from '@/lib/dateContext';
 
 export default function DailySummaryPage() {
   const [summary, setSummary] = useState(null);
@@ -23,7 +24,7 @@ export default function DailySummaryPage() {
   const { data: behaviorEvents = [] } = useQuery({ queryKey: ['behavior-events'], queryFn: () => base44.entities.BehaviorEvent.list('-date', 20) });
   const { data: exams = [] } = useQuery({ queryKey: ['exams'], queryFn: () => base44.entities.Exam.list('-date', 10) });
 
-  const [today, setToday] = useState(() => new Date().toISOString().split('T')[0]);
+  const { selectedDate: today, setSelectedDate: setToday } = useSelectedDate();
   const todayGrades = grades.filter(g => g.date === today);
   const todayAttendance = attendance.filter(a => a.date === today);
   const todayRewards = rewards.filter(r => r.date === today);

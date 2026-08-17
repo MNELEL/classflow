@@ -10,6 +10,7 @@ import PageNotFound from './lib/PageNotFound';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 import ProtectedRoute from '@/components/ProtectedRoute';
+import { SelectedDateProvider } from '@/lib/dateContext';
 import { ThemeProvider } from '@/lib/themeContext';
 import { applyThemeClass, loadTheme } from '@/lib/themes';
 import { loadBrandingFromDB, loadBranding } from '@/lib/branding';
@@ -29,6 +30,7 @@ const WeeklyAttendanceReportPage = lazy(() => import('./pages/WeeklyAttendanceRe
 const MonthlyAttendanceReportPage = lazy(() => import('./pages/MonthlyAttendanceReportPage'));
 const WeeklySummaryPage = lazy(() => import('./pages/WeeklySummaryPage'));
 const BirthdaysReportPage = lazy(() => import('./pages/BirthdaysReportPage'));
+const WeeklyTasksPage = lazy(() => import('./pages/WeeklyTasksPage'));
 const GradeManagementPage  = lazy(() => import('./pages/GradeManagementPage'));
 const LibraryPage          = lazy(() => import('./pages/LibraryPage'));
 const LibraryItemPage      = lazy(() => import('./pages/LibraryItemPage'));
@@ -130,6 +132,7 @@ function AnimatedRoutes() {
               <Route path="/monthly-attendance-report" element={<MonthlyAttendanceReportPage />} />
               <Route path="/weekly-summary" element={<WeeklySummaryPage />} />
               <Route path="/birthdays-report" element={<BirthdaysReportPage />} />
+              <Route path="/weekly-tasks" element={<WeeklyTasksPage />} />
               <Route path="/grades" element={<GradeManagementPage />} />
               <Route path="/library" element={<LibraryPage />} />
               <Route path="/library/:itemId" element={<LibraryItemPage />} />
@@ -284,9 +287,11 @@ function App() {
     <AuthProvider>
       <ThemeProvider>
         <QueryClientProvider client={queryClientInstance}>
+          <SelectedDateProvider>
           <Router>
             <AuthenticatedApp />
           </Router>
+          </SelectedDateProvider>
           <Toaster />
           <Sonner position="bottom-center" richColors offset="80px" />
         </QueryClientProvider>

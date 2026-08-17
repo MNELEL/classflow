@@ -8,6 +8,8 @@ import { Badge } from '@/components/ui/badge';
 import { Plus, ChevronRight, ChevronLeft, Clock, BookOpen, Trash2, X, CalendarPlus, CalendarOff, CalendarClock } from 'lucide-react';
 import { getDayStatus, dismissalHour } from '@/lib/scheduleRules';
 import { toHebrewFull } from '@/lib/hebrewDate';
+import HebrewDateNavigator from '@/components/ui/HebrewDateNavigator';
+import { useSelectedDate } from '@/lib/dateContext';
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 import { toast } from 'sonner';
 import { addWeeks, addDays, startOfWeek, format, isSameDay } from 'date-fns';
@@ -189,15 +191,19 @@ export default function WeeklySchedulePage() {
   const qc = useQueryClient();
   const handleRefresh = useCallback(async () => { await qc.invalidateQueries({ queryKey: ['weekly-plans'] }); }, [qc]);
   const { containerRef, pullY, refreshing } = usePullToRefresh(handleRefresh);
-  const [weekOffset, setWeekOffset] = useState(0);
+  const { selectedDate, setSelectedDate } = useSelectedDate();
   const [addDialog, setAddDialog] = useState({ open: false, day: null, hour: null });
   const [syncing, setSyncing] = useState(false);
   const [mobileDay, setMobileDay] = useState(() => {
     const d = new Date().getDay();
     return d > 5 ? 0 : d; // Sunday–Friday = 0–5; Saturday → Sunday
   });
+  useEffect(() => {
+    const d = new Date(selectedDate + 'T00:00:00').getDay();
+    setMobileDay(d > 5 ? 0 : d);
+  }, [selectedDate]);
 
-  const weekStart = useMemo(() => getWeekStart(addWeeks(new Date(), weekOffset)), [weekOffset]);
+  const weekStart = useMemo(() => getWeekStart(new Date(selectedDate + 'T00:00:00')), [selectedDate]);
   const weekLabel = useMemo(() => {
     const end = addDays(weekStart, 4);
     return `${format(weekStart, 'd/M')} – ${format(end, 'd/M/yyyy')}`;
@@ -378,25 +384,17 @@ export default function WeeklySchedulePage() {
               <p className="text-xs text-muted-foreground">{weekLabel} · {totalLessons} שיעורים</p>
             </div>
             <div className="flex items-center gap-1.5">
-              <button onClick={() => setWeekOffset(v => v - 1)}
-                className="w-8 h-8 rounded-lg border border-border flex items-center justify-center hover:bg-accent transition-colors">
-                <ChevronRight className="w-4 h-4" />
-              </button>
-              <button onClick={() => setWeekOffset(0)}
-                className="h-8 px-3 rounded-lg border border-border text-xs font-medium hover:bg-accent transition-colors">
-                השבוע
-              </button>
-              <button onClick={() => setWeekOffset(v => v + 1)}
-                className="w-8 h-8 rounded-lg border border-border flex items-center justify-center hover:bg-accent transition-colors">
-                <ChevronLeft className="w-4 h-4" />
-              </button>
               <Button size="icon" variant="outline" className="h-8 w-8" aria-label="סנכרן ליומן Google" onClick={handleSyncCalendar} disabled={syncing}>
                 <CalendarPlus className={`w-4 h-4 ${syncing ? 'animate-pulse' : ''}`} />
               </Button>
-              <Button size="sm" className="gap-1 mr-1" onClick={() => setAddDialog({ open: true, day: 'sun', hour: 8 })}>
+              <Button size="sm" className="gap-1" onClick={() => setAddDialog({ open: true, day: 'sun', hour: 8 })}>
                 <Plus className="w-4 h-4" /> הוסף
               </Button>
             </div>
+          </div>
+
+          <div className="mt-2">
+            <HebrewDateNavigator />
           </div>
 
           {/* Subject legend */}
@@ -409,31 +407,6 @@ export default function WeeklySchedulePage() {
           )}
         </div>
 
-        {/* Mobile day selector chips */}
-        <div className="md:hidden flex gap-1.5 px-4 py-2 overflow-x-auto no-scrollbar">
-          {DAYS.map((d, i) => {
-            const date = addDays(weekStart, i);
-            const isToday = isSameDay(date, new Date());
-            const isActive = mobileDay === i;
-            return (
-              <button
-                key={d.key}
-                onClick={() => setMobileDay(i)}
-                className={`shrink-0 px-3 py-1.5 rounded-xl text-xs font-bold transition-colors ${
-                  isActive
-                    ? 'bg-primary text-primary-foreground'
-                    : isToday
-                      ? 'bg-primary/10 text-primary border border-primary/30'
-                      : 'bg-muted text-muted-foreground'
-                }`}
-              >
-                {d.label}
-                <span className={`block text-[11px] font-normal ${isActive ? 'text-primary-foreground/70' : ''}`}>{format(date, 'd/M')}</span>
-              </button>
-            );
-          })}
-        </div>
-
         {/* Mobile single-day view */}
         <div className="md:hidden px-2 pb-6">
           {(() => {
@@ -443,19 +416,11 @@ export default function WeeklySchedulePage() {
             const status = dayStatuses[mobileDay] || {};
             return (
               <>
-                <div className="flex items-center justify-between gap-2 mb-2">
-                  <button onClick={() => setMobileDay(d => Math.max(0, d - 1))} disabled={mobileDay === 0}
-                    className="w-8 h-8 rounded-lg border border-border flex items-center justify-center disabled:opacity-30">
-                    <ChevronRight className="w-4 h-4" />
-                  </button>
+                <div className="flex items-center justify-center mb-2">
                   <div className={`text-center py-1 px-4 rounded-xl text-sm font-bold ${status.noSchool ? 'bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-300' : isToday ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'}`}>
                     {day.label} · {format(date, 'd/M')}
                     <span className={`block text-[10px] font-normal mt-0.5 ${isToday ? 'text-primary-foreground/70' : 'text-muted-foreground/70'}`}>{status.hebrew}</span>
                   </div>
-                  <button onClick={() => setMobileDay(d => Math.min(DAYS.length - 1, d + 1))} disabled={mobileDay === DAYS.length - 1}
-                    className="w-8 h-8 rounded-lg border border-border flex items-center justify-center disabled:opacity-30">
-                    <ChevronLeft className="w-4 h-4" />
-                  </button>
                 </div>
                 {status.noSchool ? (
                   <div className="flex flex-col items-center justify-center text-center py-10 px-4 rounded-xl border border-rose-200 bg-rose-50/50 dark:border-rose-900/40 dark:bg-rose-900/10">
