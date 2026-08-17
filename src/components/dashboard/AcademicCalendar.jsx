@@ -5,50 +5,9 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { CalendarDays, ChevronRight, ChevronLeft, BookOpen, ClipboardList, Scroll, GraduationCap } from 'lucide-react';
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isSameDay, getDay, addMonths, subMonths, isToday, parseISO } from 'date-fns';
-import { he } from 'date-fns/locale';
+import { toHebrewFull, toHebrewMonthYear, toHebrewDay } from '@/lib/hebrewDate';
 
 const DAY_NAMES = ['א׳', 'ב׳', 'ג׳', 'ד׳', 'ה׳', 'ו׳', 'ש׳'];
-
-// Hebrew letter digits
-const HEB_UNITS = ['','א','ב','ג','ד','ה','ו','ז','ח','ט'];
-const HEB_TENS  = ['','י','כ','ל','מ','נ','ס','ע','פ','צ'];
-const HEB_HUNDS = ['','ק','ר','ש','ת'];
-
-function numToHeb(n) {
-  if (n <= 0 || n > 30) return String(n);
-  if (n === 15) return 'ט״ו';
-  if (n === 16) return 'ט״ז';
-  let s = '';
-  const h = Math.floor(n / 100);
-  const t = Math.floor((n % 100) / 10);
-  const u = n % 10;
-  s += HEB_HUNDS[h] || '';
-  s += HEB_TENS[t] || '';
-  s += HEB_UNITS[u] || '';
-  if (s.length === 1) return s + '׳';
-  return s.slice(0, -1) + '״' + s.slice(-1);
-}
-
-function toHebrewDate(jsDate) {
-  try {
-    const hd = new Intl.DateTimeFormat('he-u-ca-hebrew', {
-      day: 'numeric', month: 'long', year: 'numeric'
-    }).format(jsDate);
-    const dayMatch = hd.match(/(\d+)/);
-    const dayNum = dayMatch ? parseInt(dayMatch[1]) : jsDate.getDate();
-    return { dayStr: numToHeb(dayNum), fullHebrew: hd };
-  } catch {
-    return { dayStr: String(jsDate.getDate()), fullHebrew: '' };
-  }
-}
-
-function getHebMonthYear(jsDate) {
-  try {
-    return new Intl.DateTimeFormat('he-u-ca-hebrew', { month: 'long', year: 'numeric' }).format(jsDate);
-  } catch {
-    return format(jsDate, 'MMMM yyyy', { locale: he });
-  }
-}
 
 const STORAGE_KEY_TRACKERS = 'classmanager_study_trackers';
 
@@ -119,7 +78,7 @@ export default function AcademicCalendar() {
 
   const firstDayOfWeek = getDay(startOfMonth(currentMonth));
   const selectedEvents = selectedDay ? (eventsByDate[format(selectedDay, 'yyyy-MM-dd')] || []) : [];
-  const hebMonthLabel = getHebMonthYear(currentMonth);
+  const hebMonthLabel = toHebrewMonthYear(currentMonth);
 
   // BK tracker data
   const [bkCompleted] = useState(loadBKProgress);
@@ -197,7 +156,7 @@ export default function AcademicCalendar() {
                 const hasPlan = dayEvents.some(e => e.type === 'plan');
                 const isSelected = selectedDay && isSameDay(day, selectedDay);
                 const today = isToday(day);
-                const { dayStr } = toHebrewDate(day);
+                const dayStr = toHebrewDay(day);
 
                 return (
                   <button
@@ -234,7 +193,7 @@ export default function AcademicCalendar() {
             {selectedDay && (
               <div className="mt-3 border-t border-border pt-3 space-y-1.5">
                 <p className="text-xs font-semibold text-muted-foreground mb-2">
-                  {toHebrewDate(selectedDay).fullHebrew} ({format(selectedDay, 'd/M/yyyy')}) — {selectedEvents.length > 0 ? `${selectedEvents.length} אירועים` : 'אין אירועים'}
+                  {toHebrewFull(selectedDay)} ({format(selectedDay, 'd/M/yyyy')}) — {selectedEvents.length > 0 ? `${selectedEvents.length} אירועים` : 'אין אירועים'}
                 </p>
                 {selectedEvents.length === 0 && (
                   <p className="text-xs text-muted-foreground text-center py-2">אין משימות, מבחנים או תכנונים ביום זה</p>
