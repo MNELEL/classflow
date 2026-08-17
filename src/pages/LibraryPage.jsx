@@ -377,7 +377,7 @@ export default function LibraryPage() {
           </TabsContent>
         </Tabs>
 
-        <LibraryUploadModal open={showUpload} onClose={() => setModal(null)} />
+        <LibraryUploadModal open={showUpload} onClose={() => setModal(null)} defaultCategory={uploadDefaultCategory} />
         <AIProviderSettings open={showAISettings} onClose={() => setModal(null)} />
         <ImportFromSourceModal open={showImportModal} onClose={() => setModal(null)} />
 
