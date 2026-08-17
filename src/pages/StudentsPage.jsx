@@ -9,8 +9,9 @@ import { usePullToRefresh } from '@/hooks/usePullToRefresh';
 import PullToRefreshIndicator from '@/components/ui/PullToRefreshIndicator';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
-import { Wand2, Users, FileDown, FileText, SortAsc, SortDesc, Calendar, Cake, Merge } from 'lucide-react';
+import { Wand2, Users, FileDown, FileText, SortAsc, SortDesc, Calendar, Cake, Merge, ChevronDown, Copy, Printer } from 'lucide-react';
 import { exportToCSV } from '@/components/data/CsvImportModal';
+import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
 import FileImportStudents from '@/components/students/FileImportStudents';
 import MergeDuplicatesModal from '@/components/students/MergeDuplicatesModal';
 import { useUrlOverlay } from '@/hooks/useUrlOverlay';
@@ -62,6 +63,31 @@ export default function StudentsPage() {
     }
     return sorted;
   }, [students, sortMode]);
+
+  const activeNames = students.filter(s => s.is_active !== false).map(s => s.name);
+  const copyNames = () => { try { navigator.clipboard.writeText(activeNames.join('\n')); toast.success('השמות הועתקו'); } catch { toast.error('העתקה נכשלה'); } };
+  const downloadNames = () => {
+    const blob = new Blob([activeNames.join('\n')], { type: 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a'); a.href = url; a.download = 'רשימת_תלמידים.txt'; a.click();
+    URL.revokeObjectURL(url);
+  };
+  const printNames = () => {
+    const w = window.open('', '_blank', 'width=420,height=640');
+    if (!w) { toast.error('חסימת חלון קובץ'); return; }
+    const safe = activeNames.map(n => n.replace(/[<>]/g, ''));
+    w.document.write(`<!DOCTYPE html><html dir="rtl" lang="he"><head><meta charset="utf-8"><title>רשימת תלמידים</title><style>body{font-family:Heebo,sans-serif;padding:28px;color:#111}h2{margin:0 0 14px;font-size:18px}ol{padding-right:22px;font-size:16px;line-height:2}</style></head><body><h2>רשימת תלמידים</h2><ol>${safe.map(n => `<li>${n}</li>`).join('')}</ol><script>window.onload=function(){window.print();}</script></body></html>`);
+    w.document.close();
+  };
+  const doExportCSV = () => exportToCSV(students.map(s => ({ name: s.name, gender: s.gender || '', height: s.height || 'medium', learning_group: s.learning_group || '', notes: s.notes || '', academic_level: s.academic_level || 'average' })), 'students.csv');
+  const sortOptions = [
+    { key: 'created', label: 'האחרון שנוסף', icon: Calendar },
+    { key: 'firstName', label: 'שם פרטי (א-ת)', icon: SortAsc },
+    { key: 'lastName', label: 'שם משפחה (א-ת)', icon: SortDesc },
+    { key: 'birthday', label: 'ימי הולדת קרובים', icon: Cake },
+  ];
+  const currentSort = sortOptions.find(o => o.key === sortMode) || sortOptions[0];
+  const SortIcon = currentSort.icon;
 
   const handleRefresh = useCallback(async () => {
     await refetch();
@@ -196,51 +222,46 @@ export default function StudentsPage() {
           </div>
         ) : (
           <>
-            {/* Import buttons above the list */}
-            <div className="flex justify-end gap-2 mb-4 flex-wrap">
-              <Button variant="outline" size="sm" onClick={() => openDialog('groups')} className="gap-1.5">
-                <Users className="w-4 h-4" /> קבוצות
-              </Button>
-              <Button variant="outline" size="sm" onClick={() => openDialog('free-text')} className="gap-1.5">
-                <Wand2 className="w-4 h-4" /> עדכון (AI)
-              </Button>
-              <Button variant="outline" size="sm" onClick={() => openDialog('file-import')} className="gap-1.5">
-                <FileText className="w-4 h-4" /> ייבוא מקובץ
-              </Button>
-              <Button variant="outline" size="sm" onClick={() => openDialog('merge')} className="gap-1.5">
-                <Merge className="w-4 h-4" /> מיזוג כפילויות
-              </Button>
-              <Button variant="outline" size="sm" onClick={() => exportToCSV(students.map(s=>({name:s.name,gender:s.gender||'',height:s.height||'medium',learning_group:s.learning_group||'',notes:s.notes||'',academic_level:s.academic_level||'average'})), 'students.csv')} className="gap-1.5">
-                <FileDown className="w-4 h-4" /> ייצוא CSV
-              </Button>
-            </div>
-            {/* Sort controls */}
-            <div className="flex gap-2 mb-4 flex-wrap items-center">
-              <p className="text-xs text-muted-foreground shrink-0">מיון:</p>
-              <button
-                onClick={() => setSortMode('created')}
-                className={`px-3 py-1.5 rounded-lg border text-xs font-medium transition-all flex items-center gap-1.5 ${sortMode === 'created' ? 'bg-primary text-primary-foreground border-primary' : 'border-border hover:bg-muted'}`}
-              >
-                <Calendar className="w-3.5 h-3.5" /> האחרון שנוסף
-              </button>
-              <button
-                onClick={() => setSortMode('firstName')}
-                className={`px-3 py-1.5 rounded-lg border text-xs font-medium transition-all flex items-center gap-1.5 ${sortMode === 'firstName' ? 'bg-primary text-primary-foreground border-primary' : 'border-border hover:bg-muted'}`}
-              >
-                <SortAsc className="w-3.5 h-3.5" /> לפי שם פרטי (א-ת)
-              </button>
-              <button
-                onClick={() => setSortMode('lastName')}
-                className={`px-3 py-1.5 rounded-lg border text-xs font-medium transition-all flex items-center gap-1.5 ${sortMode === 'lastName' ? 'bg-primary text-primary-foreground border-primary' : 'border-border hover:bg-muted'}`}
-              >
-                <SortDesc className="w-3.5 h-3.5" /> לפי שם משפחה (א-ת)
-              </button>
-              <button
-                onClick={() => setSortMode('birthday')}
-                className={`px-3 py-1.5 rounded-lg border text-xs font-medium transition-all flex items-center gap-1.5 ${sortMode === 'birthday' ? 'bg-primary text-primary-foreground border-primary' : 'border-border hover:bg-muted'}`}
-              >
-                <Cake className="w-3.5 h-3.5" /> ימי הולדת קרובים
-              </button>
+            <div className="flex items-center gap-2 mb-4">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" size="sm" className="gap-1.5">
+                    <Wand2 className="w-4 h-4" /> פעולות <ChevronDown className="w-3.5 h-3.5 opacity-60" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="start" className="w-56">
+                  <DropdownMenuLabel className="text-xs">כלים</DropdownMenuLabel>
+                  <DropdownMenuItem onClick={() => openDialog('groups')}><Users className="w-4 h-4 ml-2" /> קבוצות</DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => openDialog('free-text')}><Wand2 className="w-4 h-4 ml-2" /> עדכון (AI)</DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => openDialog('file-import')}><FileText className="w-4 h-4 ml-2" /> ייבוא מקובץ</DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => openDialog('merge')}><Merge className="w-4 h-4 ml-2" /> מיזוג כפילויות</DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuLabel className="text-xs">רשימת שמות בלבד</DropdownMenuLabel>
+                  <DropdownMenuItem onClick={copyNames}><Copy className="w-4 h-4 ml-2" /> העתקת שמות</DropdownMenuItem>
+                  <DropdownMenuItem onClick={downloadNames}><FileDown className="w-4 h-4 ml-2" /> הורדת רשימה (טקסט)</DropdownMenuItem>
+                  <DropdownMenuItem onClick={printNames}><Printer className="w-4 h-4 ml-2" /> הדפסת רשימה</DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={doExportCSV}><FileDown className="w-4 h-4 ml-2" /> ייצוא CSV מלא</DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" size="sm" className="gap-1.5">
+                    <SortIcon className="w-3.5 h-3.5" /> {currentSort.label} <ChevronDown className="w-3.5 h-3.5 opacity-60" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="start" className="w-56">
+                  <DropdownMenuLabel className="text-xs">מיון לפי</DropdownMenuLabel>
+                  {sortOptions.map(o => (
+                    <DropdownMenuItem key={o.key} onClick={() => setSortMode(o.key)} className={sortMode === o.key ? 'bg-primary/10 font-semibold' : ''}>
+                      <o.icon className="w-4 h-4 ml-2" /> {o.label}
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
+
+              <span className="mr-auto text-xs text-muted-foreground">{sortedStudents.length} תלמידים</span>
             </div>
 
             <StudentList

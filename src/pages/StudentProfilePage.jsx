@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import StudentTaskList from '@/components/students/StudentTaskList';
 import QuickPreferencesEditor from '@/components/students/QuickPreferencesEditor';
+import ParentContactBar from '@/components/students/ParentContactBar';
 import PerformanceBadge from '@/components/students/PerformanceBadge';
 import { calculatePerformanceScore } from '@/lib/performanceScore';
 import { CUSTOM_FIELD_LABELS } from '@/components/students/StudentCustomFields';
@@ -231,6 +232,9 @@ export default function StudentProfilePage() {
             </CardContent>
           </Card>
         )}
+
+        {/* Parent quick contact */}
+        <ParentContactBar student={student} />
 
         {/* Quick preferences editor */}
         <QuickPreferencesEditor student={student} />
