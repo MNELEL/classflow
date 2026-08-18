@@ -41,6 +41,7 @@ const ParentPortalPage     = lazy(() => import('./pages/ParentPortalPage'));
 const WorksheetGeneratorPage = lazy(() => import('./pages/WorksheetGeneratorPage'));
 const WorksheetDetailPage    = lazy(() => import('./pages/WorksheetDetailPage'));
 const QuestionBankPage     = lazy(() => import('./pages/QuestionBankPage'));
+const ExamBuilderPage      = lazy(() => import('./pages/ExamBuilderPage'));
 const LessonAnalyzerPage   = lazy(() => import('./pages/LessonAnalyzerPage'));
 const CurriculumPlannerPage = lazy(() => import('./pages/CurriculumPlannerPage'));
 const HomeworkPage         = lazy(() => import('./pages/HomeworkPage'));
@@ -144,6 +145,7 @@ function AnimatedRoutes() {
               <Route path="/worksheets" element={<WorksheetGeneratorPage />} />
             <Route path="/worksheets/:id" element={<WorksheetDetailPage />} />
               <Route path="/question-bank" element={<QuestionBankPage />} />
+              <Route path="/exam-builder" element={<ExamBuilderPage />} />
               <Route path="/lesson-analyzer" element={<LessonAnalyzerPage />} />
               <Route path="/curriculum" element={<CurriculumPlannerPage />} />
               <Route path="/homework" element={<HomeworkPage />} />

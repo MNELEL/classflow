@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from 'react';
+import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import AppLayout from '@/components/layout/AppLayout';
@@ -200,6 +201,9 @@ export default function QuestionBankPage() {
               {selected.length > 0 && (
                 <Badge className="bg-primary text-primary-foreground">{selected.length} נבחרות</Badge>
               )}
+              <Link to="/exam-builder" className="text-[11px] px-3 py-1.5 rounded-lg bg-primary text-primary-foreground flex items-center gap-1.5 hover:bg-primary/90 transition-colors">
+                <FileText className="w-3.5 h-3.5" /> בונה מבחנים
+              </Link>
             </div>
           </div>
 
