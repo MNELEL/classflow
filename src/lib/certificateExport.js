@@ -2,6 +2,7 @@ import { toast } from 'sonner';
 import { loadBranding } from '@/lib/branding';
 import { convertOklchColors } from '@/lib/colorUtils';
 import { escapeHtml } from '@/lib/htmlEscape';
+import { resolveTemplateDesign, fontStackFromDesign } from '@/lib/templateDesign';
 
 // ── Certificate templates ──────────────────────────────────────────────────
 // Each template supplies default title/body text and an accent color.
@@ -49,15 +50,16 @@ function buildCertificateHtml(cert) {
   // instead of one of the four fixed built-in templates.
   const templateData = cert.templateData;
   const isTemplateBased = cert.template === 'template_based' && templateData;
+  const design = isTemplateBased ? resolveTemplateDesign(templateData) : null;
 
   const tpl = isTemplateBased
     ? {
         label: templateData.name || 'תבנית מותאמת אישית',
         defaultTitle: templateData.detected_title || 'תעודת הוקרה',
         defaultBody: templateData.detected_body_text || '',
-        accent: templateData.accent_color || '#7c3aed',
-        accentLight: `${templateData.accent_color || '#7c3aed'}22`,
-        icon: '🎖',
+        accent: design.accent,
+        accentLight: design.secondary,
+        icon: design.iconSymbol,
       }
     : (CERTIFICATE_TEMPLATES[cert.template] || CERTIFICATE_TEMPLATES.custom);
 
@@ -75,29 +77,52 @@ function buildCertificateHtml(cert) {
     ? `<img src="${escapeHtml(b.logo_url)}" style="height:56px;width:56px;object-fit:contain;border-radius:10px;" />`
     : '';
 
+  const fontStack = fontStackFromDesign(design);
+  const bg = design?.background || '#fffdf8';
+  const fc = design?.frameColor || tpl.accent;
+
+  let frameHtml;
+  if (!design) {
+    frameHtml = `<div style="position:absolute; inset:16px; border:3px solid ${tpl.accent}; border-radius:16px; pointer-events:none;"></div>
+      <div style="position:absolute; inset:26px; border:1px solid ${tpl.accent}55; border-radius:10px; pointer-events:none;"></div>`;
+  } else {
+    switch (design.frameStyle) {
+      case 'none': frameHtml = ''; break;
+      case 'single': frameHtml = `<div style="position:absolute; inset:16px; border:2px solid ${fc}; border-radius:14px; pointer-events:none;"></div>`; break;
+      case 'ornate':
+        frameHtml = `<div style="position:absolute; inset:14px; border:3px double ${fc}; border-radius:16px; pointer-events:none;"></div>
+          <div style="position:absolute; inset:24px; border:1px solid ${fc}66; border-radius:10px; pointer-events:none;"></div>
+          <div style="position:absolute; top:10px; right:10px; font-size:18px; color:${fc};">✦</div>
+          <div style="position:absolute; top:10px; left:10px; font-size:18px; color:${fc};">✦</div>
+          <div style="position:absolute; bottom:10px; right:10px; font-size:18px; color:${fc};">✦</div>
+          <div style="position:absolute; bottom:10px; left:10px; font-size:18px; color:${fc};">✦</div>`;
+        break;
+      case 'double':
+      default:
+        frameHtml = `<div style="position:absolute; inset:16px; border:3px solid ${fc}; border-radius:16px; pointer-events:none;"></div>
+          <div style="position:absolute; inset:26px; border:1px solid ${fc}55; border-radius:10px; pointer-events:none;"></div>`;
+    }
+  }
+
+  const watermarkHtml = design?.hasWatermark && design.watermarkText
+    ? `<div style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center; pointer-events:none; opacity:0.07; font-size:90px; font-weight:800; color:${fc}; transform:rotate(-18deg);">${escapeHtml(design.watermarkText)}</div>`
+    : '';
+
+  const titleAlignStyle = design?.titleAlign === 'right' ? 'align-self:flex-start;' : '';
+
   return `
     <div id="cert-root" style="
-      font-family:'Heebo',Arial,sans-serif;
+      font-family:${fontStack};
       direction:rtl;
-      background:#fffdf8;
+      background:${bg};
       width:900px;
       height:640px;
       box-sizing:border-box;
       position:relative;
       padding:36px;
     ">
-      <div style="
-        position:absolute; inset:16px;
-        border:3px solid ${tpl.accent};
-        border-radius:16px;
-        pointer-events:none;
-      "></div>
-      <div style="
-        position:absolute; inset:26px;
-        border:1px solid ${tpl.accent}55;
-        border-radius:10px;
-        pointer-events:none;
-      "></div>
+      ${watermarkHtml}
+      ${frameHtml}
 
       <div style="position:relative; height:100%; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:28px 56px;">
 
@@ -110,7 +135,7 @@ function buildCertificateHtml(cert) {
 
         <div style="font-size:40px; margin-bottom:6px;">${tpl.icon}</div>
 
-        <div style="font-size:34px; font-weight:800; color:${tpl.accent}; margin-bottom:4px;">
+        <div style="font-size:34px; font-weight:800; color:${tpl.accent}; margin-bottom:4px; ${titleAlignStyle}">
           ${title}
         </div>
 
@@ -118,7 +143,7 @@ function buildCertificateHtml(cert) {
 
         <div style="font-size:16px; color:#374151; margin-bottom:10px;">מוענקת בזאת ל</div>
 
-        <div style="font-size:44px; font-weight:800; color:#1e1b4b; margin-bottom:20px; font-family:'Heebo',Arial,sans-serif;">
+        <div style="font-size:44px; font-weight:800; color:#1e1b4b; margin-bottom:20px; font-family:${fontStack};">
           ${studentName}
         </div>
 

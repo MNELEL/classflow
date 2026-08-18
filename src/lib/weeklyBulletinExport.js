@@ -2,12 +2,18 @@ import { toast } from 'sonner';
 import { loadBranding } from '@/lib/branding';
 import { convertOklchColors } from '@/lib/colorUtils';
 import { escapeHtml } from '@/lib/htmlEscape';
+import { resolveTemplateDesign, fontStackFromDesign } from '@/lib/templateDesign';
 
 const DEFAULT_ACCENT = '#2563eb';
 
 function buildBulletinHtml(bulletin, templateData) {
   const b = loadBranding();
-  const accent = templateData?.accent_color || DEFAULT_ACCENT;
+  const design = templateData ? resolveTemplateDesign(templateData) : null;
+  const accent = design?.accent || templateData?.accent_color || DEFAULT_ACCENT;
+  const secondary = design?.secondary || `${accent}22`;
+  const bg = design?.background || '#ffffff';
+  const fontStack = fontStackFromDesign(design);
+  const frameStyle = design?.frameStyle || 'none';
   const title = escapeHtml(templateData?.detected_title || 'חוברת קשר שבועית');
   const introText = escapeHtml(templateData?.detected_body_text || '');
   const className = escapeHtml(bulletin.class_name || '');
@@ -35,7 +41,7 @@ function buildBulletinHtml(bulletin, templateData) {
 
   const section = (label, content) => content ? `
     <div style="margin-bottom:16px;">
-      <div style="font-size:14px; font-weight:800; color:${accent}; margin-bottom:6px; padding-right:8px; border-right:3px solid ${accent};">
+      <div style="font-size:14px; font-weight:800; color:${accent}; margin-bottom:6px; padding:3px 8px 3px 8px; border-right:3px solid ${accent}; background:${secondary}; border-radius:0 6px 6px 0;">
         ${label}
       </div>
       <div style="font-size:13px; color:#374151; line-height:1.7; padding-right:11px;">
@@ -44,37 +50,50 @@ function buildBulletinHtml(bulletin, templateData) {
     </div>
   ` : '';
 
+  const frameHtml = design && frameStyle !== 'none'
+    ? `<div style="position:absolute; inset:12px; border:${frameStyle === 'single' ? '2px solid' : '3px double'} ${accent}; border-radius:14px; pointer-events:none;"></div>`
+    : '';
+
+  const watermarkHtml = design?.hasWatermark && design.watermarkText
+    ? `<div style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center; pointer-events:none; opacity:0.06; font-size:80px; font-weight:800; color:${accent}; transform:rotate(-18deg);">${escapeHtml(design.watermarkText)}</div>`
+    : '';
+
   return `
     <div id="bulletin-root" style="
-      font-family:'Heebo',Arial,sans-serif;
+      font-family:${fontStack};
       direction:rtl;
-      background:#ffffff;
+      background:${bg};
       width:794px;
       box-sizing:border-box;
       padding:32px 36px;
+      position:relative;
     ">
-      <div style="display:flex; align-items:center; justify-content:space-between; border-bottom:2px solid ${accent}; padding-bottom:14px; margin-bottom:18px;">
-        <div style="display:flex; align-items:center; gap:10px;">
-          ${logoHtml}
-          <div>
-            <div style="font-size:20px; font-weight:800; color:${accent};">${title}</div>
-            ${className || schoolName ? `<div style="font-size:12px; color:#6b7280;">${[schoolName, className].filter(Boolean).join(' · ')}</div>` : ''}
+      ${watermarkHtml}
+      ${frameHtml}
+      <div style="position:relative;">
+        <div style="display:flex; align-items:center; justify-content:space-between; border-bottom:2px solid ${accent}; padding-bottom:14px; margin-bottom:18px;">
+          <div style="display:flex; align-items:center; gap:10px;">
+            ${logoHtml}
+            <div>
+              <div style="font-size:20px; font-weight:800; color:${accent};">${title}</div>
+              ${className || schoolName ? `<div style="font-size:12px; color:#6b7280;">${[schoolName, className].filter(Boolean).join(' · ')}</div>` : ''}
+            </div>
           </div>
+          ${dateRange ? `<div style="font-size:12px; color:#6b7280; font-weight:600;">${dateRange}</div>` : ''}
         </div>
-        ${dateRange ? `<div style="font-size:12px; color:#6b7280; font-weight:600;">${dateRange}</div>` : ''}
-      </div>
 
-      ${introText ? `<div style="font-size:12.5px; color:#6b7280; margin-bottom:16px; line-height:1.6;">${introText}</div>` : ''}
+        ${introText ? `<div style="font-size:12.5px; color:#6b7280; margin-bottom:16px; line-height:1.6;">${introText}</div>` : ''}
 
-      ${section('מה למדנו השבוע', digest)}
-      ${section('נקודות עיקריות', points ? `<ul style="margin:0; padding-right:18px;">${points}</ul>` : '')}
-      ${section('שאלות חזרה', questions)}
-      ${section('פעילויות', activities ? `<ul style="margin:0; padding-right:18px;">${activities}</ul>` : '')}
-      ${riddle ? section('חידת השבוע', `${riddle}`) : ''}
-      ${section('הודעות נוספות', extraNotes)}
+        ${section('מה למדנו השבוע', digest)}
+        ${section('נקודות עיקריות', points ? `<ul style="margin:0; padding-right:18px;">${points}</ul>` : '')}
+        ${section('שאלות חזרה', questions)}
+        ${section('פעילויות', activities ? `<ul style="margin:0; padding-right:18px;">${activities}</ul>` : '')}
+        ${riddle ? section('חידת השבוע', `${riddle}`) : ''}
+        ${section('הודעות נוספות', extraNotes)}
 
-      <div style="margin-top:24px; padding-top:12px; border-top:1px solid #e5e7eb; font-size:11px; color:#9ca3af; text-align:center;">
-        חוברת קשר שבועית${schoolName ? ` · ${schoolName}` : ''}
+        <div style="margin-top:24px; padding-top:12px; border-top:1px solid #e5e7eb; font-size:11px; color:#9ca3af; text-align:center;">
+          חוברת קשר שבועית${schoolName ? ` · ${schoolName}` : ''}
+        </div>
       </div>
     </div>
   `;

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
@@ -8,7 +8,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import ReactMarkdown from 'react-markdown';
-import { X, Sparkles, Loader2, Plus, Trash2, Printer, Heart, Edit2, Check, BookOpen, Layers, GraduationCap, Star, Copy, ScanText } from 'lucide-react';
+import { X, Sparkles, Loader2, Plus, Trash2, Printer, Heart, Edit2, Check, BookOpen, Layers, GraduationCap, Star, Copy, ScanText, ExternalLink, Save } from 'lucide-react';
 import { toast } from 'sonner';
 import ArtifactGenerator from './ArtifactGenerator';
 import ArtifactRenderer from './ArtifactRenderer';
@@ -43,6 +43,17 @@ export default function LibraryItemDetail({ itemId, onClose }) {
   const [editingTitle, setEditingTitle] = useState(false);
   const [titleDraft, setTitleDraft] = useState('');
   const [activeTab, setActiveTab] = useState('ai');
+  const [docText, setDocText] = useState('');
+  const [savingDoc, setSavingDoc] = useState(false);
+  const [editTranscript, setEditTranscript] = useState(false);
+  const [transcriptDraft, setTranscriptDraft] = useState('');
+  const [savingTranscript, setSavingTranscript] = useState(false);
+
+  useEffect(() => {
+    setDocText(item?.original_text || '');
+    setTranscriptDraft(item?.transcript || '');
+    setEditTranscript(false);
+  }, [item?.id]);
 
   const { data: item, isLoading } = useQuery({
     queryKey: ['library-item', itemId],
@@ -64,6 +75,27 @@ export default function LibraryItemDetail({ itemId, onClose }) {
   function applyAiSuggestion(field, value) {
     updateMutation.mutate({ [field]: value });
     toast.success('עודכן!');
+  }
+
+  async function saveDocText() {
+    setSavingDoc(true);
+    try {
+      await base44.entities.LibraryItem.update(itemId, { original_text: docText, is_edited: true });
+      qc.invalidateQueries({ queryKey: ['library-item', itemId] });
+      toast.success('הטקסט נשמר');
+    } catch { toast.error('שגיאה בשמירה'); }
+    setSavingDoc(false);
+  }
+
+  async function saveTranscript() {
+    setSavingTranscript(true);
+    try {
+      await base44.entities.LibraryItem.update(itemId, { transcript: transcriptDraft });
+      qc.invalidateQueries({ queryKey: ['library-item', itemId] });
+      setEditTranscript(false);
+      toast.success('התמלול נשמר');
+    } catch { toast.error('שגיאה בשמירה'); }
+    setSavingTranscript(false);
   }
 
   function deleteArtifact(artifactId) {
@@ -222,12 +254,41 @@ export default function LibraryItemDetail({ itemId, onClose }) {
                 {item.source_type === 'video_file' && (
                   <video controls className="w-full rounded-xl" src={item.file_url} />
                 )}
-                {(item.source_type === 'pdf' || item.source_type === 'word_doc' || item.source_type === 'presentation') && (
-                  <a href={item.file_url} target="_blank" rel="noopener noreferrer">
-                    <Button variant="outline" className="w-full gap-2">
-                      <span>{SOURCE_ICONS[item.source_type]}</span> פתח {item.file_name}
-                    </Button>
-                  </a>
+                {item.source_type === 'pdf' && (
+                  <div className="space-y-2">
+                    <iframe src={item.file_url} title={item.title} className="w-full h-[520px] rounded-xl border border-border bg-white" />
+                    <a href={item.file_url} target="_blank" rel="noopener noreferrer" className="text-xs text-primary hover:underline inline-flex items-center gap-1">
+                      <ExternalLink className="w-3 h-3" /> פתח בחלון חדש
+                    </a>
+                  </div>
+                )}
+                {(item.source_type === 'word_doc' || item.source_type === 'presentation') && (
+                  <div className="space-y-2">
+                    {docText ? (
+                      <>
+                        <p className="text-xs text-muted-foreground">טקסט שחולץ — ניתן לעריכה ישירה ללא הורדה</p>
+                        <Textarea value={docText} onChange={e => setDocText(e.target.value)} dir="rtl" className="min-h-[320px] text-sm leading-relaxed resize-y" />
+                        <div className="flex gap-2">
+                          <Button size="sm" onClick={saveDocText} disabled={savingDoc} className="gap-1">
+                            {savingDoc ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Save className="w-3.5 h-3.5" />}
+                            שמור טקסט
+                          </Button>
+                          <a href={item.file_url} target="_blank" rel="noopener noreferrer">
+                            <Button size="sm" variant="outline" className="gap-1">
+                              <ExternalLink className="w-3.5 h-3.5" /> פתח קובץ מקור
+                            </Button>
+                          </a>
+                        </div>
+                      </>
+                    ) : (
+                      <div className="flex items-center justify-between gap-2 rounded-xl border border-dashed border-border p-3">
+                        <p className="text-xs text-muted-foreground">אין עדיין טקסט שחולץ. חלץ כעת כדי לצפות ולערוך בלי להוריד.</p>
+                        <Button size="sm" variant="outline" onClick={() => navigate(`/ocr-review/${itemId}`)} className="gap-1 shrink-0">
+                          <ScanText className="w-3.5 h-3.5" /> חלץ טקסט
+                        </Button>
+                      </div>
+                    )}
+                  </div>
                 )}
                 {item.source_type === 'image' && (
                   <img src={item.file_url} alt={item.title} className="w-full rounded-xl border border-border" />
@@ -248,15 +309,33 @@ export default function LibraryItemDetail({ itemId, onClose }) {
               <div>
                 <div className="flex items-center justify-between mb-2">
                   <p className="text-xs font-medium text-muted-foreground">תוכן / תמלול מלא</p>
-                  <button
-                    onClick={() => { navigator.clipboard.writeText(item.transcript); toast.success('התמלול הועתק!'); }}
-                    aria-label="העתק תמלול"
-                    className="text-xs text-primary hover:underline flex items-center gap-1"
-                  >
-                    <Copy className="w-3 h-3" /> העתק
-                  </button>
+                  <div className="flex items-center gap-3">
+                    <button
+                      onClick={() => { navigator.clipboard.writeText(item.transcript); toast.success('התמלול הועתק!'); }}
+                      aria-label="העתק תמלול"
+                      className="text-xs text-primary hover:underline flex items-center gap-1"
+                    >
+                      <Copy className="w-3 h-3" /> העתק
+                    </button>
+                    {!editTranscript ? (
+                      <button onClick={() => setEditTranscript(true)} className="text-xs text-primary hover:underline flex items-center gap-1">
+                        <Edit2 className="w-3 h-3" /> עריכה
+                      </button>
+                    ) : (
+                      <div className="flex items-center gap-2">
+                        <button onClick={saveTranscript} disabled={savingTranscript} className="text-xs text-primary hover:underline flex items-center gap-1">
+                          {savingTranscript ? <Loader2 className="w-3 h-3 animate-spin" /> : <Save className="w-3 h-3" />} שמור
+                        </button>
+                        <button onClick={() => { setTranscriptDraft(item.transcript); setEditTranscript(false); }} className="text-xs text-muted-foreground hover:underline">ביטול</button>
+                      </div>
+                    )}
+                  </div>
                 </div>
-                <div className="bg-muted/40 rounded-xl p-3 text-sm leading-relaxed max-h-[500px] overflow-y-auto whitespace-pre-wrap">{item.transcript}</div>
+                {editTranscript ? (
+                  <Textarea value={transcriptDraft} onChange={e => setTranscriptDraft(e.target.value)} dir="rtl" className="min-h-[320px] text-sm leading-relaxed resize-y" />
+                ) : (
+                  <div className="bg-muted/40 rounded-xl p-3 text-sm leading-relaxed max-h-[500px] overflow-y-auto whitespace-pre-wrap">{item.transcript}</div>
+                )}
               </div>
             )}
           </TabsContent>
