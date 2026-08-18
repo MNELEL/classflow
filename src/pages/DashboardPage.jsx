@@ -13,6 +13,7 @@ import AbsenceAlert from '@/components/dashboard/AbsenceAlert';
 import AcademicCalendar from '@/components/dashboard/AcademicCalendar';
 import SmartGuide from '@/components/dashboard/SmartGuide';
 import DailyBriefing from '@/components/dashboard/DailyBriefing';
+import OrchestratorInsights from '@/components/dashboard/OrchestratorInsights';
 import StudyProgressTracker from '@/components/dashboard/StudyProgressTracker';
 import WeeklyActivitySummary from '@/components/dashboard/WeeklyActivitySummary';
 import StudentDataHub from '@/components/dashboard/StudentDataHub';
@@ -161,6 +162,9 @@ export default function DashboardPage() {
 
         {/* Daily Briefing */}
         <DailyBriefing students={students} />
+
+        {/* One-Brain Orchestrator — proactive AI insights */}
+        <OrchestratorInsights />
 
         {/* Student Data Hub - Centralized student data with weekly progress */}
         <StudentDataHub 

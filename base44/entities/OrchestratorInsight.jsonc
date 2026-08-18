@@ -1,0 +1,137 @@
+{
+  "name": "OrchestratorInsight",
+  "type": "object",
+  "properties": {
+    "insight_type": {
+      "type": "string",
+      "enum": [
+        "attendance_decline",
+        "grade_drop",
+        "overdue_accumulation",
+        "behavior_escalation",
+        "low_homework_submission",
+        "low_parent_engagement",
+        "coverage_gap",
+        "upcoming_exam_unprepared",
+        "negative_reward_trend",
+        "daily_briefing",
+        "general"
+      ],
+      "description": "\u05e1\u05d5\u05d2 \u05d4\u05ea\u05d5\u05d1\u05e0\u05d4 \u05d4\u05e4\u05e8\u05d5\u05d0\u05e7\u05d8\u05d9\u05d1\u05d9\u05ea"
+    },
+    "severity": {
+      "type": "string",
+      "enum": [
+        "high",
+        "medium",
+        "low"
+      ],
+      "default": "medium",
+      "description": "\u05e8\u05de\u05ea \u05d7\u05d5\u05de\u05e8\u05d4"
+    },
+    "title": {
+      "type": "string",
+      "description": "\u05db\u05d5\u05ea\u05e8\u05ea \u05ea\u05de\u05e6\u05d9\u05ea\u05d9\u05ea"
+    },
+    "description": {
+      "type": "string",
+      "description": "\u05ea\u05d9\u05d0\u05d5\u05e8 \u05de\u05e4\u05d5\u05e8\u05d8 \u05e9\u05dc \u05d4\u05ea\u05d5\u05d1\u05e0\u05d4"
+    },
+    "suggested_action": {
+      "type": "string",
+      "description": "\u05e4\u05e2\u05d5\u05dc\u05d4 \u05de\u05d5\u05de\u05dc\u05e6\u05ea"
+    },
+    "action_link": {
+      "type": "string",
+      "description": "\u05e0\u05ea\u05d9\u05d1 \u05dc\u05de\u05d5\u05d3\u05d5\u05dc \u05d4\u05e8\u05dc\u05d5\u05d5\u05e0\u05d8\u05d9 \u05d1\u05d0\u05e4\u05dc\u05d9\u05e7\u05e6\u05d9\u05d4"
+    },
+    "student_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "\u05de\u05d6\u05d4\u05d9 \u05ea\u05dc\u05de\u05d9\u05d3\u05d9\u05dd \u05e8\u05dc\u05d5\u05d5\u05e0\u05d8\u05d9\u05d9\u05dd"
+    },
+    "student_names": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "\u05e9\u05de\u05d5\u05ea \u05ea\u05dc\u05de\u05d9\u05d3\u05d9\u05dd \u05dc\u05ea\u05e6\u05d5\u05d2\u05d4"
+    },
+    "context_snapshot": {
+      "type": "object",
+      "description": "\u05e0\u05ea\u05d5\u05e0\u05d9\u05dd \u05e9\u05d4\u05d5\u05d1\u05d9\u05dc\u05d5 \u05dc\u05ea\u05d5\u05d1\u05e0\u05d4 (\u05dc\u05e6\u05d5\u05e8\u05da \u05e9\u05e7\u05d9\u05e4\u05d5\u05ea \u05d5\u05d4\u05e7\u05e9\u05e8 AI)"
+    },
+    "generated_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "\u05de\u05d5\u05e2\u05d3 \u05d9\u05e6\u05d9\u05e8\u05ea \u05d4\u05ea\u05d5\u05d1\u05e0\u05d4"
+    },
+    "is_dismissed": {
+      "type": "boolean",
+      "default": false,
+      "description": "\u05d4\u05d0\u05dd \u05d4\u05de\u05e9\u05ea\u05de\u05e9 \u05d1\u05d9\u05d8\u05dc \u05d0\u05ea \u05d4\u05ea\u05d5\u05d1\u05e0\u05d4"
+    },
+    "is_read": {
+      "type": "boolean",
+      "default": false,
+      "description": "\u05d4\u05d0\u05dd \u05d4\u05ea\u05d5\u05d1\u05e0\u05d4 \u05e0\u05e7\u05e8\u05d0\u05d4"
+    }
+  },
+  "required": [
+    "insight_type",
+    "title",
+    "severity"
+  ],
+  "rls": {
+    "create": {
+      "$or": [
+        {
+          "created_by_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "read": {
+      "$or": [
+        {
+          "created_by_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "$or": [
+        {
+          "created_by_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "created_by_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
+}
