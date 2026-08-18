@@ -37,6 +37,21 @@ function safeEqual(a, b) {
   return diff === 0;
 }
 
+// Lockout policy for PIN verification — a 4-digit PIN only has 10,000
+// combinations, so unthrottled attempts are brute-forceable in minutes.
+const MAX_FAILED_ATTEMPTS = 5;
+const LOCKOUT_MS = 5 * 60 * 1000; // 5 minutes
+
+function isLockedOut(record) {
+  if (!record?.locked_until) return false;
+  return new Date(record.locked_until).getTime() > Date.now();
+}
+
+function lockoutRemainingSeconds(record) {
+  const remaining = new Date(record.locked_until).getTime() - Date.now();
+  return Math.max(0, Math.ceil(remaining / 1000));
+}
+
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
