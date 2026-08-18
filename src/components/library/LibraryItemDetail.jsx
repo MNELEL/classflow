@@ -49,18 +49,18 @@ export default function LibraryItemDetail({ itemId, onClose }) {
   const [transcriptDraft, setTranscriptDraft] = useState('');
   const [savingTranscript, setSavingTranscript] = useState(false);
 
-  useEffect(() => {
-    setDocText(item?.original_text || '');
-    setTranscriptDraft(item?.transcript || '');
-    setEditTranscript(false);
-  }, [item?.id]);
-
   const { data: item, isLoading } = useQuery({
     queryKey: ['library-item', itemId],
     queryFn: () => base44.entities.LibraryItem.get(itemId),
     enabled: !!itemId,
     refetchInterval: (data) => data?.ai_status === 'processing' ? 3000 : false,
   });
+
+  useEffect(() => {
+    setDocText(item?.original_text || '');
+    setTranscriptDraft(item?.transcript || '');
+    setEditTranscript(false);
+  }, [item?.id]);
 
   const updateMutation = useMutation({
     mutationFn: (data) => base44.entities.LibraryItem.update(itemId, data),
