@@ -22,6 +22,7 @@ import ImportFromSourceModal from '@/components/library/ImportFromSourceModal';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 import { formatDate } from '@/lib/formatDate';
+import { cn } from '@/lib/utils';
 import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogFooter, AlertDialogCancel, AlertDialogAction } from '@/components/ui/alert-dialog';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { usePullToRefresh } from '@/hooks/usePullToRefresh';
@@ -41,6 +42,16 @@ export default function LibraryPage() {
   const showPlaylist = searchParams.get('modal') === 'playlist';
   const showAISettings = searchParams.get('modal') === 'ai-settings';
   const showImportModal = searchParams.get('modal') === 'import';
+  const resourceId = searchParams.get('resource');
+  const [highlightResource, setHighlightResource] = useState(null);
+  useEffect(() => {
+    if (!resourceId) return;
+    setHighlightResource(resourceId);
+    const el = document.getElementById(`lib-item-${resourceId}`);
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    const t = setTimeout(() => setHighlightResource(null), 4000);
+    return () => clearTimeout(t);
+  }, [resourceId]);
   const setModal = useCallback((value) => {
     const next = new URLSearchParams(searchParams);
     if (value) next.set('modal', value);
@@ -306,8 +317,9 @@ export default function LibraryPage() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <AnimatePresence>
                   {pagedItems.map((item, i) => (
-                    <motion.div key={item.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: i * 0.04 }} className="relative">
+                    <motion.div key={item.id} id={`lib-item-${item.id}`} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: i * 0.04 }}
+                      className={cn("relative rounded-2xl transition-all", highlightResource === item.id && "ring-2 ring-primary")}>
                       <LibraryItemCard item={item} onClick={() => navigate('/library/' + item.id)} />
                       {/* Playlist toggle button */}
                       <button

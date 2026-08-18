@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { ExternalLink, ChevronDown, ChevronUp, CheckCircle2, Circle, Library, ArrowLeft, FileText, ChevronLeft } from 'lucide-react';
+import { ExternalLink, ChevronDown, ChevronUp, CheckCircle2, Circle, Library, ArrowLeft, FileText, ChevronLeft, BookOpen } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
@@ -50,6 +50,15 @@ export default function WeekGoalCard({ goal, onToggleComplete, onUpdate }) {
               <Badge className="bg-violet-100 text-violet-700 dark:bg-violet-900/30 dark:text-violet-400 border-0 text-[10px]">
                 <Library className="w-2.5 h-2.5 mr-1" />{matchedItems.length} מהספרייה
               </Badge>
+            )}
+            {goal.library_item_ids?.length > 0 && (
+              <button
+                onClick={() => navigate('/library?resource=' + (matchedItems[0]?.id || goal.library_item_ids[0]))}
+                className="inline-flex items-center gap-1 text-[10px] font-medium px-2 py-0.5 rounded-full bg-teal-100 text-teal-700 dark:bg-teal-900/30 dark:text-teal-400 hover:bg-teal-200 transition-colors"
+                title="פתח בספרייה"
+              >
+                <BookOpen className="w-2.5 h-2.5" /> פתח בספרייה
+              </button>
             )}
           </div>
         </div>
