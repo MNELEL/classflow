@@ -16,6 +16,7 @@ import { applyThemeClass, loadTheme } from '@/lib/themes';
 import { loadBrandingFromDB, loadBranding } from '@/lib/branding';
 import PinLockScreen from '@/components/security/PinLockScreen';
 import { isLocked, refreshPinStatus } from '@/lib/pinLock';
+import ErrorBoundary from '@/components/ErrorBoundary';
 const AssistantDock = lazy(() => import('./components/assistant/AssistantDock'));
 
 // Lazy-loaded pages for code splitting
