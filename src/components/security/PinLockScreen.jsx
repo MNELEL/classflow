@@ -100,8 +100,14 @@ export default function PinLockScreen({ onUnlock }) {
           ))}
         </div>
 
-        {/* Error message */}
-        {error && (
+        {/* Error / lockout message */}
+        {isLockedOut ? (
+          <p className="text-destructive text-sm mb-4 text-center">
+            נחסם זמנית עקב ניסיונות שגויים מרובים.
+            <br />
+            ניתן לנסות שוב בעוד {remainingSeconds} שניות.
+          </p>
+        ) : error && (
           <p className="text-destructive text-sm mb-4">PIN שגוי</p>
         )}
 
@@ -113,7 +119,7 @@ export default function PinLockScreen({ onUnlock }) {
               <button
                 key={idx}
                 onClick={() => press(k)}
-                disabled={verifying}
+                disabled={verifying || isLockedOut}
                 className="h-14 rounded-2xl bg-secondary/50 border border-border text-xl font-semibold text-foreground hover:bg-accent active:scale-95 transition-all flex items-center justify-center disabled:opacity-50"
               >
                 {k}
@@ -122,7 +128,7 @@ export default function PinLockScreen({ onUnlock }) {
           })}
           <button
             onClick={backspace}
-            disabled={verifying}
+            disabled={verifying || isLockedOut}
             className="h-14 rounded-2xl bg-secondary/50 border border-border text-foreground hover:bg-accent active:scale-95 transition-all flex items-center justify-center disabled:opacity-50"
             aria-label="מחק"
           >
