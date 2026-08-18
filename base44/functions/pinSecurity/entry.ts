@@ -103,48 +103,105 @@ Deno.serve(async (req) => {
     // ── verify_pin: check if the provided PIN is correct ──
     // For legacy records (no pin_salt), verifies against the old shared-key
     // hash and, on success, upgrades to a salted hash.
+    // Rate-limited: MAX_FAILED_ATTEMPTS consecutive failures lock verification
+    // out for LOCKOUT_MS, since a 4-digit PIN is otherwise brute-forceable.
     if (action === 'verify_pin') {
-      if (!pin || !/^\d{4}$/.test(String(pin))) {
+      if (!record || !record.pin_enabled || !record.pin_hash) {
         return Response.json({ valid: false });
       }
-      if (!record || !record.pin_enabled || !record.pin_hash) {
+      if (isLockedOut(record)) {
+        return Response.json({
+          valid: false,
+          locked: true,
+          retry_after_seconds: lockoutRemainingSeconds(record),
+        }, { status: 429 });
+      }
+      if (!pin || !/^\d{4}$/.test(String(pin))) {
         return Response.json({ valid: false });
       }
       const salt = record.pin_salt;
+      let isValid = false;
       if (salt) {
         const hash = await hashPin(String(pin), salt);
-        return Response.json({ valid: safeEqual(hash, record.pin_hash) });
+        isValid = safeEqual(hash, record.pin_hash);
+      } else {
+        // Legacy: verify with old shared-key hash, then upgrade to salted
+        const legacyHash = await hashPin(String(pin), null);
+        isValid = safeEqual(legacyHash, record.pin_hash);
+        if (isValid) {
+          const newSalt = generateSalt();
+          const newHash = await hashPin(String(pin), newSalt);
+          await base44.asServiceRole.entities.TeacherSecurity.update(record.id, {
+            pin_hash: newHash,
+            pin_salt: newSalt,
+            updated_at: new Date().toISOString(),
+          });
+        }
       }
-      // Legacy: verify with old shared-key hash, then upgrade to salted
-      const legacyHash = await hashPin(String(pin), null);
-      if (!safeEqual(legacyHash, record.pin_hash)) {
-        return Response.json({ valid: false });
+
+      if (isValid) {
+        // Reset the failure counter on success.
+        if (record.failed_attempts || record.locked_until) {
+          await base44.asServiceRole.entities.TeacherSecurity.update(record.id, {
+            failed_attempts: 0,
+            locked_until: '',
+          });
+        }
+        return Response.json({ valid: true });
       }
-      const newSalt = generateSalt();
-      const newHash = await hashPin(String(pin), newSalt);
-      await base44.asServiceRole.entities.TeacherSecurity.update(record.id, {
-        pin_hash: newHash,
-        pin_salt: newSalt,
-        updated_at: new Date().toISOString(),
+
+      const nextAttempts = (record.failed_attempts || 0) + 1;
+      const update = { failed_attempts: nextAttempts, updated_at: new Date().toISOString() };
+      if (nextAttempts >= MAX_FAILED_ATTEMPTS) {
+        update.locked_until = new Date(Date.now() + LOCKOUT_MS).toISOString();
+        update.failed_attempts = 0; // counter resets once locked; lockout itself blocks further tries
+      }
+      await base44.asServiceRole.entities.TeacherSecurity.update(record.id, update);
+      return Response.json({
+        valid: false,
+        locked: !!update.locked_until,
+        retry_after_seconds: update.locked_until ? Math.ceil(LOCKOUT_MS / 1000) : undefined,
       });
-      return Response.json({ valid: true });
     }
 
     // ── disable_pin: verify current PIN then disable ──
+    // Shares the same lockout as verify_pin — it's an equally valid oracle
+    // for brute-forcing the PIN and must be throttled the same way.
     if (action === 'disable_pin') {
-      if (!pin || !/^\d{4}$/.test(String(pin))) {
+      if (!record || !record.pin_enabled || !record.pin_hash) {
         return Response.json({ valid: false });
       }
-      if (!record || !record.pin_enabled || !record.pin_hash) {
+      if (isLockedOut(record)) {
+        return Response.json({
+          valid: false,
+          locked: true,
+          retry_after_seconds: lockoutRemainingSeconds(record),
+        }, { status: 429 });
+      }
+      if (!pin || !/^\d{4}$/.test(String(pin))) {
         return Response.json({ valid: false });
       }
       const salt = record.pin_salt;
       const hash = salt
         ? await hashPin(String(pin), salt)
         : await hashPin(String(pin), null);
-      if (!safeEqual(hash, record.pin_hash)) {
-        return Response.json({ valid: false });
+      const isValid = safeEqual(hash, record.pin_hash);
+
+      if (!isValid) {
+        const nextAttempts = (record.failed_attempts || 0) + 1;
+        const update = { failed_attempts: nextAttempts, updated_at: new Date().toISOString() };
+        if (nextAttempts >= MAX_FAILED_ATTEMPTS) {
+          update.locked_until = new Date(Date.now() + LOCKOUT_MS).toISOString();
+          update.failed_attempts = 0;
+        }
+        await base44.asServiceRole.entities.TeacherSecurity.update(record.id, update);
+        return Response.json({
+          valid: false,
+          locked: !!update.locked_until,
+          retry_after_seconds: update.locked_until ? Math.ceil(LOCKOUT_MS / 1000) : undefined,
+        });
       }
+
       await base44.asServiceRole.entities.TeacherSecurity.update(record.id, {
         pin_enabled: false,
         pin_hash: '',
