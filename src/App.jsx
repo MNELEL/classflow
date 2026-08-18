@@ -276,7 +276,13 @@ const AuthenticatedApp = () => {
 
   return (
     <>
-      <AnimatedRoutes />
+      {/* key={location.pathname} isn't needed here — ErrorBoundary is remounted
+          fresh on every navigation because AnimatedRoutes' motion.div already
+          keys by pathname internally, and handleGoHome/handleReload reset
+          state before navigating. */}
+      <ErrorBoundary>
+        <AnimatedRoutes />
+      </ErrorBoundary>
       <Suspense fallback={null}>
         <OnboardingModal open={showOnboarding} onClose={() => setShowOnboarding(false)} />
       </Suspense>
