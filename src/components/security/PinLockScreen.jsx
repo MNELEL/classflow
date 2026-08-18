@@ -7,21 +7,41 @@ export default function PinLockScreen({ onUnlock }) {
   const [entry, setEntry] = useState('');
   const [error, setError] = useState(false);
   const [verifying, setVerifying] = useState(false);
+  const [lockedUntil, setLockedUntil] = useState(null); // epoch ms, or null
+  const [remainingSeconds, setRemainingSeconds] = useState(0);
+
+  const isLockedOut = lockedUntil !== null && remainingSeconds > 0;
+
+  // Countdown ticker while locked out.
+  useEffect(() => {
+    if (lockedUntil === null) return;
+    const tick = () => {
+      const remaining = Math.max(0, Math.ceil((lockedUntil - Date.now()) / 1000));
+      setRemainingSeconds(remaining);
+      if (remaining <= 0) setLockedUntil(null);
+    };
+    tick();
+    const id = setInterval(tick, 1000);
+    return () => clearInterval(id);
+  }, [lockedUntil]);
 
   useEffect(() => {
-    if (entry.length === 4 && !verifying) {
+    if (entry.length === 4 && !verifying && !isLockedOut) {
       setVerifying(true);
-      verifyPin(entry).then(valid => {
+      verifyPin(entry).then(({ valid, locked, retryAfterSeconds }) => {
         if (valid) {
           unlock();
           onUnlock?.();
+        } else if (locked) {
+          setLockedUntil(Date.now() + (retryAfterSeconds || 300) * 1000);
+          fail();
         } else {
           fail();
         }
       }).catch(() => fail());
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [entry, verifying, onUnlock]);
+  }, [entry, verifying, onUnlock, isLockedOut]);
 
   function fail() {
     setError(true);
