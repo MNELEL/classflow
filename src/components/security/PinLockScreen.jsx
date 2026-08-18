@@ -53,11 +53,11 @@ export default function PinLockScreen({ onUnlock }) {
   }
 
   const press = (d) => {
-    if (entry.length < 4 && !error && !verifying) setEntry(e => e + d);
+    if (entry.length < 4 && !error && !verifying && !isLockedOut) setEntry(e => e + d);
   };
 
   const backspace = () => {
-    if (!error && !verifying) setEntry(e => e.slice(0, -1));
+    if (!error && !verifying && !isLockedOut) setEntry(e => e.slice(0, -1));
   };
 
   const handleLogout = () => {
