@@ -15,6 +15,7 @@ import StudentReportGenerator from '@/components/reports/StudentReportGenerator'
 import StudentAIReport from '@/components/reports/StudentAIReport';
 import BulletinGenerator from '@/components/reports/BulletinGenerator';
 import PeriodReportGenerator from '@/components/reports/PeriodReportGenerator';
+import SubjectSelect from '@/components/ui/SubjectSelect';
 
 const COLORS = ['#6366f1', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4'];
 
@@ -24,13 +25,23 @@ function loadSeats() {
 
 export default function ReportsPage() {
   const [tab, setTab] = useState('stats');
+  const [subjectFilter, setSubjectFilter] = useState('all');
   const { data: students = [], isLoading } = useQuery({
     queryKey: ['students'],
     queryFn: () => base44.entities.Student.list(),
   });
+  const { data: grades = [] } = useQuery({
+    queryKey: ['grades'],
+    queryFn: () => base44.entities.Grade.list('-date', 300),
+  });
 
   const seats = loadSeats() || [];
   const active = students.filter(s => s.is_active !== false);
+  const subjects = useMemo(() => {
+    const set = new Set();
+    grades.forEach(g => g.subject && set.add(g.subject));
+    return Array.from(set).sort();
+  }, [grades]);
 
   // ── Height distribution ──
   const heightData = useMemo(() => {
@@ -135,6 +146,11 @@ export default function ReportsPage() {
     <AppLayout>
       <div className="p-5 max-w-3xl mx-auto space-y-5" dir="rtl">
 
+        {/* Subject filter */}
+        <div className="flex justify-start">
+          <SubjectSelect value={subjectFilter} onChange={setSubjectFilter} subjects={subjects} />
+        </div>
+
         {/* Tabs */}
         <div role="tablist" className="flex gap-1 bg-muted/50 rounded-xl p-1">
           {[['stats','📊 סטטיסטיקות'], ['student','🤖 דוח תלמיד AI'], ['bulletin','📰 חוברת שבועית'], ['period','📋 דוח תקופתי']].map(([id, label]) => (
@@ -145,9 +161,9 @@ export default function ReportsPage() {
           ))}
         </div>
 
-        {tab === 'student' && <StudentAIReport students={students} />}
-        {tab === 'bulletin' && <BulletinGenerator />}
-        {tab === 'period' && <PeriodReportGenerator />}
+        {tab === 'student' && <StudentAIReport students={students} subject={subjectFilter !== 'all' ? subjectFilter : undefined} />}
+        {tab === 'bulletin' && <BulletinGenerator subject={subjectFilter !== 'all' ? subjectFilter : undefined} />}
+        {tab === 'period' && <PeriodReportGenerator subject={subjectFilter !== 'all' ? subjectFilter : undefined} />}
 
         {tab === 'stats' && <>
         {/* Header */}

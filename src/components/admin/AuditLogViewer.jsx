@@ -4,7 +4,7 @@ import { base44 } from '@/api/base44Client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import HebrewDatePicker from '@/components/ui/HebrewDatePicker';
 import { ScrollText } from 'lucide-react';
 
 const ACTION_VARIANT = {
@@ -58,9 +58,9 @@ export default function AuditLogViewer() {
       </CardHeader>
       <CardContent className="space-y-3">
         <div className="flex flex-wrap gap-2 items-center">
-          <Input type="date" value={dateFrom} onChange={e => setDateFrom(e.target.value)} className="h-8 w-auto text-xs" aria-label="מתאריך" />
+          <HebrewDatePicker value={dateFrom} onChange={setDateFrom} className="h-8 w-auto text-xs" aria-label="מתאריך" />
           <span className="text-xs text-muted-foreground">עד</span>
-          <Input type="date" value={dateTo} onChange={e => setDateTo(e.target.value)} className="h-8 w-auto text-xs" aria-label="עד תאריך" />
+          <HebrewDatePicker value={dateTo} onChange={setDateTo} className="h-8 w-auto text-xs" aria-label="עד תאריך" />
           <div className="flex gap-1">
             {['all', 'create', 'update', 'delete'].map(a => (
               <Button key={a} size="sm" variant={actionFilter === a ? 'default' : 'outline'} onClick={() => setActionFilter(a)} className="h-8 text-xs">

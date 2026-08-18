@@ -4,6 +4,7 @@ import { base44 } from '@/api/base44Client';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import HebrewDatePicker from '@/components/ui/HebrewDatePicker';
 import { Textarea } from '@/components/ui/textarea';
 import { MobileSelect, SelectItem } from '@/components/ui/MobileSelect';
 import { Badge } from '@/components/ui/badge';
@@ -121,14 +122,7 @@ export default function SchoolUpdatesManager() {
                   </MobileSelect>
                 </div>
                 <div className="flex gap-2">
-                  <Input
-                    type="date"
-                    value={form.expires_at}
-                    onChange={e => setForm({ ...form, expires_at: e.target.value })}
-                    className="h-8 text-xs flex-1"
-                    dir="ltr"
-                    placeholder="תפוגה (אופציונלי)"
-                  />
+                  <HebrewDatePicker value={form.expires_at} onChange={v => setForm({ ...form, expires_at: v })} className="h-8 text-xs flex-1" placeholder="תפוגה (אופציונלי)" />
                   <Button
                     size="sm"
                     className="h-8"

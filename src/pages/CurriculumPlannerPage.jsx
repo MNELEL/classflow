@@ -4,6 +4,7 @@ import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
+import HebrewDatePicker from '@/components/ui/HebrewDatePicker';
 import { Badge } from '@/components/ui/badge';
 import { BookMarked, Plus, Sparkles, Loader2, X, Search } from 'lucide-react';
 import { toast } from 'sonner';
@@ -171,7 +172,7 @@ ${JSON.stringify(libraryContext)}
                     </div>
                     <div>
                       <label className="text-xs text-muted-foreground mb-1 block">תאריך התחלה</label>
-                      <Input type="date" value={weekStart} onChange={e => setWeekStart(e.target.value)} className="h-9 text-sm" />
+                      <HebrewDatePicker value={weekStart} onChange={setWeekStart} className="h-9 text-sm" />
                     </div>
                   </div>
 

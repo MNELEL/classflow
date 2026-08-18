@@ -8,15 +8,15 @@ import ReactMarkdown from 'react-markdown';
 import { toast } from 'sonner';
 import { motion } from 'framer-motion';
 
-export default function StudentAIReport({ students }) {
+export default function StudentAIReport({ students, subject }) {
   const [selectedId, setSelectedId] = useState('');
   const [report, setReport] = useState('');
   const [generating, setGenerating] = useState(false);
   const [copied, setCopied] = useState(false);
 
   const { data: grades = [] } = useQuery({
-    queryKey: ['grades'],
-    queryFn: () => base44.entities.Grade.list('-date', 100),
+    queryKey: ['grades', subject],
+    queryFn: () => base44.entities.Grade.list('-date', 100).then(list => subject ? list.filter(g => g.subject === subject) : list),
     enabled: !!selectedId,
   });
   const { data: attendance = [] } = useQuery({

@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import HebrewDatePicker from '@/components/ui/HebrewDatePicker';
 import { Badge } from '@/components/ui/badge';
 import { MobileSelect, SelectItem } from '@/components/ui/MobileSelect';
 import { Upload, FileText, Image, Trash2, ExternalLink, Plus, Loader2, FolderOpen, X } from 'lucide-react';
@@ -114,7 +115,7 @@ export default function DocumentsVault({ studentId }) {
               </MobileSelect>
               <Input placeholder="שנת לימודים" value={form.academic_year} onChange={e => setForm(p => ({ ...p, academic_year: e.target.value }))} className="h-8 text-xs" />
               <Input placeholder="תיאור (אופציונלי)" value={form.description} onChange={e => setForm(p => ({ ...p, description: e.target.value }))} className="h-8 text-xs col-span-2" />
-              <Input type="date" value={form.date} onChange={e => setForm(p => ({ ...p, date: e.target.value }))} className="h-8 text-xs" />
+              <HebrewDatePicker value={form.date} onChange={v => setForm(p => ({ ...p, date: v }))} className="h-8 text-xs" />
             </div>
             <div className="flex gap-2 justify-end">
               <Button size="sm" variant="ghost" onClick={() => { setShowForm(false); setPendingFile(null); }} className="h-7 text-xs">ביטול</Button>

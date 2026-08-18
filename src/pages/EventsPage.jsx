@@ -4,6 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import AppLayout from '@/components/layout/AppLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import HebrewDatePicker from '@/components/ui/HebrewDatePicker';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { toast } from 'sonner';
@@ -193,11 +194,11 @@ export default function EventsPage() {
               <div className="grid grid-cols-2 gap-2">
                 <div>
                   <label className="text-xs text-muted-foreground mb-1 block">תאריך התחלה</label>
-                  <Input type="datetime-local" value={form.start_date} onChange={e => setForm(f => ({ ...f, start_date: e.target.value }))} className="text-sm" />
+                  <HebrewDatePicker includeTime value={form.start_date} onChange={v => setForm(f => ({ ...f, start_date: v }))} className="text-sm" />
                 </div>
                 <div>
                   <label className="text-xs text-muted-foreground mb-1 block">תאריך סיום</label>
-                  <Input type="datetime-local" value={form.end_date} onChange={e => setForm(f => ({ ...f, end_date: e.target.value }))} className="text-sm" />
+                  <HebrewDatePicker includeTime value={form.end_date} onChange={v => setForm(f => ({ ...f, end_date: v }))} className="text-sm" />
                 </div>
               </div>
               <div>

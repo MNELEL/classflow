@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import HebrewDatePicker from '@/components/ui/HebrewDatePicker';
 import { Badge } from '@/components/ui/badge';
 import { MobileSelect, SelectItem } from '@/components/ui/MobileSelect';
 import { ClipboardCheck, Plus, CheckCircle2, Circle, Bell, Loader2, ChevronDown, ChevronUp, Trash2 } from 'lucide-react';
@@ -111,7 +112,7 @@ function AssignmentCard({ assignment, students, onToggleSubmit, onDelete }) {
   );
 }
 
-export default function HomeworkTracker({ students, focusDate }) {
+export default function HomeworkTracker({ students, focusDate, subjectFilter = 'all' }) {
   const qc = useQueryClient();
   const [showForm, setShowForm] = useState(false);
   const [title, setTitle] = useState('');
@@ -119,12 +120,13 @@ export default function HomeworkTracker({ students, focusDate }) {
   const [dueDate, setDueDate] = useState('');
   const [type, setType] = useState('homework');
 
-  const { data: assignments = [] } = useQuery({
+  const { data: allAssignments = [] } = useQuery({
     queryKey: ['homework'],
     queryFn: () => base44.entities.HomeworkAssignment.list('-due_date', 30),
   });
 
   const activeStudents = students.filter(s => s.is_active !== false);
+  const assignments = subjectFilter && subjectFilter !== 'all' ? allAssignments.filter(a => a.subject === subjectFilter) : allAssignments;
 
   const createMutation = useMutation({
     mutationFn: () => base44.entities.HomeworkAssignment.create({
@@ -203,7 +205,7 @@ export default function HomeworkTracker({ students, focusDate }) {
               <Input placeholder="כותרת המטלה..." value={title} onChange={e => setTitle(e.target.value)} className="h-9 text-sm" />
               <div className="grid grid-cols-2 gap-2">
                 <Input placeholder="מקצוע" value={subject} onChange={e => setSubject(e.target.value)} className="h-9 text-sm" />
-                <Input type="date" value={dueDate} onChange={e => setDueDate(e.target.value)} className="h-9 text-sm" />
+                <HebrewDatePicker value={dueDate} onChange={setDueDate} className="h-9 text-sm" />
               </div>
               <MobileSelect value={type} onValueChange={setType} className="h-9 text-sm">
                 {Object.entries(TYPE_LABELS).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}

@@ -4,12 +4,14 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import AppLayout from '@/components/layout/AppLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import HebrewDatePicker from '@/components/ui/HebrewDatePicker';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { toast } from 'sonner';
 import { FileText, Plus, Calendar, Users, Trophy, BarChart3, Save, X, Check, Trash2 } from 'lucide-react';
 import { useUrlOverlay } from '@/hooks/useUrlOverlay';
 import { motion } from 'framer-motion';
+import SubjectSelect from '@/components/ui/SubjectSelect';
 import { formatDate } from '@/lib/formatDate';
 
 export default function ExamsPage() {
@@ -19,6 +21,7 @@ export default function ExamsPage() {
   const [form, setForm] = useState({ title: '', subject: '', date: '', max_score: 100, duration_minutes: 45, topics: [], notes: '' });
   const [topicInput, setTopicInput] = useState('');
   const [scores, setScores] = useState({});
+  const [subjectFilter, setSubjectFilter] = useState('all');
 
   const { data: exams = [], isLoading } = useQuery({
     queryKey: ['exams'],
@@ -26,6 +29,8 @@ export default function ExamsPage() {
   });
   const { data: students = [] } = useQuery({ queryKey: ['students'], queryFn: () => base44.entities.Student.list() });
   const activeStudents = students.filter(s => s.is_active !== false);
+  const subjects = [...new Set(exams.map(e => e.subject).filter(Boolean))].sort();
+  const visibleExams = subjectFilter !== 'all' ? exams.filter(e => e.subject === subjectFilter) : exams;
 
   const statusMeta = {
     scheduled: { label: 'מתוכנן', color: 'text-blue-600', bg: 'bg-blue-100 dark:bg-blue-900/30' },
@@ -118,17 +123,19 @@ export default function ExamsPage() {
           </Button>
         </div>
 
+        <SubjectSelect value={subjectFilter} onChange={setSubjectFilter} subjects={subjects} className="w-40" />
+
         {/* Exam list */}
         {isLoading ? (
           <div className="py-12 text-center text-muted-foreground text-sm">טוען...</div>
-        ) : exams.length === 0 ? (
+        ) : visibleExams.length === 0 ? (
           <div className="py-16 text-center text-muted-foreground">
             <FileText className="w-12 h-12 mx-auto mb-3 opacity-20" />
             <p className="font-semibold">אין מבחנים עדיין</p>
           </div>
         ) : (
           <div className="space-y-2">
-            {exams.map(exam => {
+            {visibleExams.map(exam => {
               const meta = statusMeta[exam.status] || statusMeta.scheduled;
               const gradedCount = exam.scores?.filter(s => s.score !== null).length || 0;
               const avg = exam.scores?.filter(s => s.score !== null).length > 0
@@ -191,7 +198,7 @@ export default function ExamsPage() {
                 </div>
                 <div>
                   <label className="text-xs text-muted-foreground mb-1 block">תאריך</label>
-                  <Input type="date" value={form.date} onChange={e => setForm(f => ({ ...f, date: e.target.value }))} className="text-sm" />
+                  <HebrewDatePicker value={form.date} onChange={v => setForm(f => ({ ...f, date: v }))} className="text-sm" />
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-2">

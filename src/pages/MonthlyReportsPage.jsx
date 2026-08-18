@@ -8,6 +8,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ArrowRight, FileText, Printer, AlertCircle } from 'lucide-react';
+import SubjectSelect from '@/components/ui/SubjectSelect';
 
 const MONTH_NAMES = ['ינואר','פברואר','מרץ','אפריל','מאי','יוני','יולי','אוגוסט','ספטמבר','אוקטובר','נובמבר','דצמבר'];
 
@@ -17,6 +18,7 @@ export default function MonthlyReportsPage() {
   const isAdmin = user?.role === 'admin';
   const [classId, setClassId] = useState('');
   const [month, setMonth] = useState(new Date().toISOString().slice(0, 7));
+  const [subjectFilter, setSubjectFilter] = useState('all');
 
   const { data: classrooms = [], isLoading } = useQuery({
     queryKey: ['classrooms'],
@@ -38,6 +40,7 @@ export default function MonthlyReportsPage() {
     queryFn: () => base44.entities.FastFeedback.list('-date', 500),
     enabled: isAdmin && !!classId,
   });
+  const subjects = useMemo(() => [...new Set(allGrades.map(g => g.subject).filter(Boolean))].sort(), [allGrades]);
 
   const activeClassrooms = classrooms.filter(c => c.is_active !== false);
   const selectedClass = classrooms.find(c => c.id === classId);
@@ -51,12 +54,12 @@ export default function MonthlyReportsPage() {
   const reportRows = useMemo(() => {
     if (!selectedClass) return [];
     return classStudents.map(student => {
-      const grades = allGrades.filter(g => g.student_id === student.id && (g.date || '').startsWith(month));
+      const grades = allGrades.filter(g => g.student_id === student.id && (g.date || '').startsWith(month) && (subjectFilter === 'all' || g.subject === subjectFilter));
       const avg = grades.length ? Math.round(grades.reduce((s, g) => s + (g.score || 0), 0) / grades.length) : null;
       const notes = allFeedback.filter(f => f.student_id === student.id && (f.date || '').startsWith(month));
       return { student, grades, avg, notes };
     });
-  }, [selectedClass, classStudents, allGrades, allFeedback, month]);
+  }, [selectedClass, classStudents, allGrades, allFeedback, month, subjectFilter]);
 
   const monthLabel = useMemo(() => {
     if (!month) return '';
@@ -93,7 +96,7 @@ export default function MonthlyReportsPage() {
         </div>
 
         <Card className="print:hidden border-border/60 mb-4">
-          <CardContent className="p-4 grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <CardContent className="p-4 grid grid-cols-1 sm:grid-cols-3 gap-3">
             <div>
               <label className="text-xs text-muted-foreground block mb-1">כיתה</label>
               <select
@@ -115,6 +118,10 @@ export default function MonthlyReportsPage() {
                 onChange={e => setMonth(e.target.value)}
                 className="w-full h-9 rounded-md border border-input bg-transparent px-2 text-sm"
               />
+            </div>
+            <div>
+              <label className="text-xs text-muted-foreground block mb-1">מקצוע</label>
+              <SubjectSelect value={subjectFilter} onChange={setSubjectFilter} subjects={subjects} className="w-full" />
             </div>
           </CardContent>
         </Card>

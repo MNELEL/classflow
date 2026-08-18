@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import HebrewDatePicker from '@/components/ui/HebrewDatePicker';
 import { Label } from '@/components/ui/label';
 import { X } from 'lucide-react';
 
@@ -113,7 +114,7 @@ export default function SchoolRuleForm({ open, initial, onClose, onSave }) {
             <>
               <div>
                 <Label>תאריך ספציפי</Label>
-                <Input type="date" value={form.specific_date} onChange={e => set('specific_date', e.target.value)} />
+                <HebrewDatePicker value={form.specific_date} onChange={v => set('specific_date', v)} />
               </div>
               <div className="grid grid-cols-2 gap-2">
                 <div>

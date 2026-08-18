@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import HebrewDatePicker from '@/components/ui/HebrewDatePicker';
 import { Textarea } from '@/components/ui/textarea';
 import { MobileSelect, SelectItem } from '@/components/ui/MobileSelect';
 import { Badge } from '@/components/ui/badge';
@@ -93,7 +94,7 @@ export default function ParentContactLog({ studentId, studentName }) {
               <MobileSelect value={form.type} onValueChange={v => setForm(p => ({ ...p, type: v }))} className="h-8 text-xs">
                 {Object.entries(TYPE_CONFIG).map(([k, v]) => <SelectItem key={k} value={k}>{v.label}</SelectItem>)}
               </MobileSelect>
-              <Input type="date" value={form.date} onChange={e => setForm(p => ({ ...p, date: e.target.value }))} className="h-8 text-xs" />
+              <HebrewDatePicker value={form.date} onChange={v => setForm(p => ({ ...p, date: v }))} className="h-8 text-xs" />
               <Input placeholder="שם ההורה" value={form.parent_name} onChange={e => setForm(p => ({ ...p, parent_name: e.target.value }))} className="h-8 text-xs" />
               <MobileSelect value={form.initiated_by} onValueChange={v => setForm(p => ({ ...p, initiated_by: v }))} className="h-8 text-xs">
                 <SelectItem value="teacher">יוזם: מורה</SelectItem>
@@ -114,7 +115,7 @@ export default function ParentContactLog({ studentId, studentName }) {
                 נדרש מעקב
               </label>
               {form.follow_up_needed && (
-                <Input type="date" value={form.follow_up_date} onChange={e => setForm(p => ({ ...p, follow_up_date: e.target.value }))} className="h-7 text-xs flex-1" />
+                <HebrewDatePicker value={form.follow_up_date} onChange={v => setForm(p => ({ ...p, follow_up_date: v }))} className="h-7 text-xs flex-1" />
               )}
             </div>
             <div className="flex gap-2 justify-end">

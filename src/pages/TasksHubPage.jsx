@@ -11,6 +11,7 @@ import { format, parseISO, differenceInCalendarDays } from 'date-fns';
 import { he } from 'date-fns/locale';
 import TaskAlertsBanner from '@/components/tasks/TaskAlertsBanner';
 import WeeklyTasksManager from '@/components/tasks/WeeklyTasksManager';
+import SubjectSelect from '@/components/ui/SubjectSelect';
 
 const STATUS_LABELS = { pending: 'ממתין', in_progress: 'בביצוע', done: 'הושלם' };
 const STATUS_ICONS = { pending: Clock, in_progress: Clock, done: CheckCircle2 };
@@ -24,6 +25,7 @@ export default function TasksHubPage() {
   const { user } = useAuth();
   const [expandedClass, setExpandedClass] = useState(null);
   const [filter, setFilter] = useState('all'); // all | pending | in_progress | done | overdue
+  const [subjectFilter, setSubjectFilter] = useState('all');
 
   const { data: classrooms = [], isLoading: loadingClasses } = useQuery({
     queryKey: ['classrooms'],
@@ -49,6 +51,13 @@ export default function TasksHubPage() {
     return classrooms.filter(c => c.teacher_id === user.id && c.is_active !== false);
   }, [classrooms, user]);
 
+  const subjects = useMemo(() => {
+    const set = new Set();
+    homework.forEach(h => h.subject && set.add(h.subject));
+    tasks.forEach(t => t.subject && set.add(t.subject));
+    return Array.from(set).sort();
+  }, [homework, tasks]);
+
   // Group homework + tasks by classroom
   const classData = useMemo(() => {
     const today = new Date();
@@ -57,11 +66,13 @@ export default function TasksHubPage() {
       const classStudents = students.filter(s => classStudentIds.includes(s.id));
 
       const classHomework = homework.filter(hw => {
+        if (subjectFilter !== 'all' && hw.subject !== subjectFilter) return false;
         if (!hw.student_ids || hw.student_ids.length === 0) return false;
         return hw.student_ids.some(sid => classStudentIds.includes(sid));
       });
 
       const classTasks = tasks.filter(t => {
+        if (subjectFilter !== 'all' && t.subject !== subjectFilter) return false;
         if (!t.student_id) return false;
         return classStudentIds.includes(t.student_id);
       });
@@ -104,7 +115,7 @@ export default function TasksHubPage() {
         totalCount: classTasks.length + classHomework.length,
       };
     }).filter(cd => cd.studentCount > 0 || cd.homework.length > 0 || cd.tasks.length > 0);
-  }, [visibleClassrooms, students, homework, tasks]);
+  }, [visibleClassrooms, students, homework, tasks, subjectFilter]);
 
   const filteredClasses = useMemo(() => {
     if (filter === 'pending') return classData.filter(c => c.pendingCount > 0);
@@ -176,6 +187,11 @@ export default function TasksHubPage() {
                 <p className="text-[9px] text-muted-foreground">הושלמו</p>
               </CardContent>
             </Card>
+          </div>
+
+          {/* Subject filter */}
+          <div className="flex items-center gap-2">
+            <SubjectSelect value={subjectFilter} onChange={setSubjectFilter} subjects={subjects} />
           </div>
 
           {/* Filter tabs */}

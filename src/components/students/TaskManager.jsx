@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import HebrewDatePicker from '@/components/ui/HebrewDatePicker';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Plus, Trash2, CheckCircle2, Clock, AlertCircle, Calendar } from 'lucide-react';
@@ -104,7 +105,7 @@ export default function TaskManager({ student, open, onClose }) {
             <Input placeholder="תיאור (אופציונלי)" value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} />
             <div className="grid grid-cols-2 gap-2">
               <Input placeholder="מקצוע" value={form.subject} onChange={e => setForm(f => ({ ...f, subject: e.target.value }))} />
-              <Input type="date" value={form.due_date} onChange={e => setForm(f => ({ ...f, due_date: e.target.value }))} />
+              <HebrewDatePicker value={form.due_date} onChange={v => setForm(f => ({ ...f, due_date: v }))} />
             </div>
             <div className="flex gap-2">
               {['low', 'medium', 'high'].map(p => (

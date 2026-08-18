@@ -3,12 +3,13 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import HebrewDatePicker from '@/components/ui/HebrewDatePicker';
 import { Sparkles, Loader2, Printer, ChevronDown, ChevronUp, FileDown, ClipboardCopy, Mail, Share2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { motion } from 'framer-motion';
 import { format } from 'date-fns';
 import { convertOklchColors } from '@/lib/colorUtils';
-export default function BulletinGenerator() {
+export default function BulletinGenerator({ subject }) {
   const qc = useQueryClient();
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
@@ -18,7 +19,7 @@ export default function BulletinGenerator() {
   const [bulletinId, setBulletinId] = useState(null);
   const [showRiddle, setShowRiddle] = useState(false);
 
-  const { data: grades = [] } = useQuery({ queryKey: ['grades'], queryFn: () => base44.entities.Grade.list('-date', 100) });
+  const { data: grades = [] } = useQuery({ queryKey: ['grades', subject], queryFn: () => base44.entities.Grade.list('-date', 100).then(list => subject ? list.filter(g => g.subject === subject) : list) });
   const { data: libraryItems = [] } = useQuery({ queryKey: ['library'], queryFn: () => base44.entities.LibraryItem.list('-created_date', 50) });
   const { data: rewards = [] } = useQuery({ queryKey: ['rewards'], queryFn: () => base44.entities.Reward.list('-date', 100) });
 
@@ -215,11 +216,11 @@ ${context || 'שבוע לימודים רגיל'}
         <div className="grid grid-cols-2 gap-2">
           <div>
             <label className="text-xs text-muted-foreground mb-1 block">מתאריך</label>
-            <Input type="date" value={startDate} onChange={e => setStartDate(e.target.value)} className="text-sm" />
+            <HebrewDatePicker value={startDate} onChange={setStartDate} className="text-sm" />
           </div>
           <div>
             <label className="text-xs text-muted-foreground mb-1 block">עד תאריך</label>
-            <Input type="date" value={endDate} onChange={e => setEndDate(e.target.value)} className="text-sm" />
+            <HebrewDatePicker value={endDate} onChange={setEndDate} className="text-sm" />
           </div>
         </div>
         <Button className="w-full gap-2" onClick={generate} disabled={generating}>

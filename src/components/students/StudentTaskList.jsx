@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import HebrewDatePicker from '@/components/ui/HebrewDatePicker';
 import { Badge } from '@/components/ui/badge';
 import { MobileSelect, SelectItem } from '@/components/ui/MobileSelect';
 import {
@@ -175,12 +176,7 @@ export default function StudentTaskList({ studentId }) {
               onChange={e => setSubject(e.target.value)}
               className="h-8 text-xs"
             />
-            <Input
-              type="date"
-              value={dueDate}
-              onChange={e => setDueDate(e.target.value)}
-              className="h-8 text-xs"
-            />
+            <HebrewDatePicker value={dueDate} onChange={setDueDate} className="h-8 text-xs" />
           </div>
           <div className="flex items-center gap-2">
             <MobileSelect value={priority} onValueChange={setPriority} className="h-8 text-xs flex-1">

@@ -3,6 +3,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
+import HebrewDatePicker from '@/components/ui/HebrewDatePicker';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { MobileSelect } from '@/components/ui/MobileSelect';
@@ -263,7 +264,7 @@ export default function ReviewCard({ pending, students, onApprove, onReject, isP
                   <div className="space-y-1">
                     <Label className="text-xs text-muted-foreground">תאריך יעד</Label>
                     {editing ? (
-                      <Input type="date" value={draft.due_date || ''} onChange={e => updateField('due_date', e.target.value)} className="h-9" />
+                      <HebrewDatePicker value={draft.due_date || ''} onChange={v => updateField('due_date', v)} className="h-9" />
                     ) : (
                       <p className="text-sm">{pending.payload?.due_date || '—'}</p>
                     )}

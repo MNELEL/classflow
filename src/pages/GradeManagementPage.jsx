@@ -15,11 +15,13 @@ import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuIte
 import { motion } from 'framer-motion';
 import { usePullToRefresh } from '@/hooks/usePullToRefresh';
 import PullToRefreshIndicator from '@/components/ui/PullToRefreshIndicator';
+import SubjectSelect from '@/components/ui/SubjectSelect';
 
 export default function GradeManagementPage() {
   const qc = useQueryClient();
   const navigate = useNavigate();
   const [showCsvImport, setShowCsvImport] = useState(false);
+  const [subjectFilter, setSubjectFilter] = useState('all');
   const { data: students = [] } = useQuery({
     queryKey: ['students'],
     queryFn: () => base44.entities.Student.list(),
@@ -29,6 +31,8 @@ export default function GradeManagementPage() {
     queryKey: ['grades'],
     queryFn: () => base44.entities.Grade.list(),
   });
+  const subjects = [...new Set(grades.map(g => g.subject).filter(Boolean))].sort();
+  const filteredGrades = subjectFilter !== 'all' ? grades.filter(g => g.subject === subjectFilter) : grades;
 
   const handleRefresh = useCallback(async () => { await refetchGrades(); }, [refetchGrades]);
   const { containerRef, pullY, refreshing } = usePullToRefresh(handleRefresh);
@@ -44,6 +48,7 @@ export default function GradeManagementPage() {
           </div>
           <p className="text-muted-foreground text-sm">הזנת ציונים חכמה, שאילתות AI ודוחות מפורטים</p>
           <div className="flex gap-2 mt-3">
+            <SubjectSelect value={subjectFilter} onChange={setSubjectFilter} subjects={subjects} />
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button size="sm" variant="outline" className="gap-1.5 text-xs">
@@ -85,15 +90,15 @@ export default function GradeManagementPage() {
           </TabsList>
 
           <TabsContent value="input">
-            <AIGradeInput students={students} grades={grades} onGradesSaved={refetchGrades} />
+            <AIGradeInput students={students} grades={filteredGrades} onGradesSaved={refetchGrades} />
           </TabsContent>
 
           <TabsContent value="query">
-            <AIGradeQuery students={students} grades={grades} />
+            <AIGradeQuery students={students} grades={filteredGrades} />
           </TabsContent>
 
           <TabsContent value="reports">
-            <GradeReportPanel students={students} grades={grades} />
+            <GradeReportPanel students={students} grades={filteredGrades} />
           </TabsContent>
         </Tabs>
       </div>

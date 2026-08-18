@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import HebrewDatePicker from '@/components/ui/HebrewDatePicker';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -158,7 +159,7 @@ ${gradesSummary}
               <Input placeholder="שם המבחן/משימה" value={form.test_name} onChange={e => setForm(f => ({ ...f, test_name: e.target.value }))} />
               <Input type="number" placeholder="ציון *" value={form.score} onChange={e => setForm(f => ({ ...f, score: e.target.value }))} min={0} max={200} />
               <Input type="number" placeholder="מקסימום" value={form.max_score} onChange={e => setForm(f => ({ ...f, max_score: e.target.value }))} />
-              <Input type="date" value={form.date} onChange={e => setForm(f => ({ ...f, date: e.target.value }))} />
+              <HebrewDatePicker value={form.date} onChange={v => setForm(f => ({ ...f, date: v }))} />
               <MobileSelect value={form.period} onValueChange={v => setForm(f => ({ ...f, period: v }))} className="h-9 text-sm">
                 {Object.entries(PERIOD_LABELS).map(([v, l]) => <SelectItem key={v} value={v}>{l}</SelectItem>)}
               </MobileSelect>

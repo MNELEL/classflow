@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import AppLayout from '@/components/layout/AppLayout';
@@ -10,6 +10,7 @@ import { motion } from 'framer-motion';
 import { usePullToRefresh } from '@/hooks/usePullToRefresh';
 import PullToRefreshIndicator from '@/components/ui/PullToRefreshIndicator';
 import HebrewDateNavigator from '@/components/ui/HebrewDateNavigator';
+import SubjectSelect from '@/components/ui/SubjectSelect';
 import { useSelectedDate } from '@/lib/dateContext';
 
 export default function HomeworkPage() {
@@ -17,6 +18,12 @@ export default function HomeworkPage() {
     queryKey: ['students'],
     queryFn: () => base44.entities.Student.filter({ is_active: true }),
   });
+  const { data: homework = [] } = useQuery({
+    queryKey: ['homework'],
+    queryFn: () => base44.entities.HomeworkAssignment.list('-due_date', 200),
+  });
+  const subjects = [...new Set(homework.map(h => h.subject).filter(Boolean))].sort();
+  const [subjectFilter, setSubjectFilter] = useState('all');
 
   const qc = useQueryClient();
   const { selectedDate } = useSelectedDate();
@@ -41,6 +48,10 @@ export default function HomeworkPage() {
           <HebrewDateNavigator />
         </div>
 
+        <div className="mb-4 flex justify-start">
+          <SubjectSelect value={subjectFilter} onChange={setSubjectFilter} subjects={subjects} />
+        </div>
+
         <Tabs defaultValue="homework" dir="rtl">
           <TabsList className="w-full grid grid-cols-2 mb-4">
             <TabsTrigger value="homework" className="gap-1.5 text-xs">
@@ -52,7 +63,7 @@ export default function HomeworkPage() {
           </TabsList>
 
           <TabsContent value="homework">
-            <HomeworkTracker students={students} focusDate={selectedDate} />
+            <HomeworkTracker students={students} focusDate={selectedDate} subjectFilter={subjectFilter} />
           </TabsContent>
 
           <TabsContent value="calendar">

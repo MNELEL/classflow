@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import HebrewDatePicker from '@/components/ui/HebrewDatePicker';
 import { Label } from '@/components/ui/label';
 import { MobileSelect, SelectItem } from '@/components/ui/MobileSelect';
 import { Loader2, Sparkles, FileDown, MessageCircle, Mail, Printer } from 'lucide-react';
@@ -173,7 +174,7 @@ function buildPeriodReportHTML(data, className, periodLabel, audienceLabel, teac
 </html>`;
 }
 
-export default function PeriodReportGenerator() {
+export default function PeriodReportGenerator({ subject }) {
   const [period, setPeriod] = useState('monthly');
   const [audience, setAudience] = useState('parents');
   const [className, setClassName] = useState('');
@@ -187,7 +188,7 @@ export default function PeriodReportGenerator() {
   const [reportHTML, setReportHTML] = useState('');
 
   const { data: students = [] } = useQuery({ queryKey: ['students'], queryFn: () => base44.entities.Student.list() });
-  const { data: grades = [] } = useQuery({ queryKey: ['grades'], queryFn: () => base44.entities.Grade.list('-date', 300) });
+  const { data: grades = [] } = useQuery({ queryKey: ['grades', subject], queryFn: () => base44.entities.Grade.list('-date', 300).then(list => subject ? list.filter(g => g.subject === subject) : list) });
   const { data: attendance = [] } = useQuery({ queryKey: ['attendance'], queryFn: () => base44.entities.Attendance.list('-date', 300) });
   const { data: rewards = [] } = useQuery({ queryKey: ['rewards'], queryFn: () => base44.entities.Reward.list('-date', 200) });
   const { data: libraryItems = [] } = useQuery({ queryKey: ['library'], queryFn: () => base44.entities.LibraryItem.list('-created_date', 100) });
@@ -392,11 +393,11 @@ ${context}
           <div className="grid grid-cols-2 gap-2">
             <div>
               <Label className="text-xs text-muted-foreground mb-1 block">מתאריך</Label>
-              <Input type="date" value={customStart} onChange={e => setCustomStart(e.target.value)} />
+              <HebrewDatePicker value={customStart} onChange={setCustomStart} />
             </div>
             <div>
               <Label className="text-xs text-muted-foreground mb-1 block">עד תאריך</Label>
-              <Input type="date" value={customEnd} onChange={e => setCustomEnd(e.target.value)} />
+              <HebrewDatePicker value={customEnd} onChange={setCustomEnd} />
             </div>
           </div>
         )}

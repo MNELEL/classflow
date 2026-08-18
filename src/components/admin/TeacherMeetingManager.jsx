@@ -4,6 +4,7 @@ import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
+import HebrewDatePicker from '@/components/ui/HebrewDatePicker';
 import { MobileSelect, SelectItem } from '@/components/ui/MobileSelect';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
@@ -92,13 +93,7 @@ export default function TeacherMeetingManager({ teacher }) {
               <div className="grid grid-cols-2 gap-2">
                 <div>
                   <Label className="text-[10px] mb-1 block">תאריך ושעה</Label>
-                  <Input
-                    type="datetime-local"
-                    value={form.meeting_date}
-                    onChange={e => setForm({ ...form, meeting_date: e.target.value })}
-                    className="h-8 text-xs"
-                    dir="ltr"
-                  />
+                  <HebrewDatePicker includeTime value={form.meeting_date} onChange={v => setForm({ ...form, meeting_date: v })} className="h-8 text-xs" />
                 </div>
                 <div>
                   <Label className="text-[10px] mb-1 block">סוג פגישה</Label>
@@ -121,7 +116,7 @@ export default function TeacherMeetingManager({ teacher }) {
               </div>
               <div>
                 <Label className="text-[10px] mb-1 block">תאריך מעקב</Label>
-                <Input type="date" value={form.follow_up_date} onChange={e => setForm({ ...form, follow_up_date: e.target.value })} className="h-8 text-xs" dir="ltr" />
+                <HebrewDatePicker value={form.follow_up_date} onChange={v => setForm({ ...form, follow_up_date: v })} className="h-8 text-xs" />
               </div>
               <Button size="sm" className="w-full h-8" onClick={() => createMutation.mutate(form)} disabled={createMutation.isPending}>
                 {createMutation.isPending ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : 'שמור פגישה'}

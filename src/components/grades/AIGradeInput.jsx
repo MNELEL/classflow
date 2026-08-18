@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
+import HebrewDatePicker from '@/components/ui/HebrewDatePicker';
 import { MobileSelect, SelectItem } from '@/components/ui/MobileSelect';
 import { Sparkles, Mic, MicOff, Check, X, Loader2, Edit2, Save, AlertCircle } from 'lucide-react';
 import { toast } from 'sonner';
@@ -297,7 +298,7 @@ function DraftCard({ card, students, isEditing, isSaving, onEdit, onUpdate, onRe
             </div>
             <div>
               <label className="text-xs text-muted-foreground mb-1 block">תאריך</label>
-              <Input type="date" value={card.date} onChange={e => onUpdate('date', e.target.value)} className="h-8 text-sm" />
+              <HebrewDatePicker value={card.date} onChange={v => onUpdate('date', v)} className="h-8 text-sm" />
             </div>
             <div>
               <label className="text-xs text-muted-foreground mb-1 block">ציון</label>

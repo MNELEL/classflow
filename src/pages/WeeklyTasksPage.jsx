@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import AppLayout from '@/components/layout/AppLayout';
@@ -6,6 +6,7 @@ import HebrewDateNavigator from '@/components/ui/HebrewDateNavigator';
 import { CheckCircle2, Circle, Target, ListChecks, Loader2 } from 'lucide-react';
 import { startOfWeek, addDays, format, isWithinInterval } from 'date-fns';
 import { formatDate, formatDateLong } from '@/lib/formatDate';
+import SubjectSelect from '@/components/ui/SubjectSelect';
 import { useSelectedDate } from '@/lib/dateContext';
 
 function ymd(d) { return format(d, 'yyyy-MM-dd'); }
@@ -22,6 +23,7 @@ export default function WeeklyTasksPage() {
     queryFn: () => base44.entities.CurriculumWeek.filter({ week_start: weekKey }),
   });
   const cw = curriculumWeeks[0] || null;
+  const [subjectFilter, setSubjectFilter] = useState('all');
   const goals = cw?.parsed_goals || [];
 
   const { data: tasks = [], isLoading: loadingTasks } = useQuery({
@@ -31,6 +33,17 @@ export default function WeeklyTasksPage() {
   const weekTasks = useMemo(() => tasks.filter(t => {
     try { return isWithinInterval(new Date(t.due_date), { start: weekStart, end: weekEnd }); } catch { return false; }
   }), [tasks, weekStart, weekEnd]);
+
+  const subjects = useMemo(() => {
+    const set = new Set();
+    tasks.forEach(t => t.subject && set.add(t.subject));
+    return Array.from(set).sort();
+  }, [tasks]);
+
+  const visibleTasks = useMemo(
+    () => subjectFilter === 'all' ? weekTasks : weekTasks.filter(t => t.subject === subjectFilter),
+    [weekTasks, subjectFilter]
+  );
 
   const { data: students = [] } = useQuery({ queryKey: ['students'], queryFn: () => base44.entities.Student.list() });
   const studentName = (id) => students.find(s => s.id === id)?.name || '—';
@@ -65,9 +78,9 @@ export default function WeeklyTasksPage() {
   });
 
   const completedGoals = goals.filter(g => g.is_completed).length;
-  const doneTasks = weekTasks.filter(t => t.status === 'done').length;
+  const doneTasks = visibleTasks.filter(t => t.status === 'done').length;
   const goalPct = goals.length ? Math.round(completedGoals / goals.length * 100) : 0;
-  const taskPct = weekTasks.length ? Math.round(doneTasks / weekTasks.length * 100) : 0;
+  const taskPct = visibleTasks.length ? Math.round(doneTasks / visibleTasks.length * 100) : 0;
 
   return (
     <AppLayout>
@@ -114,11 +127,14 @@ export default function WeeklyTasksPage() {
         <div className="bg-card border rounded-2xl p-4 space-y-3">
           <div className="flex items-center justify-between">
             <span className="text-sm font-bold flex items-center gap-1.5"><ListChecks className="w-4 h-4 text-indigo-600" /> משימות הכיתה לשבוע</span>
-            <span className="text-xs text-muted-foreground">{doneTasks}/{weekTasks.length}</span>
+            <span className="text-xs text-muted-foreground">{doneTasks}/{visibleTasks.length}</span>
+          </div>
+          <div className="flex justify-end">
+            <SubjectSelect value={subjectFilter} onChange={setSubjectFilter} subjects={subjects} />
           </div>
           {loadingTasks ? (
             <div className="flex justify-center py-4"><Loader2 className="w-5 h-5 animate-spin text-muted-foreground" /></div>
-          ) : weekTasks.length === 0 ? (
+          ) : visibleTasks.length === 0 ? (
             <p className="text-xs text-muted-foreground text-center py-3">אין משימות לשבוע זה.</p>
           ) : (
             <>
@@ -126,7 +142,7 @@ export default function WeeklyTasksPage() {
                 <div className="h-full bg-indigo-500 transition-all" style={{ width: `${taskPct}%` }} />
               </div>
               <div className="space-y-1.5">
-                {weekTasks.map(t => (
+                {visibleTasks.map(t => (
                   <button key={t.id} onClick={() => toggleTask.mutate({ task: t })}
                     className="w-full flex items-center gap-2 p-2 rounded-xl hover:bg-muted/50 transition-colors text-right">
                     {t.status === 'done' ? <CheckCircle2 className="w-5 h-5 text-green-500 shrink-0" /> : <Circle className="w-5 h-5 text-muted-foreground shrink-0" />}
