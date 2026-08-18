@@ -67,7 +67,20 @@ export default function OnboardingModal({ open, onClose, forceShow }) {
         grade_level: data.gradeLevel,
         onboarding_goals: data.goals,
       });
-    } catch (e) {}
+    } catch (e) {
+      // Non-fatal: keep the onboarding flow moving either way (blocking it
+      // on a profile-save failure would strand the user), but the profile
+      // fields didn't persist server-side, so flag it distinctly from the
+      // success case.
+      console.error('[OnboardingModal] Failed to save profile to user metadata:', e);
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({ ...data, completedAt: new Date().toISOString() }));
+      toast.warning('ההגדרה נשמרה מקומית, אך עדכון הפרופיל בשרת נכשל. ניתן לעדכן שוב בהגדרות.');
+      const fallbackGoal = GOAL_OPTIONS.find(g => g.id === data.goals[0]);
+      if (fallbackGoal) navigate(fallbackGoal.path);
+      else navigate('/');
+      onClose();
+      return;
+    }
     localStorage.setItem(STORAGE_KEY, JSON.stringify({ ...data, completedAt: new Date().toISOString() }));
     toast.success('ההגדרה הושלמה! 🎉');
     // Navigate to first goal
