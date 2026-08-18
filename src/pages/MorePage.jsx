@@ -9,7 +9,7 @@ import {
   Contact, FileText, Layers, Mic, ClipboardCheck,
   Music, Eye, Clock, UserCircle, ChevronLeft, BarChart2, Brain,
   BookOpen, Home, Bell, BookMarked, Shuffle, Zap, GitBranch, CalendarDays, Sparkles, Shield, Upload, Award, LayoutTemplate,
-  Library, LayoutGrid
+  Library, LayoutGrid, Newspaper
 } from 'lucide-react';
 import AppLayout from '@/components/layout/AppLayout';
 
@@ -45,6 +45,7 @@ const SECTIONS = [
       { path: '/question-bank',       icon: Layers,     label: 'בנק שאלות',        desc: 'שאלות לפי נושא ורמה',            color: 'bg-pink-100 text-pink-600 dark:bg-pink-900/30 dark:text-pink-400'           },
       { path: '/study-plan-generator',icon: BookMarked, label: 'מחולל תוכניות',    desc: 'צור תוכנית לימודים שבועית עם AI', color: 'bg-violet-100 text-violet-700 dark:bg-violet-900/30 dark:text-violet-400'    },
       { path: '/teacher-style',       icon: Brain,      label: 'סגנון הוראה שלי',  desc: 'AI לומד את הסגנון הייחודי שלך',  color: 'bg-primary/10 text-primary'                                                },
+      { path: '/weekly-bulletin',     icon: Newspaper,  label: 'חוברת קשר שבועית', desc: 'טיוטה אוטומטית לפי ההספק ומערכת השעות', color: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400'      },
     ],
   },
   {
@@ -54,6 +55,7 @@ const SECTIONS = [
     items: [
       { path: '/parents',      icon: Contact, label: 'הורים',        desc: 'תקשורת ושיתוף חומרים', color: 'bg-teal-100 text-teal-600 dark:bg-teal-900/30 dark:text-teal-400' },
       { path: '/student-view', icon: Eye,     label: 'תצוגת תלמיד',  desc: 'מה התלמיד רואה',        color: 'bg-sky-100 text-sky-600 dark:bg-sky-900/30 dark:text-sky-400'     },
+      { path: '/weekly-bulletin', icon: Newspaper, label: 'חוברת קשר שבועית', desc: 'טיוטה אוטומטית לפי ההספק ומערכת השעות', color: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400' },
     ],
   },
   {

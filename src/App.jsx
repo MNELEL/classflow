@@ -29,6 +29,7 @@ const AttendancePage       = lazy(() => import('./pages/AttendancePage'));
 const WeeklyAttendanceReportPage = lazy(() => import('./pages/WeeklyAttendanceReportPage'));
 const MonthlyAttendanceReportPage = lazy(() => import('./pages/MonthlyAttendanceReportPage'));
 const WeeklySummaryPage = lazy(() => import('./pages/WeeklySummaryPage'));
+const WeeklyBulletinPage = lazy(() => import('./pages/WeeklyBulletinPage'));
 const BirthdaysReportPage = lazy(() => import('./pages/BirthdaysReportPage'));
 const WeeklyTasksPage = lazy(() => import('./pages/WeeklyTasksPage'));
 const GradeManagementPage  = lazy(() => import('./pages/GradeManagementPage'));
@@ -131,6 +132,7 @@ function AnimatedRoutes() {
               <Route path="/weekly-attendance-report" element={<WeeklyAttendanceReportPage />} />
               <Route path="/monthly-attendance-report" element={<MonthlyAttendanceReportPage />} />
               <Route path="/weekly-summary" element={<WeeklySummaryPage />} />
+<Route path="/weekly-bulletin" element={<WeeklyBulletinPage />} />
               <Route path="/birthdays-report" element={<BirthdaysReportPage />} />
               <Route path="/weekly-tasks" element={<WeeklyTasksPage />} />
               <Route path="/grades" element={<GradeManagementPage />} />
