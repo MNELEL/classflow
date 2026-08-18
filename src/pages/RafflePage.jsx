@@ -127,7 +127,13 @@ export default function RafflePage() {
         created_at: new Date().toISOString(),
       });
       qc.invalidateQueries({ queryKey: ['raffles'] });
-    } catch (e) {}
+    } catch (e) {
+      // Non-fatal: the raffle result is already shown to the user, but the
+      // history entry didn't persist — surface it so they know to redo it
+      // if they rely on ClassroomRaffle history later.
+      console.error('[RafflePage] Failed to save raffle history:', e);
+      toast.error('התוצאה הוצגה, אך שמירת ההגרלה בהיסטוריה נכשלה');
+    }
   }
 
   function reset() {
