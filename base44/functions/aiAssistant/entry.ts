@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
+import { gatherOrchestratorContext, summarizeContextForAI } from '../../shared/orchestratorContext.ts';
 
 Deno.serve(async (req) => {
   try {
@@ -11,28 +12,35 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'נדרש טקסט פקודה' }, { status: 400 });
     }
 
-    // Fetch students for name → ID resolution
-    const students = await base44.entities.Student.list('-created_date', 300);
+    // Gather full cross-module "brain" context so the assistant can answer
+    // natural questions about class status, not just CRUD commands.
+    const ctx = await gatherOrchestratorContext(base44);
+    const students = ctx.students;
     const studentRoster = students.map(s => ({
       id: s.id,
       name: s.name,
       custom_fields: s.custom_fields || {},
     }));
+    const aiSummary = summarizeContextForAI(ctx);
 
-    const todayISO = new Date().toISOString().slice(0, 10);
+    const todayISO = ctx.today;
 
     const llmResult = await base44.integrations.Core.InvokeLLM({
-      prompt: `אתה עוזר וירטואלי למורה במערכת ClassFlow. נתח את הפקודה הבאה והחזר פעולה מובנית.
+      prompt: `אתה ה"מוח הפדגוגי" והעוזר האישי למורה במערכת ClassFlow. נתח את הפקודה הבאה והחזר פעולה מובנית או תשובה טבעית.
 
 רשימת תלמידים (ID + שם + שדות מותאמים):
 ${JSON.stringify(studentRoster)}
 
 תאריך היום: ${todayISO}
 
+תקציר מצב הכיתה (מכל המודולים — ציונים, נוכחות, משימות, התנהגות, שיעורים, מבחנים, אירועים):
+${JSON.stringify(aiSummary).slice(0, 5000)}
+
 פקודת המשתמש: "${command}"
 
 כללים:
-- זהה את הכוונה (intent) מתוך: add_student, mark_attendance, add_grade, add_task, add_behavior, add_homework, query_student_info, unknown
+- זהה את הכוונה (intent) מתוך: add_student, mark_attendance, add_grade, add_task, add_behavior, add_homework, query_student_info, natural_query, unknown
+- עבור natural_query: המשתמש שואל שאלה פתוחה על מצב הכיתה/תלמיד — למשל "מי מתקשה הכי הרבה?", "איך המצב של דני?", "מי נעדר הכי הרבה החודש?", "מה קורה בכיתה?". ענה בשדה reply על בסיס תקציר מצב הכיתה שקיבלת. התשובה תהיה פסקה קצרה, ממוקדת ומועילה, בעברית. ציין תלמידים ספציפיים לפי השם כשרלוונטי.
 - עבור תלמיד קיים, התאם את השם ל-ID מהרשימה ומלא את student_id. אם השם לא נמצא, השאר את student_id ריק ושים את השם ב-student_name.
 - עבור query_student_info: המשתמש שואל על פרטי תלמיד — יום הולדת, טלפון אב/אם, ת"ז אב/אם/תלמיד, אימייל או כתובת. מלא את student_id ואת query_field לפי השאלה:
     • יום הולדת / מתי נולד → query_field="birth_date"
@@ -54,10 +62,11 @@ ${JSON.stringify(studentRoster)}
       response_json_schema: {
         type: 'object',
         properties: {
-          intent: { type: 'string', enum: ['add_student', 'mark_attendance', 'add_grade', 'add_task', 'add_behavior', 'add_homework', 'query_student_info', 'unknown'] },
+          intent: { type: 'string', enum: ['add_student', 'mark_attendance', 'add_grade', 'add_task', 'add_behavior', 'add_homework', 'query_student_info', 'natural_query', 'unknown'] },
           student_id: { type: 'string' },
           student_name: { type: 'string' },
           query_field: { type: 'string', enum: ['birth_date', 'parent_phone', 'father_phone', 'mother_phone', 'id_number', 'father_id', 'mother_id', 'email', 'address', 'all'] },
+          reply: { type: 'string' },
           status: { type: 'string', enum: ['present', 'absent', 'late'] },
           subject: { type: 'string' },
           score: { type: 'number' },
@@ -108,8 +117,12 @@ ${JSON.stringify(studentRoster)}
       return Response.json({ success: true, message: msg });
     }
 
+    if (action.intent === 'natural_query') {
+      return Response.json({ success: true, message: action.reply || 'לא הצלחתי לנתח את מצב הכיתה מהנתונים הנוכחיים.' });
+    }
+
     if (action.intent === 'unknown' || !action.intent) {
-      return Response.json({ success: false, message: 'לא הצלחתי להבין את הפקודה. נסה לנסח אחרת, למשל: "סמן את דני נעדר" או "הוסף תלמיד חדש בשם רוני".' });
+      return Response.json({ success: false, message: 'לא הצלחתי להבין את הפקודה. נסה לנסח אחרת, למשל: "סמן את דני נעדר", "איך המצב של רוני?" או "מי מתקשה הכי הרבה בכיתה?".' });
     }
 
     // Build human-readable summary
