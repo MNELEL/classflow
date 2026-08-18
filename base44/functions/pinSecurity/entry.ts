@@ -1,5 +1,10 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
 
+// Lockout policy: after this many consecutive failed PIN attempts, block
+// further verification for LOCKOUT_MS.
+const MAX_FAILED_ATTEMPTS = 5;
+const LOCKOUT_MS = 15 * 60 * 1000; // 15 minutes
+
 // Generate a random 32-byte salt, returned as base64url.
 function generateSalt() {
   const bytes = new Uint8Array(32);
