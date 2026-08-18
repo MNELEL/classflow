@@ -295,19 +295,21 @@ const AuthenticatedApp = () => {
 
 function App() {
   return (
-    <AuthProvider>
-      <ThemeProvider>
-        <QueryClientProvider client={queryClientInstance}>
-          <SelectedDateProvider>
-          <Router>
-            <AuthenticatedApp />
-          </Router>
-          </SelectedDateProvider>
-          <Toaster />
-          <Sonner position="bottom-center" richColors offset="80px" />
-        </QueryClientProvider>
-      </ThemeProvider>
-    </AuthProvider>
+    <ErrorBoundary>
+      <AuthProvider>
+        <ThemeProvider>
+          <QueryClientProvider client={queryClientInstance}>
+            <SelectedDateProvider>
+            <Router>
+              <AuthenticatedApp />
+            </Router>
+            </SelectedDateProvider>
+            <Toaster />
+            <Sonner position="bottom-center" richColors offset="80px" />
+          </QueryClientProvider>
+        </ThemeProvider>
+      </AuthProvider>
+    </ErrorBoundary>
   );
 }
 
