@@ -1,4 +1,5 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useRef, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
@@ -17,6 +18,9 @@ import { usePullToRefresh } from '@/hooks/usePullToRefresh';
 import PullToRefreshIndicator from '@/components/ui/PullToRefreshIndicator';
 
 export default function CurriculumPlannerPage() {
+  const [searchParams] = useSearchParams();
+  const highlightWeekId = searchParams.get('week');
+  const highlightRef = useRef(null);
   const [showForm, setShowForm] = useState(false);
   const [weekLabel, setWeekLabel] = useState('');
   const [weekStart, setWeekStart] = useState(new Date().toISOString().split('T')[0]);
@@ -36,6 +40,12 @@ export default function CurriculumPlannerPage() {
     queryFn: () => base44.entities.LibraryItem.list('-created_date', 200),
     staleTime: 60000,
   });
+
+  useEffect(() => {
+    if (highlightWeekId && highlightRef.current) {
+      highlightRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  }, [highlightWeekId, weeks]);
 
   async function handleGenerate() {
     if (!freeText.trim()) { toast.error('יש לכתוב את ההספקים'); return; }
@@ -228,7 +238,9 @@ ${JSON.stringify(libraryContext)}
           ) : (
             <div className="space-y-3">
               {weeks.map(w => (
-                <WeekCard key={w.id} week={w} />
+                <div key={w.id} ref={w.id === highlightWeekId ? highlightRef : null}>
+                  <WeekCard week={w} highlight={w.id === highlightWeekId} />
+                </div>
               ))}
             </div>
           )}

@@ -281,12 +281,25 @@ export default function StudentProfilePage() {
               <div className="space-y-2">
                 {myGrades.slice().reverse().map(g => (
                   <div key={g.id} className="flex items-center justify-between bg-card border border-border rounded-xl px-3.5 py-2.5">
-                    <div>
+                    <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium">{g.test_name || g.subject}</p>
                       <p className="text-xs text-muted-foreground">{g.subject} · {g.date && formatDate(g.date)}</p>
                     </div>
-                    <div className={`text-lg font-bold ${g.score >= 80 ? 'text-emerald-600' : g.score >= 60 ? 'text-amber-600' : 'text-red-600'}`}>
-                      {g.score}
+                    <div className="flex items-center gap-2 shrink-0">
+                      {g.exam_id && (
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          className="h-7 px-2 text-xs gap-1 text-primary"
+                          onClick={() => navigate(`/exams?exam=${g.exam_id}`)}
+                          title="פתח את המבחן"
+                        >
+                          <ExternalLink className="w-3 h-3" /> מבחן
+                        </Button>
+                      )}
+                      <div className={`text-lg font-bold ${g.score >= 80 ? 'text-emerald-600' : g.score >= 60 ? 'text-amber-600' : 'text-red-600'}`}>
+                        {g.score}
+                      </div>
                     </div>
                   </div>
                 ))}

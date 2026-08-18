@@ -8,6 +8,7 @@ import { base44 } from '@/api/base44Client';
 import { useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { formatDateLong } from '@/lib/formatDate';
+import { cn } from '@/lib/utils';
 
 const STATUS_MAP = {
   planned: { label: 'מתוכנן', color: 'bg-muted text-muted-foreground' },
@@ -15,7 +16,7 @@ const STATUS_MAP = {
   completed: { label: 'הושלם', color: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' },
 };
 
-export default function WeekCard({ week, onDelete }) {
+export default function WeekCard({ week, onDelete, highlight }) {
   const [open, setOpen] = useState(false);
   const qc = useQueryClient();
 
@@ -40,7 +41,7 @@ export default function WeekCard({ week, onDelete }) {
   const nextSuggestions = goals.filter(g => g.suggested_next);
 
   return (
-    <div className="rounded-2xl border border-border bg-card overflow-hidden">
+    <div className={cn("rounded-2xl border bg-card overflow-hidden transition-all", highlight ? "border-primary ring-2 ring-primary" : "border-border")}>
       <button
         className="w-full flex items-center justify-between p-4 text-right min-h-[64px]"
         onClick={() => setOpen(v => !v)}

@@ -1,12 +1,14 @@
 import React, { useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { ExternalLink, ChevronDown, ChevronUp, CheckCircle2, Circle, Library, ArrowLeft, FileText } from 'lucide-react';
+import { ExternalLink, ChevronDown, ChevronUp, CheckCircle2, Circle, Library, ArrowLeft, FileText, ChevronLeft } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
+import { useNavigate } from 'react-router-dom';
 
 export default function WeekGoalCard({ goal, onToggleComplete, onUpdate }) {
+  const navigate = useNavigate();
   const [expanded, setExpanded] = useState(false);
 
   const { data: libraryItems = [] } = useQuery({
@@ -92,10 +94,15 @@ export default function WeekGoalCard({ goal, onToggleComplete, onUpdate }) {
                   <p className="text-[11px] font-bold text-muted-foreground mb-1.5">מהספרייה שלך</p>
                   <div className="space-y-1.5">
                     {matchedItems.map(item => (
-                      <div key={item.id} className="flex items-center gap-2 p-2.5 rounded-lg border border-violet-200 bg-violet-50 dark:border-violet-800 dark:bg-violet-950/30">
+                      <button
+                        key={item.id}
+                        onClick={() => navigate('/library/' + item.id)}
+                        className="w-full flex items-center gap-2 p-2.5 rounded-lg border border-violet-200 bg-violet-50 dark:border-violet-800 dark:bg-violet-950/30 hover:bg-violet-100 dark:hover:bg-violet-900/40 transition-colors text-right"
+                      >
                         <FileText className="w-3.5 h-3.5 text-violet-600 shrink-0" />
-                        <span className="text-xs text-violet-800 font-medium truncate">{item.title}</span>
-                      </div>
+                        <span className="text-xs text-violet-800 dark:text-violet-300 font-medium truncate flex-1">{item.title}</span>
+                        <ChevronLeft className="w-3 h-3 text-violet-400 shrink-0" />
+                      </button>
                     ))}
                   </div>
                 </div>

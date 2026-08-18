@@ -1,6 +1,8 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useSearchParams } from 'react-router-dom';
+import { cn } from '@/lib/utils';
 import AppLayout from '@/components/layout/AppLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -16,6 +18,9 @@ import { formatDate } from '@/lib/formatDate';
 
 export default function ExamsPage() {
   const qc = useQueryClient();
+  const [searchParams] = useSearchParams();
+  const highlightId = searchParams.get('exam');
+  const highlightRef = useRef(null);
   const { isOpen, open: openDialog, close: closeDialog } = useUrlOverlay('dialog');
   const [gradingExam, setGradingExam] = useState(null);
   const [form, setForm] = useState({ title: '', subject: '', date: '', max_score: 100, duration_minutes: 45, topics: [], notes: '' });
@@ -31,6 +36,12 @@ export default function ExamsPage() {
   const activeStudents = students.filter(s => s.is_active !== false);
   const subjects = [...new Set(exams.map(e => e.subject).filter(Boolean))].sort();
   const visibleExams = subjectFilter !== 'all' ? exams.filter(e => e.subject === subjectFilter) : exams;
+
+  useEffect(() => {
+    if (highlightId && highlightRef.current) {
+      highlightRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  }, [highlightId, visibleExams]);
 
   const statusMeta = {
     scheduled: { label: 'מתוכנן', color: 'text-blue-600', bg: 'bg-blue-100 dark:bg-blue-900/30' },
@@ -142,8 +153,8 @@ export default function ExamsPage() {
                 ? Math.round(exam.scores.filter(s => s.score !== null).reduce((sum, s) => sum + s.score, 0) / exam.scores.filter(s => s.score !== null).length)
                 : null;
               return (
-                <motion.div key={exam.id} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }}
-                  className="bg-card border rounded-2xl p-3">
+                <motion.div key={exam.id} ref={exam.id === highlightId ? highlightRef : null} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }}
+                  className={cn("bg-card border rounded-2xl p-3 transition-all", exam.id === highlightId ? "ring-2 ring-primary border-primary" : "")}>
                   <div className="flex items-start justify-between gap-2 mb-2">
                     <div className="flex-1 min-w-0">
                       <p className="font-semibold text-sm">{exam.title}</p>

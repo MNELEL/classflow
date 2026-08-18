@@ -21,6 +21,7 @@ import GoogleDrivePanel from '@/components/library/GoogleDrivePanel';
 import ImportFromSourceModal from '@/components/library/ImportFromSourceModal';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
+import { formatDate } from '@/lib/formatDate';
 import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogFooter, AlertDialogCancel, AlertDialogAction } from '@/components/ui/alert-dialog';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { usePullToRefresh } from '@/hooks/usePullToRefresh';
@@ -63,6 +64,26 @@ export default function LibraryPage() {
     queryFn: () => base44.entities.LibraryItem.list('-created_date', 100),
     refetchInterval: (query) => query.state.data?.some(i => i.ai_status === 'processing') ? 4000 : false,
   });
+
+  const { data: curriculumWeeks = [] } = useQuery({
+    queryKey: ['curriculum_weeks'],
+    queryFn: () => base44.entities.CurriculumWeek.list('-week_start', 50),
+    staleTime: 60000,
+  });
+
+  // Map library item id → weeks that reference it in their parsed goals
+  const itemWeekUsage = useMemo(() => {
+    const map = {};
+    curriculumWeeks.forEach(w => {
+      (w.parsed_goals || []).forEach(goal => {
+        (goal.library_item_ids || []).forEach(id => {
+          if (!map[id]) map[id] = [];
+          if (!map[id].some(u => u.id === w.id)) map[id].push({ id: w.id, label: w.week_label || (w.week_start ? formatDate(w.week_start) : 'שבוע') });
+        });
+      });
+    });
+    return map;
+  }, [curriculumWeeks]);
 
   const qc = useQueryClient();
   const deleteMutation = useMutation({
@@ -310,6 +331,16 @@ export default function LibraryPage() {
                       >
                         <Trash2 className="w-3 h-3" />
                       </button>
+                      {/* Curriculum usage badge */}
+                      {itemWeekUsage[item.id]?.length > 0 && (
+                        <button
+                          onClick={(e) => { e.stopPropagation(); navigate(`/curriculum?week=${itemWeekUsage[item.id][0].id}`); }}
+                          className="absolute bottom-2 right-2 inline-flex items-center gap-1 text-[10px] font-medium px-2 py-1 rounded-full bg-indigo-100 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800 hover:bg-indigo-200 transition-colors"
+                          title={`בשימוש ב: ${itemWeekUsage[item.id].map(u => u.label).join(', ')}`}
+                        >
+                          <CalendarDays className="w-3 h-3" /> בשימוש בשבוע
+                        </button>
+                      )}
                     </motion.div>
                   ))}
                 </AnimatePresence>
