@@ -1,17 +1,15 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Edit2, Trash2, Plus, Eye, Volume2, Zap, CheckSquare, TrendingUp, FolderOpen, User, MoreVertical, Phone } from 'lucide-react';
+import { Edit2, Trash2, Plus, Eye, Volume2, Zap, CheckSquare, TrendingUp, IdCard, User, MoreVertical, Phone } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from '@/components/ui/drawer';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useNavigate } from 'react-router-dom';
 import StudentForm from './StudentForm';
-import StudentCustomFields from './StudentCustomFields';
 import TaskManager from './TaskManager';
 import GradeManager from './GradeManager';
-import StudentPortfolio from '@/components/portfolio/StudentPortfolio';
 import PerformanceBadge from '@/components/students/PerformanceBadge';
 import { usePerformanceScores } from '@/hooks/usePerformanceScores';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -51,7 +49,6 @@ export default function StudentList({ students, onSave, onDelete }) {
   const [adding, setAdding] = useState(false);
   const [taskStudent, setTaskStudent] = useState(null);
   const [gradeStudent, setGradeStudent] = useState(null);
-  const [portfolioStudent, setPortfolioStudent] = useState(null);
 
   const { scores, needsAttentionList } = usePerformanceScores(students);
 
@@ -106,7 +103,11 @@ export default function StudentList({ students, onSave, onDelete }) {
                           />
                         )}
                       </div>
-                      <StudentCustomFields student={student} />
+                      {student.custom_fields && Object.keys(student.custom_fields).filter(k => student.custom_fields[k]).length > 0 && (
+                        <span className="inline-flex items-center gap-1 text-[10px] font-medium text-muted-foreground bg-muted/50 rounded-full px-1.5 py-0.5 mt-1" title="קיימים פרטי קשר בפרופיל המלא">
+                          <IdCard className="w-2.5 h-2.5 shrink-0" /> פרטי קשר
+                        </span>
+                      )}
                     </div>
                   </div>
                   <div className="flex items-center gap-1 shrink-0">
@@ -128,9 +129,6 @@ export default function StudentList({ students, onSave, onDelete }) {
                       <DropdownMenuContent align="end" className="w-44">
                         <DropdownMenuItem onClick={() => setTaskStudent(student)}><CheckSquare className="w-4 h-4 ml-2" /> משימות</DropdownMenuItem>
                         <DropdownMenuItem onClick={() => setGradeStudent(student)}><TrendingUp className="w-4 h-4 ml-2" /> ציונים</DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => setPortfolioStudent(portfolioStudent?.id === student.id ? null : student)}>
-                          <FolderOpen className={`w-4 h-4 ml-2 ${portfolioStudent?.id === student.id ? 'text-primary' : ''}`} /> תיק אישי
-                        </DropdownMenuItem>
                         <DropdownMenuItem onClick={() => setEditing(student)}><Edit2 className="w-4 h-4 ml-2" /> עריכה</DropdownMenuItem>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem className="text-destructive focus:text-destructive" onClick={() => onDelete(student.id)}>
@@ -140,7 +138,6 @@ export default function StudentList({ students, onSave, onDelete }) {
                     </DropdownMenu>
                   </div>
                 </div>
-                <StudentPortfolio student={student} open={portfolioStudent?.id === student.id} />
               </motion.div>
             );
           })}

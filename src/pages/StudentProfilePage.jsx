@@ -18,6 +18,7 @@ import {
 import StudentTaskList from '@/components/students/StudentTaskList';
 import QuickPreferencesEditor from '@/components/students/QuickPreferencesEditor';
 import ParentContactBar from '@/components/students/ParentContactBar';
+import StudentPortfolio from '@/components/portfolio/StudentPortfolio';
 import PerformanceBadge from '@/components/students/PerformanceBadge';
 import { calculatePerformanceScore } from '@/lib/performanceScore';
 import { CUSTOM_FIELD_LABELS } from '@/components/students/StudentCustomFields';
@@ -241,12 +242,13 @@ export default function StudentProfilePage() {
 
         {/* Tabs */}
         <Tabs defaultValue="grades" dir="rtl">
-          <TabsList className="w-full grid grid-cols-5 h-9">
+          <TabsList className="w-full grid grid-cols-6 h-9">
             <TabsTrigger value="grades" className="text-xs">ציונים</TabsTrigger>
             <TabsTrigger value="attendance" className="text-xs">נוכחות</TabsTrigger>
             <TabsTrigger value="tasks" className="text-xs">משימות</TabsTrigger>
             <TabsTrigger value="notes" className="text-xs">הערות</TabsTrigger>
             <TabsTrigger value="files" className="text-xs">קבצים</TabsTrigger>
+            <TabsTrigger value="portfolio" className="text-xs">תיק אישי</TabsTrigger>
           </TabsList>
 
           {/* ── Grades ── */}
@@ -432,6 +434,11 @@ export default function StudentProfilePage() {
             {myPortfolio.length === 0 && relatedLibrary.length === 0 && (
               <div className="text-center py-8 text-muted-foreground text-sm">אין קבצים מקושרים</div>
             )}
+          </TabsContent>
+
+          {/* ── Personal portfolio (documents + contact log) ── */}
+          <TabsContent value="portfolio" className="mt-3">
+            <StudentPortfolio student={student} open={true} />
           </TabsContent>
         </Tabs>
       </div>
