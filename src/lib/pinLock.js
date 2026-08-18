@@ -58,9 +58,15 @@ export async function setPin(pin) {
 export async function verifyPin(pin) {
   try {
     const res = await base44.functions.invoke('pinSecurity', { action: 'verify_pin', pin });
-    return res.data?.valid === true;
-  } catch {
-    return false;
+    return { valid: res.data?.valid === true };
+  } catch (err) {
+    // functions.invoke throws on non-2xx — a 429 lockout response lands here
+    // with the JSON body on err.response.data.
+    const data = err?.response?.data;
+    if (data?.locked) {
+      return { valid: false, locked: true, retryAfterSeconds: data.retry_after_seconds };
+    }
+    return { valid: false };
   }
 }
 
