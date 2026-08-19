@@ -137,7 +137,7 @@ ${JSON.stringify(gradesContext.slice(0, 200), null, 1)}
       {/* Input */}
       <div className="flex gap-2 sticky bottom-0 bg-background pb-2">
         {messages.length > 0 && (
-          <Button variant="ghost" size="icon" onClick={() => setMessages([])} title="נקה שיחה">
+          <Button variant="ghost" size="icon" onClick={() => setMessages([])} title="נקה שיחה" aria-label="נקה שיחה">
             <RotateCcw className="w-4 h-4" />
           </Button>
         )}
@@ -150,7 +150,7 @@ ${JSON.stringify(gradesContext.slice(0, 200), null, 1)}
           dir="rtl"
           disabled={isLoading}
         />
-        <Button onClick={() => sendQuery()} disabled={isLoading || !query.trim()} size="icon">
+        <Button onClick={() => sendQuery()} disabled={isLoading || !query.trim()} size="icon" aria-label="שלח שאלה">
           {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
         </Button>
       </div>
