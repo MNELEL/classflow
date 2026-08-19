@@ -117,19 +117,19 @@ export default function StudentForm({ student, students, onSave, onCancel }) {
       {/* Name & group */}
       <div className="grid grid-cols-2 gap-3">
         <div>
-          <Label className="text-sm">שם התלמיד *</Label>
-          <Input value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} placeholder="שם מלא" className="mt-1 h-11 text-base" />
+          <Label className="text-sm" htmlFor={nameId}>שם התלמיד *</Label>
+          <Input id={nameId} value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} placeholder="שם מלא" className="mt-1 h-11 text-base" />
         </div>
         <div>
-          <Label className="text-sm">קבוצה כללית</Label>
-          <Input value={form.group} onChange={e => setForm(f => ({ ...f, group: e.target.value }))} placeholder="שם קבוצה" className="mt-1 h-11 text-base" />
+          <Label className="text-sm" htmlFor={groupId}>קבוצה כללית</Label>
+          <Input id={groupId} value={form.group} onChange={e => setForm(f => ({ ...f, group: e.target.value }))} placeholder="שם קבוצה" className="mt-1 h-11 text-base" />
         </div>
       </div>
 
       {/* Learning group */}
       <div>
-        <Label className="text-sm">🧩 קבוצת לימוד</Label>
-        <Input value={form.learning_group} onChange={e => setForm(f => ({ ...f, learning_group: e.target.value }))} placeholder="הקלד שם קבוצה..." className="mt-1 h-11 text-base" list="groups-datalist" />
+        <Label className="text-sm" htmlFor={learningGroupId}>🧩 קבוצת לימוד</Label>
+        <Input id={learningGroupId} value={form.learning_group} onChange={e => setForm(f => ({ ...f, learning_group: e.target.value }))} placeholder="הקלד שם קבוצה..." className="mt-1 h-11 text-base" list="groups-datalist" />
         {existingGroups.length > 0 && (
           <datalist id="groups-datalist">
             {existingGroups.map(g => <option key={g.id} value={g.name} />)}
