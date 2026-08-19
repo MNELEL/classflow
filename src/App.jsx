@@ -307,6 +307,7 @@ function App() {
             </SelectedDateProvider>
             <Toaster />
             <Sonner position="bottom-center" richColors offset="80px" />
+            <OfflineIndicator />
           </QueryClientProvider>
         </ThemeProvider>
       </AuthProvider>
