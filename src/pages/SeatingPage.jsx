@@ -625,21 +625,26 @@ ${overrideLines ? `\nהעדפות ייבוא נוספות:\n${overrideLines}` : 
               <BarChart2 className="w-4 h-4" /> דוח שביעות רצון — ניקוד סידור
             </DialogTitle>
           </DialogHeader>
-          <SatisfactionReport seats={seats} students={students} />
+          <Suspense fallback={null}>
+            <SatisfactionReport seats={seats} students={students} />
+          </Suspense>
         </DialogContent>
       </Dialog>
 
       {/* AI Sort Explainer */}
-      <AISortExplainer
-        seats={seats}
-        students={students}
-        open={showExplainer}
-        onOpenChange={setShowExplainer}
-      />
+      <Suspense fallback={null}>
+        <AISortExplainer
+          seats={seats}
+          students={students}
+          open={showExplainer}
+          onOpenChange={setShowExplainer}
+        />
+      </Suspense>
 
       {/* 3D Presentation Mode */}
-      <PresentationMode3D
-        seats={seats}
+      <Suspense fallback={null}>
+        <PresentationMode3D
+          seats={seats}
         students={students}
         rows={rows}
         cols={cols}
