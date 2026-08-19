@@ -320,7 +320,7 @@ export default function TeacherStylePage() {
               }
             </Button>
             {profile && (
-              <Button variant="outline" size="icon" className="text-destructive hover:text-destructive border-destructive/20" onClick={handleClear}>
+              <Button variant="outline" size="icon" className="text-destructive hover:text-destructive border-destructive/20" onClick={handleClear} aria-label="נקה פרופיל">
                 <Trash2 className="w-4 h-4" />
               </Button>
             )}
