@@ -17,7 +17,7 @@ export default function MobileSelect({ value, onValueChange, placeholder, option
   if (!isMobile) {
     return (
       <Select value={value} onValueChange={onValueChange}>
-        <SelectTrigger className={cn('mt-1', triggerClassName)}>
+        <SelectTrigger className={cn('mt-1', triggerClassName)} aria-label={label}>
           <SelectValue placeholder={placeholder} />
         </SelectTrigger>
         <SelectContent>
@@ -34,6 +34,7 @@ export default function MobileSelect({ value, onValueChange, placeholder, option
       <button
         type="button"
         onClick={() => setOpen(true)}
+        aria-label={label}
         className={cn(
           'mt-1 flex h-9 w-full items-center justify-between rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm text-right',
           !current && 'text-muted-foreground',
