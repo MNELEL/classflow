@@ -155,12 +155,12 @@ export default function DocumentsVault({ studentId }) {
                 <div className="flex gap-1 shrink-0">
                   {item.file_url && (
                     <a href={item.file_url} target="_blank" rel="noopener noreferrer">
-                      <Button size="icon" variant="ghost" className="h-7 w-7">
+                      <Button size="icon" variant="ghost" className="h-7 w-7" aria-label="פתח מסמך">
                         <ExternalLink className="w-3.5 h-3.5" />
                       </Button>
                     </a>
                   )}
-                  <Button size="icon" variant="ghost" className="h-7 w-7 text-destructive hover:text-destructive"
+                  <Button size="icon" variant="ghost" className="h-7 w-7 text-destructive hover:text-destructive" aria-label="מחק מסמך"
                     onClick={() => deleteMutation.mutate(item.id)}>
                     <Trash2 className="w-3.5 h-3.5" />
                   </Button>
