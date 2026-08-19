@@ -15,7 +15,7 @@ function StringList({ items, onChange, placeholder }) {
       {items.map((it, i) => (
         <div key={i} className="flex gap-2">
           <Input value={it} onChange={(e) => update(i, e.target.value)} placeholder={placeholder} className="flex-1" />
-          <Button size="icon" variant="ghost" onClick={() => remove(i)} className="shrink-0 text-destructive">
+          <Button size="icon" variant="ghost" onClick={() => remove(i)} className="shrink-0 text-destructive" aria-label="הסר פריט">
             <Trash2 className="w-4 h-4" />
           </Button>
         </div>
