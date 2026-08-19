@@ -65,11 +65,11 @@ export default function AcademicCalendar() {
           </div>
         </div>
         <div className="flex items-center gap-1">
-          <Button size="icon" variant="ghost" className="h-8 w-8" onClick={prev}><ChevronRight className="w-4 h-4" /></Button>
-          <Button size="icon" variant="ghost" className="h-8 w-8" onClick={() => setCurrent(new Date())} title="היום">
+          <Button size="icon" variant="ghost" className="h-8 w-8" onClick={prev} aria-label="תקופה קודמת"><ChevronRight className="w-4 h-4" /></Button>
+          <Button size="icon" variant="ghost" className="h-8 w-8" onClick={() => setCurrent(new Date())} title="היום" aria-label="עבור להיום">
             <span className="text-[11px] font-bold">{format(today, 'd')}</span>
           </Button>
-          <Button size="icon" variant="ghost" className="h-8 w-8" onClick={next}><ChevronLeft className="w-4 h-4" /></Button>
+          <Button size="icon" variant="ghost" className="h-8 w-8" onClick={next} aria-label="תקופה הבאה"><ChevronLeft className="w-4 h-4" /></Button>
           <Button size="sm" variant={view === 'week' ? 'default' : 'ghost'} className="h-8 px-2 text-xs" onClick={() => setView('week')}>
             <List className="w-3 h-3" />
           </Button>
