@@ -482,23 +482,25 @@ ${overrideLines ? `\nהעדפות ייבוא נוספות:\n${overrideLines}` : 
         teacherInstructions={teacherInstructions}
         onTeacherInstructionsChange={setTeacherInstructions}
       />
-      <ConflictHelper
-        seats={seats}
-        students={students}
-        onApplySuggestion={handleApplyConflictSuggestion}
-      />
-      <GroupSeatingOptimizer
-        seats={seats}
-        students={students}
-        onApplySeats={setSeats}
-      />
-      <StrategicLeadersOptimizer
-        seats={seats}
-        students={students}
-        rows={rows}
-        cols={cols}
-        onApplySeats={setSeats}
-      />
+      <Suspense fallback={null}>
+        <ConflictHelper
+          seats={seats}
+          students={students}
+          onApplySuggestion={handleApplyConflictSuggestion}
+        />
+        <GroupSeatingOptimizer
+          seats={seats}
+          students={students}
+          onApplySeats={setSeats}
+        />
+        <StrategicLeadersOptimizer
+          seats={seats}
+          students={students}
+          rows={rows}
+          cols={cols}
+          onApplySeats={setSeats}
+        />
+      </Suspense>
       <QuickEditMode
         active={quickEditMode}
         onToggle={() => { setQuickEditMode(v => !v); setQuickEditSeat(null); }}
