@@ -68,6 +68,9 @@ const TRAIT_OPTIONS = [
 export default function StudentForm({ student, students, onSave, onCancel }) {
   const isMobile = useIsMobile();
   const existingGroups = loadGroups();
+  const nameId = useId();
+  const groupId = useId();
+  const learningGroupId = useId();
 
   const [form, setForm] = useState({
     name: student?.name || '',
