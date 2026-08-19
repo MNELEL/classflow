@@ -98,10 +98,10 @@ ${student.achievements ? `הישגים: ${student.achievements}` : ''}
           <div className="flex justify-between items-center px-4 py-2.5 border-b border-border/50 bg-muted/30">
             <p className="text-sm font-semibold">דוח פדגוגי — {student?.name}</p>
             <div className="flex gap-1">
-              <Button size="icon" variant="ghost" className="h-7 w-7" onClick={copyReport}>
+              <Button size="icon" variant="ghost" className="h-7 w-7" aria-label="העתק דוח" onClick={copyReport}>
                 {copied ? <Check className="w-3.5 h-3.5 text-green-500" /> : <Copy className="w-3.5 h-3.5" />}
               </Button>
-              <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => window.print()}>
+              <Button size="icon" variant="ghost" className="h-7 w-7" aria-label="הדפס דוח" onClick={() => window.print()}>
                 <Printer className="w-3.5 h-3.5" />
               </Button>
               {student?.parentEmail && (
