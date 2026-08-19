@@ -645,12 +645,13 @@ ${overrideLines ? `\nהעדפות ייבוא נוספות:\n${overrideLines}` : 
       <Suspense fallback={null}>
         <PresentationMode3D
           seats={seats}
-        students={students}
-        rows={rows}
-        cols={cols}
-        open={showPresentation3D}
-        onClose={() => setShowPresentation3D(false)}
-      />
+          students={students}
+          rows={rows}
+          cols={cols}
+          open={showPresentation3D}
+          onClose={() => setShowPresentation3D(false)}
+        />
+      </Suspense>
 
       {/* Seat detail dialog */}
       <Dialog open={!!selectedSeat} onOpenChange={() => seatOverlay.close()}>
