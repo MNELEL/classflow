@@ -363,7 +363,7 @@ export default function BellSchedulePage() {
                   <MobileSelect value={form.sound_type} onValueChange={v => setForm(f => ({ ...f, sound_type: v }))} className="h-9 text-sm flex-1">
                     {SOUNDS.map(s => <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>)}
                   </MobileSelect>
-                  <Button size="icon" variant="outline" className="h-9 w-9 shrink-0" onClick={() => playSound(form.sound_type)}>
+                  <Button size="icon" variant="outline" className="h-9 w-9 shrink-0" onClick={() => playSound(form.sound_type)} aria-label="נגן צליל">
                     <Volume2 className="w-4 h-4" />
                   </Button>
                 </div>
