@@ -79,7 +79,7 @@ export default function TaskManager({ student, open, onClose }) {
                     {cfg.icon} {cfg.label}
                   </button>
                   <span className="font-semibold text-sm flex-1 text-right">{task.title}</span>
-                  <Button size="icon" variant="ghost" className="h-6 w-6 text-destructive/60 hover:text-destructive" onClick={() => deleteMutation.mutate(task.id)}>
+                  <Button size="icon" variant="ghost" className="h-6 w-6 text-destructive/60 hover:text-destructive" aria-label="מחק משימה" onClick={() => deleteMutation.mutate(task.id)}>
                     <Trash2 className="w-3 h-3" />
                   </Button>
                 </div>
