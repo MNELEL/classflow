@@ -226,7 +226,7 @@ export default function GroupsManager({ open, onClose, students }) {
                       </div>
                     </div>
                   </div>
-                  <Button size="icon" variant="ghost" className="h-7 w-7 text-destructive/60 hover:text-destructive shrink-0" onClick={() => deleteGroup(g.id)}>
+                  <Button size="icon" variant="ghost" className="h-7 w-7 text-destructive/60 hover:text-destructive shrink-0" aria-label="מחק קבוצה" onClick={() => deleteGroup(g.id)}>
                     <Trash2 className="w-3.5 h-3.5" />
                   </Button>
                 </div>
