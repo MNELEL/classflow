@@ -1,14 +1,11 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useRef, lazy, Suspense } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import AppLayout from '@/components/layout/AppLayout';
 import ClassroomGrid from '@/components/classroom/ClassroomGrid';
 import StudentPanel from '@/components/classroom/StudentPanel';
 import GridControls from '@/components/classroom/GridControls';
-import ConflictHelper from '@/components/classroom/ConflictHelper';
 import QuickEditMode from '@/components/classroom/QuickEditMode';
-import GroupSeatingOptimizer from '@/components/classroom/GroupSeatingOptimizer';
-import StrategicLeadersOptimizer from '@/components/classroom/StrategicLeadersOptimizer';
 import { buildInitialSeats, smartSort, calcSatisfactionScore, getSeatAt } from '@/lib/seatingUtils';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerTrigger } from '@/components/ui/drawer';
@@ -16,12 +13,21 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Lock, Unlock, EyeOff, SlidersHorizontal, Users, BarChart2, GripHorizontal, Box, Sparkles } from 'lucide-react';
 import { toast } from 'sonner';
-import SatisfactionReport from '@/components/classroom/SatisfactionReport';
-import AISortExplainer from '@/components/classroom/AISortExplainer';
-import PresentationMode3D from '@/components/classroom/PresentationMode3D';
 import { usePullToRefresh } from '@/hooks/usePullToRefresh';
 import { useUrlOverlay } from '@/hooks/useUrlOverlay';
 import PullToRefreshIndicator from '@/components/ui/PullToRefreshIndicator';
+
+// Lazy-loaded: each of these is only rendered once the user opens its
+// dialog/drawer (ConflictHelper, GroupSeatingOptimizer, etc. manage their
+// own open state internally), so there's no reason to ship their code
+// (including, for PresentationMode3D, a 3D rendering stack) in the initial
+// SeatingPage chunk.
+const ConflictHelper = lazy(() => import('@/components/classroom/ConflictHelper'));
+const GroupSeatingOptimizer = lazy(() => import('@/components/classroom/GroupSeatingOptimizer'));
+const StrategicLeadersOptimizer = lazy(() => import('@/components/classroom/StrategicLeadersOptimizer'));
+const SatisfactionReport = lazy(() => import('@/components/classroom/SatisfactionReport'));
+const AISortExplainer = lazy(() => import('@/components/classroom/AISortExplainer'));
+const PresentationMode3D = lazy(() => import('@/components/classroom/PresentationMode3D'));
 
 const STORAGE_KEY = 'classmanager_seats';
 const ARRANGEMENT_KEY = 'classmanager_arrangement';
