@@ -157,7 +157,7 @@ export default function ParentContactLog({ studentId, studentName }) {
                         {INITIATED_LABELS[contact.initiated_by] || ''}
                       </span>
                     </div>
-                    <Button size="icon" variant="ghost" className="h-6 w-6 text-destructive hover:text-destructive shrink-0"
+                    <Button size="icon" variant="ghost" className="h-6 w-6 text-destructive hover:text-destructive shrink-0" aria-label="מחק רשומה"
                       onClick={() => deleteMutation.mutate(contact.id)}>
                       <Trash2 className="w-3 h-3" />
                     </Button>
