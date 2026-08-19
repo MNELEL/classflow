@@ -93,16 +93,16 @@ export default function LessonPlanningTab() {
                   )}
                 </div>
                 <div className="flex gap-1 shrink-0">
-                  <Button variant="ghost" size="icon" className="w-7 h-7" onClick={() => setSharingPlan(plan)}>
+                  <Button variant="ghost" size="icon" className="w-7 h-7" aria-label="שתף תכנית" onClick={() => setSharingPlan(plan)}>
                     <Share2 className="w-3.5 h-3.5" />
                   </Button>
-                  <Button variant="ghost" size="icon" className="w-7 h-7" onClick={() => duplicatePlan.mutate(plan)}>
+                  <Button variant="ghost" size="icon" className="w-7 h-7" aria-label="שכפל תכנית" onClick={() => duplicatePlan.mutate(plan)}>
                     <Copy className="w-3.5 h-3.5" />
                   </Button>
-                  <Button variant="ghost" size="icon" className="w-7 h-7" onClick={() => setEditingPlan(plan.id)}>
+                  <Button variant="ghost" size="icon" className="w-7 h-7" aria-label="ערוך תכנית" onClick={() => setEditingPlan(plan.id)}>
                     <Pencil className="w-3.5 h-3.5" />
                   </Button>
-                  <Button variant="ghost" size="icon" className="w-7 h-7 text-destructive hover:text-destructive"
+                  <Button variant="ghost" size="icon" className="w-7 h-7 text-destructive hover:text-destructive" aria-label="מחק תכנית"
                     onClick={() => deletePlan.mutate(plan.id)}>
                     <Trash2 className="w-3.5 h-3.5" />
                   </Button>
