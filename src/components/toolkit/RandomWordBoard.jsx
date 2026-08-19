@@ -68,7 +68,7 @@ export default function RandomWordBoard() {
       <div className="flex gap-2">
         <Input placeholder="הוסף מילה..." value={newWord} onChange={e => setNewWord(e.target.value)}
           onKeyDown={e => e.key === 'Enter' && addWord()} className="h-8 text-sm" />
-        <Button size="icon" variant="outline" className="h-8 w-8" onClick={addWord}>
+        <Button size="icon" variant="outline" className="h-8 w-8" onClick={addWord} aria-label="הוסף מילה">
           <Plus className="w-3.5 h-3.5" />
         </Button>
       </div>
