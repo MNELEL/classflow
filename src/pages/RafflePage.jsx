@@ -183,9 +183,9 @@ export default function RafflePage() {
           <div className="bg-card border rounded-2xl p-3 flex items-center justify-between">
             <span className="text-sm font-semibold">מספר קבוצות</span>
             <div className="flex items-center gap-2">
-              <Button size="icon" variant="outline" className="h-8 w-8" onClick={() => setNumGroups(Math.max(2, numGroups - 1))}>−</Button>
+              <Button size="icon" variant="outline" className="h-8 w-8" onClick={() => setNumGroups(Math.max(2, numGroups - 1))} aria-label="הפחת מספר קבוצות">−</Button>
               <span className="font-bold text-lg w-8 text-center">{numGroups}</span>
-              <Button size="icon" variant="outline" className="h-8 w-8" onClick={() => setNumGroups(Math.min(8, numGroups + 1))}>+</Button>
+              <Button size="icon" variant="outline" className="h-8 w-8" onClick={() => setNumGroups(Math.min(8, numGroups + 1))} aria-label="הוסף קבוצה">+</Button>
             </div>
           </div>
         )}
