@@ -38,7 +38,7 @@ function QuestionList({ items, onChange }) {
         <div key={i} className="rounded-lg border border-border p-2.5 space-y-2">
           <div className="flex items-center justify-between">
             <span className="text-[11px] font-bold text-muted-foreground">שאלה {i + 1}</span>
-            <Button size="icon" variant="ghost" onClick={() => remove(i)} className="h-7 w-7 text-destructive">
+            <Button size="icon" variant="ghost" onClick={() => remove(i)} className="h-7 w-7 text-destructive" aria-label="מחק שאלה">
               <Trash2 className="w-3.5 h-3.5" />
             </Button>
           </div>
