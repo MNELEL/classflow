@@ -167,10 +167,10 @@ export default function GoogleDrivePicker({ open, onClose, onImport }) {
                   className="w-full pr-9 pl-3 py-2 text-sm border border-border rounded-xl bg-background focus:outline-none focus:ring-1 focus:ring-primary/40"
                 />
               </div>
-              <Button type="submit" variant="outline" size="icon" disabled={searching}>
+              <Button type="submit" variant="outline" size="icon" disabled={searching} aria-label="חפש">
                 {searching ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />}
               </Button>
-              <Button type="button" variant="ghost" size="icon" onClick={() => fetchFiles(query)} title="רענן">
+              <Button type="button" variant="ghost" size="icon" onClick={() => fetchFiles(query)} title="רענן" aria-label="רענן">
                 <RefreshCw className="w-4 h-4" />
               </Button>
             </form>
