@@ -62,7 +62,7 @@ export default function ExitTicket() {
         <div className="bg-accent/20 border border-border rounded-xl p-3">
           <div className="flex justify-between items-center mb-2">
             <p className="text-xs font-medium text-muted-foreground">תוצאה:</p>
-            <Button size="icon" variant="ghost" className="h-6 w-6" onClick={generate}>
+            <Button size="icon" variant="ghost" className="h-6 w-6" onClick={generate} aria-label="יצירה מחדש">
               <RefreshCw className="w-3 h-3" />
             </Button>
           </div>
