@@ -38,7 +38,7 @@ export default function FlashCards() {
       <div className="flex items-center justify-between">
         <h3 className="font-bold text-sm flex items-center gap-2">🃏 כרטיסיות פלאש</h3>
         <div className="flex gap-1">
-          <Button size="icon" variant="ghost" className="h-7 w-7" onClick={shuffle} title="ערבב">
+          <Button size="icon" variant="ghost" className="h-7 w-7" onClick={shuffle} title="ערבב" aria-label="ערבב כרטיסיות">
             <Shuffle className="w-3.5 h-3.5" />
           </Button>
           <Button size="sm" variant="outline" className="h-7 text-xs gap-1" onClick={() => setAdding(v => !v)}>
@@ -90,13 +90,13 @@ export default function FlashCards() {
 
           {/* Nav */}
           <div className="flex items-center justify-between">
-            <Button size="icon" variant="outline" className="h-8 w-8" onClick={prev} disabled={cards.length < 2}>
+            <Button size="icon" variant="outline" className="h-8 w-8" onClick={prev} disabled={cards.length < 2} aria-label="כרטיסיה קודמת">
               <ChevronRight className="w-4 h-4" />
             </Button>
-            <Button size="icon" variant="ghost" className="h-8 w-8" onClick={() => { setFlipped(false); setIdx(0); }}>
+            <Button size="icon" variant="ghost" className="h-8 w-8" onClick={() => { setFlipped(false); setIdx(0); }} aria-label="התחל מחדש">
               <RotateCcw className="w-3.5 h-3.5" />
             </Button>
-            <Button size="icon" variant="outline" className="h-8 w-8" onClick={next} disabled={cards.length < 2}>
+            <Button size="icon" variant="outline" className="h-8 w-8" onClick={next} disabled={cards.length < 2} aria-label="כרטיסיה הבאה">
               <ChevronLeft className="w-4 h-4" />
             </Button>
           </div>
