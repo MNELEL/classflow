@@ -29,7 +29,19 @@ export default function GradeManager({ student, open, onClose }) {
   });
 
   const createMutation = useMutation({
-    mutationFn: (data) => base44.entities.Grade.create({ ...data, student_id: student.id, score: Number(data.score), max_score: Number(data.max_score) }),
+    mutationFn: (data) => {
+      const score = Number(data.score);
+      const maxScore = Number(data.max_score) || 100;
+      // Same bounds check as the AI-command path in
+      // src/lib/pendingUpdateActions.js — Grade.score has no schema-level
+      // min/max (base44/entities/Grade.jsonc documents "0-100" but doesn't
+      // enforce it), and the <input max=200> on this form is a UI hint
+      // only, not a real guard against a bypassed/edited request.
+      if (!Number.isFinite(score) || score < 0 || score > maxScore) {
+        throw new Error(`ציון לא תקין: ${data.score} (חייב להיות בין 0 ל-${maxScore})`);
+      }
+      return base44.entities.Grade.create({ ...data, student_id: student.id, score, max_score: maxScore });
+    },
     onSuccess: () => { qc.invalidateQueries({ queryKey: ['grades'] }); setShowForm(false); setForm({ subject: '', test_name: '', score: '', max_score: '100', date: format(new Date(), 'yyyy-MM-dd'), period: 'exam', notes: '' }); toast.success('ציון נוסף'); },
   });
 
