@@ -42,7 +42,7 @@ const LEVEL_CONFIG = {
   excellent: { label: 'מצטיין', color: 'bg-purple-100 text-purple-700 dark:bg-purple-900/30' },
 };
 
-export default function StudentList({ students, onSave, onDelete }) {
+export default function StudentList({ students, onSave, onDelete, isSaving }) {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
   const [editing, setEditing] = useState(null);
