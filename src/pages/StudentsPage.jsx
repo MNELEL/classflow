@@ -127,7 +127,11 @@ export default function StudentsPage() {
   });
 
   const deleteMutation = useMutation({
-    mutationFn: (id) => base44.entities.Student.delete(id),
+    mutationFn: async (id) => {
+      const res = await base44.functions.invoke('deleteStudentCascade', { student_id: id });
+      if (res?.data?.error) throw new Error(res.data.error);
+      return res?.data;
+    },
     onMutate: async (id) => {
       await qc.cancelQueries({ queryKey: ['students'] });
       const prev = qc.getQueryData(['students']);
