@@ -110,19 +110,30 @@ export default function ExamScannerPage() {
       toast.error('לא נמצא תלמיד תואם — נא לשמור ידנית');
       return;
     }
+    const score = Number(res.score);
+    const maxScore = Number(res.max_score) || 100;
+    // Same bounds check as the other two Grade.create call sites
+    // (src/components/students/GradeManager.jsx, src/lib/pendingUpdateActions.js)
+    // — here res.score comes straight from OCR/AI reading a photographed
+    // exam paper with no human transcription step, so it's the least
+    // trustworthy of the three sources and needs the same guard, not less.
+    if (!Number.isFinite(score) || score < 0 || score > maxScore) {
+      toast.error(`ציון שזוהה אינו תקין: ${res.score} (חייב להיות בין 0 ל-${maxScore}) — נא לשמור ידנית`);
+      return;
+    }
     setSavingIds(prev => new Set([...prev, matched.id]));
     await base44.entities.Grade.create({
       student_id: matched.id,
       subject: res.subject || 'כללי',
       test_name: `מבחן סרוק ${new Date().toLocaleDateString('he-IL')}`,
-      score: res.score,
-      max_score: res.max_score || 100,
+      score,
+      max_score: maxScore,
       date: format(new Date(), 'yyyy-MM-dd'),
       period: 'exam',
       notes: res.overall_feedback || '',
     });
     qc.invalidateQueries({ queryKey: ['grades'] });
-    toast.success(`ציון נשמר עבור ${matched.name}: ${res.score}`);
+    toast.success(`ציון נשמר עבור ${matched.name}: ${score}`);
     setSavingIds(prev => { const s = new Set(prev); s.delete(matched.id); return s; });
   }
 
