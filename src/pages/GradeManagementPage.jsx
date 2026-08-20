@@ -70,6 +70,20 @@ export default function GradeManagementPage() {
           mode="grades"
           students={students}
           onImportGrades={async (rows) => {
+            // CSV import is the least-trusted Grade source of all (a raw
+            // file, potentially hand-edited in Excel by anyone) — same
+            // bounds check as the other Grade.create call sites, applied
+            // per-row so one bad row doesn't silently corrupt data while
+            // the rest import fine.
+            const invalidRows = rows.filter(r => {
+              const score = Number(r.score);
+              const maxScore = Number(r.max_score) || 100;
+              return !Number.isFinite(score) || score < 0 || score > maxScore;
+            });
+            if (invalidRows.length) {
+              toast.error(`${invalidRows.length} שורות עם ציון לא תקין — הייבוא בוטל, נא לתקן את הקובץ`);
+              return;
+            }
             await Promise.all(rows.map(r => base44.entities.Grade.create(r)));
             qc.invalidateQueries({ queryKey: ['grades'] });
             toast.success(`יובאו ${rows.length} ציונים`);
