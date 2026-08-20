@@ -98,7 +98,7 @@ export default function TeacherDashboard() {
   }
 
   const activeStudents = students.filter(s => s.is_active !== false);
-  const today = new Date().toISOString().split('T')[0];
+  const today = format(new Date(), 'yyyy-MM-dd');
   const todayAttendance = attendance.filter(a => a.date === today);
   const attendanceRate = activeStudents.length > 0 
     ? Math.round((todayAttendance.filter(a => a.status === 'present').length / activeStudents.length) * 100)
