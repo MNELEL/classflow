@@ -137,7 +137,7 @@ export function detectGrouping(results) {
 }
 
 export async function saveResult(result, matchedStudent) {
-  const today = new Date().toISOString().split('T')[0];
+  const today = format(new Date(), 'yyyy-MM-dd');
   const category = result.selectedCategory || result.category;
 
   switch (category) {
