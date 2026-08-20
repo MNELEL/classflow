@@ -29,7 +29,7 @@ export default function DailySummaryPage() {
   const todayGrades = grades.filter(g => g.date === today);
   const todayAttendance = attendance.filter(a => a.date === today);
   const todayRewards = rewards.filter(r => r.date === today);
-  const todayBehavior = behaviorEvents.filter(e => new Date(e.date).toISOString().split('T')[0] === today);
+  const todayBehavior = behaviorEvents.filter(e => format(new Date(e.date), 'yyyy-MM-dd') === today);
   const upcomingExams = exams.filter(e => new Date(e.date) >= new Date() && e.status === 'scheduled');
   const pendingTasks = tasks.filter(t => t.status !== 'done');
 
