@@ -183,7 +183,7 @@ export default function StudentList({ students, onSave, onDelete, isSaving }) {
           <DrawerContent dir="rtl" className="max-h-[90vh]">
             <DrawerHeader className="pb-2"><DrawerTitle className="text-right text-base">עריכת תלמיד</DrawerTitle></DrawerHeader>
             <div className="overflow-y-auto px-4 pb-[env(safe-area-inset-bottom,16px)]">
-              {editing && <StudentForm student={editing} students={students} onSave={data => { onSave(data); setEditing(null); }} onCancel={() => setEditing(null)} />}
+              {editing && <StudentForm student={editing} students={students} isSaving={isSaving} onSave={data => { onSave(data); setEditing(null); }} onCancel={() => setEditing(null)} />}
             </div>
           </DrawerContent>
         </Drawer>
@@ -191,7 +191,7 @@ export default function StudentList({ students, onSave, onDelete, isSaving }) {
         <Dialog open={!!editing} onOpenChange={() => setEditing(null)}>
           <DialogContent className="max-w-lg max-h-[80vh] overflow-y-auto">
             <DialogHeader><DialogTitle>עריכת תלמיד</DialogTitle></DialogHeader>
-            {editing && <StudentForm student={editing} students={students} onSave={data => { onSave(data); setEditing(null); }} onCancel={() => setEditing(null)} />}
+            {editing && <StudentForm student={editing} students={students} isSaving={isSaving} onSave={data => { onSave(data); setEditing(null); }} onCancel={() => setEditing(null)} />}
           </DialogContent>
         </Dialog>
       )}
