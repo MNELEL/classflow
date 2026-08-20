@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, afterEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import UpdatePrompt from '@/components/UpdatePrompt';
@@ -23,6 +23,13 @@ function setNeedRefresh(value) {
   });
   return setNeedRefreshSpy;
 }
+
+afterEach(() => {
+  // mockUpdateServiceWorker is shared across tests in this file (it's the
+  // one we assert calls on) — reset its call history so an earlier test's
+  // click doesn't leak into a later test's "not called" assertion.
+  mockUpdateServiceWorker.mockClear();
+});
 
 describe('UpdatePrompt', () => {
   it('renders nothing when no update is available', () => {
