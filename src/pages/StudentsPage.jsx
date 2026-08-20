@@ -275,6 +275,7 @@ export default function StudentsPage() {
               students={sortedStudents}
               onSave={data => saveMutation.mutate(data)}
               onDelete={id => deleteMutation.mutate(id)}
+              isSaving={saveMutation.isPending}
             />
           </>
         )}
