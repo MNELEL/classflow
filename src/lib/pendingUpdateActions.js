@@ -73,13 +73,25 @@ export async function executePendingUpdate(pending) {
     case 'add_grade': {
       if (!action.student_id) throw new Error('נדרש לבחור תלמיד');
       if (action.score == null) throw new Error('נדרש ציון');
+      const score = Number(action.score);
+      const maxScore = Number(action.max_score) || 100;
+      // AI-derived (or otherwise untrusted) input reaches this point with
+      // no schema-level bounds check — Grade.score has no min/max
+      // constraint in base44/entities/Grade.jsonc, it's documentation-only
+      // ("0-100" in the description). Validate here, at the point of
+      // actual persistence, rather than trusting the LLM's structured
+      // output or a client-side <input max=200> that nothing enforces
+      // server-side.
+      if (!Number.isFinite(score) || score < 0 || score > maxScore) {
+        throw new Error(`ציון לא תקין: ${action.score} (חייב להיות בין 0 ל-${maxScore})`);
+      }
       await base44.entities.Grade.create({
         student_id: action.student_id,
         subject: action.subject || 'כללי',
-        score: Number(action.score),
+        score,
         date: action.date || today,
         test_name: action.test_name || '',
-        max_score: action.max_score || 100,
+        max_score: maxScore,
         period: action.period || 'exam',
         notes: action.notes || '',
       });
