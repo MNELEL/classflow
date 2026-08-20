@@ -21,7 +21,7 @@ export default function GradeManager({ student, open, onClose }) {
   const [showForm, setShowForm] = useState(false);
   const [aiLoading, setAiLoading] = useState(false);
   const [aiAdvice, setAiAdvice] = useState('');
-  const [form, setForm] = useState({ subject: '', test_name: '', score: '', max_score: '100', date: new Date().toISOString().split('T')[0], period: 'exam', notes: '' });
+  const [form, setForm] = useState({ subject: '', test_name: '', score: '', max_score: '100', date: format(new Date(), 'yyyy-MM-dd'), period: 'exam', notes: '' });
 
   const { data: grades = [] } = useQuery({
     queryKey: ['grades', student?.id],
