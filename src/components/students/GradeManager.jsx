@@ -31,7 +31,7 @@ export default function GradeManager({ student, open, onClose }) {
 
   const createMutation = useMutation({
     mutationFn: (data) => base44.entities.Grade.create({ ...data, student_id: student.id, score: Number(data.score), max_score: Number(data.max_score) }),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ['grades'] }); setShowForm(false); setForm({ subject: '', test_name: '', score: '', max_score: '100', date: new Date().toISOString().split('T')[0], period: 'exam', notes: '' }); toast.success('ציון נוסף'); },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ['grades'] }); setShowForm(false); setForm({ subject: '', test_name: '', score: '', max_score: '100', date: format(new Date(), 'yyyy-MM-dd'), period: 'exam', notes: '' }); toast.success('ציון נוסף'); },
   });
 
   const deleteMutation = useMutation({
