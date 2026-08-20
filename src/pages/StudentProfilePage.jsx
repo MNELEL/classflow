@@ -41,6 +41,31 @@ const ATTENDANCE_CONFIG = {
   late:    { label: 'איחר', icon: Clock,        color: 'text-amber-500'   },
 };
 
+const BEHAVIOR_CONFIG = {
+  positive:    { label: 'חיובי',   color: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400' },
+  negative:    { label: 'שלילי',   color: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400' },
+  neutral:     { label: 'נייטרלי', color: 'bg-muted text-muted-foreground' },
+  improvement: { label: 'שיפור',   color: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' },
+  concern:     { label: 'חשש',     color: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400' },
+};
+
+function QuickNavButton({ icon: Icon, label, count, active, onClick, color }) {
+  return (
+    <button
+      onClick={onClick}
+      className={`flex flex-col items-center gap-1 rounded-2xl border p-3 transition-all ${
+        active ? 'border-primary bg-primary/5 ring-1 ring-primary/30' : 'border-border bg-card hover:bg-accent/40'
+      }`}
+    >
+      <div className={`w-9 h-9 rounded-xl flex items-center justify-center ${color}`}>
+        <Icon className="w-4 h-4" />
+      </div>
+      <span className={`text-xs font-semibold ${active ? 'text-primary' : 'text-foreground'}`}>{label}</span>
+      <span className="text-[10px] text-muted-foreground">{count ?? 0} רשומות</span>
+    </button>
+  );
+}
+
 function StatCard({ icon: Icon, label, value, sub, color = 'text-primary' }) {
   return (
     <div className="flex-1 min-w-0 bg-card border border-border rounded-2xl p-3.5 flex flex-col gap-1">
@@ -57,6 +82,7 @@ function StatCard({ icon: Icon, label, value, sub, color = 'text-primary' }) {
 export default function StudentProfilePage() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const [activeTab, setActiveTab] = useState('grades');
 
   const { data: students = [], isLoading: loadingStudents } = useQuery({
     queryKey: ['students'],
@@ -82,6 +108,10 @@ export default function StudentProfilePage() {
     queryKey: ['behavior-events'],
     queryFn: () => base44.entities.BehaviorEvent.list('-date', 500),
   });
+  const { data: fastFeedback = [] } = useQuery({
+    queryKey: ['fast-feedback'],
+    queryFn: () => base44.entities.FastFeedback.list('-date', 200),
+  });
   const { data: libraryItems = [] } = useQuery({
     queryKey: ['library'],
     queryFn: () => base44.entities.LibraryItem.list('-created_date', 100),
@@ -104,6 +134,10 @@ export default function StudentProfilePage() {
   const myContacts = useMemo(() =>
     contacts.filter(c => c.student_id === id).sort((a, b) => new Date(b.date) - new Date(a.date)),
     [contacts, id]);
+
+  const myFeedback = useMemo(() =>
+    fastFeedback.filter(f => f.student_id === id).sort((a, b) => new Date(b.date) - new Date(a.date)),
+    [fastFeedback, id]);
 
   // Library items connected to student via lesson_log
   const relatedLibrary = useMemo(() =>
@@ -240,8 +274,15 @@ export default function StudentProfilePage() {
         {/* Quick preferences editor */}
         <QuickPreferencesEditor student={student} />
 
+        {/* Quick navigation — continuous personal folder */}
+        <div className="grid grid-cols-3 gap-2">
+          <QuickNavButton icon={TrendingUp} label="ציונים" count={myGrades.length} active={activeTab === 'grades'} onClick={() => setActiveTab('grades')} color="bg-blue-50 text-blue-600 dark:bg-blue-900/20" />
+          <QuickNavButton icon={MessageSquare} label="הערכות מורה" count={myFeedback.length + myBehavior.length} active={activeTab === 'assessments'} onClick={() => setActiveTab('assessments')} color="bg-amber-50 text-amber-600 dark:bg-amber-900/20" />
+          <QuickNavButton icon={CalendarCheck} label="נוכחות" count={myAttendance.length} active={activeTab === 'attendance'} onClick={() => setActiveTab('attendance')} color="bg-emerald-50 text-emerald-600 dark:bg-emerald-900/20" />
+        </div>
+
         {/* Tabs */}
-        <Tabs defaultValue="grades" dir="rtl">
+        <Tabs value={activeTab} onValueChange={setActiveTab} dir="rtl">
           <TabsList className="w-full grid grid-cols-6 h-9">
             <TabsTrigger value="grades" className="text-xs">ציונים</TabsTrigger>
             <TabsTrigger value="attendance" className="text-xs">נוכחות</TabsTrigger>
@@ -332,6 +373,49 @@ export default function StudentProfilePage() {
                   );
                 })}
               </div>
+            )}
+          </TabsContent>
+
+          {/* ── Teacher assessments ── */}
+          <TabsContent value="assessments" className="mt-3 space-y-3">
+            {myFeedback.length === 0 && myBehavior.length === 0 ? (
+              <div className="text-center py-8 text-muted-foreground text-sm">אין הערכות רשומות</div>
+            ) : (
+              <>
+                {myFeedback.length > 0 && (
+                  <div className="space-y-2">
+                    <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">משוב מהיר</p>
+                    {myFeedback.map(f => (
+                      <div key={f.id} className="flex items-center gap-3 bg-card border border-border rounded-xl px-3.5 py-2.5">
+                        <span className="text-2xl shrink-0">{f.emoji}</span>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium truncate">{f.message || f.category}</p>
+                          {f.subject && <p className="text-xs text-muted-foreground">{f.subject}</p>}
+                        </div>
+                        <span className="text-xs text-muted-foreground shrink-0">{f.date && formatDate(f.date)}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                {myBehavior.length > 0 && (
+                  <div className="space-y-2">
+                    <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">אירועי התנהגות</p>
+                    {myBehavior.map(b => {
+                      const cfg = BEHAVIOR_CONFIG[b.type] || BEHAVIOR_CONFIG.neutral;
+                      return (
+                        <div key={b.id} className="bg-card border border-border rounded-xl px-3.5 py-2.5">
+                          <div className="flex items-center justify-between mb-1">
+                            <Badge className={`text-xs border-0 ${cfg.color}`}>{cfg.label}</Badge>
+                            <span className="text-xs text-muted-foreground">{b.date && formatDate(b.date)}</span>
+                          </div>
+                          <p className="text-sm text-foreground">{b.description}</p>
+                          {b.action_taken && <p className="text-xs text-muted-foreground mt-1">פעולה: {b.action_taken}</p>}
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </>
             )}
           </TabsContent>
 
