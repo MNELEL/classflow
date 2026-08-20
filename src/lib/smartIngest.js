@@ -171,12 +171,20 @@ export async function saveResult(result, matchedStudent) {
     case 'grades_assessment': {
       if (!matchedStudent) throw new Error('נדרש לבחור תלמיד');
       if (result.score === undefined || result.score === null) throw new Error('נדרש ציון');
+      const score = Number(result.score);
+      const maxScore = Number(result.max_score) || 100;
+      // Same bounds check as the other Grade.create call sites — result.score
+      // here comes from AI classification of a scanned/uploaded document,
+      // untrusted the same way OCR exam-scan output is.
+      if (!Number.isFinite(score) || score < 0 || score > maxScore) {
+        throw new Error(`ציון לא תקין: ${result.score} (חייב להיות בין 0 ל-${maxScore})`);
+      }
       await base44.entities.Grade.create({
         student_id: matchedStudent.id,
         subject: result.subject || 'כללי',
         test_name: result.test_name || `הערכה ${today}`,
-        score: result.score,
-        max_score: result.max_score || 100,
+        score,
+        max_score: maxScore,
         date: result.document_date || today,
         period: 'exam',
         notes: result.summary || '',
