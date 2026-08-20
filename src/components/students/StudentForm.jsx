@@ -269,7 +269,9 @@ export default function StudentForm({ student, students, onSave, onCancel, isSav
       </div>
 
       <div className="flex gap-2 pt-2">
-        <Button onClick={handleSave} className="flex-1 h-11 text-base">שמור</Button>
+        <Button onClick={handleSave} disabled={isSaving} className="flex-1 h-11 text-base">
+          {isSaving ? 'שומר...' : 'שמור'}
+        </Button>
         <Button variant="outline" onClick={onCancel} className="flex-1 h-11 text-base">ביטול</Button>
       </div>
     </div>
