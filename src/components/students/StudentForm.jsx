@@ -109,6 +109,12 @@ export default function StudentForm({ student, students, onSave, onCancel }) {
 
   function handleSave() {
     if (!form.name.trim()) return;
+    // Guard against a double-tap firing two mutate() calls before the
+    // first one resolves (the parent flips isSaving asynchronously via
+    // React state, but this check is synchronous within the same click
+    // handler and closes that gap for a create especially, since
+    // Student.create has no idempotency key on the backend).
+    if (isSaving) return;
     onSave({ ...student, ...form });
   }
 
