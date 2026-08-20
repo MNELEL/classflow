@@ -24,7 +24,7 @@ export default function CurriculumPlannerPage() {
   const highlightRef = useRef(null);
   const [showForm, setShowForm] = useState(false);
   const [weekLabel, setWeekLabel] = useState('');
-  const [weekStart, setWeekStart] = useState(new Date().toISOString().split('T')[0]);
+  const [weekStart, setWeekStart] = useState(format(new Date(), 'yyyy-MM-dd'));
   const [subject, setSubject] = useState('');
   const [freeText, setFreeText] = useState('');
   const [processing, setProcessing] = useState(false);
