@@ -65,7 +65,7 @@ const TRAIT_OPTIONS = [
   { value: 'shy', label: '🌸 ביישן' },
 ];
 
-export default function StudentForm({ student, students, onSave, onCancel }) {
+export default function StudentForm({ student, students, onSave, onCancel, isSaving }) {
   const isMobile = useIsMobile();
   const existingGroups = loadGroups();
   const nameId = useId();
