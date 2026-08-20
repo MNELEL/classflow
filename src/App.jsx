@@ -309,6 +309,7 @@ function App() {
             <Toaster />
             <Sonner position="bottom-center" richColors offset="80px" />
             <OfflineIndicator />
+            <UpdatePrompt />
           </QueryClientProvider>
         </ThemeProvider>
       </AuthProvider>
