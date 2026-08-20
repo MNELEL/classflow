@@ -52,7 +52,7 @@ export function buildSummary(intent, action) {
  */
 export async function executePendingUpdate(pending) {
   const action = pending.payload || {};
-  const today = new Date().toISOString().split('T')[0];
+  const today = format(new Date(), 'yyyy-MM-dd');
 
   switch (pending.intent) {
     case 'add_student': {
