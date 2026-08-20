@@ -18,6 +18,7 @@ import PinLockScreen from '@/components/security/PinLockScreen';
 import { isLocked, refreshPinStatus } from '@/lib/pinLock';
 import ErrorBoundary from '@/components/ErrorBoundary';
 import OfflineIndicator from '@/components/OfflineIndicator';
+import UpdatePrompt from '@/components/UpdatePrompt';
 const AssistantDock = lazy(() => import('./components/assistant/AssistantDock'));
 
 // Lazy-loaded pages for code splitting
