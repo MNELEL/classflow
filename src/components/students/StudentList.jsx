@@ -164,7 +164,7 @@ export default function StudentList({ students, onSave, onDelete, isSaving }) {
           <DrawerContent dir="rtl" className="max-h-[90vh]">
             <DrawerHeader className="pb-2"><DrawerTitle className="text-right text-base">הוסף תלמיד חדש</DrawerTitle></DrawerHeader>
             <div className="overflow-y-auto px-4 pb-[env(safe-area-inset-bottom,16px)]">
-              <StudentForm students={students} onSave={data => { onSave(data); setAdding(false); }} onCancel={() => setAdding(false)} />
+              <StudentForm students={students} isSaving={isSaving} onSave={data => { onSave(data); setAdding(false); }} onCancel={() => setAdding(false)} />
             </div>
           </DrawerContent>
         </Drawer>
@@ -172,7 +172,7 @@ export default function StudentList({ students, onSave, onDelete, isSaving }) {
         <Dialog open={adding} onOpenChange={setAdding}>
           <DialogContent className="max-w-lg max-h-[80vh] overflow-y-auto">
             <DialogHeader><DialogTitle>הוסף תלמיד חדש</DialogTitle></DialogHeader>
-            <StudentForm students={students} onSave={data => { onSave(data); setAdding(false); }} onCancel={() => setAdding(false)} />
+            <StudentForm students={students} isSaving={isSaving} onSave={data => { onSave(data); setAdding(false); }} onCancel={() => setAdding(false)} />
           </DialogContent>
         </Dialog>
       )}
