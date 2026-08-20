@@ -117,7 +117,7 @@ export default function ExamScannerPage() {
       test_name: `מבחן סרוק ${new Date().toLocaleDateString('he-IL')}`,
       score: res.score,
       max_score: res.max_score || 100,
-      date: new Date().toISOString().split('T')[0],
+      date: format(new Date(), 'yyyy-MM-dd'),
       period: 'exam',
       notes: res.overall_feedback || '',
     });
