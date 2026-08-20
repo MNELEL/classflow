@@ -1,6 +1,7 @@
 import base44 from "@base44/vite-plugin"
 import react from '@vitejs/plugin-react'
 import { defineConfig } from 'vite'
+import { VitePWA } from 'vite-plugin-pwa'
 
 // https://vite.dev/config/
 export default defineConfig({
@@ -16,5 +17,36 @@ export default defineConfig({
       visualEditAgent: true
     }),
     react(),
+    VitePWA({
+      // 'prompt': never swap in new app code behind the user's back. A new
+      // service worker installs and waits; the app shows its own "update
+      // available" UI (see src/components/UpdatePrompt.jsx) and only
+      // activates on explicit confirmation. Silent/auto updates are riskier
+      // here since a forced reload mid-lesson (e.g. mid seating-chart edit)
+      // would lose unsaved state.
+      registerType: 'prompt',
+      // We already own public/manifest.json (linked directly in index.html)
+      // — don't let the plugin generate a second, competing manifest.
+      manifest: false,
+      workbox: {
+        // Precache only the app's own built static assets (JS/CSS/HTML/
+        // fonts/icons). Deliberately NOT caching API responses from
+        // base44 — serving stale grades/attendance/student data from
+        // cache is worse than no offline support, since a teacher could
+        // act on data that's silently out of date. Runtime API calls
+        // always hit the network; only the app shell becomes available
+        // offline.
+        globPatterns: ['**/*.{js,css,html,ico,png,svg,woff,woff2}'],
+        // Don't try to precache the base44 media CDN or any cross-origin
+        // resource — keep the precache scoped to same-origin build output.
+        navigateFallbackDenylist: [/^\/api\//],
+      },
+      devOptions: {
+        // Keep the service worker out of local dev entirely; it only
+        // matters for the deployed build, and running it in dev makes
+        // HMR/debugging confusing for no real benefit.
+        enabled: false,
+      },
+    }),
   ]
 });
