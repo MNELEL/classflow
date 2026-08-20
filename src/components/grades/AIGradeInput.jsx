@@ -149,6 +149,21 @@ export default function AIGradeInput({ students, grades, onGradesSaved }) {
   async function saveAll() {
     const toSave = draftCards.filter(c => c.student_id);
     if (!toSave.length) { toast.error('אין ציונים מאושרים עם תלמיד תואם לשמירה'); return; }
+    // Bounds check even though this is a reviewed-draft flow — a human
+    // approving the card doesn't necessarily notice an out-of-range AI
+    // suggestion (e.g. 900 misread from a handwritten "90"), and this is
+    // the same Grade.create write path as the other AI-derived sources
+    // (ExamScannerPage, pendingUpdateActions, smartIngest), so it gets the
+    // same guard for consistency.
+    const invalid = toSave.filter(c => {
+      const score = Number(c.score);
+      const maxScore = Number(c.max_score) || 100;
+      return !Number.isFinite(score) || score < 0 || score > maxScore;
+    });
+    if (invalid.length) {
+      toast.error(`${invalid.length} כרטיסים עם ציון לא תקין — נא לתקן לפני השמירה`);
+      return;
+    }
     setSavingIds(toSave.map(c => c.id));
     try {
       await Promise.all(toSave.map(c =>
