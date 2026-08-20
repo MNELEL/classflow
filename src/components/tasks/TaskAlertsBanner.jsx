@@ -12,10 +12,10 @@ export default function TaskAlertsBanner({ classData }) {
   const alerts = useMemo(() => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-    const todayStr = today.toISOString().split('T')[0];
+    const todayStr = format(today, 'yyyy-MM-dd');
     const tomorrow = new Date(today);
     tomorrow.setDate(tomorrow.getDate() + 1);
-    const tomorrowStr = tomorrow.toISOString().split('T')[0];
+    const tomorrowStr = format(tomorrow, 'yyyy-MM-dd');
 
     const items = [];
 
