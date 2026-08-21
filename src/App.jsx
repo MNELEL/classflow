@@ -258,7 +258,10 @@ const AuthenticatedApp = () => {
   // Refresh PIN lock status from server (keeps cache in sync across devices/sessions)
   useEffect(() => {
     if (user) {
-      refreshPinStatus().then(() => setLocked(isLocked()));
+      refreshPinStatus().then(() => {
+        setLocked(isLocked());
+        setPinStatusChecked(true);
+      });
     }
   }, [user]);
 
