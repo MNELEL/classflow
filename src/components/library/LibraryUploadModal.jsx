@@ -139,12 +139,16 @@ export default function LibraryUploadModal({ open, onClose, defaultCategory = ''
 
   // ── File handling ──────────────────────────────────────────────────────────
   const addFiles = useCallback((newFiles) => {
-    const fileArray = Array.from(newFiles).map(f => ({
-      file: f,
-      sourceType: detectSourceType(f),
-      title: f.name.replace(/\.[^.]+$/, ''),
-      id: Math.random().toString(36).slice(2),
-    }));
+    const validated = Array.from(newFiles).map(f => ({ f, sizeError: validateUploadSize(f) }));
+    validated.filter(x => x.sizeError).forEach(x => toast.error(`${x.f.name}: ${x.sizeError}`));
+    const fileArray = validated
+      .filter(x => !x.sizeError)
+      .map(({ f }) => ({
+        file: f,
+        sourceType: detectSourceType(f),
+        title: f.name.replace(/\.[^.]+$/, ''),
+        id: Math.random().toString(36).slice(2),
+      }));
     setFiles(prev => [...prev, ...fileArray]);
   }, []);
 
