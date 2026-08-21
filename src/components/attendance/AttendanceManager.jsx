@@ -6,7 +6,9 @@ import { he } from 'date-fns/locale';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
-import { Check, X, Clock, ChevronRight, ChevronLeft, Search } from 'lucide-react';
+import { Textarea } from '@/components/ui/textarea';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Check, X, Clock, ChevronRight, ChevronLeft, Search, BadgeCheck } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { formatDateLong } from '@/lib/formatDate';
@@ -25,6 +27,8 @@ export default function AttendanceManager({ students }) {
   const qc = useQueryClient();
   const [selectedDate, setSelectedDate] = useState(todayStr());
   const [search, setSearch] = useState('');
+  const [justifyTarget, setJustifyTarget] = useState(null); // { studentId, studentName, status }
+  const [justifyReason, setJustifyReason] = useState('');
 
   const { data: attendance = [] } = useQuery({
     queryKey: ['attendance'],
@@ -32,23 +36,31 @@ export default function AttendanceManager({ students }) {
   });
 
   const upsertMutation = useMutation({
-    mutationFn: async ({ studentId, status }) => {
+    mutationFn: async ({ studentId, status, justified, justification_reason }) => {
       const existing = attendance.find(a => a.student_id === studentId && a.date === selectedDate);
+      const payload = { status };
+      if (justified !== undefined) payload.justified = justified;
+      if (justification_reason !== undefined) payload.justification_reason = justification_reason;
       if (existing) {
-        return base44.entities.Attendance.update(existing.id, { status });
+        return base44.entities.Attendance.update(existing.id, payload);
       } else {
-        return base44.entities.Attendance.create({ student_id: studentId, date: selectedDate, status });
+        return base44.entities.Attendance.create({ student_id: studentId, date: selectedDate, ...payload });
       }
     },
-    onMutate: async ({ studentId, status }) => {
+    onMutate: async ({ studentId, status, justified, justification_reason }) => {
       await qc.cancelQueries({ queryKey: ['attendance'] });
       const previous = qc.getQueryData(['attendance']);
       qc.setQueryData(['attendance'], (old = []) => {
         const existing = old.find(a => a.student_id === studentId && a.date === selectedDate);
         if (existing) {
-          return old.map(a => a.student_id === studentId && a.date === selectedDate ? { ...a, status } : a);
+          return old.map(a => a.student_id === studentId && a.date === selectedDate ? {
+            ...a,
+            status,
+            ...(justified !== undefined ? { justified } : {}),
+            ...(justification_reason !== undefined ? { justification_reason } : {}),
+          } : a);
         }
-        return [...old, { id: `optimistic-${studentId}`, student_id: studentId, date: selectedDate, status }];
+        return [...old, { id: `optimistic-${studentId}`, student_id: studentId, date: selectedDate, status, justified: justified ?? false, justification_reason: justification_reason ?? '' }];
       });
       return { previous };
     },
@@ -63,7 +75,8 @@ export default function AttendanceManager({ students }) {
   const filtered = activeStudents.filter(s => s.name.includes(search));
 
   const dayRecords = attendance.filter(a => a.date === selectedDate);
-  const getStatus = (studentId) => dayRecords.find(a => a.student_id === studentId)?.status;
+  const getRecord = (studentId) => dayRecords.find(a => a.student_id === studentId);
+  const getStatus = (studentId) => getRecord(studentId)?.status;
 
   // Count for the selected day
   const presentCount = dayRecords.filter(a => a.status === 'present').length;
@@ -142,6 +155,8 @@ export default function AttendanceManager({ students }) {
       <div className="space-y-1.5">
         {filtered.map(student => {
           const status = getStatus(student.id);
+          const record = getRecord(student.id);
+          const canJustify = status === 'absent' || status === 'late';
           return (
             <div key={student.id} className="flex items-center justify-between bg-card border border-border/70 rounded-xl px-4 py-2.5 gap-3">
               <div className="flex items-center gap-3 min-w-0 flex-1">
@@ -150,11 +165,31 @@ export default function AttendanceManager({ students }) {
                 </div>
                 <div className="min-w-0">
                   <p className="font-semibold text-sm truncate">{student.name}</p>
-                  {status && (
-                    <span className={`text-[10px] font-medium px-1.5 py-0.5 rounded-full ${STATUS_CONFIG[status].badge}`}>
-                      {STATUS_CONFIG[status].label}
-                    </span>
-                  )}
+                  <div className="flex items-center gap-1 flex-wrap">
+                    {status && (
+                      <span className={`text-[10px] font-medium px-1.5 py-0.5 rounded-full ${STATUS_CONFIG[status].badge}`}>
+                        {STATUS_CONFIG[status].label}
+                      </span>
+                    )}
+                    {canJustify && (
+                      <button
+                        onClick={() => {
+                          setJustifyTarget({ studentId: student.id, studentName: student.name, status });
+                          setJustifyReason(record?.justification_reason || '');
+                        }}
+                        className={cn(
+                          'text-[10px] font-medium px-1.5 py-0.5 rounded-full border inline-flex items-center gap-0.5 transition-colors',
+                          record?.justified
+                            ? 'bg-blue-100 text-blue-700 border-blue-300 dark:bg-blue-900/30 dark:text-blue-400 dark:border-blue-800'
+                            : 'bg-transparent text-muted-foreground border-border hover:bg-accent'
+                        )}
+                        title={record?.justified ? record.justification_reason || 'מאושר כמוצדק' : 'סמן מסיבה מוצדקת'}
+                      >
+                        <BadgeCheck className="w-3 h-3" />
+                        {record?.justified ? 'מוצדק' : 'מצדיק'}
+                      </button>
+                    )}
+                  </div>
                 </div>
               </div>
               <div className="flex gap-1 shrink-0">
@@ -185,6 +220,70 @@ export default function AttendanceManager({ students }) {
           <p className="text-center text-muted-foreground text-sm py-8">לא נמצאו תלמידים</p>
         )}
       </div>
+
+      {/* Justification dialog */}
+      <Dialog open={justifyTarget !== null} onOpenChange={(o) => !o && setJustifyTarget(null)}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle>
+              אישור מסיבה מוצדקת — {justifyTarget?.status === 'absent' ? 'נעדר' : 'איחור'}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3">
+            <p className="text-xs text-muted-foreground">
+              תלמיד: <span className="font-semibold text-foreground">{justifyTarget?.studentName}</span>
+            </p>
+            <Textarea
+              value={justifyReason}
+              onChange={(e) => setJustifyReason(e.target.value)}
+              placeholder="הזן סיבה מוצדקת (למשל: תורנות הורים, אירוע משפחתי, תור לרופא...)"
+              rows={3}
+              autoFocus
+            />
+            <div className="flex gap-2 justify-between">
+              {justifyTarget && getRecord(justifyTarget.studentId)?.justified ? (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="text-destructive"
+                  onClick={() => {
+                    upsertMutation.mutate({
+                      studentId: justifyTarget.studentId,
+                      status: justifyTarget.status,
+                      justified: false,
+                      justification_reason: '',
+                    });
+                    toast.success('בוטל אישור המסיבה');
+                    setJustifyTarget(null);
+                  }}
+                >
+                  הסר אישור
+                </Button>
+              ) : <span />}
+              <div className="flex gap-2">
+                <Button variant="outline" size="sm" onClick={() => setJustifyTarget(null)}>
+                  ביטול
+                </Button>
+                <Button
+                  size="sm"
+                  onClick={() => {
+                    upsertMutation.mutate({
+                      studentId: justifyTarget.studentId,
+                      status: justifyTarget.status,
+                      justified: true,
+                      justification_reason: justifyReason.trim(),
+                    });
+                    toast.success('המסיבה אושרה כמוצדקת');
+                    setJustifyTarget(null);
+                  }}
+                >
+                  <BadgeCheck className="w-4 h-4" /> אשר מוצדק
+                </Button>
+              </div>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
