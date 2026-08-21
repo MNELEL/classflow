@@ -6,6 +6,9 @@ export const DEFAULT_BRANDING = {
   class_name: '',
   logo_url: '',
   primary_color: '',
+  doc_accent_color: '',
+  doc_title: '',
+  doc_date_format: 'full_hebrew',
   nav_labels: {
     '/': 'דשבורד',
     '/seating': 'ישיבה',

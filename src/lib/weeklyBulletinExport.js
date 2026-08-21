@@ -3,24 +3,25 @@ import { loadBranding } from '@/lib/branding';
 import { convertOklchColors } from '@/lib/colorUtils';
 import { escapeHtml } from '@/lib/htmlEscape';
 import { resolveTemplateDesign, fontStackFromDesign } from '@/lib/templateDesign';
+import { getDocSettings, formatBulletinDate } from '@/lib/documentDesign';
 
 const DEFAULT_ACCENT = '#2563eb';
 
 function buildBulletinHtml(bulletin, templateData) {
   const b = loadBranding();
+  const doc = getDocSettings();
   const design = templateData ? resolveTemplateDesign(templateData) : null;
-  const accent = design?.accent || templateData?.accent_color || DEFAULT_ACCENT;
+  const accent = doc.accentColor || design?.accent || templateData?.accent_color || DEFAULT_ACCENT;
   const secondary = design?.secondary || `${accent}22`;
   const bg = design?.background || '#ffffff';
   const fontStack = fontStackFromDesign(design);
   const frameStyle = design?.frameStyle || 'none';
   const title = escapeHtml(templateData?.detected_title || 'חוברת קשר שבועית');
+  const docTitle = escapeHtml(doc.title || '');
   const introText = escapeHtml(templateData?.detected_body_text || '');
   const className = escapeHtml(bulletin.class_name || '');
   const schoolName = escapeHtml(b.school_name || '');
-  const dateRange = bulletin.start_date && bulletin.end_date
-    ? `${new Date(bulletin.start_date).toLocaleDateString('he-IL')} – ${new Date(bulletin.end_date).toLocaleDateString('he-IL')}`
-    : '';
+  const dateRange = escapeHtml(formatBulletinDate(bulletin, doc.dateFormat));
 
   const digest = escapeHtml(bulletin.digest_summary || '');
   const points = (bulletin.study_points || []).map((p) => `<li style="margin-bottom:6px;">${escapeHtml(p)}</li>`).join('');
@@ -71,6 +72,7 @@ function buildBulletinHtml(bulletin, templateData) {
       ${watermarkHtml}
       ${frameHtml}
       <div style="position:relative;">
+        ${docTitle ? `<div style="font-size:12px; color:${accent}; font-weight:700; text-align:center; margin-bottom:8px; opacity:0.85;">${docTitle}</div>` : ''}
         <div style="display:flex; align-items:center; justify-content:space-between; border-bottom:2px solid ${accent}; padding-bottom:14px; margin-bottom:18px;">
           <div style="display:flex; align-items:center; gap:10px;">
             ${logoHtml}

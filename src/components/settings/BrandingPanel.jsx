@@ -5,13 +5,14 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { toast } from 'sonner';
-import { Upload, Save, RotateCcw, Building2, Palette, Navigation, Check } from 'lucide-react';
+import { Upload, Save, RotateCcw, Building2, Palette, Navigation, Check, FileText } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { loadBranding, saveBranding, saveBrandingSync, DEFAULT_BRANDING } from '@/lib/branding';
 import { useTheme } from '@/lib/themeContext';
 import { THEMES } from '@/lib/themes';
 import { cn } from '@/lib/utils';
 import { validateUploadSize } from '@/lib/uploadValidation';
+import { DATE_FORMAT_OPTIONS } from '@/lib/documentDesign';
 
 const NAV_PATHS = [
   { path: '/', defaultLabel: 'דשבורד' },
@@ -136,6 +137,74 @@ export default function BrandingPanel() {
                 onChange={e => update('class_name', e.target.value)}
                 placeholder="לדוגמה: ד'2, כיתה ז..."
               />
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Document Design — unified across certificates & bulletins */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base flex items-center gap-2">
+            <FileText className="w-4 h-4" /> עיצוב מסמכים אחיד
+          </CardTitle>
+          <CardDescription>הגדרות שיופיעו בכל התעודות וחוברות הקשר המונפקות</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div>
+            <Label className="text-sm mb-1.5 block">צבע עיצוב ראשי</Label>
+            <div className="flex items-center gap-2">
+              <input
+                type="color"
+                value={branding.doc_accent_color || '#7c3aed'}
+                onChange={e => update('doc_accent_color', e.target.value)}
+                className="w-10 h-9 rounded-lg border border-border cursor-pointer bg-card"
+              />
+              <Input
+                value={branding.doc_accent_color || ''}
+                onChange={e => update('doc_accent_color', e.target.value)}
+                placeholder="#7c3aed"
+                className="flex-1"
+              />
+              {branding.doc_accent_color && (
+                <Button size="sm" variant="ghost" className="text-xs text-destructive" onClick={() => update('doc_accent_color', '')}>
+                  איפוס
+                </Button>
+              )}
+            </div>
+            <p className="text-xs text-muted-foreground mt-1">אם ריק — יילקח צבע ברירת המחדל של התבנית</p>
+          </div>
+
+          <div>
+            <Label className="text-sm mb-1.5 block">כותרת מסמך קבועה</Label>
+            <Input
+              value={branding.doc_title || ''}
+              onChange={e => update('doc_title', e.target.value)}
+              placeholder='למשל: בס"ד / בעזרת השם / שם המוסד'
+            />
+            <p className="text-xs text-muted-foreground mt-1">תופיע בראש כל מסמך מונפק</p>
+          </div>
+
+          <div>
+            <Label className="text-sm mb-1.5 block">פורמט תאריך עברי</Label>
+            <div className="grid grid-cols-1 gap-2">
+              {DATE_FORMAT_OPTIONS.map(opt => (
+                <button
+                  key={opt.value}
+                  onClick={() => update('doc_date_format', opt.value)}
+                  className={cn(
+                    'flex items-center justify-between rounded-lg border-2 px-3 py-2 text-right transition-all',
+                    (branding.doc_date_format || 'full_hebrew') === opt.value
+                      ? 'border-primary bg-primary/5'
+                      : 'border-border hover:border-primary/40'
+                  )}
+                >
+                  <span className="text-sm font-medium">{opt.label}</span>
+                  {(branding.doc_date_format || 'full_hebrew') === opt.value && (
+                    <Check className="w-4 h-4 text-primary" />
+                  )}
+                </button>
+              ))}
             </div>
           </div>
         </CardContent>

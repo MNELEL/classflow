@@ -3,6 +3,7 @@ import { loadBranding } from '@/lib/branding';
 import { convertOklchColors } from '@/lib/colorUtils';
 import { escapeHtml } from '@/lib/htmlEscape';
 import { resolveTemplateDesign, fontStackFromDesign } from '@/lib/templateDesign';
+import { getDocSettings, formatDateForDoc } from '@/lib/documentDesign';
 
 // ── Certificate templates ──────────────────────────────────────────────────
 // Each template supplies default title/body text and an accent color.
@@ -63,15 +64,17 @@ function buildCertificateHtml(cert) {
       }
     : (CERTIFICATE_TEMPLATES[cert.template] || CERTIFICATE_TEMPLATES.custom);
 
+  const doc = getDocSettings();
+  const accent = doc.accentColor || tpl.accent;
+
   const title = escapeHtml(cert.title || tpl.defaultTitle);
   const bodyText = escapeHtml(cert.body_text || tpl.defaultBody);
   const studentName = escapeHtml(cert.student_name || '');
   const subject = escapeHtml(cert.subject || (cert.subjects || []).join('• ') || '');
   const signedBy = escapeHtml(cert.signed_by || b.teacher_name || '');
   const schoolName = escapeHtml(b.school_name || '');
-  const dateStr = cert.date
-    ? new Date(cert.date).toLocaleDateString('he-IL')
-    : new Date().toLocaleDateString('he-IL');
+  const docTitle = escapeHtml(doc.title || '');
+  const dateLine = escapeHtml(formatDateForDoc(cert.date, doc.dateFormat));
 
   const logoHtml = b.logo_url
     ? `<img src="${escapeHtml(b.logo_url)}" style="height:56px;width:56px;object-fit:contain;border-radius:10px;" />`
@@ -79,12 +82,12 @@ function buildCertificateHtml(cert) {
 
   const fontStack = fontStackFromDesign(design);
   const bg = design?.background || '#fffdf8';
-  const fc = design?.frameColor || tpl.accent;
+  const fc = design?.frameColor || accent;
 
   let frameHtml;
   if (!design) {
-    frameHtml = `<div style="position:absolute; inset:16px; border:3px solid ${tpl.accent}; border-radius:16px; pointer-events:none;"></div>
-      <div style="position:absolute; inset:26px; border:1px solid ${tpl.accent}55; border-radius:10px; pointer-events:none;"></div>`;
+    frameHtml = `<div style="position:absolute; inset:16px; border:3px solid ${accent}; border-radius:16px; pointer-events:none;"></div>
+      <div style="position:absolute; inset:26px; border:1px solid ${accent}55; border-radius:10px; pointer-events:none;"></div>`;
   } else {
     switch (design.frameStyle) {
       case 'none': frameHtml = ''; break;
@@ -126,6 +129,12 @@ function buildCertificateHtml(cert) {
 
       <div style="position:relative; height:100%; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:28px 56px;">
 
+        ${docTitle ? `
+          <div style="font-size:13px; color:${accent}; font-weight:700; letter-spacing:0.5px; margin-bottom:10px; opacity:0.85;">
+            ${docTitle}
+          </div>
+        ` : ''}
+
         ${logoHtml || schoolName ? `
           <div style="display:flex; align-items:center; gap:10px; margin-bottom:18px;">
             ${logoHtml}
@@ -135,11 +144,11 @@ function buildCertificateHtml(cert) {
 
         <div style="font-size:40px; margin-bottom:6px;">${tpl.icon}</div>
 
-        <div style="font-size:34px; font-weight:800; color:${tpl.accent}; margin-bottom:4px; ${titleAlignStyle}">
+        <div style="font-size:34px; font-weight:800; color:${accent}; margin-bottom:4px; ${titleAlignStyle}">
           ${title}
         </div>
 
-        <div style="width:120px; height:3px; background:${tpl.accent}; border-radius:2px; margin:14px 0 22px;"></div>
+        <div style="width:120px; height:3px; background:${accent}; border-radius:2px; margin:14px 0 22px;"></div>
 
         <div style="font-size:16px; color:#374151; margin-bottom:10px;">מוענקת בזאת ל</div>
 
@@ -148,7 +157,7 @@ function buildCertificateHtml(cert) {
         </div>
 
         <div style="font-size:16px; color:#4b5563; line-height:1.8; max-width:620px; margin-bottom:8px;">
-          ${bodyText}${subject ? `<br/><span style="color:${tpl.accent}; font-weight:700;">${subject}</span>` : ''}
+          ${bodyText}${subject ? `<br/><span style="color:${accent}; font-weight:700;">${subject}</span>` : ''}
         </div>
 
         <div style="flex:1;"></div>
@@ -161,19 +170,9 @@ function buildCertificateHtml(cert) {
             <div style="font-size:11px; color:#9ca3af; margin-top:2px;">חתימת המחנך/ת</div>
           </div>
 
-          <div style="
-            background:${tpl.accentLight}; color:${tpl.accent};
-            border:2px solid ${tpl.accent}; border-radius:50%;
-            width:74px; height:74px;
-            display:flex; align-items:center; justify-content:center;
-            font-size:11px; font-weight:800; text-align:center; line-height:1.3;
-          ">
-            ${dateStr}
-          </div>
-
-          <div style="text-align:center; min-width:160px;">
-            <div style="border-top:1.5px solid #9ca3af; padding-top:6px; font-size:13px; color:#374151; font-weight:600;">
-              ${dateStr}
+          <div style="text-align:center; min-width:240px;">
+            <div style="border-top:1.5px solid #9ca3af; padding-top:6px; font-size:14px; color:#374151; font-weight:600; direction:rtl;">
+              ${dateLine}
             </div>
             <div style="font-size:11px; color:#9ca3af; margin-top:2px;">תאריך</div>
           </div>
