@@ -32,6 +32,8 @@ export default function ExamScannerPage() {
       toast.error('יש לבחור תמונה');
       return;
     }
+    const sizeError = validateUploadSize(file);
+    if (sizeError) { toast.error(sizeError); return; }
     // Convert to base64 for preview
     const reader = new FileReader();
     reader.onload = (e) => setScannedImage(e.target.result);
