@@ -66,13 +66,18 @@ export default function IngestPage() {
   const { containerRef, pullY, refreshing } = usePullToRefresh(handleRefresh);
 
   const handleFiles = useCallback((newFiles) => {
-    const valid = Array.from(newFiles).filter(f => {
+    const typeValid = Array.from(newFiles).filter(f => {
       const ext = '.' + f.name.split('.').pop().toLowerCase();
       return currentType.accept.split(',').includes(ext);
     });
-    if (valid.length !== newFiles.length) {
+    if (typeValid.length !== newFiles.length) {
       toast.error(`חלק מהקבצים לא תואמים. פורמטים נתמכים: ${currentType.formats}`);
     }
+    const valid = typeValid.filter(f => {
+      const sizeError = validateUploadSize(f);
+      if (sizeError) toast.error(`${f.name}: ${sizeError}`);
+      return !sizeError;
+    });
     setFiles(prev => [...prev, ...valid]);
   }, [currentType]);
 
