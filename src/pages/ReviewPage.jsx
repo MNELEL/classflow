@@ -74,8 +74,14 @@ export default function ReviewPage() {
       qc.invalidateQueries();
     } catch (err) {
       toast.error('שגיאה באישור: ' + (err.message || ''));
+      // Rethrow so handleApproveAll's success/error counters are accurate.
+      // The per-item error toast already fired above; a caller that just
+      // wants fire-and-forget (a single-item click) can ignore the
+      // rejection since ReviewCard doesn't await this call's result.
+      throw err;
+    } finally {
+      setProcessingIds(prev => { const s = new Set(prev); s.delete(item.id); return s; });
     }
-    setProcessingIds(prev => { const s = new Set(prev); s.delete(item.id); return s; });
   }
 
   async function handleReject(item) {
