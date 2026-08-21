@@ -31,6 +31,88 @@ Deno.serve(async (req) => {
       return Response.json({ files: data.files || [] });
     }
 
+    if (action === 'list_folder_recursive') {
+      // Bulk-import support: walk a folder and every subfolder beneath it,
+      // returning every importable file (paginated fully, unlike 'list'
+      // above which caps at 50 and is meant for interactive browsing).
+      // Depth-capped and count-capped so a runaway folder tree (deeply
+      // nested, or accidentally pointed at Drive root) can't turn into an
+      // unbounded number of Drive API calls.
+      if (!folderId) return Response.json({ error: 'folderId required' }, { status: 400 });
+      if (!/^[a-zA-Z0-9_-]+$/.test(folderId)) {
+        return Response.json({ error: 'Invalid folderId' }, { status: 400 });
+      }
+
+      const MAX_DEPTH = 6;
+      const MAX_FILES = 500;
+      const MAX_API_CALLS = 200; // safety valve independent of file/depth caps
+      const importableMime =
+        "(mimeType='application/pdf' or mimeType='application/vnd.google-apps.document' or " +
+        "mimeType='application/vnd.google-apps.presentation' or " +
+        "mimeType='application/vnd.openxmlformats-officedocument.wordprocessingml.document' or " +
+        "mimeType='application/vnd.openxmlformats-officedocument.presentationml.presentation')";
+
+      const allFiles = [];
+      let apiCalls = 0;
+      let truncated = false;
+
+      async function listChildFiles(parentId) {
+        let pageToken;
+        do {
+          if (apiCalls >= MAX_API_CALLS) { truncated = true; return; }
+          apiCalls++;
+          const params = new URLSearchParams({
+            q: `'${parentId}' in parents and trashed=false and ${importableMime}`,
+            fields: 'nextPageToken,files(id,name,mimeType,modifiedTime,size,webViewLink,iconLink,parents)',
+            pageSize: '100',
+          });
+          if (pageToken) params.set('pageToken', pageToken);
+          const res = await fetch(`https://www.googleapis.com/drive/v3/files?${params}`, { headers });
+          const data = await res.json();
+          for (const f of (data.files || [])) {
+            if (allFiles.length >= MAX_FILES) { truncated = true; return; }
+            allFiles.push(f);
+          }
+          pageToken = data.nextPageToken;
+        } while (pageToken && apiCalls < MAX_API_CALLS);
+      }
+
+      async function listSubfolders(parentId) {
+        let pageToken;
+        const subfolders = [];
+        do {
+          if (apiCalls >= MAX_API_CALLS) { truncated = true; break; }
+          apiCalls++;
+          const params = new URLSearchParams({
+            q: `'${parentId}' in parents and trashed=false and mimeType='application/vnd.google-apps.folder'`,
+            fields: 'nextPageToken,files(id,name)',
+            pageSize: '100',
+          });
+          if (pageToken) params.set('pageToken', pageToken);
+          const res = await fetch(`https://www.googleapis.com/drive/v3/files?${params}`, { headers });
+          const data = await res.json();
+          subfolders.push(...(data.files || []));
+          pageToken = data.nextPageToken;
+        } while (pageToken && apiCalls < MAX_API_CALLS);
+        return subfolders;
+      }
+
+      async function walk(parentId, depth) {
+        if (depth > MAX_DEPTH) { truncated = true; return; }
+        if (allFiles.length >= MAX_FILES || apiCalls >= MAX_API_CALLS) { truncated = true; return; }
+
+        const subfolders = await listSubfolders(parentId);
+        await listChildFiles(parentId);
+        for (const sub of subfolders) {
+          if (allFiles.length >= MAX_FILES || apiCalls >= MAX_API_CALLS) { truncated = true; break; }
+          await walk(sub.id, depth + 1);
+        }
+      }
+
+      await walk(folderId, 0);
+      return Response.json({ files: allFiles, truncated, count: allFiles.length });
+    }
+
     if (action === 'import') {
       // Import a Drive file as a LibraryItem
       if (!fileId) return Response.json({ error: 'fileId required' }, { status: 400 });
