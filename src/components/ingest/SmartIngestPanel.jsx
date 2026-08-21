@@ -32,10 +32,15 @@ export default function SmartIngestPanel() {
   });
 
   const handleFiles = useCallback((newFiles) => {
-    const valid = Array.from(newFiles).filter(f => f.type.startsWith('image/'));
-    if (valid.length !== newFiles.length) {
+    const typeValid = Array.from(newFiles).filter(f => f.type.startsWith('image/'));
+    if (typeValid.length !== newFiles.length) {
       toast.error('יש להעלות קבצי תמונה בלבד');
     }
+    const valid = typeValid.filter(f => {
+      const sizeError = validateUploadSize(f);
+      if (sizeError) toast.error(`${f.name}: ${sizeError}`);
+      return !sizeError;
+    });
     setFiles(prev => [...prev, ...valid]);
   }, []);
 
