@@ -29,6 +29,11 @@ export function lockNow() {
 
 // ── Server-side operations (via backend function) ──
 
+// Returns true/false when the server confirms current PIN status, or null
+// if the check itself failed (network error, server error) — callers that
+// care about the difference between "confirmed disabled" and "couldn't
+// verify" (see App.jsx's pinStatusUnknown gate) should check for null
+// explicitly rather than treating a failed check as a definite answer.
 export async function refreshPinStatus() {
   try {
     const res = await base44.functions.invoke('pinSecurity', { action: 'get_status' });
@@ -40,7 +45,7 @@ export async function refreshPinStatus() {
     }
     return enabled;
   } catch {
-    return isPinEnabledCached();
+    return null;
   }
 }
 
