@@ -9,6 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { Camera, Upload, Sparkles, AlertCircle, CheckCircle2, User, ChevronDown, ChevronUp, Save } from 'lucide-react';
 import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'framer-motion';
+import { validateUploadSize } from '@/lib/uploadValidation';
 
 export default function ExamScannerPage() {
   const qc = useQueryClient();
