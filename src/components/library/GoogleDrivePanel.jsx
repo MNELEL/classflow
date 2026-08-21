@@ -3,8 +3,10 @@ import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { HardDrive, Search, Loader2, FileText, Presentation, File, FolderOpen, ChevronRight, Plus, CheckCircle2, AlertCircle, RefreshCw } from 'lucide-react';
+import { Progress } from '@/components/ui/progress';
+import { HardDrive, Search, Loader2, FileText, Presentation, File, FolderOpen, ChevronRight, Plus, CheckCircle2, AlertCircle, RefreshCw, FolderDown, Brain, X } from 'lucide-react';
 import { toast } from 'sonner';
+import { extractStyleFromLibrary } from '@/lib/teacherStyle';
 
 const CONNECTOR_ID = '6a37ebf86b324d770927a6e6';
 
