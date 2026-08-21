@@ -1,4 +1,5 @@
 import React, { useState, useCallback, useRef } from 'react';
+import { validateUploadSize } from '@/lib/uploadValidation';
 import { useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import AppLayout from '@/components/layout/AppLayout';
