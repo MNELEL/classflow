@@ -15,7 +15,7 @@ import { ThemeProvider } from '@/lib/themeContext';
 import { applyThemeClass, loadTheme } from '@/lib/themes';
 import { loadBrandingFromDB, loadBranding } from '@/lib/branding';
 import PinLockScreen from '@/components/security/PinLockScreen';
-import { isLocked, refreshPinStatus } from '@/lib/pinLock';
+import { isLocked, refreshPinStatus, PIN_ENABLED_KEY } from '@/lib/pinLock';
 import ErrorBoundary from '@/components/ErrorBoundary';
 import OfflineIndicator from '@/components/OfflineIndicator';
 import UpdatePrompt from '@/components/UpdatePrompt';
