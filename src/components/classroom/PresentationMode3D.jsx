@@ -1,8 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import * as THREE from 'three';
-import { Button } from '@/components/ui/button';
-import { Eye, EyeOff, Camera, X, Monitor, Box } from 'lucide-react';
-import { getStudentSeat } from '@/lib/seatingUtils';
+import { Eye, EyeOff, Camera, X, Monitor, Printer, Move } from 'lucide-react';
 
 const CAMERA_PRESETS = {
   front: { pos: [0, 6, 12], target: [0, 0, 0], label: 'מלפנים' },
@@ -11,17 +9,21 @@ const CAMERA_PRESETS = {
   top: { pos: [0, 18, 0.1], target: [0, 0, 0], label: 'מלמעלה' },
 };
 
-export default function PresentationMode3D({ seats, students, rows, cols, open, onClose }) {
+export default function PresentationMode3D({ seats, students, rows, cols, open, onClose, onMoveStudent }) {
   const mountRef = useRef(null);
   const sceneRef = useRef(null);
   const rendererRef = useRef(null);
   const cameraRef = useRef(null);
   const animRef = useRef(null);
-  const labelsRef = useRef([]);
+  const raycasterRef = useRef(new THREE.Raycaster());
+  const dragRef = useRef({ studentId: null, fromSeatId: null, body: null, hoveredDesk: null });
   const [anonymous, setAnonymous] = useState(false);
   const [currentCamera, setCurrentCamera] = useState('front');
+  const [dragging, setDragging] = useState(false);
   const lowPowerRef = useRef(false);
   const needsRenderRef = useRef(true);
+  const onMoveStudentRef = useRef(onMoveStudent);
+  useEffect(() => { onMoveStudentRef.current = onMoveStudent; });
 
   // Setup scene
   useEffect(() => {
@@ -31,7 +33,6 @@ export default function PresentationMode3D({ seats, students, rows, cols, open, 
     const width = mount.clientWidth;
     const height = mount.clientHeight;
 
-    // Detect weak devices so we can scale quality down automatically
     const lowPower = (
       (navigator.hardwareConcurrency && navigator.hardwareConcurrency <= 4) ||
       (navigator.deviceMemory && navigator.deviceMemory <= 4) ||
@@ -39,26 +40,23 @@ export default function PresentationMode3D({ seats, students, rows, cols, open, 
     );
     lowPowerRef.current = lowPower;
 
-    // Scene
     const scene = new THREE.Scene();
     scene.background = new THREE.Color(0x1a202c);
     scene.fog = new THREE.Fog(0x1a202c, 20, 50);
 
-    // Camera
     const camera = new THREE.PerspectiveCamera(50, width / height, 0.1, 100);
     const preset = CAMERA_PRESETS.front;
     camera.position.set(...preset.pos);
     camera.lookAt(...preset.target);
 
-    // Renderer — cap pixel ratio at 1.5 (imperceptible vs 2, notably lighter on GPU)
-    const renderer = new THREE.WebGLRenderer({ antialias: !lowPower });
+    // preserveDrawingBuffer so the canvas can be screenshotted for printing
+    const renderer = new THREE.WebGLRenderer({ antialias: !lowPower, preserveDrawingBuffer: true });
     renderer.setSize(width, height);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
     renderer.shadowMap.enabled = !lowPower;
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     mount.appendChild(renderer.domElement);
 
-    // Lights
     const ambient = new THREE.AmbientLight(0xffffff, 0.4);
     scene.add(ambient);
 
@@ -79,7 +77,6 @@ export default function PresentationMode3D({ seats, students, rows, cols, open, 
     fillLight.position.set(-10, 5, -5);
     scene.add(fillLight);
 
-    // Floor
     const floorGeo = new THREE.PlaneGeometry(cols * 2.5, rows * 2.5);
     const floorMat = new THREE.MeshStandardMaterial({ color: 0x3a4a5c, roughness: 0.9 });
     const floor = new THREE.Mesh(floorGeo, floorMat);
@@ -87,7 +84,6 @@ export default function PresentationMode3D({ seats, students, rows, cols, open, 
     floor.receiveShadow = true;
     scene.add(floor);
 
-    // Teacher's board (front wall)
     const boardGeo = new THREE.BoxGeometry(cols * 0.8, 1.5, 0.1);
     const boardMat = new THREE.MeshStandardMaterial({ color: 0x2d5a4a, roughness: 0.3 });
     const board = new THREE.Mesh(boardGeo, boardMat);
@@ -95,7 +91,6 @@ export default function PresentationMode3D({ seats, students, rows, cols, open, 
     board.castShadow = !lowPower;
     scene.add(board);
 
-    // Board frame
     const frameGeo = new THREE.BoxGeometry(cols * 0.8 + 0.2, 1.7, 0.05);
     const frameMat = new THREE.MeshStandardMaterial({ color: 0x6b5b3d, roughness: 0.6 });
     const frame = new THREE.Mesh(frameGeo, frameMat);
@@ -106,12 +101,8 @@ export default function PresentationMode3D({ seats, students, rows, cols, open, 
     rendererRef.current = renderer;
     cameraRef.current = camera;
 
-    // Render seats + students
     renderClassroom(scene, seats, students, rows, cols, false, lowPower);
 
-    // Render-on-demand loop: only redraws while something has changed
-    // (initial load, seat/anonymity update, or an in-progress camera move).
-    // A static scene stops consuming GPU/battery instead of rendering forever.
     needsRenderRef.current = true;
     function animate() {
       animRef.current = requestAnimationFrame(animate);
@@ -122,7 +113,6 @@ export default function PresentationMode3D({ seats, students, rows, cols, open, 
     }
     animate();
 
-    // Resize handler
     function handleResize() {
       if (!mountRef.current || !rendererRef.current || !cameraRef.current) return;
       const w = mountRef.current.clientWidth;
@@ -134,9 +124,104 @@ export default function PresentationMode3D({ seats, students, rows, cols, open, 
     }
     window.addEventListener('resize', handleResize);
 
+    // ── Drag-to-move students via raycasting ──
+    const dom = renderer.domElement;
+
+    function getPointerNDC(event) {
+      const rect = dom.getBoundingClientRect();
+      return new THREE.Vector2(
+        ((event.clientX - rect.left) / rect.width) * 2 - 1,
+        -((event.clientY - rect.top) / rect.height) * 2 + 1
+      );
+    }
+
+    function collectByFlag(flag) {
+      const arr = [];
+      scene.traverse((o) => { if (o.userData[flag]) arr.push(o); });
+      return arr;
+    }
+
+    function onPointerDown(event) {
+      if (!onMoveStudentRef.current) return;
+      const pointer = getPointerNDC(event);
+      raycasterRef.current.setFromCamera(pointer, camera);
+      const hits = raycasterRef.current.intersectObjects(collectByFlag('isStudent'), false);
+      if (hits.length > 0) {
+        const hit = hits[0].object;
+        dragRef.current = {
+          studentId: hit.userData.studentId,
+          fromSeatId: hit.userData.seatId,
+          body: hit,
+          hoveredDesk: null,
+        };
+        hit.position.y += 0.4; // lift for visual feedback
+        dom.style.cursor = 'grabbing';
+        setDragging(true);
+        needsRenderRef.current = true;
+      }
+    }
+
+    function onPointerMove(event) {
+      const d = dragRef.current;
+      if (!d.studentId) return;
+      const pointer = getPointerNDC(event);
+      raycasterRef.current.setFromCamera(pointer, camera);
+      if (d.hoveredDesk) {
+        d.hoveredDesk.material.emissive.setHex(0x000000);
+        d.hoveredDesk = null;
+      }
+      const hits = raycasterRef.current.intersectObjects(collectByFlag('isDesk'), false);
+      if (hits.length > 0) {
+        const desk = hits[0].object;
+        if (desk.userData.seatId && desk.userData.seatId !== d.fromSeatId) {
+          desk.material.emissive.setHex(0x10b981);
+          desk.material.emissiveIntensity = 0.5;
+          d.hoveredDesk = desk;
+        }
+      }
+      needsRenderRef.current = true;
+    }
+
+    function onPointerUp(event) {
+      const d = dragRef.current;
+      if (!d.studentId) return;
+      const pointer = getPointerNDC(event);
+      raycasterRef.current.setFromCamera(pointer, camera);
+      if (d.hoveredDesk) {
+        d.hoveredDesk.material.emissive.setHex(0x000000);
+      }
+      const hits = raycasterRef.current.intersectObjects(collectByFlag('isDesk'), false);
+      if (hits.length > 0) {
+        const toSeatId = hits[0].object.userData.seatId;
+        if (toSeatId && toSeatId !== d.fromSeatId && onMoveStudentRef.current) {
+          onMoveStudentRef.current(d.studentId, d.fromSeatId, toSeatId);
+        }
+      }
+      if (d.body) d.body.position.y -= 0.4;
+      dragRef.current = { studentId: null, fromSeatId: null, body: null, hoveredDesk: null };
+      dom.style.cursor = onMoveStudentRef.current ? 'grab' : 'default';
+      setDragging(false);
+      needsRenderRef.current = true;
+    }
+
+    const hasMove = !!onMoveStudentRef.current;
+    if (hasMove) {
+      dom.style.cursor = 'grab';
+      dom.addEventListener('pointerdown', onPointerDown);
+      dom.addEventListener('pointermove', onPointerMove);
+      dom.addEventListener('pointerup', onPointerUp);
+      dom.addEventListener('pointercancel', onPointerUp);
+    }
+
     return () => {
       cancelAnimationFrame(animRef.current);
       window.removeEventListener('resize', handleResize);
+      if (hasMove) {
+        dom.removeEventListener('pointerdown', onPointerDown);
+        dom.removeEventListener('pointermove', onPointerMove);
+        dom.removeEventListener('pointerup', onPointerUp);
+        dom.removeEventListener('pointercancel', onPointerUp);
+      }
       renderer.dispose();
       if (mount.contains(renderer.domElement)) {
         mount.removeChild(renderer.domElement);
@@ -163,7 +248,6 @@ export default function PresentationMode3D({ seats, students, rows, cols, open, 
     if (!cameraRef.current || !open) return;
     const preset = CAMERA_PRESETS[currentCamera];
     const camera = cameraRef.current;
-    // Smooth transition
     const startPos = camera.position.clone();
     const endPos = new THREE.Vector3(...preset.pos);
     const startTarget = camera.userData.target || new THREE.Vector3(0, 0, 0);
@@ -185,6 +269,21 @@ export default function PresentationMode3D({ seats, students, rows, cols, open, 
     step();
   }, [currentCamera, open]);
 
+  function handlePrint() {
+    const renderer = rendererRef.current;
+    const scene = sceneRef.current;
+    const camera = cameraRef.current;
+    if (!renderer || !scene || !camera) return;
+    renderer.render(scene, camera);
+    const dataUrl = renderer.domElement.toDataURL('image/png');
+    const w = window.open('', '_blank');
+    if (!w) return;
+    w.document.write(`<!DOCTYPE html><html dir="rtl"><head><title>תצוגת כיתה 3D</title><style>@page{size:A4 landscape;margin:10mm}html,body{margin:0;height:100%;background:#fff}body{display:flex;align-items:center;justify-content:center}img{max-width:100%;max-height:100%;object-fit:contain}</style></head><body><img src="${dataUrl}"/></body></html>`);
+    w.document.close();
+    w.focus();
+    setTimeout(() => w.print(), 400);
+  }
+
   if (!open) return null;
 
   return (
@@ -196,11 +295,33 @@ export default function PresentationMode3D({ seats, students, rows, cols, open, 
         <div className="flex items-center gap-2">
           <Monitor className="w-5 h-5 text-white" />
           <span className="text-white font-semibold text-sm">מצב מצגת</span>
+          {onMoveStudent && (
+            <span className="hidden sm:flex items-center gap-1 text-white/70 text-xs mr-2">
+              <Move className="w-3 h-3" /> גררו תלמידים בין מקומות
+            </span>
+          )}
         </div>
-        <button onClick={onClose} className="w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition-colors">
-          <X className="w-5 h-5" />
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={handlePrint}
+            className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white text-sm font-medium transition-colors"
+            title="הדפסת מצב תלת-מימד"
+          >
+            <Printer className="w-4 h-4" />
+            <span className="hidden sm:inline">הדפסה</span>
+          </button>
+          <button onClick={onClose} className="w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition-colors">
+            <X className="w-5 h-5" />
+          </button>
+        </div>
       </div>
+
+      {/* Drag hint while dragging */}
+      {dragging && (
+        <div className="absolute top-16 left-1/2 -translate-x-1/2 bg-primary/90 text-primary-foreground text-xs font-medium px-3 py-1.5 rounded-full">
+          גורר תלמיד — שחררו על מושב
+        </div>
+      )}
 
       {/* Camera angle buttons */}
       <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex gap-2 p-2 bg-black/50 backdrop-blur-md rounded-2xl">
@@ -256,7 +377,6 @@ function disposeObject3D(obj) {
 }
 
 function renderClassroom(scene, seats, students, rows, cols, anonymous, lowPower = false) {
-  // Remove old seat meshes + labels, releasing their GPU resources
   const toRemove = [];
   scene.traverse((obj) => {
     if (obj.userData.isSeat || obj.userData.isLabel) toRemove.push(obj);
@@ -267,19 +387,18 @@ function renderClassroom(scene, seats, students, rows, cols, anonymous, lowPower
   });
 
   const studentMap = Object.fromEntries(students.map(s => [s.id, s]));
+  // Mirror the X axis so column 0 sits on the right (matching the RTL 2D grid)
   const offsetX = -(cols - 1) * 1.2 / 2;
-  const offsetZ = -(rows - 1) * 1.2 / 2;
 
   for (let r = 0; r < rows; r++) {
     for (let c = 0; c < cols; c++) {
       const seat = seats.find(s => s.row === r && s.col === c);
       if (!seat || seat.is_hidden || seat.is_gap) continue;
 
-      const x = offsetX + c * 1.2;
-      const z = offsetZ + r * 1.2;
+      const x = -offsetX - c * 1.2;
+      const z = -(rows - 1) * 0.6 + r * 1.2;
 
       if (seat.is_blocked) {
-        // Blocked seat — red cone
         const coneGeo = new THREE.ConeGeometry(0.3, 0.6, 4);
         const coneMat = new THREE.MeshStandardMaterial({ color: 0xff6b35, transparent: true, opacity: 0.8 });
         const cone = new THREE.Mesh(coneGeo, coneMat);
@@ -291,12 +410,14 @@ function renderClassroom(scene, seats, students, rows, cols, anonymous, lowPower
 
       // Desk
       const deskGeo = new THREE.BoxGeometry(0.9, 0.05, 0.6);
-      const deskMat = new THREE.MeshStandardMaterial({ color: 0xc4a96a, roughness: 0.7 });
+      const deskMat = new THREE.MeshStandardMaterial({ color: 0xc4a96a, roughness: 0.7, emissive: 0x000000, emissiveIntensity: 0 });
       const desk = new THREE.Mesh(deskGeo, deskMat);
       desk.position.set(x, 0.55, z);
       desk.castShadow = !lowPower;
       desk.receiveShadow = !lowPower;
       desk.userData.isSeat = true;
+      desk.userData.isDesk = true;
+      desk.userData.seatId = seat.id;
       scene.add(desk);
 
       // Desk legs
@@ -336,7 +457,6 @@ function renderClassroom(scene, seats, students, rows, cols, anonymous, lowPower
                       student?.academic_level === 'below_average' ? 0xf97316 :
                       0x6b7280;
 
-        // Body (torso) — fewer segments on low-power devices
         const bodyGeo = lowPower
           ? new THREE.CapsuleGeometry(0.15, 0.3, 2, 5)
           : new THREE.CapsuleGeometry(0.15, 0.3, 4, 8);
@@ -345,9 +465,11 @@ function renderClassroom(scene, seats, students, rows, cols, anonymous, lowPower
         body.position.set(x, 0.9, z);
         body.castShadow = !lowPower;
         body.userData.isSeat = true;
+        body.userData.isStudent = true;
+        body.userData.studentId = seat.student_id;
+        body.userData.seatId = seat.id;
         scene.add(body);
 
-        // Head
         const headGeo = lowPower
           ? new THREE.SphereGeometry(0.12, 6, 6)
           : new THREE.SphereGeometry(0.12, 12, 12);
@@ -356,9 +478,11 @@ function renderClassroom(scene, seats, students, rows, cols, anonymous, lowPower
         head.position.set(x, 1.25, z);
         head.castShadow = !lowPower;
         head.userData.isSeat = true;
+        head.userData.isStudent = true;
+        head.userData.studentId = seat.student_id;
+        head.userData.seatId = seat.id;
         scene.add(head);
 
-        // Name label (sprite)
         if (!anonymous && student) {
           const canvas = document.createElement('canvas');
           canvas.width = 256;
@@ -382,7 +506,6 @@ function renderClassroom(scene, seats, students, rows, cols, anonymous, lowPower
           scene.add(sprite);
         }
       } else if (seat.is_locked) {
-        // Locked indicator
         const lockGeo = new THREE.OctahedronGeometry(0.15);
         const lockMat = new THREE.MeshStandardMaterial({ color: 0xfacc15, emissive: 0xfacc15, emissiveIntensity: 0.3 });
         const lock = new THREE.Mesh(lockGeo, lockMat);

@@ -650,6 +650,7 @@ ${overrideLines ? `\nהעדפות ייבוא נוספות:\n${overrideLines}` : 
           cols={cols}
           open={showPresentation3D}
           onClose={() => setShowPresentation3D(false)}
+          onMoveStudent={handleMoveStu}
         />
       </Suspense>
 

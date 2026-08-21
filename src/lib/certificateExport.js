@@ -74,7 +74,7 @@ function buildCertificateHtml(cert) {
   const signedBy = escapeHtml(cert.signed_by || b.teacher_name || '');
   const schoolName = escapeHtml(b.school_name || '');
   const docTitle = escapeHtml(doc.title || '');
-  const dateLine = escapeHtml(formatDateForDoc(cert.date, doc.dateFormat));
+  const dateLine = escapeHtml(formatDateForDoc(cert.date, doc.dateFormat).replace(/^תאריך:\s*/, ''));
 
   const logoHtml = b.logo_url
     ? `<img src="${escapeHtml(b.logo_url)}" style="height:56px;width:56px;object-fit:contain;border-radius:10px;" />`

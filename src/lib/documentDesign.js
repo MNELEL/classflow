@@ -5,21 +5,24 @@
 // HTML builders, so every document carries the same professional look.
 
 import { loadBranding } from '@/lib/branding';
-import { toHebrewFull } from '@/lib/hebrewDate';
+import { toHebrewFull, toHebrewDate } from '@/lib/hebrewDate';
 import { resolveTemplateDesign, fontStackFromDesign } from '@/lib/templateDesign';
 
 export const DATE_FORMAT_OPTIONS = [
-  { label: 'תאריך: ............', value: 'dotted', hint: 'שורה ריקה למילוי ידני' },
-  { label: 'תאריך: _______________', value: 'underscores', hint: 'קו תחתון למילוי ידני' },
-  { label: 'תאריך מלא (ז׳ אלול תשפ״ו)', value: 'full_hebrew', hint: 'תאריך עברי מלא' },
+  { label: 'תאריך קצר (ז׳ אלול)', value: 'short', hint: 'תאריך עברי קצר — יום וחודש' },
+  { label: 'תאריך: _______________', value: 'underscores', hint: 'קו תחתון להשלמה ידנית' },
+  { label: 'תאריך מלא (ז׳ אלול תשפ״ו)', value: 'full_hebrew', hint: 'תאריך עברי מלא ומפורט' },
 ];
 
 /** Format a single date (e.g. on a certificate) per the chosen Hebrew-date format. */
 export function formatDateForDoc(date, format) {
   const fmt = format || 'full_hebrew';
-  if (fmt === 'dotted') return 'תאריך: ............';
   if (fmt === 'underscores') return 'תאריך: _______________';
   const d = date ? new Date(date) : new Date();
+  if (fmt === 'short' || fmt === 'dotted') {
+    const hebrew = toHebrewDate(d);
+    return hebrew ? `תאריך: ${hebrew}` : `תאריך: ${d.toLocaleDateString('he-IL')}`;
+  }
   const hebrew = toHebrewFull(d);
   return hebrew ? `תאריך: ${hebrew}` : `תאריך: ${d.toLocaleDateString('he-IL')}`;
 }
@@ -27,13 +30,20 @@ export function formatDateForDoc(date, format) {
 /** Format a bulletin date range per the chosen Hebrew-date format. */
 export function formatBulletinDate(bulletin, format) {
   const fmt = format || 'full_hebrew';
-  if (fmt === 'dotted') return 'תאריך: ............';
   if (fmt === 'underscores') return 'תאריך: _______________';
   if (!bulletin?.start_date || !bulletin?.end_date) return '';
-  const s = toHebrewFull(new Date(bulletin.start_date));
-  const e = toHebrewFull(new Date(bulletin.end_date));
-  if (s && e) return `${s} – ${e}`;
-  return `${new Date(bulletin.start_date).toLocaleDateString('he-IL')} – ${new Date(bulletin.end_date).toLocaleDateString('he-IL')}`;
+  const s = new Date(bulletin.start_date);
+  const e = new Date(bulletin.end_date);
+  if (fmt === 'short' || fmt === 'dotted') {
+    const hs = toHebrewDate(s);
+    const he = toHebrewDate(e);
+    if (hs && he) return `${hs} – ${he}`;
+  } else {
+    const hs = toHebrewFull(s);
+    const he = toHebrewFull(e);
+    if (hs && he) return `${hs} – ${he}`;
+  }
+  return `${s.toLocaleDateString('he-IL')} – ${e.toLocaleDateString('he-IL')}`;
 }
 
 /** Read the global document settings stored on the branding object. */

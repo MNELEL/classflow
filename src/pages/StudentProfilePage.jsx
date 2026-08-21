@@ -16,6 +16,7 @@ import {
   CheckCircle2, XCircle, Clock, Star, FolderOpen, BookOpen, ListTodo
 } from 'lucide-react';
 import StudentTaskList from '@/components/students/StudentTaskList';
+import GradeSparkline from '@/components/students/GradeSparkline';
 import QuickPreferencesEditor from '@/components/students/QuickPreferencesEditor';
 import ParentContactBar from '@/components/students/ParentContactBar';
 import StudentPortfolio from '@/components/portfolio/StudentPortfolio';
@@ -83,6 +84,10 @@ export default function StudentProfilePage() {
   const { id } = useParams();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('grades');
+  const [attMonth, setAttMonth] = useState(() => {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+  });
 
   const { data: students = [], isLoading: loadingStudents } = useQuery({
     queryKey: ['students'],
@@ -126,6 +131,16 @@ export default function StudentProfilePage() {
   const myAttendance = useMemo(() =>
     attendance.filter(a => a.student_id === id).sort((a, b) => new Date(b.date) - new Date(a.date)),
     [attendance, id]);
+
+  const attendanceMonthSummary = useMemo(() => {
+    const inMonth = myAttendance.filter(a => a.date && a.date.slice(0, 7) === attMonth);
+    return {
+      total: inMonth.length,
+      absent: inMonth.filter(a => a.status === 'absent').length,
+      late: inMonth.filter(a => a.status === 'late').length,
+      justified: inMonth.filter(a => a.justified === true).length,
+    };
+  }, [myAttendance, attMonth]);
 
   const myPortfolio = useMemo(() =>
     portfolioItems.filter(p => p.student_id === id),
@@ -295,6 +310,17 @@ export default function StudentProfilePage() {
 
           {/* ── Grades ── */}
           <TabsContent value="grades" className="mt-3 space-y-3">
+            <Card>
+              <CardHeader className="pb-1 pt-3 px-4">
+                <CardTitle className="text-sm flex items-center gap-2">
+                  <TrendingUp className="w-3.5 h-3.5 text-primary" /> מגמת ציונים
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="px-4 pb-3 pt-1">
+                <GradeSparkline grades={myGrades} />
+                <p className="text-[10px] text-muted-foreground mt-1">כל נקודה = ציון · {myGrades.length} רשומות</p>
+              </CardContent>
+            </Card>
             {gradeChartData.length > 1 && (
               <Card>
                 <CardHeader className="pb-1 pt-3 px-4">
@@ -350,7 +376,39 @@ export default function StudentProfilePage() {
           </TabsContent>
 
           {/* ── Attendance ── */}
-          <TabsContent value="attendance" className="mt-3">
+          <TabsContent value="attendance" className="mt-3 space-y-3">
+            {myAttendance.length > 0 && (
+              <Card>
+                <CardContent className="px-4 py-3 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-semibold">סיכום חודשי</span>
+                    <input
+                      type="month"
+                      value={attMonth}
+                      onChange={e => setAttMonth(e.target.value)}
+                      className="h-8 rounded-md border border-border bg-card px-2 text-xs"
+                    />
+                  </div>
+                  <div className="grid grid-cols-3 gap-2">
+                    <div className="bg-red-50 dark:bg-red-900/20 rounded-lg p-2 text-center">
+                      <p className="text-lg font-bold text-red-600">{attendanceMonthSummary.absent}</p>
+                      <p className="text-[10px] text-muted-foreground">חיסורים</p>
+                    </div>
+                    <div className="bg-amber-50 dark:bg-amber-900/20 rounded-lg p-2 text-center">
+                      <p className="text-lg font-bold text-amber-600">{attendanceMonthSummary.late}</p>
+                      <p className="text-[10px] text-muted-foreground">איחורים</p>
+                    </div>
+                    <div className="bg-emerald-50 dark:bg-emerald-900/20 rounded-lg p-2 text-center">
+                      <p className="text-lg font-bold text-emerald-600">{attendanceMonthSummary.justified}</p>
+                      <p className="text-[10px] text-muted-foreground">מאושרים</p>
+                    </div>
+                  </div>
+                  {attendanceMonthSummary.total === 0 && (
+                    <p className="text-[10px] text-muted-foreground text-center">אין רשומות בחודש זה</p>
+                  )}
+                </CardContent>
+              </Card>
+            )}
             {myAttendance.length === 0 ? (
               <div className="text-center py-8 text-muted-foreground text-sm">אין רשומות נוכחות</div>
             ) : (
