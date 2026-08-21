@@ -207,7 +207,7 @@ const AuthenticatedApp = () => {
   // content before refreshPinStatus() confirms that. pinStatusUnknown
   // tracks that case specifically so we can hold rendering behind a
   // loader instead, rather than trusting an absent cache.
-  const [pinStatusUnknown] = useState(() => localStorage.getItem('classflow_pin_enabled') === null);
+  const [pinStatusUnknown] = useState(() => localStorage.getItem(PIN_ENABLED_KEY) === null);
   const [pinStatusChecked, setPinStatusChecked] = useState(!pinStatusUnknown);
 
   // React to manual lock / PIN changes from settings
