@@ -106,6 +106,8 @@ export async function extractStudentsFromFile(file) {
   if (e === 'json') return { rows: await parseJSON(file), via: 'json' };
   if (['xlsx', 'xls'].includes(e)) return { rows: await parseExcel(file), via: 'excel' };
   // pdf, png, jpg, jpeg, docx, html → LLM
+  const sizeError = validateUploadSize(file);
+  if (sizeError) throw new Error(sizeError);
   const up = await base44.integrations.Core.UploadFile({ file });
   if (!up?.file_url) throw new Error('העלאת הקובץ נכשלה');
   const rows = await extractRawWithLLM(up.file_url, file.name);
