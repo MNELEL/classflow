@@ -43,6 +43,8 @@ export default function DocumentsVault({ studentId }) {
   async function handleFileSelect(e) {
     const file = e.target.files[0];
     if (!file) return;
+    const sizeError = validateUploadSize(file);
+    if (sizeError) { toast.error(sizeError); e.target.value = ''; return; }
     setPendingFile(file);
     if (!form.title) setForm(prev => ({ ...prev, title: file.name.replace(/\.[^.]+$/, '') }));
     setShowForm(true);
