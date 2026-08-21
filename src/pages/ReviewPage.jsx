@@ -53,12 +53,22 @@ export default function ReviewPage() {
   async function handleApprove(item, editedPayload) {
     setProcessingIds(prev => new Set([...prev, item.id]));
     try {
-      const updated = await base44.entities.PendingUpdate.update(item.id, {
+      // Execute the actual write FIRST, before marking the record approved.
+      // Previously this set status: 'approved' before calling
+      // executePendingUpdate — if that write then threw (e.g. an
+      // out-of-range score, a deleted student, a dropped connection), the
+      // PendingUpdate record was already persisted as "approved" even
+      // though nothing was actually written to Grade/Attendance/etc. The
+      // teacher saw an error toast but the item vanished from the pending
+      // queue, silently losing the suggestion. Now the record only moves
+      // to 'approved' once the write has actually succeeded — if it
+      // hasn't, the item stays in 'pending' so it's still there to retry.
+      await executePendingUpdate({ ...item, payload: editedPayload });
+      await base44.entities.PendingUpdate.update(item.id, {
         payload: editedPayload,
         status: 'approved',
         reviewed_at: new Date().toISOString(),
       });
-      await executePendingUpdate(updated);
       toast.success(`אושר: ${item.summary}`);
       qc.invalidateQueries({ queryKey: ['pendingUpdates'] });
       qc.invalidateQueries();
