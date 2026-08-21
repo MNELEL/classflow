@@ -229,7 +229,14 @@ export default function LessonAnalyzerPage() {
                   type="file"
                   accept=".mp3,.wav,.m4a,.ogg,.webm,.flac,.mpeg,.mp4"
                   className="hidden"
-                  onChange={e => setFile(e.target.files?.[0] || null)}
+                  onChange={e => {
+                    const f = e.target.files?.[0] || null;
+                    if (f) {
+                      const sizeError = validateUploadSize(f);
+                      if (sizeError) { toast.error(sizeError); e.target.value = ''; return; }
+                    }
+                    setFile(f);
+                  }}
                   disabled={isProcessing}
                 />
                 {file ? (
