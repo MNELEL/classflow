@@ -104,6 +104,94 @@ export default function GoogleDrivePanel({ onImported }) {
     }
   };
 
+  // ── Bulk folder import ──────────────────────────────────────────────────
+  // Two-step flow, deliberately not one click: scan first (shows the exact
+  // file count so the teacher isn't surprised by importing 200 files by
+  // accident), then a separate confirm imports them. Style re-learning is
+  // offered as a third, also-explicit step after import — never automatic,
+  // since it makes an LLM call and touches TeacherStyleProfile.
+  const openBulkDialog = (folder) => {
+    setBulkTarget(folder);
+    setBulkFiles(null);
+    setBulkTruncated(false);
+    setBulkProgress({ done: 0, total: 0, failed: 0 });
+  };
+
+  const closeBulkDialog = () => {
+    if (bulkImporting || bulkScanning) return; // don't let it close mid-operation
+    setBulkTarget(null);
+    setBulkFiles(null);
+  };
+
+  const scanFolder = async () => {
+    if (!bulkTarget) return;
+    setBulkScanning(true);
+    try {
+      const res = await base44.functions.invoke('driveFiles', {
+        action: 'list_folder_recursive',
+        folderId: bulkTarget.id,
+      });
+      const found = res.data?.files || [];
+      setBulkFiles(found);
+      setBulkTruncated(!!res.data?.truncated);
+      if (found.length === 0) {
+        toast.error('לא נמצאו קבצים מתאימים בתיקייה זו');
+      }
+    } catch {
+      toast.error('שגיאה בסריקת התיקייה');
+      setBulkFiles([]);
+    } finally {
+      setBulkScanning(false);
+    }
+  };
+
+  const confirmBulkImport = async () => {
+    if (!bulkFiles || bulkFiles.length === 0) return;
+    setBulkImporting(true);
+    setBulkProgress({ done: 0, total: bulkFiles.length, failed: 0 });
+    let failed = 0;
+    for (let i = 0; i < bulkFiles.length; i++) {
+      const file = bulkFiles[i];
+      try {
+        await base44.functions.invoke('driveFiles', { action: 'import', fileId: file.id });
+      } catch {
+        failed++;
+      }
+      setBulkProgress({ done: i + 1, total: bulkFiles.length, failed });
+    }
+    setBulkImporting(false);
+    const succeeded = bulkFiles.length - failed;
+    if (succeeded > 0) {
+      toast.success(failed > 0
+        ? `יובאו ${succeeded} קבצים, ${failed} נכשלו`
+        : `יובאו ${succeeded} קבצים בהצלחה!`);
+      onImported?.();
+    } else {
+      toast.error('ייבוא הקבצים נכשל');
+    }
+  };
+
+  const learnStyleFromImport = async () => {
+    setLearningStyle(true);
+    setStyleProgress({ label: 'טוען חומרים...', pct: 0 });
+    try {
+      const items = await base44.entities.LibraryItem.list('-created_date', 300);
+      const result = await extractStyleFromLibrary(items, (label, pct) => {
+        setStyleProgress({ label, pct });
+      });
+      if (result) {
+        toast.success(`פרופיל הסגנון עודכן — נלמד מ-${result.items_count} חומרים!`);
+      } else {
+        toast.error('לא נמצא מספיק תוכן ללמידת סגנון עדיין');
+      }
+    } catch {
+      toast.error('שגיאה בלמידת הסגנון');
+    } finally {
+      setLearningStyle(false);
+      closeBulkDialog();
+    }
+  };
+
   if (loading) return (
     <div className="flex items-center justify-center py-16">
       <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
@@ -193,9 +281,14 @@ export default function GoogleDrivePanel({ onImported }) {
                   </p>
                 </div>
                 {isFolder ? (
-                  <Button size="sm" variant="ghost" onClick={() => openFolder(file)} className="gap-1 opacity-0 group-hover:opacity-100 transition-opacity text-xs">
-                    פתח <FolderOpen className="w-3.5 h-3.5" />
-                  </Button>
+                  <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <Button size="sm" variant="ghost" onClick={() => openBulkDialog(file)} className="gap-1 text-xs" title="ייבא את כל התיקייה">
+                      <FolderDown className="w-3.5 h-3.5" />
+                    </Button>
+                    <Button size="sm" variant="ghost" onClick={() => openFolder(file)} className="gap-1 text-xs">
+                      פתח <FolderOpen className="w-3.5 h-3.5" />
+                    </Button>
+                  </div>
                 ) : isImported ? (
                   <Badge variant="secondary" className="gap-1 text-xs shrink-0">
                     <CheckCircle2 className="w-3 h-3 text-green-500" /> נוסף
@@ -211,6 +304,90 @@ export default function GoogleDrivePanel({ onImported }) {
               </div>
             );
           })}
+        </div>
+      )}
+
+      {/* Bulk folder import dialog */}
+      {bulkTarget && (
+        <div className="fixed inset-0 z-[90] flex items-end sm:items-center justify-center bg-black/40 p-0 sm:p-4" onClick={closeBulkDialog}>
+          <div dir="rtl" onClick={e => e.stopPropagation()}
+            className="w-full sm:max-w-md bg-card rounded-t-2xl sm:rounded-2xl border border-border shadow-xl p-4 space-y-4 max-h-[85vh] overflow-y-auto">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <FolderDown className="w-4 h-4 text-primary" />
+                <h3 className="font-bold text-sm">ייבוא תיקייה: {bulkTarget.name}</h3>
+              </div>
+              {!bulkImporting && !bulkScanning && !learningStyle && (
+                <button onClick={closeBulkDialog} className="text-muted-foreground hover:text-foreground">
+                  <X className="w-4 h-4" />
+                </button>
+              )}
+            </div>
+
+            {bulkFiles === null ? (
+              <div className="space-y-3">
+                <p className="text-xs text-muted-foreground leading-relaxed">
+                  יסרוק את התיקייה ואת כל תתי-התיקיות שבתוכה (עד 6 רמות עומק, עד 500 קבצים), ויציג כמה קבצים נמצאו לפני ייבוא בפועל.
+                </p>
+                <Button onClick={scanFolder} disabled={bulkScanning} className="w-full gap-2">
+                  {bulkScanning ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />}
+                  {bulkScanning ? 'סורק...' : 'סרוק תיקייה'}
+                </Button>
+              </div>
+            ) : bulkFiles.length === 0 ? (
+              <div className="text-center py-4 text-sm text-muted-foreground">
+                לא נמצאו קבצים מתאימים בתיקייה זו
+              </div>
+            ) : !bulkImporting && bulkProgress.done === 0 ? (
+              <div className="space-y-3">
+                <div className="flex items-center gap-2 p-3 rounded-xl bg-primary/5 border border-primary/20">
+                  <CheckCircle2 className="w-4 h-4 text-primary shrink-0" />
+                  <p className="text-sm">
+                    נמצאו <strong>{bulkFiles.length}</strong> קבצים לייבוא
+                    {bulkTruncated && <span className="text-amber-600"> (נמצאו עוד קבצים מעבר למגבלה — ניתן לייבא שוב אחר כך להשלמה)</span>}
+                  </p>
+                </div>
+                <Button onClick={confirmBulkImport} className="w-full gap-2">
+                  <FolderDown className="w-4 h-4" /> ייבא {bulkFiles.length} קבצים
+                </Button>
+              </div>
+            ) : bulkImporting ? (
+              <div className="space-y-2">
+                <div className="flex items-center justify-between text-xs text-muted-foreground">
+                  <span>מייבא {bulkProgress.done} מתוך {bulkProgress.total}...</span>
+                  {bulkProgress.failed > 0 && <span className="text-destructive">{bulkProgress.failed} נכשלו</span>}
+                </div>
+                <Progress value={(bulkProgress.done / bulkProgress.total) * 100} />
+              </div>
+            ) : learningStyle ? (
+              <div className="space-y-2">
+                <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                  <Brain className="w-3.5 h-3.5 text-primary animate-pulse" />
+                  <span>{styleProgress.label || 'לומד את הסגנון...'}</span>
+                </div>
+                <Progress value={styleProgress.pct} />
+              </div>
+            ) : (
+              <div className="space-y-3">
+                <div className="flex items-center gap-2 p-3 rounded-xl bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                  <p className="text-sm text-emerald-800 dark:text-emerald-300">
+                    {bulkProgress.done - bulkProgress.failed} קבצים נוספו לספרייה
+                    {bulkProgress.failed > 0 && ` (${bulkProgress.failed} נכשלו)`}
+                  </p>
+                </div>
+                <p className="text-xs text-muted-foreground leading-relaxed">
+                  אפשר עכשיו לעדכן את פרופיל הסגנון האישי כדי שהמערכת תלמד את סגנון ההוראה שלך מהחומרים החדשים, וכל תוכן חדש שתיצור ייצור בהתאם.
+                </p>
+                <div className="flex gap-2">
+                  <Button onClick={learnStyleFromImport} className="flex-1 gap-2">
+                    <Brain className="w-4 h-4" /> עדכן פרופיל סגנון
+                  </Button>
+                  <Button variant="outline" onClick={closeBulkDialog}>סיימתי</Button>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
       )}
     </div>
