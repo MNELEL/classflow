@@ -35,6 +35,16 @@ export default function GoogleDrivePanel({ onImported }) {
   const [imported, setImported] = useState({});
   const [fetching, setFetching] = useState(false);
 
+  // Bulk folder import state
+  const [bulkTarget, setBulkTarget] = useState(null); // {id, name} folder chosen for bulk import
+  const [bulkScanning, setBulkScanning] = useState(false);
+  const [bulkFiles, setBulkFiles] = useState(null); // scanned file list, null until scanned
+  const [bulkTruncated, setBulkTruncated] = useState(false);
+  const [bulkImporting, setBulkImporting] = useState(false);
+  const [bulkProgress, setBulkProgress] = useState({ done: 0, total: 0, failed: 0 });
+  const [learningStyle, setLearningStyle] = useState(false);
+  const [styleProgress, setStyleProgress] = useState({ label: '', pct: 0 });
+
   const currentFolder = folderStack[folderStack.length - 1] || null;
 
   const fetchFiles = useCallback(async (q = '', folderId = null) => {
