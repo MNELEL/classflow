@@ -54,6 +54,9 @@ export default function WorksheetExportPanel({ selectedQuestions, allQuestions, 
   async function handleLogoUpload(e) {
     const file = e.target.files?.[0];
     if (!file) return;
+    // Logos are capped at 5MB by Base44 — tighter than the general 50MB limit.
+    const sizeError = validateUploadSize(file, 5 * 1024 * 1024);
+    if (sizeError) { toast.error(sizeError); e.target.value = ''; return; }
     setUploadingLogo(true);
     try {
       const { file_url } = await base44.integrations.Core.UploadFile({ file });
@@ -66,6 +69,8 @@ export default function WorksheetExportPanel({ selectedQuestions, allQuestions, 
   async function handleExamImageUpload(e) {
     const file = e.target.files?.[0];
     if (!file) return;
+    const sizeError = validateUploadSize(file);
+    if (sizeError) { toast.error(sizeError); e.target.value = ''; return; }
     setAnalyzingImage(true);
     try {
       const { file_url } = await base44.integrations.Core.UploadFile({ file });
