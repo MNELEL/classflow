@@ -11,6 +11,7 @@ import { loadBranding, saveBranding, saveBrandingSync, DEFAULT_BRANDING } from '
 import { useTheme } from '@/lib/themeContext';
 import { THEMES } from '@/lib/themes';
 import { cn } from '@/lib/utils';
+import { validateUploadSize } from '@/lib/uploadValidation';
 
 const NAV_PATHS = [
   { path: '/', defaultLabel: 'דשבורד' },
