@@ -62,6 +62,8 @@ export default function SoundBoardPage() {
       toast.error('יש לבחור קובץ אודיו בלבד (MP3, WAV, etc.)');
       return;
     }
+    const sizeError = validateUploadSize(file);
+    if (sizeError) { toast.error(sizeError); e.target.value = ''; return; }
     uploadMutation.mutate(file);
     e.target.value = '';
   }
