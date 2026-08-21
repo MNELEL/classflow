@@ -304,6 +304,14 @@ const AuthenticatedApp = () => {
     return <PinLockScreen onUnlock={() => setLocked(false)} />;
   }
 
+  // Fail-closed: on a device with no cached PIN status (see pinStatusUnknown
+  // above), hold rendering here until the server confirms one way or the
+  // other, instead of assuming "unlocked" while that confirmation is in
+  // flight or retrying after a network failure.
+  if (pinStatusUnknown && !pinStatusChecked) {
+    return <PageLoader />;
+  }
+
   return (
     <>
       {/* key={location.pathname} isn't needed here — ErrorBoundary is remounted
