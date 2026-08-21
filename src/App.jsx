@@ -200,6 +200,15 @@ const AuthenticatedApp = () => {
   const navigate = useNavigate();
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [locked, setLocked] = useState(isLocked());
+  // On a device/browser with no cached PIN status at all (cleared storage,
+  // private browsing, first load on a new device), isLocked() defaults to
+  // "unlocked" — that's a fail-open gap: if the teacher has PIN lock
+  // enabled server-side, there'd be a window where the app renders real
+  // content before refreshPinStatus() confirms that. pinStatusUnknown
+  // tracks that case specifically so we can hold rendering behind a
+  // loader instead, rather than trusting an absent cache.
+  const [pinStatusUnknown] = useState(() => localStorage.getItem('classflow_pin_enabled') === null);
+  const [pinStatusChecked, setPinStatusChecked] = useState(!pinStatusUnknown);
 
   // React to manual lock / PIN changes from settings
   useEffect(() => {
