@@ -47,6 +47,8 @@ export default function ImportPreferencesModal({ open, onClose, students, onAppl
   async function handleFileUpload(e) {
     const file = e.target.files?.[0];
     if (!file) return;
+    const sizeError = validateUploadSize(file);
+    if (sizeError) { toast.error(sizeError); e.target.value = ''; return; }
     setFileStatus('loading');
     setFileResult(null);
     setAiParsed(null);
