@@ -1,5 +1,6 @@
 import * as XLSX from 'xlsx';
 import { base44 } from '@/api/base44Client';
+import { validateUploadSize } from '@/lib/uploadValidation';
 
 export function ext(name) { return (name.split('.').pop() || '').toLowerCase(); }
 
