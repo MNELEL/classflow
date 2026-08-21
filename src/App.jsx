@@ -255,14 +255,30 @@ const AuthenticatedApp = () => {
     }
   }, [user]);
 
-  // Refresh PIN lock status from server (keeps cache in sync across devices/sessions)
+  // Refresh PIN lock status from server (keeps cache in sync across devices/sessions).
+  // When pinStatusUnknown (no local cache at all — see the note above), a
+  // failed check retries with backoff instead of silently treating "the
+  // network call failed" as "PIN lock is off". After ~3 attempts (~7s) we
+  // give up and let the app proceed rather than blocking indefinitely on a
+  // persistent outage — a bounded fail-closed window, not a permanent one.
   useEffect(() => {
-    if (user) {
-      refreshPinStatus().then(() => {
+    if (!user) return;
+    let cancelled = false;
+    let attempt = 0;
+    const tryRefresh = () => {
+      refreshPinStatus().then((result) => {
+        if (cancelled) return;
         setLocked(isLocked());
-        setPinStatusChecked(true);
+        if (result !== null || !pinStatusUnknown || attempt >= 3) {
+          setPinStatusChecked(true);
+          return;
+        }
+        attempt += 1;
+        setTimeout(tryRefresh, attempt * 1000);
       });
-    }
+    };
+    tryRefresh();
+    return () => { cancelled = true; };
   }, [user]);
 
   // Prefetch dashboard media assets immediately after successful authentication
