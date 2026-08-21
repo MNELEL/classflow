@@ -48,15 +48,16 @@ export default function ReviewCard({ pending, students, onApprove, onReject, isP
   }
 
   function handleSaveEdit() {
-    onApprove(pending, draft);
+    // onApprove (ReviewPage.handleApprove) now rethrows on failure so batch
+    // approval can report accurate counts — it already shows its own error
+    // toast, so this just needs to catch the rejection to avoid an
+    // unhandled-promise-rejection warning; nothing else to do with it here.
+    onApprove(pending, draft).catch(() => {});
   }
 
   function handleApprove() {
-    if (editing) {
-      onApprove(pending, draft);
-    } else {
-      onApprove(pending, pending.payload);
-    }
+    const payload = editing ? draft : pending.payload;
+    onApprove(pending, payload).catch(() => {});
   }
 
   const requiresStudent = pending.intent !== 'add_student' && pending.intent !== 'add_homework';
