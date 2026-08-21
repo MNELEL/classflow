@@ -283,13 +283,14 @@ export default function StudentProfilePage() {
 
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} dir="rtl">
-          <TabsList className="w-full grid grid-cols-6 h-9">
-            <TabsTrigger value="grades" className="text-xs">ציונים</TabsTrigger>
-            <TabsTrigger value="attendance" className="text-xs">נוכחות</TabsTrigger>
-            <TabsTrigger value="tasks" className="text-xs">משימות</TabsTrigger>
-            <TabsTrigger value="notes" className="text-xs">הערות</TabsTrigger>
-            <TabsTrigger value="files" className="text-xs">קבצים</TabsTrigger>
-            <TabsTrigger value="portfolio" className="text-xs">תיק אישי</TabsTrigger>
+          <TabsList className="w-full grid grid-cols-7 h-9">
+            <TabsTrigger value="grades" className="text-xs px-1">ציונים</TabsTrigger>
+            <TabsTrigger value="assessments" className="text-xs px-1">הערכות</TabsTrigger>
+            <TabsTrigger value="attendance" className="text-xs px-1">נוכחות</TabsTrigger>
+            <TabsTrigger value="tasks" className="text-xs px-1">משימות</TabsTrigger>
+            <TabsTrigger value="notes" className="text-xs px-1">הערות</TabsTrigger>
+            <TabsTrigger value="files" className="text-xs px-1">קבצים</TabsTrigger>
+            <TabsTrigger value="portfolio" className="text-xs px-1">תיק</TabsTrigger>
           </TabsList>
 
           {/* ── Grades ── */}
