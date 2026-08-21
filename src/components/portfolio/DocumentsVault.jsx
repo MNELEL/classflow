@@ -1,6 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
+import { validateUploadSize } from '@/lib/uploadValidation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import HebrewDatePicker from '@/components/ui/HebrewDatePicker';
