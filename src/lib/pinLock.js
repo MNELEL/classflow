@@ -7,7 +7,7 @@ import { base44 } from '@/api/base44Client';
 // pin_enabled is cached in localStorage for synchronous isLocked() checks on
 // app load. The unlock state lives in sessionStorage so the app re-locks on a
 // fresh session but stays unlocked during navigation.
-const PIN_ENABLED_KEY = 'classflow_pin_enabled';
+export const PIN_ENABLED_KEY = 'classflow_pin_enabled';
 const UNLOCKED_KEY = 'classflow_unlocked';
 
 export function isPinEnabledCached() {
