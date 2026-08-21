@@ -110,7 +110,13 @@ export default function TeacherStylePage() {
   ];
 
   async function handleFileUpload(e) {
-    const files = Array.from(e.target.files || []);
+    const allFiles = Array.from(e.target.files || []);
+    if (!allFiles.length) return;
+    const files = allFiles.filter(f => {
+      const sizeError = validateUploadSize(f);
+      if (sizeError) toast.error(`${f.name}: ${sizeError}`);
+      return !sizeError;
+    });
     if (!files.length) return;
     setUploadLoading(true);
     const results = [];
