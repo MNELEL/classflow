@@ -47,6 +47,10 @@ export default function BrandingPanel() {
   async function handleLogoUpload(e) {
     const file = e.target.files?.[0];
     if (!file) return;
+    // Logos specifically are capped at 5MB by Base44 (tighter than the
+    // general 50MB upload limit) — see docs.base44.com/Building-your-app/Using-media.
+    const sizeError = validateUploadSize(file, 5 * 1024 * 1024);
+    if (sizeError) { toast.error(sizeError); return; }
     setUploading(true);
     const { file_url } = await base44.integrations.Core.UploadFile({ file });
     setBranding(prev => ({ ...prev, logo_url: file_url }));
