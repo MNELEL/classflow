@@ -8,9 +8,11 @@ import { Badge } from '@/components/ui/badge';
 import { base44 } from '@/api/base44Client';
 import { useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
-import { Loader2, Upload, X, Check, Link2, Globe, FileText, Mic, Video, Image, Music, File, Plus, CloudIcon } from 'lucide-react';
+import { Loader2, Upload, X, Check, Link2, Globe, FileText, Mic, Video, Image, Music, File, Plus, CloudIcon, FolderDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import GoogleDrivePicker from '@/components/library/GoogleDrivePicker';
+import DriveFolderPicker from '@/components/library/DriveFolderPicker';
+import DriveFolderImportDialog from '@/components/library/DriveFolderImportDialog';
 import { useNavigate } from 'react-router-dom';
 import { validateExtractedText, buildQualityNote } from '@/lib/aiAnalysis';
 import { validateUploadSize } from '@/lib/uploadValidation';
@@ -119,6 +121,8 @@ export default function LibraryUploadModal({ open, onClose, defaultCategory = ''
   const dropZoneRef = useRef(null);
   const [tab, setTab] = useState('files'); // 'files' | 'link' | 'text' | 'search' | 'drive'
   const [drivePickerOpen, setDrivePickerOpen] = useState(false);
+  const [folderPickerOpen, setFolderPickerOpen] = useState(false);
+  const [importFolder, setImportFolder] = useState(null); // {id, name} folder targeted for bulk import
   const [files, setFiles] = useState([]); // [{file, sourceType, title}]
   const [linkUrl, setLinkUrl] = useState('');
   const [linkType, setLinkType] = useState('youtube_link');
@@ -465,6 +469,9 @@ export default function LibraryUploadModal({ open, onClose, defaultCategory = ''
             <Button onClick={() => setDrivePickerOpen(true)} className="gap-2">
               <CloudIcon className="w-4 h-4" /> פתח את Google Drive
             </Button>
+            <Button onClick={() => setFolderPickerOpen(true)} variant="outline" className="gap-2">
+              <FolderDown className="w-4 h-4" /> ייבוא תיקייה שלמה
+            </Button>
             <GoogleDrivePicker
               open={drivePickerOpen}
               onClose={() => setDrivePickerOpen(false)}
@@ -500,6 +507,17 @@ export default function LibraryUploadModal({ open, onClose, defaultCategory = ''
                 reset();
                 onClose();
               }}
+            />
+            <DriveFolderPicker
+              open={folderPickerOpen}
+              onClose={() => setFolderPickerOpen(false)}
+              onPick={(folder) => { setFolderPickerOpen(false); setImportFolder(folder); }}
+            />
+            <DriveFolderImportDialog
+              open={!!importFolder}
+              onClose={() => setImportFolder(null)}
+              folder={importFolder}
+              onImported={() => qc.invalidateQueries({ queryKey: ['library'] })}
             />
           </div>
         )}
