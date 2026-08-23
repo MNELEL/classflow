@@ -182,6 +182,7 @@ function AnimatedRoutes() {
 <Route path="/monthly-reports" element={<MonthlyReportsPage />} />
 <Route path="/ocr-review/:itemId" element={<OcrReviewPage />} />
 <Route path="/school-calendar" element={<SchoolCalendarPage />} />
+              <Route path="/map" element={<SystemMapPage />} />
 <Route path="/teacher-login" element={<TeacherLogin />} />
 <Route path="/teacher-dashboard" element={<TeacherDashboard />} />
 <Route path="/certificates" element={<CertificatesPage />} />
