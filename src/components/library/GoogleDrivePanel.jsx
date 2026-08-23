@@ -135,7 +135,7 @@ export default function GoogleDrivePanel({ onImported }) {
             <p className="text-xs text-muted-foreground">{files.length} קבצים</p>
           </div>
         </div>
-        <button onClick={() => fetchFiles(query, currentFolder?.id || null)} className="p-2 rounded-lg hover:bg-accent transition-colors">
+        <button onClick={() => fetchFiles(query, currentFolder?.id || null)} className="p-2 rounded-lg hover:bg-accent transition-colors" aria-label="רענן">
           <RefreshCw className="w-4 h-4 text-muted-foreground" />
         </button>
       </div>
@@ -191,7 +191,7 @@ export default function GoogleDrivePanel({ onImported }) {
                 </div>
                 {isFolder ? (
                   <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <Button size="sm" variant="ghost" onClick={() => openBulkDialog(file)} className="gap-1 text-xs" title="ייבא את כל התיקייה">
+                    <Button size="sm" variant="ghost" onClick={() => openBulkDialog(file)} className="gap-1 text-xs" title="ייבא את כל התיקייה" aria-label="ייבא את כל התיקייה">
                       <FolderDown className="w-3.5 h-3.5" />
                     </Button>
                     <Button size="sm" variant="ghost" onClick={() => openFolder(file)} className="gap-1 text-xs">
