@@ -89,6 +89,7 @@ const AdminOverviewPage        = lazy(() => import('./pages/AdminOverviewPage'))
 const MonthlyReportsPage       = lazy(() => import('./pages/MonthlyReportsPage'));
 const OcrReviewPage            = lazy(() => import('./pages/OcrReviewPage'));
 const SchoolCalendarPage       = lazy(() => import('./pages/SchoolCalendarPage'));
+const SystemMapPage            = lazy(() => import('./pages/SystemMapPage'));
 
 // Direction-aware page transitions.
 // Forward (push): new screen enters from the right, old exits left → "to the left".
