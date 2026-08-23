@@ -8,6 +8,7 @@ import { toHebrewFull } from '@/lib/hebrewDate';
 import { formatDate } from '@/lib/formatDate';
 import { useSelectedDate } from '@/lib/dateContext';
 import HebrewDateNavigator from '@/components/ui/HebrewDateNavigator';
+import PrintButton from '@/components/common/PrintButton';
 
 function startOfWeek(d) { const x = new Date(d); x.setHours(0, 0, 0, 0); x.setDate(x.getDate() - x.getDay()); return x; }
 function addDays(d, n) { const x = new Date(d); x.setDate(x.getDate() + n); return x; }
@@ -53,6 +54,7 @@ export default function WeeklySummaryPage() {
             <h1 className="text-xl font-bold">סיכום שבועי</h1>
             <p className="text-xs text-muted-foreground">{toHebrewFull(weekStart)} – {toHebrewFull(weekEnd)}</p>
           </div>
+          <PrintButton />
         </div>
 
         <HebrewDateNavigator />

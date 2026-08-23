@@ -6,6 +6,7 @@ import { CalendarCheck, Clock, XCircle, CheckCircle2 } from 'lucide-react';
 import { toHebrewMonthYear } from '@/lib/hebrewDate';
 import { useSelectedDate } from '@/lib/dateContext';
 import HebrewDateNavigator from '@/components/ui/HebrewDateNavigator';
+import PrintButton from '@/components/common/PrintButton';
 
 function startOfMonth(d) { const x = new Date(d); x.setDate(1); x.setHours(0, 0, 0, 0); return x; }
 function ymd(d) { return d.toISOString().slice(0, 10); }
@@ -56,6 +57,7 @@ export default function MonthlyAttendanceReportPage() {
             <h1 className="text-xl font-bold">דוח נוכחות חודשי</h1>
             <p className="text-xs text-muted-foreground">{toHebrewMonthYear(monthStart)}</p>
           </div>
+          <PrintButton />
         </div>
 
         <HebrewDateNavigator />

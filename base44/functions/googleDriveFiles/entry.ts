@@ -1,6 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
-
-const CONNECTOR_ID = '6a37ebf86b324d770927a6e6';
+import { getDriveHeaders, isNotConnectedError, notConnectedResponse, isValidDriveId } from '../../shared/driveApi.ts';
 
 Deno.serve(async (req) => {
   try {
@@ -11,16 +10,15 @@ Deno.serve(async (req) => {
     const body = await req.json().catch(() => ({}));
     const { action, folderId, query, fileId } = body;
 
-    // Validate fileId to prevent path traversal / URL manipulation
-    if (fileId && !/^[a-zA-Z0-9_-]+$/.test(fileId)) {
+    // Validate ids to prevent path traversal / URL manipulation
+    if (fileId && !isValidDriveId(fileId)) {
       return Response.json({ error: 'Invalid fileId' }, { status: 400 });
     }
-    if (folderId && !/^[a-zA-Z0-9_-]+$/.test(folderId)) {
+    if (folderId && !isValidDriveId(folderId)) {
       return Response.json({ error: 'Invalid folderId' }, { status: 400 });
     }
 
-    const { accessToken } = await base44.asServiceRole.connectors.getCurrentAppUserConnection(CONNECTOR_ID);
-    const headers = { Authorization: `Bearer ${accessToken}` };
+    const headers = await getDriveHeaders(base44);
 
     // List files (optionally in a folder or by search query)
     if (action === 'list' || !action) {
@@ -65,8 +63,8 @@ Deno.serve(async (req) => {
 
     return Response.json({ error: 'Unknown action' }, { status: 400 });
   } catch (error) {
-    if (error.message?.includes('No connection') || error.message?.includes('connection')) {
-      return Response.json({ error: 'not_connected' }, { status: 403 });
+    if (isNotConnectedError(error)) {
+      return notConnectedResponse(403);
     }
     return Response.json({ error: error.message }, { status: 500 });
   }

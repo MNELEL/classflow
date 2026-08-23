@@ -1,6 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
-
-const CONNECTOR_ID = '6a37ebf86b324d770927a6e6';
+import { getDriveHeaders, isNotConnectedError, notConnectedResponse, isValidDriveId } from '../../shared/driveApi.ts';
 
 Deno.serve(async (req) => {
   try {
@@ -11,8 +10,7 @@ Deno.serve(async (req) => {
     const body = await req.json().catch(() => ({}));
     const { action, query, folderId, fileId, planData, weekKey, className } = body;
 
-    const { accessToken } = await base44.asServiceRole.connectors.getCurrentAppUserConnection(CONNECTOR_ID);
-    const headers = { Authorization: `Bearer ${accessToken}` };
+    const headers = await getDriveHeaders(base44);
 
     if (action === 'list') {
       // List files: docs, pdfs, presentations, sheets
@@ -39,7 +37,7 @@ Deno.serve(async (req) => {
       // nested, or accidentally pointed at Drive root) can't turn into an
       // unbounded number of Drive API calls.
       if (!folderId) return Response.json({ error: 'folderId required' }, { status: 400 });
-      if (!/^[a-zA-Z0-9_-]+$/.test(folderId)) {
+      if (!isValidDriveId(folderId)) {
         return Response.json({ error: 'Invalid folderId' }, { status: 400 });
       }
 
@@ -116,7 +114,7 @@ Deno.serve(async (req) => {
     if (action === 'import') {
       // Import a Drive file as a LibraryItem
       if (!fileId) return Response.json({ error: 'fileId required' }, { status: 400 });
-      if (!/^[a-zA-Z0-9_-]+$/.test(fileId)) {
+      if (!isValidDriveId(fileId)) {
         return Response.json({ error: 'Invalid fileId' }, { status: 400 });
       }
 
@@ -199,8 +197,8 @@ Deno.serve(async (req) => {
 
     return Response.json({ error: 'Unknown action' }, { status: 400 });
   } catch (error) {
-    if (error.message?.includes('connection') || error.message?.includes('connect')) {
-      return Response.json({ error: 'not_connected' }, { status: 401 });
+    if (isNotConnectedError(error)) {
+      return notConnectedResponse(401);
     }
     return Response.json({ error: error.message }, { status: 500 });
   }

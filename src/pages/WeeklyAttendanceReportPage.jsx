@@ -6,6 +6,7 @@ import { CalendarCheck, Clock, XCircle, CheckCircle2 } from 'lucide-react';
 import { toHebrewDate, toHebrewFull, isRoshChodesh } from '@/lib/hebrewDate';
 import { useSelectedDate } from '@/lib/dateContext';
 import HebrewDateNavigator from '@/components/ui/HebrewDateNavigator';
+import PrintButton from '@/components/common/PrintButton';
 
 function startOfWeek(d) {
   const x = new Date(d);
@@ -80,6 +81,7 @@ export default function WeeklyAttendanceReportPage() {
             <h1 className="text-xl font-bold">דוח נוכחות שבועי</h1>
             <p className="text-xs text-muted-foreground">{toHebrewFull(weekStart)} – {toHebrewFull(weekEnd)}</p>
           </div>
+          <PrintButton />
         </div>
 
         <HebrewDateNavigator />

@@ -2,10 +2,10 @@ import React, { useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import AppLayout from '@/components/layout/AppLayout';
-import { Button } from '@/components/ui/button';
-import { Cake, Printer } from 'lucide-react';
+import { Cake } from 'lucide-react';
 import { toHebrewDate, toHebrewMonth, hebrewDayNumber } from '@/lib/hebrewDate';
 import { useSelectedDate } from '@/lib/dateContext';
+import PrintButton from '@/components/common/PrintButton';
 
 function parseBirth(raw) {
   if (!raw) return null;
@@ -52,14 +52,6 @@ export default function BirthdaysReportPage() {
   const currentHebrewMonth = useMemo(() => monthKey(toHebrewMonth(new Date(selectedDate + 'T00:00:00'))), [selectedDate]);
   const visible = active ? byMonth.filter(m => monthKey(m.name) === active) : byMonth;
 
-  function printReport() {
-    const w = window.open('', '_blank', 'width=480,height=640');
-    if (!w) return;
-    const html = byMonth.map(m => `<h3>${m.name} (${m.items.length})</h3><ol>${m.items.map(r => `<li>${r.s.name} — ${r.display}</li>`).join('')}</ol>`).join('');
-    w.document.write(`<!DOCTYPE html><html dir="rtl" lang="he"><head><meta charset="utf-8"><title>ימי הולדת לפי חודשים עבריים</title><style>body{font-family:Heebo,sans-serif;padding:24px;color:#111}h2{font-size:18px}h3{margin-top:16px;font-size:15px;border-bottom:1px solid #ddd;padding-bottom:4px}ol{padding-right:22px;font-size:13px;line-height:1.8}</style></head><body><h2>ימי הולדת לפי חודשים עבריים</h2>${html}<script>window.onload=function(){window.print();}</script></body></html>`);
-    w.document.close();
-  }
-
   return (
     <AppLayout>
       <div className="max-w-2xl mx-auto p-4 space-y-4" dir="rtl">
@@ -69,7 +61,7 @@ export default function BirthdaysReportPage() {
             <h1 className="text-xl font-bold">ימי הולדת לפי חודשים עבריים</h1>
             <p className="text-xs text-muted-foreground">{rows.length} תלמידים עם תאריך לידה</p>
           </div>
-          <Button variant="outline" size="sm" onClick={printReport}><Printer className="w-4 h-4 ml-1" /> הדפסה</Button>
+          <PrintButton />
         </div>
 
         {byMonth.length > 0 && (
