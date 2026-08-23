@@ -114,6 +114,7 @@ const SECTIONS = [
 
 // Standalone settings row at the bottom (outside groups, shown to all)
 const SETTINGS_ITEM = { path: '/settings', icon: UserCircle, label: 'פרופיל והגדרות', desc: 'מיתוג, תצוגה ועוד', color: 'bg-slate-100 text-slate-600 dark:bg-slate-900/30 dark:text-slate-400' };
+const MAP_ITEM = { path: '/map', icon: Map, label: 'מפת המערכת', desc: 'כל המסכים במקום אחד, עם חיפוש וייצוא ל-PDF', color: 'bg-lime-100 text-lime-700 dark:bg-lime-900/30 dark:text-lime-400' };
 
 export default function MorePage() {
   const navigate = useNavigate();
