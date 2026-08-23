@@ -119,7 +119,7 @@ export default function DriveFolderImportDialog({ open, onClose, folder, onImpor
             <h3 className="font-bold text-sm">ייבוא תיקייה: {folder.name}</h3>
           </div>
           {!importing && !scanning && !learningStyle && (
-            <button onClick={close} className="text-muted-foreground hover:text-foreground">
+            <button onClick={close} className="text-muted-foreground hover:text-foreground" aria-label="סגור">
               <X className="w-4 h-4" />
             </button>
           )}
