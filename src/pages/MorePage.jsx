@@ -62,6 +62,7 @@ const SECTIONS = [
       { path: '/parents',      icon: Contact, label: 'הורים',        desc: 'תקשורת ושיתוף חומרים', color: 'bg-teal-100 text-teal-600 dark:bg-teal-900/30 dark:text-teal-400' },
       { path: '/student-view', icon: Eye,     label: 'תצוגת תלמיד',  desc: 'מה התלמיד רואה',        color: 'bg-sky-100 text-sky-600 dark:bg-sky-900/30 dark:text-sky-400'     },
       { path: '/weekly-bulletin', icon: Newspaper, label: 'חוברת קשר שבועית', desc: 'טיוטה אוטומטית לפי ההספק ומערכת השעות', color: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400' },
+      { path: '/weekly-sheet', icon: Mail, label: 'דף קשר שבועי להורים', desc: 'הספק, מבחנים ודף חתימה מוכן להדפסה', color: 'bg-lime-100 text-lime-700 dark:bg-lime-900/30 dark:text-lime-400' },
     ],
   },
   {
