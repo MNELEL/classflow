@@ -231,6 +231,28 @@ export default function MorePage() {
           </button>
         </div>
 
+        {/* ── Contact sheet (standalone) ── */}
+        <div className="px-4 mt-5">
+          <button
+            onClick={() => navigate(CONTACT_SHEET_ITEM.path)}
+            className={cn(
+              'w-full flex items-center gap-3.5 px-4 py-3.5 rounded-2xl border transition-all text-right select-none',
+              location.pathname === CONTACT_SHEET_ITEM.path
+                ? 'border-primary/30 bg-primary/5'
+                : 'border-border bg-card hover:border-primary/20 active:scale-[0.98]'
+            )}
+          >
+            <div className={cn('w-10 h-10 rounded-xl flex items-center justify-center shrink-0', CONTACT_SHEET_ITEM.color)}>
+              <CONTACT_SHEET_ITEM.icon className="w-5 h-5" />
+            </div>
+            <div className="flex-1 min-w-0 text-right">
+              <p className="font-semibold text-sm text-foreground">{CONTACT_SHEET_ITEM.label}</p>
+              <p className="text-xs text-muted-foreground mt-0.5 truncate">{CONTACT_SHEET_ITEM.desc}</p>
+            </div>
+            <ChevronLeft className="w-4 h-4 text-muted-foreground shrink-0" />
+          </button>
+        </div>
+
         {/* ── Settings (standalone, bottom) ── */}
         <div className="px-4 mt-5">
           <button
