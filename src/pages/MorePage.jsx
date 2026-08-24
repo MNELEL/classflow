@@ -46,7 +46,7 @@ const SECTIONS = [
       { path: '/study-plan-generator',icon: BookMarked, label: 'מחולל תוכניות',    desc: 'צור תוכנית לימודים שבועית עם AI', color: 'bg-violet-100 text-violet-700 dark:bg-violet-900/30 dark:text-violet-400'    },
       { path: '/teacher-style',       icon: Brain,      label: 'סגנון הוראה שלי',  desc: 'AI לומד את הסגנון הייחודי שלך',  color: 'bg-primary/10 text-primary'                                                },
       { path: '/weekly-bulletin',     icon: Newspaper,  label: 'חוברת קשר שבועית', desc: 'טיוטה אוטומטית לפי ההספק ומערכת השעות', color: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400'      },
-      { path: '/students',            icon: Users,         label: 'תיק תלמיד',         desc: 'רשימת תלמידים והפרופיל האישי של כל תלמיד', color: 'bg-sky-100 text-sky-600 dark:bg-sky-900/30 dark:text-sky-400' },
+      { path: '/weekly-sheet',        icon: Mail,       label: 'דף קשר שבועי להורים', desc: 'הספק, מבחנים ודף חתימה מוכן להדפסה', color: 'bg-lime-100 text-lime-700 dark:bg-lime-900/30 dark:text-lime-400'      },
       { path: '/grades',             icon: GraduationCap, label: 'ציונים',            desc: 'הזנה ומעקב ציונים לפי מקצוע',             color: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' },
       { path: '/exams',               icon: FileText,      label: 'הערכות ומבחנים',    desc: 'מבחנים, הזנת ציונים וסטטוס',              color: 'bg-rose-100 text-rose-600 dark:bg-rose-900/30 dark:text-rose-400' },
       { path: '/attendance',          icon: CalendarCheck, label: 'נוכחות',           desc: 'דיווח ומעקב נוכחות יומי',                color: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400' },
