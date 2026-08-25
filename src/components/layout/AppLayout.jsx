@@ -8,6 +8,7 @@ import {
 
 import { loadBranding } from '@/lib/branding';
 import OverdueAlertsPanel from '@/components/alerts/OverdueAlertsPanel';
+import HelpButton from '@/components/common/HelpButton';
 
 
 // 5 bottom nav tabs — all other routes accessible via /more
@@ -194,6 +195,7 @@ export default function AppLayout({ children }) {
 
           <div className="flex items-center gap-1 relative">
             <OverdueAlertsPanel />
+            <HelpButton />
             {location.pathname !== '/settings' ? (
               <Link
                 to="/settings"
