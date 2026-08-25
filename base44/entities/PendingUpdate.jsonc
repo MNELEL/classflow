@@ -11,7 +11,11 @@
         "add_task",
         "add_behavior",
         "add_homework",
-        "document_ingest"
+        "document_ingest",
+        "daily_log",
+        "incident",
+        "calendar_event",
+        "parent_contact"
       ],
       "description": "\u05e1\u05d5\u05d2 \u05d4\u05e4\u05e2\u05d5\u05dc\u05d4 \u05d4\u05de\u05d5\u05e6\u05e2\u05ea"
     },

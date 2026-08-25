@@ -15,6 +15,7 @@ export async function gatherOrchestratorContext(base44) {
     students, grades, attendance, tasks, homework,
     behavior, feedback, library, sharedLessons,
     parentContacts, rewards, events, exams,
+    pendingUpdates,
   ] = await Promise.all([
     base44.entities.Student.list('-created_date', 300),
     base44.entities.Grade.list('-date', 200),
@@ -29,12 +30,17 @@ export async function gatherOrchestratorContext(base44) {
     base44.entities.Reward.list('-date', 200),
     base44.entities.SchoolEvent.list('-date', 50),
     base44.entities.Exam.list('-date', 50),
+    // Recent AI-proposed updates — gives the assistant short-term memory
+    // of what the teacher already logged/recently said, so it can resolve
+    // ambiguous references ("הוא נעדר שוב", "תזכיר לי מה היה אתמול") against
+    // prior context instead of treating each command in a vacuum.
+    base44.entities.PendingUpdate.list('-created_date', 15),
   ]);
 
   return {
     students, grades, attendance, tasks, homework,
     behavior, feedback, library, sharedLessons,
-    parentContacts, rewards, events, exams,
+    parentContacts, rewards, events, exams, pendingUpdates,
     today, since30, since60, in14,
   };
 }
@@ -63,7 +69,20 @@ export function summarizeContextForAI(ctx) {
   }));
 
   const behaviorSummary = (ctx.behavior || []).slice(0, 80).map(b => ({
-    student_id: b.student_id, type: b.behavior_type || b.type, date: b.date,
+    student_id: b.student_id, type: b.behavior_type || b.type, category: b.category,
+    description: b.description, severity: b.severity, date: b.date,
+  }));
+
+  // Short-term memory: the last handful of AI-proposed updates (any status),
+  // so the assistant can connect a new free-form command to what the teacher
+  // just told it (e.g. "הוא שוב נעדר" → resolve "הוא" against the last student
+  // mentioned; "מה היה אתמול" → summarize recent pending/approved updates).
+  const recentUpdates = (ctx.pendingUpdates || []).slice(0, 12).map(p => ({
+    intent: p.intent,
+    summary: p.summary,
+    student_name: p.student_name || '',
+    status: p.status,
+    created_date: p.created_date,
   }));
 
   return {
@@ -74,6 +93,7 @@ export function summarizeContextForAI(ctx) {
     attendance: attendanceSummary,
     open_tasks: taskSummary,
     behavior: behaviorSummary,
+    recent_updates: recentUpdates,
     homework_count: (ctx.homework || []).length,
     library_count: (ctx.library || []).length,
     upcoming_events: (ctx.events || []).filter(e => e.date >= ctx.today).slice(0, 10).map(e => ({ title: e.title, date: e.date })),
