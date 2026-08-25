@@ -9,7 +9,7 @@ import {
   Contact, FileText, Layers, Mic, ClipboardCheck,
   Music, Eye, Clock, UserCircle, ChevronLeft, BarChart2, Brain,
   BookOpen, Home, Bell, BookMarked, Shuffle, Zap, GitBranch, CalendarDays, Sparkles, Shield, Upload, Award, LayoutTemplate,
-  Library, LayoutGrid, Newspaper, Users, Map, Mail
+  Library, LayoutGrid, Newspaper, Users, Map, Mail, MessageSquare
 } from 'lucide-react';
 import AppLayout from '@/components/layout/AppLayout';
 
