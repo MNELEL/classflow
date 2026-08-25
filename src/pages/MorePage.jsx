@@ -75,6 +75,7 @@ const SECTIONS = [
       { path: '/raffle',            icon: Shuffle,   label: 'הגרלות',      desc: 'הגרל תלמיד, קבוצות או סדר אקראי',color: 'bg-fuchsia-100 text-fuchsia-600 dark:bg-fuchsia-900/30 dark:text-fuchsia-400' },
       { path: '/fast-feedback',     icon: Zap,       label: 'משוב מהיר',   desc: 'שלח משוב מיידי לתלמיד',         color: 'bg-yellow-100 text-yellow-600 dark:bg-yellow-900/30 dark:text-yellow-400'  },
       { path: '/behavior-timeline',icon: GitBranch,  label: 'ציר התנהגות', desc: 'תיעוד אירועי התנהגות לאורך זמן', color: 'bg-indigo-100 text-indigo-600 dark:bg-indigo-900/30 dark:text-indigo-400'   },
+      { path: '/poll',              icon: MessageSquare, label: 'סקר כיתה חי', desc: 'שאלות ותוצאות בזמן אמת, עם הצעות AI', color: 'bg-cyan-100 text-cyan-700 dark:bg-cyan-900/30 dark:text-cyan-400' },
     ],
   },
   {
