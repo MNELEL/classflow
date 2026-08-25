@@ -1,6 +1,6 @@
 import React, { useState, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Sparkles, Mic, X, Send, Loader2, ClipboardCheck } from 'lucide-react';
+import { Sparkles, Mic, X, Send, Loader2, MessageSquareText, HelpCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import { useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
@@ -8,29 +8,39 @@ import { base44 } from '@/api/base44Client';
 
 const SUGGESTIONS = [
   'סמן את דני נעדר',
-  'הוסף תלמיד חדש בשם רוני',
-  'מה יום הולדת של דני?',
-  'תן לי את טלפון ההורים של רוני',
+  'איך המצב של רוני השבוע?',
+  'תעד אירוע חריג: דני הרביץ את רוני היום',
+  'רשום שיחת הורים עם אמא של דני',
+  'הוסף אירוע: טיול שנתי ב-12/09',
+  'עדכן: היום היה יום ספורט, הכיתה נהנתה',
 ];
 
+// reply = { type: 'answer' | 'clarify', text: string }
 export default function AssistantDock() {
   const [open, setOpen] = useState(false);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [listening, setListening] = useState(false);
+  const [reply, setReply] = useState(null);
   const qc = useQueryClient();
   const navigate = useNavigate();
   const inputRef = useRef(null);
   const recogRef = useRef(null);
 
-  const executeCommand = useCallback(async (text) => {
+  const executeCommand = useCallback(async (text, isVoice = false) => {
     if (!text.trim()) return;
     setLoading(true);
+    setReply(null);
     try {
-      const res = await base44.functions.invoke('aiAssistant', { command: text });
+      const res = await base44.functions.invoke('aiAssistant', { command: text, voice: isVoice });
       const data = res.data || res;
-      if (data.success && data.pending) {
-        // AI created a pending proposal — redirect to review screen
+      if (data.needs_clarification) {
+        // שאלת הבהרה — מציגים בפאנל ומשאירים פתוח להשלמת התשובה. לא מבצעים.
+        setReply({ type: 'clarify', text: data.message });
+        setInput('');
+        setTimeout(() => inputRef.current?.focus(), 200);
+      } else if (data.success && data.pending) {
+        // פעולת כתיבה — נשמרה כהצעה לסקירה.
         qc.invalidateQueries({ queryKey: ['pendingUpdates'] });
         toast.success('הצעה נוצרה! עבור למסך סקירה לאישור', {
           action: {
@@ -38,14 +48,16 @@ export default function AssistantDock() {
             onClick: () => navigate('/review'),
           },
         });
+        setInput('');
+        setReply(null);
+        setOpen(false);
       } else if (data.success) {
-        toast.success(data.message);
-        qc.invalidateQueries();
+        // שאלת קריאה — מציגים את התשובה מיד בתוך הפאנל.
+        setReply({ type: 'answer', text: data.message });
+        setInput('');
       } else {
         toast.error(data.message || 'לא הצלחתי להבין את הפקודה');
       }
-      setInput('');
-      setOpen(false);
     } catch (err) {
       toast.error('שגיאה בעיבוד הפקודה');
     } finally {
@@ -76,7 +88,7 @@ export default function AssistantDock() {
       setInput(transcript);
       setListening(false);
       // Auto-execute after recognition
-      setTimeout(() => executeCommand(transcript), 300);
+      setTimeout(() => executeCommand(transcript, true), 300);
     };
     recog.onerror = () => {
       setListening(false);
@@ -137,10 +149,40 @@ export default function AssistantDock() {
                   </div>
                   <span className="text-sm font-semibold text-foreground">עוזר ClassFlow</span>
                 </div>
-                <button onClick={() => setOpen(false)} className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-accent transition-colors" aria-label="סגור">
+                <button onClick={() => { setOpen(false); setReply(null); }} className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-accent transition-colors" aria-label="סגור">
                   <X className="w-4 h-4 text-muted-foreground" />
                 </button>
               </div>
+
+              {/* Inline reply (read answer or clarification question) */}
+              <AnimatePresence>
+                {reply && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: 'auto' }}
+                    exit={{ opacity: 0, height: 0 }}
+                    className={`px-4 py-3 border-b text-sm leading-relaxed whitespace-pre-wrap ${
+                      reply.type === 'clarify'
+                        ? 'bg-amber-50 dark:bg-amber-900/15 border-amber-200 dark:border-amber-800/40'
+                        : 'bg-primary/5 border-primary/20'
+                    }`}
+                  >
+                    <div className="flex items-start gap-2">
+                      {reply.type === 'clarify'
+                        ? <HelpCircle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" aria-hidden="true" />
+                        : <MessageSquareText className="w-4 h-4 text-primary shrink-0 mt-0.5" aria-hidden="true" />}
+                      <div className="min-w-0">
+                        {reply.type === 'clarify' && (
+                          <p className="text-[11px] font-semibold text-amber-700 dark:text-amber-400 mb-0.5">צריך עוד פרט</p>
+                        )}
+                        <p className={reply.type === 'clarify' ? 'text-amber-900 dark:text-amber-100' : 'text-foreground'}>
+                          {reply.text}
+                        </p>
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
 
               {/* Input */}
               <form onSubmit={handleSubmit} className="flex items-center gap-2 p-3">
@@ -161,7 +203,7 @@ export default function AssistantDock() {
                   type="text"
                   value={input}
                   onChange={e => setInput(e.target.value)}
-                  placeholder={listening ? 'מקשיב...' : 'כתוב פקודה או דבר...'}
+                  placeholder={listening ? 'מקשיב...' : 'ספר/כתוב מה קרה או מה לעשות...'}
                   disabled={loading}
                   className="flex-1 h-11 rounded-xl bg-background border border-border px-4 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30"
                 />
@@ -176,7 +218,7 @@ export default function AssistantDock() {
               </form>
 
               {/* Suggestions */}
-              {!loading && !listening && (
+              {!loading && !listening && !reply && (
                 <div className="px-3 pb-3 flex flex-wrap gap-1.5">
                   {SUGGESTIONS.map(s => (
                     <button

@@ -1,8 +1,12 @@
 // מפת המערכת — מקור אמת אחד לפריטים המוצגים ב-/map ולייצוא ה-PDF.
+// מבנה דו-רמתי: MAP_SUPER_CATEGORIES (קטגוריות-על → קטגוריות-משנה → פריטים)
+// משמש את המסך; MAP_SECTIONS השטוח נשמר לתאימות לאחור עם exportSystemMapPdf
+// וכל צרכן אחר שמצפה למערך סקציות שטוח { title, items }.
 // כל פריט: path בפועל באפליקציה, תווית, ותיאור קצר (sub) של מה עושים במסך.
 // adminOnly = מוצג רק למשתמש עם role === 'admin'.
 
-export const MAP_SECTIONS = [
+// הגדרת הפריטים הבסיסית — כל קטגוריית-משנה היא { title, items[] }.
+const SUBCATEGORIES = [
   {
     title: 'ניהול הכיתה יום־יום',
     items: [
@@ -90,6 +94,7 @@ export const MAP_SECTIONS = [
   },
   {
     title: 'ניהול (למנהל בלבד)',
+    adminOnlySection: true,
     items: [
       { path: '/admin', label: 'לוח ניהול', sub: 'ניהול מורים, כיתות והרשאות', adminOnly: true },
       { path: '/admin-overview', label: 'סקירה כללית', sub: 'תמונת מצב על כלל המורים והכיתות', adminOnly: true },
@@ -99,3 +104,59 @@ export const MAP_SECTIONS = [
     ],
   },
 ];
+
+// קטגוריות-העל: מקבצות את קטגוריות-המשנה לרמה עליונה כדי לצמצם עומס ויזואלי.
+export const MAP_SUPER_CATEGORIES = [
+  {
+    title: 'ניהול הכיתה והיומיום',
+    subs: ['ניהול הכיתה יום־יום', 'מוטיבציה ומעורבות כיתתית'],
+  },
+  {
+    title: 'הערכה, ציונים ומבחנים',
+    subs: ['הערכה, ציונים ומבחנים'],
+  },
+  {
+    title: 'קשר הורים ותקשורת',
+    subs: ['קשר עם ההורים'],
+  },
+  {
+    title: 'חומרי הוראה, כלים ותכנון',
+    subs: ['חומרי הוראה וכלי שיעור', 'תלמידים וייבוא', 'סגנון הוראה ופיתוח מקצועי'],
+  },
+  {
+    title: 'הגדרות, אבטחה וניהול',
+    subs: ['הגדרות ואבטחה', 'ניהול (למנהל בלבד)'],
+  },
+];
+
+// מפה מהירה: כותרת קטגוריית-משנה → האובייקט שלה (כולל adminOnlySection).
+const SUB_BY_TITLE = Object.fromEntries(SUBCATEGORIES.map(s => [s.title, s]));
+
+// בונה את המבנה הדו-רמתי המלא עם סינון admin על פי המשתמש.
+export function getMapTree(isAdmin) {
+  return MAP_SUPER_CATEGORIES
+    .map((sup) => {
+      const subs = sup.subs
+        .map((t) => SUB_BY_TITLE[t])
+        .filter(Boolean)
+        .filter((s) => !s.adminOnlySection || isAdmin)
+        .map((s) => {
+          const items = s.items.filter((it) => !it.adminOnly || isAdmin);
+          return { title: s.title, items };
+        })
+        .filter((s) => s.items.length > 0);
+      return { title: sup.title, subs };
+    })
+    .filter((sup) => sup.subs.length > 0);
+}
+
+// גישה נוחה לכל הפריטים השטוחים (לספירה/חיפוש).
+export function getAllMapItems(isAdmin) {
+  return SUBCATEGORIES
+    .filter((s) => !s.adminOnlySection || isAdmin)
+    .flatMap((s) => s.items.filter((it) => !it.adminOnly || isAdmin));
+}
+
+// תאימות לאחור: ייצוא שטוח של כל הסקציות (ל- exportSystemMapPdf וכל צרכן ישן).
+// עובר רק על קטגוריות-המשנה הגלויות למשתמש.
+export const MAP_SECTIONS = SUBCATEGORIES;
