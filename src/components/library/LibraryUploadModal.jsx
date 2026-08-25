@@ -19,6 +19,11 @@ import { validateUploadSize } from '@/lib/uploadValidation';
 
 const CATEGORIES = ['גמרא', 'הלכה', 'חומש', 'נ"ך', 'תפילה', 'מחשבת ישראל', 'מדעים', 'מתמטיקה', 'שפה', 'תבנית תעודה', 'תבנית חוברת קשר', 'אחר'];
 
+// TranscribeAudio integration limits audio transcription to 25MB; uploads allow 50MB,
+// so an audio file between 25–50MB uploads but silently fails to transcribe. This
+// constant is used to pre-warn at selection and to surface a clear error on analysis.
+const TRANSCRIBE_MAX_BYTES = 25 * 1024 * 1024;
+
 // Detect source type from file MIME or extension
 function detectSourceType(file) {
   const name = file.name.toLowerCase();
@@ -45,15 +50,60 @@ async function analyzeItem(item, qc) {
   try {
     await base44.entities.LibraryItem.update(item.id, { ai_status: 'processing' });
 
-    // Auto-transcribe audio files if no transcript exists
+    // Audio/video: transcribe then run full lesson analysis (summary sections + review questions).
+    // Transcription failures are surfaced on the item instead of swallowed silently — an
+    // ogg/mp3 above 25MB uploads fine but TranscribeAudio rejects it, so we tell the user.
+    const isAudioLike = item.source_type === 'audio_file' || item.source_type === 'audio_recording' || item.source_type === 'video_file';
     let transcript = item.transcript || '';
-    if (!transcript && (item.source_type === 'audio_file' || item.source_type === 'audio_recording' || item.source_type === 'video_file') && item.file_url) {
-      try {
-        transcript = await base44.integrations.Core.TranscribeAudio({ audio_url: item.file_url });
-        await base44.entities.LibraryItem.update(item.id, { transcript });
-      } catch {
-        // transcription failed - continue without transcript
+    if (isAudioLike && item.file_url) {
+      if (!transcript) {
+        try {
+          transcript = await base44.integrations.Core.TranscribeAudio({ audio_url: item.file_url });
+          await base44.entities.LibraryItem.update(item.id, { transcript });
+        } catch (tErr) {
+          const overLimit = item.file_size && item.file_size > TRANSCRIBE_MAX_BYTES;
+          const reason = overLimit
+            ? `התמלול נכשל — הקובץ חורג ממגבלת 25MB של התמלול (${(item.file_size / 1024 / 1024).toFixed(1)}MB).`
+            : `התמלול נכשל: ${tErr?.message || 'שגיאה לא ידועה'}.`;
+          await base44.entities.LibraryItem.update(item.id, {
+            ai_status: 'error',
+            ai_summary: `⚠️ ${reason} ניתן להמיר לקובץ קטן יותר ולהעלות שוב, או להשתמש בדף "ניתוח שיעורים".`,
+          });
+          qc.invalidateQueries({ queryKey: ['library'] });
+          qc.invalidateQueries({ queryKey: ['library-item', item.id] });
+          return;
+        }
       }
+      // Full lesson analysis: structured summary + review questions + key points + classification
+      const analysis = await base44.integrations.Core.InvokeLLM({
+        prompt: `אתה מומחה חינוכי. להלן תמליל שיעור בעברית:\n\n"""\n${transcript.slice(0, 12000)}\n"""\n\nנתח את השיעור והפק:\n1. סיכום מובנה בראשי פרקים (5-7 פרקים) — כל פרק עם כותרת וסיכום מפורט עם דוגמאות.\n2. 6-8 שאלות חזרה לתלמידים מסוגים מגוונים (רב-ברירה עם 4 אפשרויות ותשובה נכונה, שאלה פתוחה, נכון/לא נכון).\n3. נקודות מפתח חשובות שעלו בשיעור.\n4. כותרת מוצעת, קטגוריה (גמרא/הלכה/חומש/נ"ך/תפילה/מחשבת ישראל/מדעים/מתמטיקה/שפה/אחר), תגיות ורמת קושי.\n\nענה בעברית בלבד.`,
+        response_json_schema: {
+          type: 'object',
+          properties: {
+            suggestedTitle: { type: 'string' },
+            suggestedCategory: { type: 'string' },
+            suggestedTags: { type: 'array', items: { type: 'string' } },
+            difficulty: { type: 'string' },
+            summary: { type: 'string' },
+            keyPoints: { type: 'array', items: { type: 'string' } },
+            summary_sections: { type: 'array', items: { type: 'object', properties: { heading: { type: 'string' }, content: { type: 'string' } } } },
+            review_questions: { type: 'array', items: { type: 'object', properties: { question: { type: 'string' }, type: { type: 'string' }, options: { type: 'array', items: { type: 'string' } }, answer: { type: 'string' } } } },
+          },
+        },
+      });
+      await base44.entities.LibraryItem.update(item.id, {
+        ai_status: 'ready',
+        ai_summary: analysis.summary_sections?.map(s => `**${s.heading}**\n${s.content}`).join('\n\n') || analysis.summary,
+        ai_summary_sections: analysis.summary_sections,
+        ai_review_questions: analysis.review_questions,
+        ai_key_points: analysis.keyPoints || analysis.summary_sections?.map(s => s.heading),
+        ai_suggested_title: analysis.suggestedTitle,
+        ai_suggested_category: analysis.suggestedCategory,
+        ai_suggested_tags: analysis.suggestedTags,
+      });
+      qc.invalidateQueries({ queryKey: ['library'] });
+      qc.invalidateQueries({ queryKey: ['library-item', item.id] });
+      return;
     }
 
     // אימות איכות הטקסט לפני ניתוח — מונע סיכומים מתוך תוכן חסר/רועש
@@ -144,7 +194,15 @@ export default function LibraryUploadModal({ open, onClose, defaultCategory = ''
 
   // ── File handling ──────────────────────────────────────────────────────────
   const addFiles = useCallback((newFiles) => {
-    const validated = Array.from(newFiles).map(f => ({ f, sizeError: validateUploadSize(f) }));
+    const validated = Array.from(newFiles).map(f => {
+      const sizeError = validateUploadSize(f);
+      const st = detectSourceType(f);
+      const isAudioLike = st === 'audio_file' || st === 'audio_recording' || st === 'video_file';
+      const transcribeError = isAudioLike && f.size > TRANSCRIBE_MAX_BYTES
+        ? `קבצי אודיו/וידאו מעל 25MB לא ניתנים לתמלול (${(f.size / 1024 / 1024).toFixed(1)}MB) — נא לקצר או לדחוס את הקובץ.`
+        : null;
+      return { f, sizeError: sizeError || transcribeError };
+    });
     validated.filter(x => x.sizeError).forEach(x => toast.error(`${x.f.name}: ${x.sizeError}`));
     const fileArray = validated
       .filter(x => !x.sizeError)
