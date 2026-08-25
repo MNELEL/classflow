@@ -43,6 +43,7 @@ export default function AdminDashboard() {
   const [newClassroom, setNewClassroom] = useState({
     name: '', grade_level: '', school: '', year: new Date().getFullYear().toString(), notes: ''
   });
+  const [editClassroom, setEditClassroom] = useState(null);
 
 
   const isAdmin = !!user && user.role === 'admin';
@@ -126,6 +127,20 @@ export default function AdminDashboard() {
     },
     onError: (error) => {
       toast.error('שגיאה ביצירת הכיתה: ' + error.message);
+    },
+  });
+
+  const updateClassroomMutation = useMutation({
+    mutationFn: async ({ id, data }) => base44.entities.Classroom.update(id, data),
+    onSuccess: (_data, { id }) => {
+      logAudit('update', 'Classroom', id, newClassroom.name);
+      queryClient.invalidateQueries(['classrooms']);
+      setSearchParams({}, { replace: true });
+      setEditClassroom(null);
+      toast.success('הכיתה עודכנה בהצלחה!');
+    },
+    onError: (error) => {
+      toast.error('שגיאה בעדכון הכיתה: ' + error.message);
     },
   });
 
@@ -245,7 +260,32 @@ export default function AdminDashboard() {
 
   const handleSubmitClassroom = (e) => {
     e.preventDefault();
-    createClassroomMutation.mutate(newClassroom);
+    if (editClassroom) {
+      updateClassroomMutation.mutate({ id: editClassroom.id, data: newClassroom });
+    } else {
+      createClassroomMutation.mutate(newClassroom);
+    }
+  };
+
+  const openCreateClassroom = () => {
+    setEditClassroom(null);
+    setNewClassroom({ name: '', grade_level: '', school: '', year: new Date().getFullYear().toString(), notes: '' });
+    setSearchParams({ modal: 'classroom-form' });
+  };
+  const openEditClassroom = (classroom) => {
+    setEditClassroom(classroom);
+    setNewClassroom({
+      name: classroom.name || '',
+      grade_level: classroom.grade_level || '',
+      school: classroom.school || '',
+      year: classroom.year || '',
+      notes: classroom.notes || '',
+    });
+    setSearchParams({ modal: 'classroom-form' });
+  };
+  const closeClassroomModal = () => {
+    setEditClassroom(null);
+    setSearchParams({}, { replace: true });
   };
 
   const activeTeachers = teachers.filter(t => t.is_active !== false);
@@ -324,7 +364,7 @@ export default function AdminDashboard() {
           <Button onClick={() => setSearchParams({ modal: 'teacher-form' })} className="flex-1">
             <Plus className="w-4 h-4 ml-1" /> הוסף מורה חדש
           </Button>
-          <Button onClick={() => setSearchParams({ modal: 'classroom-form' })} variant="outline" className="flex-1">
+          <Button onClick={openCreateClassroom} variant="outline" className="flex-1">
             <BookOpen className="w-4 h-4 ml-1" /> צור כיתה חדשה
           </Button>
           <Button onClick={() => navigate('/teacher-insights')} variant="outline" className="flex-1">
@@ -541,7 +581,7 @@ export default function AdminDashboard() {
                           <Button
                             size="sm"
                             variant="outline"
-                            onClick={() => navigate(`/classroom/${classroom.id}`)}
+                            onClick={() => openEditClassroom(classroom)}
                             className="h-8 text-xs"
                           >
                             ערוך
@@ -707,7 +747,7 @@ export default function AdminDashboard() {
               animate={{ opacity: 1, scale: 1 }}
               className="bg-card rounded-xl border border-border w-full max-w-md p-6"
             >
-              <h2 className="text-lg font-bold mb-4">צור כיתה חדשה</h2>
+              <h2 className="text-lg font-bold mb-4">{editClassroom ? 'עריכת כיתה' : 'צור כיתה חדשה'}</h2>
               <form onSubmit={handleSubmitClassroom} className="space-y-4">
                 <div>
                   <label className="text-sm font-medium mb-1 block">שם הכיתה *</label>
@@ -750,10 +790,10 @@ export default function AdminDashboard() {
                   />
                 </div>
                 <div className="flex gap-2 pt-2">
-                  <Button type="submit" className="flex-1">
-                    <Plus className="w-4 h-4 ml-1" /> צור כיתה
+                  <Button type="submit" className="flex-1" disabled={updateClassroomMutation.isPending}>
+                    {editClassroom ? 'שמור שינויים' : (<><Plus className="w-4 h-4 ml-1" /> צור כיתה</>)}
                   </Button>
-                  <Button type="button" variant="outline" onClick={() => setSearchParams({}, { replace: true })} className="flex-1">
+                  <Button type="button" variant="outline" onClick={closeClassroomModal} className="flex-1">
                     ביטול
                   </Button>
                 </div>
