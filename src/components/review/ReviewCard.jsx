@@ -11,7 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import {
   Check, X, Edit3, Save, GraduationCap, CalendarCheck,
   FileText, ClipboardList, UserPlus, BookOpen, AlertCircle,
-  MessageSquare, Clock, Image as ImageIcon
+  MessageSquare, Clock, Image as ImageIcon, CalendarDays
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { getIntentLabel } from '@/lib/pendingUpdateActions';
@@ -24,6 +24,10 @@ const INTENT_ICONS = {
   add_behavior: AlertCircle,
   add_homework: BookOpen,
   document_ingest: FileText,
+  incident: AlertCircle,
+  calendar_event: CalendarDays,
+  parent_contact: MessageSquare,
+  daily_log: FileText,
 };
 
 const INTENT_COLORS = {
@@ -34,6 +38,10 @@ const INTENT_COLORS = {
   add_behavior: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400',
   add_homework: 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400',
   document_ingest: 'bg-cyan-100 text-cyan-700 dark:bg-cyan-900/30 dark:text-cyan-400',
+  incident: 'bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-400',
+  calendar_event: 'bg-violet-100 text-violet-700 dark:bg-violet-900/30 dark:text-violet-400',
+  parent_contact: 'bg-fuchsia-100 text-fuchsia-700 dark:bg-fuchsia-900/30 dark:text-fuchsia-400',
+  daily_log: 'bg-slate-100 text-slate-700 dark:bg-slate-900/30 dark:text-slate-400',
 };
 
 export default function ReviewCard({ pending, students, onApprove, onReject, isProcessing }) {
@@ -270,6 +278,165 @@ export default function ReviewCard({ pending, students, onApprove, onReject, isP
                       <p className="text-sm">{pending.payload?.due_date || '—'}</p>
                     )}
                   </div>
+                </div>
+              </>
+            )}
+
+            {/* incident */}
+            {pending.intent === 'incident' && (
+              <>
+                <div className="grid grid-cols-2 gap-2">
+                  <div className="space-y-1">
+                    <Label className="text-xs text-muted-foreground">סוג</Label>
+                    {editing ? (
+                      <MobileSelect value={draft.behavior_type || 'concern'} onValueChange={v => updateField('behavior_type', v)} placeholder="בחר סוג">
+                        <SelectItem value="positive">חיובי</SelectItem>
+                        <SelectItem value="negative">שלילי</SelectItem>
+                        <SelectItem value="neutral">ניטרלי</SelectItem>
+                        <SelectItem value="improvement">שיפור</SelectItem>
+                        <SelectItem value="concern">דאגה</SelectItem>
+                      </MobileSelect>
+                    ) : (
+                      <p className="text-sm font-medium">{({positive:'חיובי',negative:'שלילי',neutral:'ניטרלי',improvement:'שיפור',concern:'דאגה'})[pending.payload?.behavior_type] || '—'}</p>
+                    )}
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-xs text-muted-foreground">חומרה</Label>
+                    {editing ? (
+                      <MobileSelect value={draft.severity || 'medium'} onValueChange={v => updateField('severity', v)} placeholder="בחר חומרה">
+                        <SelectItem value="low">נמוכה</SelectItem>
+                        <SelectItem value="medium">בינונית</SelectItem>
+                        <SelectItem value="high">גבוהה</SelectItem>
+                      </MobileSelect>
+                    ) : (
+                      <p className="text-sm font-medium">{({low:'נמוכה',medium:'בינונית',high:'גבוהה'})[pending.payload?.severity] || '—'}</p>
+                    )}
+                  </div>
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs text-muted-foreground">תיאור</Label>
+                  {editing ? (
+                    <Textarea value={draft.description || ''} onChange={e => updateField('description', e.target.value)} rows={2} className="text-sm" />
+                  ) : (
+                    <p className="text-sm">{pending.payload?.description || '—'}</p>
+                  )}
+                </div>
+              </>
+            )}
+
+            {/* calendar_event */}
+            {pending.intent === 'calendar_event' && (
+              <>
+                <div className="space-y-1">
+                  <Label className="text-xs text-muted-foreground">כותרת</Label>
+                  {editing ? (
+                    <Input value={draft.event_title || ''} onChange={e => updateField('event_title', e.target.value)} className="h-9" />
+                  ) : (
+                    <p className="text-sm font-medium">{pending.payload?.event_title || '—'}</p>
+                  )}
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  <div className="space-y-1">
+                    <Label className="text-xs text-muted-foreground">סוג</Label>
+                    {editing ? (
+                      <MobileSelect value={draft.event_type || 'other'} onValueChange={v => updateField('event_type', v)} placeholder="בחר סוג">
+                        <SelectItem value="trip">טיול</SelectItem>
+                        <SelectItem value="assembly">אסיפה</SelectItem>
+                        <SelectItem value="holiday">חג</SelectItem>
+                        <SelectItem value="meeting">פגישה</SelectItem>
+                        <SelectItem value="exam">מבחן</SelectItem>
+                        <SelectItem value="deadline">מועד אחרון</SelectItem>
+                        <SelectItem value="celebration">חגיגה</SelectItem>
+                        <SelectItem value="other">אחר</SelectItem>
+                      </MobileSelect>
+                    ) : (
+                      <p className="text-sm">{pending.payload?.event_type || '—'}</p>
+                    )}
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-xs text-muted-foreground">תאריך</Label>
+                    {editing ? (
+                      <HebrewDatePicker value={draft.event_date || ''} onChange={v => updateField('event_date', v)} className="h-9" />
+                    ) : (
+                      <p className="text-sm">{pending.payload?.event_date || '—'}</p>
+                    )}
+                  </div>
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs text-muted-foreground">תיאור</Label>
+                  {editing ? (
+                    <Textarea value={draft.event_description || ''} onChange={e => updateField('event_description', e.target.value)} rows={2} className="text-sm" />
+                  ) : (
+                    <p className="text-sm">{pending.payload?.event_description || '—'}</p>
+                  )}
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs text-muted-foreground">מיקום</Label>
+                  {editing ? (
+                    <Input value={draft.event_location || ''} onChange={e => updateField('event_location', e.target.value)} className="h-9" />
+                  ) : (
+                    <p className="text-sm">{pending.payload?.event_location || '—'}</p>
+                  )}
+                </div>
+              </>
+            )}
+
+            {/* parent_contact */}
+            {pending.intent === 'parent_contact' && (
+              <>
+                <div className="grid grid-cols-2 gap-2">
+                  <div className="space-y-1">
+                    <Label className="text-xs text-muted-foreground">סוג קשר</Label>
+                    {editing ? (
+                      <MobileSelect value={draft.contact_type || 'note'} onValueChange={v => updateField('contact_type', v)} placeholder="בחר סוג">
+                        <SelectItem value="call">שיחה</SelectItem>
+                        <SelectItem value="meeting">פגישה</SelectItem>
+                        <SelectItem value="message">הודעה</SelectItem>
+                        <SelectItem value="email">אימייל</SelectItem>
+                        <SelectItem value="note">רישום</SelectItem>
+                      </MobileSelect>
+                    ) : (
+                      <p className="text-sm font-medium">{({call:'שיחה',meeting:'פגישה',message:'הודעה',email:'אימייל',note:'רישום'})[pending.payload?.contact_type] || '—'}</p>
+                    )}
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-xs text-muted-foreground">תאריך</Label>
+                    {editing ? (
+                      <HebrewDatePicker value={draft.contact_date || ''} onChange={v => updateField('contact_date', v)} className="h-9" />
+                    ) : (
+                      <p className="text-sm">{pending.payload?.contact_date || '—'}</p>
+                    )}
+                  </div>
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs text-muted-foreground">תוכן</Label>
+                  {editing ? (
+                    <Textarea value={draft.contact_summary || ''} onChange={e => updateField('contact_summary', e.target.value)} rows={2} className="text-sm" />
+                  ) : (
+                    <p className="text-sm">{pending.payload?.contact_summary || '—'}</p>
+                  )}
+                </div>
+              </>
+            )}
+
+            {/* daily_log */}
+            {pending.intent === 'daily_log' && (
+              <>
+                <div className="space-y-1">
+                  <Label className="text-xs text-muted-foreground">תאריך</Label>
+                  {editing ? (
+                    <HebrewDatePicker value={draft.log_date || ''} onChange={v => updateField('log_date', v)} className="h-9" />
+                  ) : (
+                    <p className="text-sm">{pending.payload?.log_date || '—'}</p>
+                  )}
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs text-muted-foreground">תוכן התיעוד</Label>
+                  {editing ? (
+                    <Textarea value={draft.log_text || ''} onChange={e => updateField('log_text', e.target.value)} rows={3} className="text-sm" />
+                  ) : (
+                    <p className="text-sm">{pending.payload?.log_text || '—'}</p>
+                  )}
                 </div>
               </>
             )}

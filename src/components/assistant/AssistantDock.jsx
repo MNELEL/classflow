@@ -7,12 +7,12 @@ import { useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 
 const SUGGESTIONS = [
+  'קח אותי לציונים',
+  'מה היה היום: דני נעדר, רוני קיבל 95 בחידון, יוסי הפריע בשיעור',
+  'תזכורת: לבדוק מחר למה דני לא מגיש שיעורי בית',
+  'מה ההערות הפתוחות שלי?',
   'סמן את דני נעדר',
   'איך המצב של רוני השבוע?',
-  'תעד אירוע חריג: דני הרביץ את רוני היום',
-  'רשום שיחת הורים עם אמא של דני',
-  'הוסף אירוע: טיול שנתי ב-12/09',
-  'עדכן: היום היה יום ספורט, הכיתה נהנתה',
 ];
 
 // reply = { type: 'answer' | 'clarify', text: string }
@@ -39,6 +39,20 @@ export default function AssistantDock() {
         setReply({ type: 'clarify', text: data.message });
         setInput('');
         setTimeout(() => inputRef.current?.focus(), 200);
+      } else if (data.success && data.bulk) {
+        // יומן יומי מרוכז — מספר הצעות נפרדות נוצרו לסקירה.
+        qc.invalidateQueries({ queryKey: ['pendingUpdates'] });
+        setReply({ type: 'answer', text: data.message });
+        toast.success(data.message, {
+          action: { label: 'לסקירה', onClick: () => navigate('/review') },
+        });
+        setInput('');
+      } else if (data.success && data.navigate) {
+        // ניווט — עוברים למסך המבוקש ומציגים אישור.
+        navigate(data.navigate);
+        setReply({ type: 'answer', text: data.message });
+        setInput('');
+        setOpen(false);
       } else if (data.success && data.pending) {
         // פעולת כתיבה — נשמרה כהצעה לסקירה.
         qc.invalidateQueries({ queryKey: ['pendingUpdates'] });
@@ -52,7 +66,7 @@ export default function AssistantDock() {
         setReply(null);
         setOpen(false);
       } else if (data.success) {
-        // שאלת קריאה — מציגים את התשובה מיד בתוך הפאנל.
+        // שאלת קריאה / שליפת הערות — מציגים את התשובה מיד בתוך הפאנל.
         setReply({ type: 'answer', text: data.message });
         setInput('');
       } else {
