@@ -188,6 +188,7 @@ function AnimatedRoutes() {
               <Route path="/map" element={<SystemMapPage />} />
               <Route path="/weekly-sheet" element={<WeeklySheetPage />} />
               <Route path="/contact-sheet" element={<ContactSheetPage />} />
+              <Route path="/poll" element={<PollPage />} />
 <Route path="/teacher-login" element={<TeacherLogin />} />
 <Route path="/teacher-dashboard" element={<TeacherDashboard />} />
 <Route path="/certificates" element={<CertificatesPage />} />
