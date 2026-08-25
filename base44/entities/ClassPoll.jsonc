@@ -1,0 +1,113 @@
+{
+  "name": "ClassPoll",
+  "properties": {
+    "class_id": {
+      "description": "\u05de\u05d6\u05d4\u05d4 \u05d4\u05db\u05d9\u05ea\u05d4",
+      "type": "string"
+    },
+    "closed_at": {
+      "description": "\u05de\u05ea\u05d9 \u05e0\u05e1\u05d2\u05e8 \u05d4\u05e1\u05e7\u05e8",
+      "format": "date-time",
+      "type": "string"
+    },
+    "description": {
+      "description": "\u05ea\u05d9\u05d0\u05d5\u05e8",
+      "maxLength": 1000,
+      "type": "string"
+    },
+    "options": {
+      "description": "\u05d0\u05e4\u05e9\u05e8\u05d5\u05d9\u05d5\u05ea \u05ea\u05e9\u05d5\u05d1\u05d4 (2-4)",
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "question": {
+      "description": "\u05e9\u05d0\u05dc\u05ea \u05d4\u05e1\u05e7\u05e8",
+      "type": "string"
+    },
+    "status": {
+      "default": "active",
+      "description": "\u05e1\u05d8\u05d8\u05d5\u05e1 \u05d4\u05e1\u05e7\u05e8",
+      "enum": [
+        "active",
+        "closed"
+      ],
+      "type": "string"
+    },
+    "votes": {
+      "description": "\u05d4\u05e6\u05d1\u05e2\u05d5\u05ea \u05d4\u05ea\u05dc\u05de\u05d9\u05d3\u05d9\u05dd",
+      "items": {
+        "properties": {
+          "option_index": {
+            "type": "number"
+          },
+          "student_id": {
+            "type": "string"
+          },
+          "student_name": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "type": "array"
+    }
+  },
+  "required": [
+    "class_id",
+    "question",
+    "options"
+  ],
+  "rls": {
+    "create": {
+      "$or": [
+        {
+          "created_by_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "created_by_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "read": {
+      "$or": [
+        {
+          "created_by_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "$or": [
+        {
+          "created_by_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  },
+  "type": "object"
+}
