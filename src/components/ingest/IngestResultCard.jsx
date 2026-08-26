@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ClipboardCheck, Loader2, CheckCircle2, FileText, BookOpen, Award, Mail } from 'lucide-react';
 import { CATEGORIES, REQUIRES_STUDENT, getCategoryConfig } from '@/lib/smartIngest';
+import { MobileSelect, SelectItem } from '@/components/ui/MobileSelect';
 
 const ICON_MAP = { FileText, BookOpen, Award, Mail };
 
@@ -81,15 +82,16 @@ export default function IngestResultCard({ result, students, onSave, onUpdate, i
                 </div>
               ) : (
                 <>
-                  <select
+                  <MobileSelect
                     value={result.selectedStudentId || ''}
-                    onChange={e => onUpdate(result.id, { selectedStudentId: e.target.value })}
+                    onValueChange={v => onUpdate(result.id, { selectedStudentId: v })}
                     disabled={isSaving || isSaved}
-                    className="w-full h-9 rounded-md border border-input bg-transparent px-3 text-sm disabled:opacity-50"
+                    placeholder="בחר תלמיד..."
+                    className="h-9 text-sm w-full"
                   >
-                    <option value="">בחר תלמיד...</option>
-                    {students.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
-                  </select>
+                    <SelectItem value={null}>בחר תלמיד...</SelectItem>
+                    {students.map(s => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}
+                  </MobileSelect>
                   {result.student_name && !result.selectedStudentId && (
                     <p className="text-[10px] text-amber-600 dark:text-amber-400 mt-1">זוהה במסמך: {result.student_name}</p>
                   )}

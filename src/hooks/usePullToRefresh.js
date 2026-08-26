@@ -3,7 +3,7 @@ import { useRef, useEffect, useState, useCallback } from 'react';
 const THRESHOLD = 72; // px to pull before triggering
 const RESISTANCE = 2.5;
 
-export function usePullToRefresh(onRefresh) {
+export function usePullToRefresh(onRefresh, options = {}) {
   const [pulling, setPulling] = useState(false);
   const [pullY, setPullY] = useState(0);
   const [refreshing, setRefreshing] = useState(false);
@@ -14,9 +14,11 @@ export function usePullToRefresh(onRefresh) {
   const pullYRef = useRef(0);
   const refreshingRef = useRef(false);
   const onRefreshRef = useRef(onRefresh);
+  const optionsRef = useRef(options);
 
   // Keep the latest callback without re-attaching listeners
   useEffect(() => { onRefreshRef.current = onRefresh; }, [onRefresh]);
+  useEffect(() => { optionsRef.current = options; }, [options]);
 
   // Sync display state from refs (batched, minimal re-renders)
   const flush = useCallback(() => {
@@ -39,6 +41,13 @@ export function usePullToRefresh(onRefresh) {
     function onTouchStart(e) {
       // Only intercept when the scroll container is at the top
       if (scrollContainer.scrollTop !== 0) {
+        startY.current = null;
+        return;
+      }
+      // If a page-level pull-to-refresh container exists inside the scroll
+      // container, let it handle the gesture exclusively (avoids a double
+      // trigger when AppLayout also wires a global pull-to-refresh).
+      if (optionsRef.current.skipIfChildPTR && scrollContainer.querySelector && scrollContainer.querySelector('[data-pull-to-refresh]')) {
         startY.current = null;
         return;
       }

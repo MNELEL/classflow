@@ -9,6 +9,9 @@ import {
 import { loadBranding } from '@/lib/branding';
 import OverdueAlertsPanel from '@/components/alerts/OverdueAlertsPanel';
 import HelpButton from '@/components/common/HelpButton';
+import { usePullToRefresh } from '@/hooks/usePullToRefresh';
+import PullToRefreshIndicator from '@/components/ui/PullToRefreshIndicator';
+import { useQueryClient } from '@tanstack/react-query';
 
 
 // 5 bottom nav tabs — all other routes accessible via /more
@@ -27,6 +30,11 @@ export default function AppLayout({ children }) {
   const navigate = useNavigate();
   const [branding, setBranding] = useState(loadBranding);
 
+  const qc = useQueryClient();
+  const { containerRef: ptrRef, pullY, refreshing } = usePullToRefresh(
+    async () => { await qc.invalidateQueries(); },
+    { skipIfChildPTR: true }
+  );
 
   const scrollPositions = useRef({});
   const tabHistory = useRef({});
@@ -116,6 +124,8 @@ export default function AppLayout({ children }) {
   }, [location.pathname, navigate]);
 
   const isDashboard = location.pathname === '/';
+  const PRIMARY_TAB_PATHS = ['/', '/students', '/attendance', '/library', '/more'];
+  const isPrimaryTab = PRIMARY_TAB_PATHS.includes(location.pathname);
 
   // Compute a meaningful title for deep-linked child routes (e.g. /students/:id)
   const CHILD_TITLES = {
@@ -159,7 +169,7 @@ export default function AppLayout({ children }) {
         style={{ paddingTop: 'env(safe-area-inset-top)', paddingLeft: 'env(safe-area-inset-left)', paddingRight: 'env(safe-area-inset-right)' }}
       >
         <div className="flex items-center gap-2 px-4 py-3 w-full min-h-[56px]">
-          {!isDashboard ? (
+          {!isPrimaryTab ? (
             <button
               onClick={() => {
                 // Prefer in-app parent route for WebView safety; fall back to
@@ -213,10 +223,11 @@ export default function AppLayout({ children }) {
 
       {/* Main Content */}
       <main
-        ref={mainRef}
-        className="flex-1 min-h-0 overflow-y-auto no-scrollbar overscroll-y-contain touch-pan-y pb-[calc(64px+env(safe-area-inset-bottom))]"
+        ref={(el) => { mainRef.current = el; ptrRef.current = el; }}
+        className="relative flex-1 min-h-0 overflow-y-auto no-scrollbar overscroll-y-contain touch-pan-y pb-[calc(64px+env(safe-area-inset-bottom))]"
         style={{ WebkitOverflowScrolling: 'touch' }}
       >
+        <PullToRefreshIndicator pullY={pullY} refreshing={refreshing} />
         {children}
       </main>
 

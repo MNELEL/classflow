@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import HebrewDatePicker from '@/components/ui/HebrewDatePicker';
 import { Label } from '@/components/ui/label';
+import { MobileSelect, SelectItem } from '@/components/ui/MobileSelect';
 import { X } from 'lucide-react';
 
 const DAYS = [
@@ -68,9 +69,9 @@ export default function SchoolRuleForm({ open, initial, onClose, onSave }) {
 
           <div>
             <Label>סוג כלל</Label>
-            <select value={form.rule_type} onChange={e => set('rule_type', e.target.value)} className="w-full h-9 rounded-md border border-input bg-transparent px-3 text-sm">
-              {TYPES.map(t => <option key={t.v} value={t.v}>{t.label}</option>)}
-            </select>
+            <MobileSelect value={form.rule_type} onValueChange={v => set('rule_type', v)} className="h-9 text-sm w-full">
+              {TYPES.map(t => <SelectItem key={t.v} value={t.v}>{t.label}</SelectItem>)}
+            </MobileSelect>
           </div>
 
           {t === 'daily_hours' && (
@@ -91,16 +92,16 @@ export default function SchoolRuleForm({ open, initial, onClose, onSave }) {
               <div className="grid grid-cols-2 gap-2">
                 <div>
                   <Label>חוזר ביום</Label>
-                  <select value={form.day_of_week} onChange={e => set('day_of_week', e.target.value)} className="w-full h-9 rounded-md border border-input bg-transparent px-3 text-sm">
-                    <option value="">— ללא —</option>
-                    {DAYS.map(d => <option key={d.v} value={d.v}>{d.label}</option>)}
-                  </select>
+                  <MobileSelect value={form.day_of_week === '' ? '' : String(form.day_of_week)} onValueChange={v => set('day_of_week', v)} placeholder="— ללא —" className="h-9 text-sm w-full">
+                    <SelectItem value={null}>— ללא —</SelectItem>
+                    {DAYS.map(d => <SelectItem key={d.v} value={String(d.v)}>{d.label}</SelectItem>)}
+                  </MobileSelect>
                 </div>
                 <div>
                   <Label>או באירוע עברי</Label>
-                  <select value={form.hebrew_event} onChange={e => set('hebrew_event', e.target.value)} className="w-full h-9 rounded-md border border-input bg-transparent px-3 text-sm">
-                    {EVENTS.map(ev => <option key={ev.v} value={ev.v}>{ev.label}</option>)}
-                  </select>
+                  <MobileSelect value={form.hebrew_event} onValueChange={v => set('hebrew_event', v)} placeholder="— ללא —" className="h-9 text-sm w-full">
+                    {EVENTS.map(ev => <SelectItem key={ev.v || 'none'} value={ev.v}>{ev.label}</SelectItem>)}
+                  </MobileSelect>
                 </div>
               </div>
               <div>
@@ -119,16 +120,16 @@ export default function SchoolRuleForm({ open, initial, onClose, onSave }) {
               <div className="grid grid-cols-2 gap-2">
                 <div>
                   <Label>או חוזר ביום</Label>
-                  <select value={form.day_of_week} onChange={e => set('day_of_week', e.target.value)} className="w-full h-9 rounded-md border border-input bg-transparent px-3 text-sm">
-                    <option value="">— ללא —</option>
-                    {DAYS.map(d => <option key={d.v} value={d.v}>{d.label}</option>)}
-                  </select>
+                  <MobileSelect value={form.day_of_week === '' ? '' : String(form.day_of_week)} onValueChange={v => set('day_of_week', v)} placeholder="— ללא —" className="h-9 text-sm w-full">
+                    <SelectItem value={null}>— ללא —</SelectItem>
+                    {DAYS.map(d => <SelectItem key={d.v} value={String(d.v)}>{d.label}</SelectItem>)}
+                  </MobileSelect>
                 </div>
                 <div>
                   <Label>או באירוע עברי</Label>
-                  <select value={form.hebrew_event} onChange={e => set('hebrew_event', e.target.value)} className="w-full h-9 rounded-md border border-input bg-transparent px-3 text-sm">
-                    {EVENTS.map(ev => <option key={ev.v} value={ev.v}>{ev.label}</option>)}
-                  </select>
+                  <MobileSelect value={form.hebrew_event} onValueChange={v => set('hebrew_event', v)} placeholder="— ללא —" className="h-9 text-sm w-full">
+                    {EVENTS.map(ev => <SelectItem key={ev.v || 'none'} value={ev.v}>{ev.label}</SelectItem>)}
+                  </MobileSelect>
                 </div>
               </div>
             </>

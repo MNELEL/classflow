@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Merge, AlertTriangle } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { toast } from 'sonner';
+import { MobileSelect, SelectItem } from '@/components/ui/MobileSelect';
 import { CUSTOM_FIELD_LABELS } from './StudentCustomFields';
 
 function normName(n) { return (n || '').trim().toLowerCase().replace(/[^א-תa-z0-9]/g, ''); }
@@ -90,17 +91,17 @@ export default function MergeDuplicatesModal({ open, onClose, students, onMerged
             <p className="text-[11px] text-muted-foreground">בחר שני תלמידים כלשהם. התלמיד הראשון נשמר ככרטיס המאוחד, והשני ממוזג אליו ונמחק — כל הנתונים (ציונים, נוכחות, פרטים אישיים וכו') עוברים לכרטיס המאוחד.</p>
             <div>
               <label className="text-xs text-muted-foreground mb-1 block">תלמיד שנשמר (הכרטיס המאוחד)</label>
-              <select value={manualKeep} onChange={e => setManualKeep(e.target.value)} className="w-full h-9 rounded-lg border border-border bg-card px-2 text-sm">
-                <option value="">בחר תלמיד…</option>
-                {active.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
-              </select>
+              <MobileSelect value={manualKeep} onValueChange={setManualKeep} placeholder="בחר תלמיד…" className="h-9 text-sm w-full">
+                <SelectItem value={null}>בחר תלמיד…</SelectItem>
+                {active.map(s => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}
+              </MobileSelect>
             </div>
             <div>
               <label className="text-xs text-muted-foreground mb-1 block">תלמיד שימוזג וימחק</label>
-              <select value={manualOther} onChange={e => setManualOther(e.target.value)} className="w-full h-9 rounded-lg border border-border bg-card px-2 text-sm">
-                <option value="">בחר תלמיד…</option>
-                {active.filter(s => s.id !== manualKeep).map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
-              </select>
+              <MobileSelect value={manualOther} onValueChange={setManualOther} placeholder="בחר תלמיד…" className="h-9 text-sm w-full">
+                <SelectItem value={null}>בחר תלמיד…</SelectItem>
+                {active.filter(s => s.id !== manualKeep).map(s => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}
+              </MobileSelect>
             </div>
             <Button size="sm" className="w-full h-9" disabled={busy || !manualKeep || !manualOther} onClick={doManualMerge}>
               <Merge className="w-4 h-4 ml-1" /> מזג לכרטיס אחד
