@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { FolderOpen, Phone, History } from 'lucide-react';
+import React from 'react';
 import DocumentsVault from './DocumentsVault';
-import ParentContactLog from './ParentContactLog';
 
+// StudentPortfolio now renders the documents vault only. Parent contact info
+// and the full communication history live in the dedicated "הורים" tab on the
+// student profile page (ParentContactBar + ParentContactLog), so they are no
+// longer duplicated here.
 export default function StudentPortfolio({ student, open }) {
   if (!open || !student) return null;
 
@@ -18,25 +19,9 @@ export default function StudentPortfolio({ student, open }) {
           <p className="text-xs text-muted-foreground">תיק אישי</p>
         </div>
       </div>
-
-      <Tabs defaultValue="documents" dir="rtl" className="p-3">
-        <TabsList className="w-full grid grid-cols-2 mb-4">
-          <TabsTrigger value="documents" className="gap-1.5 text-xs">
-            <FolderOpen className="w-3.5 h-3.5" /> מסמכים
-          </TabsTrigger>
-          <TabsTrigger value="contacts" className="gap-1.5 text-xs">
-            <Phone className="w-3.5 h-3.5" /> קשר עם הורים
-          </TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="documents">
-          <DocumentsVault studentId={student.id} />
-        </TabsContent>
-
-        <TabsContent value="contacts">
-          <ParentContactLog studentId={student.id} studentName={student.name} />
-        </TabsContent>
-      </Tabs>
+      <div className="p-3">
+        <DocumentsVault studentId={student.id} />
+      </div>
     </div>
   );
 }

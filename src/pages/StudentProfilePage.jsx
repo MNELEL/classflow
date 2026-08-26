@@ -19,6 +19,7 @@ import StudentTaskList from '@/components/students/StudentTaskList';
 import GradeSparkline from '@/components/students/GradeSparkline';
 import QuickPreferencesEditor from '@/components/students/QuickPreferencesEditor';
 import ParentContactBar from '@/components/students/ParentContactBar';
+import ParentContactLog from '@/components/portfolio/ParentContactLog';
 import StudentPortfolio from '@/components/portfolio/StudentPortfolio';
 import PerformanceBadge from '@/components/students/PerformanceBadge';
 import { calculatePerformanceScore } from '@/lib/performanceScore';
@@ -105,10 +106,6 @@ export default function StudentProfilePage() {
     queryKey: ['portfolio'],
     queryFn: () => base44.entities.StudentPortfolioItem.list('-date', 100),
   });
-  const { data: contacts = [] } = useQuery({
-    queryKey: ['parent-contacts'],
-    queryFn: () => base44.entities.ParentContact.list('-date', 100),
-  });
   const { data: behaviorEvents = [] } = useQuery({
     queryKey: ['behavior-events'],
     queryFn: () => base44.entities.BehaviorEvent.list('-date', 500),
@@ -145,10 +142,6 @@ export default function StudentProfilePage() {
   const myPortfolio = useMemo(() =>
     portfolioItems.filter(p => p.student_id === id),
     [portfolioItems, id]);
-
-  const myContacts = useMemo(() =>
-    contacts.filter(c => c.student_id === id).sort((a, b) => new Date(b.date) - new Date(a.date)),
-    [contacts, id]);
 
   const myFeedback = useMemo(() =>
     fastFeedback.filter(f => f.student_id === id).sort((a, b) => new Date(b.date) - new Date(a.date)),
@@ -283,9 +276,6 @@ export default function StudentProfilePage() {
           </Card>
         )}
 
-        {/* Parent quick contact */}
-        <ParentContactBar student={student} />
-
         {/* Quick preferences editor */}
         <QuickPreferencesEditor student={student} />
 
@@ -298,7 +288,7 @@ export default function StudentProfilePage() {
 
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} dir="rtl">
-          <TabsList className="w-full grid grid-cols-7 h-9">
+          <TabsList className="w-full grid grid-cols-8 h-9">
             <TabsTrigger value="grades" className="text-xs px-1">ציונים</TabsTrigger>
             <TabsTrigger value="assessments" className="text-xs px-1">הערכות</TabsTrigger>
             <TabsTrigger value="attendance" className="text-xs px-1">נוכחות</TabsTrigger>
@@ -306,6 +296,7 @@ export default function StudentProfilePage() {
             <TabsTrigger value="notes" className="text-xs px-1">הערות</TabsTrigger>
             <TabsTrigger value="files" className="text-xs px-1">קבצים</TabsTrigger>
             <TabsTrigger value="portfolio" className="text-xs px-1">תיק</TabsTrigger>
+            <TabsTrigger value="parents" className="text-xs px-1">הורים</TabsTrigger>
           </TabsList>
 
           {/* ── Grades ── */}
@@ -483,7 +474,7 @@ export default function StudentProfilePage() {
             <StudentTaskList studentId={id} />
           </TabsContent>
 
-          {/* ── Notes / contacts ── */}
+          {/* ── Notes ── */}
           <TabsContent value="notes" className="mt-3 space-y-2">
             {student.notes && (
               <div className="bg-primary/5 border border-primary/20 rounded-xl px-3.5 py-3">
@@ -513,26 +504,8 @@ export default function StudentProfilePage() {
               </div>
             )}
 
-            {myContacts.length > 0 && (
-              <div className="space-y-2">
-                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mt-2">תקשורת עם הורים</p>
-                {myContacts.map(c => (
-                  <div key={c.id} className="bg-card border border-border rounded-xl px-3.5 py-3">
-                    <div className="flex items-center justify-between mb-1">
-                      <Badge variant="outline" className="text-xs">{c.type}</Badge>
-                      <span className="text-xs text-muted-foreground">
-                        {c.date && formatDate(c.date)}
-                      </span>
-                    </div>
-                    <p className="text-sm text-foreground">{c.summary}</p>
-                    {c.parent_name && <p className="text-xs text-muted-foreground mt-0.5">הורה: {c.parent_name}</p>}
-                  </div>
-                ))}
-              </div>
-            )}
-
-            {!student.notes && !student.achievements && !student.custom_conditions && myContacts.length === 0 && (
-              <div className="text-center py-8 text-muted-foreground text-sm">אין הערות או תקשורת רשומה</div>
+            {!student.notes && !student.achievements && !student.custom_conditions && (
+              <div className="text-center py-8 text-muted-foreground text-sm">אין הערות רשומות</div>
             )}
           </TabsContent>
 
@@ -592,9 +565,15 @@ export default function StudentProfilePage() {
             )}
           </TabsContent>
 
-          {/* ── Personal portfolio (documents + contact log) ── */}
+          {/* ── Personal portfolio (documents) ── */}
           <TabsContent value="portfolio" className="mt-3">
             <StudentPortfolio student={student} open={true} />
+          </TabsContent>
+
+          {/* ── Parents: contact info + communication history ── */}
+          <TabsContent value="parents" className="mt-3 space-y-3">
+            <ParentContactBar student={student} />
+            <ParentContactLog studentId={id} studentName={student.name} />
           </TabsContent>
         </Tabs>
       </div>
