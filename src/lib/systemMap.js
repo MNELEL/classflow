@@ -14,7 +14,7 @@ const SUBCATEGORIES = [
       { path: '/weekly-schedule', label: 'לוח שבועי', sub: 'מערכי שיעור לפי ימים ושעות, כולל לוח עברי' },
       { path: '/seating', label: 'סידור הושבה', sub: 'קביעת מקומות ישיבה לפני השיעור, כולל אילוצים' },
       { path: '/daily-summary', label: 'סיכום יומי', sub: 'מה קרה היום — סיכום מוכן להדפסה או לשליחה להורים' },
-      { path: '/weekly-bulletin', label: 'חוברת קשר שבועית', sub: 'עלון עם סיכום השבוע, לפי ההספק ומערכת השעות' },
+      { path: '/weekly-communication', label: 'תקשורת שבועית', sub: 'חוברת קשר, דף הורים ודף קשר מוסדי במקום אחד' },
       { path: '/school-calendar', label: 'לוח שנה בית ספרי', sub: 'שעות לימוד, סיום מוקדם וימים ללא לימודים' },
       { path: '/events', label: 'לוח אירועים', sub: 'מבחנים, ימי הולדת ואירועי כיתה במקום אחד' },
     ],
@@ -22,7 +22,7 @@ const SUBCATEGORIES = [
   {
     title: 'הערכה, ציונים ומבחנים',
     items: [
-      { path: '/exam-builder', label: 'מחולל מבחנים', sub: 'יצירת מבחן מותאם מהחומר שנלמד, בלחיצה אחת' },
+      { path: '/creation-center?tab=exam', label: 'הרכבת מבחן', sub: 'יצירת מבחן מותאם מבנק השאלות, בלחיצה אחת' },
       { path: '/exam-scanner', label: 'סורק מבחנים', sub: 'העלאת מבחן סרוק וניקוד אוטומטי בעזרת בינה מלאכותית' },
       { path: '/exams', label: 'הערכות ומבחנים', sub: 'ניהול מבחנים, הזנת ציונים וסטטוס' },
       { path: '/grades', label: 'ציונים', sub: 'הזנה ומעקב ציונים לפי מקצוע' },
@@ -59,8 +59,8 @@ const SUBCATEGORIES = [
     items: [
       { path: '/library', label: 'ספרייה', sub: 'חומרי לימוד, תמלולים ומצגות — שמורים ומסודרים לפי נושא' },
       { path: '/templates', label: 'ספריית תבניות', sub: 'תבניות מוכנות לתעודות ולעלונים' },
-      { path: '/question-bank', label: 'בנק שאלות', sub: 'בנק שאלות לפי מקצוע ונושא — לשיעור, לחזרה ולמבחן' },
-      { path: '/worksheets', label: 'דפי עבודה', sub: 'מחולל דפי עבודה מותאמים לפי נושא ורמה' },
+      { path: '/creation-center?tab=bank', label: 'בנק שאלות', sub: 'בנק שאלות לפי מקצוע ונושא — לשיעור, לחזרה ולמבחן' },
+      { path: '/creation-center?tab=create', label: 'מרכז יצירה', sub: 'סיכומים, משימות, דפי עבודה ומבחנים עם AI' },
       { path: '/lesson-analyzer', label: 'ניתוח שיעורים', sub: 'סיכום, תמלול וחומרי לימוד משיעור מוקלט' },
       { path: '/study-plan-generator', label: 'מחולל תוכניות לימוד', sub: 'יצירת תוכנית לימודים שבועית עם בינה מלאכותית' },
       { path: '/curriculum', label: 'תכנון תוכנית לימודים', sub: 'תכנון שבועי ויעדי לימוד לפי מקצוע' },
@@ -99,8 +99,8 @@ const SUBCATEGORIES = [
       { path: '/admin', label: 'לוח ניהול', sub: 'ניהול מורים, כיתות והרשאות', adminOnly: true },
       { path: '/admin-overview', label: 'סקירה כללית', sub: 'תמונת מצב על כלל המורים והכיתות', adminOnly: true },
       { path: '/teacher-insights', label: 'תובנות מורים', sub: 'מגמות והתקדמות ברמת המוסד', adminOnly: true },
-      { path: '/generators', label: 'מחוללים', sub: 'כלי יצירה מנוהלים למנהל', adminOnly: true },
-      { path: '/admin-generators', label: 'ניהול מחוללים', sub: 'הגדרת תבניות ומחוללים למורים', adminOnly: true },
+      { path: '/creation-center?tab=create', label: 'מרכז יצירה', sub: 'כלי יצירה מנוהלים למנהל', adminOnly: true },
+      { path: '/creation-center?tab=admin', label: 'מרכז יצירה — ניהול', sub: 'מחוללים, עדכונים כלליים וסנכרון למנהל', adminOnly: true },
     ],
   },
 ];

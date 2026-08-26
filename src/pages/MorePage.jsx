@@ -27,7 +27,7 @@ const SECTIONS = [
       { path: '/tasks-hub',    icon: ClipboardCheck,label: 'ריכוז משימות',  color: 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-400'     },
       { path: '/homework',     icon: ClipboardCheck,label: 'שיעורי בית',   color: 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400'     },
       { path: '/gamification', icon: Trophy,        label: 'גמיפיקציה',    color: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400'     },
-      { path: '/worksheets',   icon: FileText,      label: 'דפי עבודה',    color: 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400'     },
+      { path: '/creation-center?tab=create', icon: FileText, label: 'מרכז יצירה', color: 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400' },
       { path: '/toolkit',      icon: Wrench,        label: 'ארגז כלים',    color: 'bg-cyan-100 text-cyan-700 dark:bg-cyan-900/30 dark:text-cyan-400'             },
       { path: '/seating',      icon: LayoutGrid,    label: 'הושבה',        color: 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-400'     },
     ],
@@ -42,11 +42,10 @@ const SECTIONS = [
       { path: '/ingest',              icon: Upload,     label: 'העלאת קבצים',      desc: 'תמונות, PDF ואודיו לניתוח',       color: 'bg-cyan-100 text-cyan-600 dark:bg-cyan-900/30 dark:text-cyan-400'            },
       { path: '/curriculum',          icon: Clock,      label: 'מערכת שעות',       desc: 'תכנון שבועי ויעדי לימוד',         color: 'bg-indigo-100 text-indigo-600 dark:bg-indigo-900/30 dark:text-indigo-400'   },
       { path: '/weekly-schedule',     icon: Clock,      label: 'לוח שבועי',        desc: 'מערכי שיעור לפי ימים ושעות',      color: 'bg-indigo-100 text-indigo-600 dark:bg-indigo-900/30 dark:text-indigo-400'   },
-      { path: '/question-bank',       icon: Layers,     label: 'בנק שאלות',        desc: 'שאלות לפי נושא ורמה',            color: 'bg-pink-100 text-pink-600 dark:bg-pink-900/30 dark:text-pink-400'           },
+      { path: '/creation-center?tab=bank', icon: Layers, label: 'בנק שאלות', desc: 'שאלות לפי מקצוע ורמה — לשיעור, חזרה ומבחן', color: 'bg-pink-100 text-pink-600 dark:bg-pink-900/30 dark:text-pink-400' },
       { path: '/study-plan-generator',icon: BookMarked, label: 'מחולל תוכניות',    desc: 'צור תוכנית לימודים שבועית עם AI', color: 'bg-violet-100 text-violet-700 dark:bg-violet-900/30 dark:text-violet-400'    },
       { path: '/teacher-style',       icon: Brain,      label: 'סגנון הוראה שלי',  desc: 'AI לומד את הסגנון הייחודי שלך',  color: 'bg-primary/10 text-primary'                                                },
-      { path: '/weekly-bulletin',     icon: Newspaper,  label: 'חוברת קשר שבועית', desc: 'טיוטה אוטומטית לפי ההספק ומערכת השעות', color: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400'      },
-      { path: '/weekly-sheet',        icon: Mail,       label: 'דף קשר שבועי להורים', desc: 'הספק, מבחנים ודף חתימה מוכן להדפסה', color: 'bg-lime-100 text-lime-700 dark:bg-lime-900/30 dark:text-lime-400'      },
+      { path: '/weekly-communication', icon: Newspaper, label: 'תקשורת שבועית', desc: 'חוברת קשר, דף הורים ודף קשר מוסדי במקום אחד', color: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400' },
       { path: '/students',            icon: Users,         label: 'תיק תלמיד',         desc: 'רשימת תלמידים והפרופיל האישי של כל תלמיד', color: 'bg-sky-100 text-sky-600 dark:bg-sky-900/30 dark:text-sky-400' },
       { path: '/grades',             icon: GraduationCap, label: 'ציונים',            desc: 'הזנה ומעקב ציונים לפי מקצוע',             color: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' },
       { path: '/exams',               icon: FileText,      label: 'הערכות ומבחנים',    desc: 'מבחנים, הזנת ציונים וסטטוס',              color: 'bg-rose-100 text-rose-600 dark:bg-rose-900/30 dark:text-rose-400' },
@@ -61,8 +60,7 @@ const SECTIONS = [
     items: [
       { path: '/parents',      icon: Contact, label: 'הורים',        desc: 'תקשורת ושיתוף חומרים', color: 'bg-teal-100 text-teal-600 dark:bg-teal-900/30 dark:text-teal-400' },
       { path: '/student-view', icon: Eye,     label: 'תצוגת תלמיד',  desc: 'מה התלמיד רואה',        color: 'bg-sky-100 text-sky-600 dark:bg-sky-900/30 dark:text-sky-400'     },
-      { path: '/weekly-bulletin', icon: Newspaper, label: 'חוברת קשר שבועית', desc: 'טיוטה אוטומטית לפי ההספק ומערכת השעות', color: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400' },
-      { path: '/weekly-sheet', icon: Mail, label: 'דף קשר שבועי להורים', desc: 'הספק, מבחנים ודף חתימה מוכן להדפסה', color: 'bg-lime-100 text-lime-700 dark:bg-lime-900/30 dark:text-lime-400' },
+      { path: '/weekly-communication', icon: Newspaper, label: 'תקשורת שבועית', desc: 'חוברת קשר, דף הורים ודף קשר מוסדי', color: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400' },
     ],
   },
   {
@@ -86,7 +84,7 @@ const SECTIONS = [
       { path: '/exams',         icon: FileText,       label: 'מבחנים',            desc: 'נהל מבחנים, הזן ציונים וסטטוס',     color: 'bg-rose-100 text-rose-600 dark:bg-rose-900/30 dark:text-rose-400'         },
       { path: '/certificates',  icon: Award,          label: 'תעודות',            desc: 'הפקת תעודות PDF להצטיינות ולסיום נושא', color: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400' },
       { path: '/templates',     icon: LayoutTemplate, label: 'תבניות עיצוב',       desc: 'למד סגנון מתעודה או חוברת קשר קיימת', color: 'bg-violet-100 text-violet-700 dark:bg-violet-900/30 dark:text-violet-400'},
-      { path: '/generators',    icon: Sparkles,       label: 'מחוללים פדגוגיים',  desc: 'סיכומים ומשימות מותאמים עם AI',     color: 'bg-violet-100 text-violet-600 dark:bg-violet-900/30 dark:text-violet-400' },
+      { path: '/creation-center?tab=create', icon: Sparkles, label: 'מרכז יצירה', desc: 'סיכומים, משימות, דפי עבודה ומבחנים עם AI', color: 'bg-violet-100 text-violet-600 dark:bg-violet-900/30 dark:text-violet-400' },
       { path: '/daily-summary', icon: Sparkles,       label: 'סיכום יומי',        desc: 'AI מחולל סיכום היום והמלצות',      color: 'bg-purple-100 text-purple-600 dark:bg-purple-900/30 dark:text-purple-400'  },
       { path: '/analytics',     icon: BarChart2,      label: 'ניתוח ציונים',      desc: 'גרפים, נושאים ומגמות',            color: 'bg-violet-100 text-violet-600 dark:bg-violet-900/30 dark:text-violet-400' },
     ],
@@ -107,7 +105,7 @@ const SECTIONS = [
     adminOnly: true,
     items: [
       { path: '/admin',                   icon: Shield,        label: 'לוח בקרה - מנהל',    desc: 'ניהול כיתות ומורים',              color: 'bg-primary/10 text-primary'                                                },
-      { path: '/admin-generators',        icon: Sparkles,      label: 'מרכז מחוללים - מנהל',desc: 'סיכומים, משימות ועדכונים כלליים',  color: 'bg-violet-100 text-violet-600 dark:bg-violet-900/30 dark:text-violet-400'  },
+      { path: '/creation-center?tab=admin', icon: Sparkles, label: 'מרכז יצירה - ניהול', desc: 'כלי AI למנהל — סיכומים, משימות ועדכונים', color: 'bg-violet-100 text-violet-600 dark:bg-violet-900/30 dark:text-violet-400' },
       { path: '/teaching-style-dashboard',icon: Brain,         label: 'ניתוח מצטבר',        desc: 'סגנונות הוראה ותובנות לפגישות',   color: 'bg-violet-100 text-violet-600 dark:bg-violet-900/30 dark:text-violet-400'  },
       { path: '/teacher-insights',       icon: Brain,         label: 'ניתוח מורים',         desc: 'סגנון הוראה ותדריכי פגישות',     color: 'bg-violet-100 text-violet-600 dark:bg-violet-900/30 dark:text-violet-400'  },
       { path: '/review',                 icon: ClipboardCheck,label: 'מסך סקירה',          desc: 'אשר או דחה עדכוני AI',           color: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400'     },
@@ -118,7 +116,7 @@ const SECTIONS = [
 // Standalone settings row at the bottom (outside groups, shown to all)
 const SETTINGS_ITEM = { path: '/settings', icon: UserCircle, label: 'פרופיל והגדרות', desc: 'מיתוג, תצוגה ועוד', color: 'bg-slate-100 text-slate-600 dark:bg-slate-900/30 dark:text-slate-400' };
 const MAP_ITEM = { path: '/map', icon: Map, label: 'מפת המערכת', desc: 'כל המסכים במקום אחד, עם חיפוש וייצוא ל-PDF', color: 'bg-lime-100 text-lime-700 dark:bg-lime-900/30 dark:text-lime-400' };
-const CONTACT_SHEET_ITEM = { path: '/contact-sheet', icon: Contact, label: 'דף קשר מוסדי', desc: 'הנהלה, ספקים, בריאות וחירום במקום אחד', color: 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400' };
+const CONTACT_SHEET_ITEM = { path: '/weekly-communication?tab=contacts', icon: Contact, label: 'דף קשר מוסדי', desc: 'הנהלה, ספקים, בריאות וחירום במקום אחד', color: 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400' };
 
 export default function MorePage() {
   const navigate = useNavigate();
