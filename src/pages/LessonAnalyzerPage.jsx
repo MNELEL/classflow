@@ -1,5 +1,6 @@
 import React, { useState, useCallback } from 'react';
 import { validateUploadSize } from '@/lib/uploadValidation';
+import { transcribeAudioFile } from '@/lib/audioTranscription';
 import AppLayout from '@/components/layout/AppLayout';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -62,6 +63,7 @@ export default function LessonAnalyzerPage() {
   const [step, setStep] = useState(STEPS.IDLE);
   const [savingId, setSavingId] = useState(null);
   const [detailLevel, setDetailLevel] = useState('standard');
+  const [progressNote, setProgressNote] = useState('');
   const queryClient = useQueryClient();
   const handleRefresh = useCallback(async () => { await queryClient.invalidateQueries({ queryKey: ['lesson_analyses'] }); await queryClient.invalidateQueries({ queryKey: ['library'] }); }, [queryClient]);
   const { containerRef, pullY, refreshing } = usePullToRefresh(handleRefresh);
@@ -106,7 +108,16 @@ export default function LessonAnalyzerPage() {
       const { file_url } = await base44.integrations.Core.UploadFile({ file });
 
       setStep(STEPS.TRANSCRIBING);
-      const transcript = await base44.integrations.Core.TranscribeAudio({ audio_url: file_url });
+      const transcript = await transcribeAudioFile({
+        file,
+        fileUrl: file_url,
+        fileSize: file.size,
+        onProgress: ({ phase, chunk, total }) => {
+          if (phase === 'decoding') setProgressNote('מפענח אודיו לפיצול לתמלול...');
+          else if (chunk && total) setProgressNote(`מתמלל חלק ${chunk} מתוך ${total}...`);
+          else setProgressNote('');
+        },
+      });
 
       setStep(STEPS.ANALYZING);
       const cfg = DETAIL_LEVELS[detailLevel];
@@ -160,10 +171,12 @@ export default function LessonAnalyzerPage() {
       setFile(null);
       setTitle('');
       setSubject('');
+      setProgressNote('');
       toast.success('הניתוח הושלם! הסיכום והשאלות מוכנים.');
       setTimeout(() => setStep(STEPS.IDLE), 2000);
     } catch (err) {
       toast.error('שגיאה בניתוח: ' + (err.message || 'נסה שוב'));
+      setProgressNote('');
       setStep(STEPS.IDLE);
     }
   };
@@ -250,7 +263,7 @@ export default function LessonAnalyzerPage() {
                   <>
                     <Upload className="w-8 h-8 text-muted-foreground/50" />
                     <p className="text-sm text-muted-foreground">לחץ לבחירת קובץ אודיו</p>
-                    <p className="text-[11px] text-muted-foreground/70">MP3, WAV, M4A, OGG, WEBM, FLAC · עד 25MB</p>
+                    <p className="text-[11px] text-muted-foreground/70">MP3, WAV, M4A, OGG, WEBM, FLAC · עד 50MB · מעל 25MB מפוצל אוטומטית לתמלול</p>
                   </>
                 )}
               </label>
@@ -260,6 +273,7 @@ export default function LessonAnalyzerPage() {
                 <div className="flex items-center gap-2 text-sm text-purple-700 bg-purple-50 dark:text-purple-400 dark:bg-purple-950/30 rounded-xl p-3 min-h-[48px]">
                   <Loader2 className="w-4 h-4 animate-spin shrink-0" />
                   <span>{STEP_LABELS[step]}</span>
+                  {progressNote && <span className="text-xs text-muted-foreground">{progressNote}</span>}
                 </div>
               )}
               {step === STEPS.DONE && (

@@ -141,7 +141,7 @@ function AnimatedRoutes() {
               <Route path="/weekly-attendance-report" element={<WeeklyAttendanceReportPage />} />
               <Route path="/monthly-attendance-report" element={<MonthlyAttendanceReportPage />} />
               <Route path="/weekly-summary" element={<WeeklySummaryPage />} />
-<Route path="/weekly-bulletin" element={<Navigate to="/weekly-communication?tab=bulletin" replace />} />
+<Route path="/weekly-bulletin" element={<Navigate to="/weekly-communication?tab=reports&sub=bulletin" replace />} />
 <Route path="/weekly-communication" element={<WeeklyCommunicationPage />} />
               <Route path="/birthdays-report" element={<BirthdaysReportPage />} />
               <Route path="/weekly-tasks" element={<WeeklyTasksPage />} />
@@ -189,7 +189,7 @@ function AnimatedRoutes() {
 <Route path="/ocr-review/:itemId" element={<OcrReviewPage />} />
 <Route path="/school-calendar" element={<SchoolCalendarPage />} />
               <Route path="/map" element={<SystemMapPage />} />
-              <Route path="/weekly-sheet" element={<Navigate to="/weekly-communication?tab=sheet" replace />} />
+              <Route path="/weekly-sheet" element={<Navigate to="/weekly-communication?tab=reports&sub=sheet" replace />} />
               <Route path="/contact-sheet" element={<Navigate to="/weekly-communication?tab=contacts" replace />} />
               <Route path="/poll" element={<PollPage />} />
 <Route path="/teacher-login" element={<TeacherLogin />} />

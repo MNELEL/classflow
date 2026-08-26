@@ -16,12 +16,14 @@ import DriveFolderImportDialog from '@/components/library/DriveFolderImportDialo
 import { useNavigate } from 'react-router-dom';
 import { validateExtractedText, buildQualityNote } from '@/lib/aiAnalysis';
 import { validateUploadSize } from '@/lib/uploadValidation';
+import { transcribeAudioFile } from '@/lib/audioTranscription';
 
 const CATEGORIES = ['גמרא', 'הלכה', 'חומש', 'נ"ך', 'תפילה', 'מחשבת ישראל', 'מדעים', 'מתמטיקה', 'שפה', 'תבנית תעודה', 'תבנית חוברת קשר', 'אחר'];
 
-// TranscribeAudio integration limits audio transcription to 25MB; uploads allow 50MB,
-// so an audio file between 25–50MB uploads but silently fails to transcribe. This
-// constant is used to pre-warn at selection and to surface a clear error on analysis.
+// TranscribeAudio integration limits audio transcription to 25MB; uploads allow 50MB.
+// Audio files between 25–50MB are now auto-split (decode → WAV chunks → transcribe
+// each) via transcribeAudioFile, and the finished analysis is routed to the
+// lesson-analysis page. Video >25MB still can't be split, so it's blocked at selection.
 const TRANSCRIBE_MAX_BYTES = 25 * 1024 * 1024;
 
 // Detect source type from file MIME or extension
@@ -46,7 +48,8 @@ function sourceTypeIcon(type) {
   return map[type] || '📁';
 }
 
-async function analyzeItem(item, qc) {
+async function analyzeItem(item, qc, opts = {}) {
+  const { file, navigate } = opts;
   try {
     await base44.entities.LibraryItem.update(item.id, { ai_status: 'processing' });
 
@@ -58,16 +61,23 @@ async function analyzeItem(item, qc) {
     if (isAudioLike && item.file_url) {
       if (!transcript) {
         try {
-          transcript = await base44.integrations.Core.TranscribeAudio({ audio_url: item.file_url });
+          transcript = await transcribeAudioFile({
+            file,
+            fileUrl: item.file_url,
+            fileSize: item.file_size,
+            onProgress: ({ phase, chunk, total }) => {
+              const note = phase === 'decoding'
+                ? 'מפענח אודיו לפיצול לתמלול...'
+                : (chunk && total) ? `מתמלל חלק ${chunk} מתוך ${total}...` : 'מתמלל אודיו...';
+              base44.entities.LibraryItem.update(item.id, { ai_summary: note });
+              qc.invalidateQueries({ queryKey: ['library-item', item.id] });
+            },
+          });
           await base44.entities.LibraryItem.update(item.id, { transcript });
         } catch (tErr) {
-          const overLimit = item.file_size && item.file_size > TRANSCRIBE_MAX_BYTES;
-          const reason = overLimit
-            ? `התמלול נכשל — הקובץ חורג ממגבלת 25MB של התמלול (${(item.file_size / 1024 / 1024).toFixed(1)}MB).`
-            : `התמלול נכשל: ${tErr?.message || 'שגיאה לא ידועה'}.`;
           await base44.entities.LibraryItem.update(item.id, {
             ai_status: 'error',
-            ai_summary: `⚠️ ${reason} ניתן להמיר לקובץ קטן יותר ולהעלות שוב, או להשתמש בדף "ניתוח שיעורים".`,
+            ai_summary: `⚠️ התמלול נכשל: ${tErr?.message || 'שגיאה לא ידועה'}.`,
           });
           qc.invalidateQueries({ queryKey: ['library'] });
           qc.invalidateQueries({ queryKey: ['library-item', item.id] });
@@ -103,6 +113,11 @@ async function analyzeItem(item, qc) {
       });
       qc.invalidateQueries({ queryKey: ['library'] });
       qc.invalidateQueries({ queryKey: ['library-item', item.id] });
+      // Large audio was auto-split for transcription — route the finished
+      // analysis to the lesson-analysis page as requested.
+      if (item.file_size && item.file_size > TRANSCRIBE_MAX_BYTES && navigate) {
+        navigate('/lesson-analyzer');
+      }
       return;
     }
 
@@ -197,11 +212,12 @@ export default function LibraryUploadModal({ open, onClose, defaultCategory = ''
     const validated = Array.from(newFiles).map(f => {
       const sizeError = validateUploadSize(f);
       const st = detectSourceType(f);
-      const isAudioLike = st === 'audio_file' || st === 'audio_recording' || st === 'video_file';
-      const transcribeError = isAudioLike && f.size > TRANSCRIBE_MAX_BYTES
-        ? `קבצי אודיו/וידאו מעל 25MB לא ניתנים לתמלול (${(f.size / 1024 / 1024).toFixed(1)}MB) — נא לקצר או לדחוס את הקובץ.`
+      // Audio >25MB is auto-split for transcription; video >25MB can't be split
+      // in-browser, so it's still blocked here with a clear message.
+      const videoError = st === 'video_file' && f.size > TRANSCRIBE_MAX_BYTES
+        ? `קבצי וידאו מעל 25MB לא ניתנים לתמלול (${(f.size / 1024 / 1024).toFixed(1)}MB) — נא לקצר או לדחוס את הקובץ.`
         : null;
-      return { f, sizeError: sizeError || transcribeError };
+      return { f, sizeError: sizeError || videoError };
     });
     validated.filter(x => x.sizeError).forEach(x => toast.error(`${x.f.name}: ${x.sizeError}`));
     const fileArray = validated
@@ -330,7 +346,7 @@ export default function LibraryUploadModal({ open, onClose, defaultCategory = ''
           });
           progress[progress.length - 1].status = 'analyzing';
           setUploadProgress([...progress]);
-          analyzeItem(item, qc); // background
+          analyzeItem(item, qc, { file: fileObj.file, navigate }); // background
           progress[progress.length - 1].status = 'done';
           setUploadProgress([...progress]);
         } catch {
@@ -362,7 +378,7 @@ export default function LibraryUploadModal({ open, onClose, defaultCategory = ''
             is_favorite: false,
             is_archived: false,
           });
-          analyzeItem(item, qc);
+          analyzeItem(item, qc, { navigate });
           progress[progress.length - 1].status = 'done';
           setUploadProgress([...progress]);
         }
@@ -390,7 +406,7 @@ export default function LibraryUploadModal({ open, onClose, defaultCategory = ''
             is_favorite: false,
             is_archived: false,
           });
-          analyzeItem(item, qc);
+          analyzeItem(item, qc, { navigate });
           progress[progress.length - 1].status = 'done';
           setUploadProgress([...progress]);
         }
@@ -560,7 +576,7 @@ export default function LibraryUploadModal({ open, onClose, defaultCategory = ''
                   is_favorite: false,
                   is_archived: false,
                 });
-                analyzeItem(item, qc);
+                analyzeItem(item, qc, { navigate });
                 qc.invalidateQueries({ queryKey: ['library'] });
                 reset();
                 onClose();
