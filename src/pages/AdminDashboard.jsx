@@ -18,6 +18,7 @@ import { toast } from 'sonner';
 import TeacherNotesEditor from '@/components/admin/TeacherNotesEditor';
 import TeacherFormModal from '@/components/admin/TeacherFormModal';
 import TeacherMeetingManager from '@/components/admin/TeacherMeetingManager';
+import ClassroomStudentsEditor from '@/components/admin/ClassroomStudentsEditor';
 import { logAudit } from '@/lib/auditLog';
 
 const generateAccessCode = () => {
@@ -83,6 +84,9 @@ export default function AdminDashboard() {
   // Modal state — driven by URL search params for Android back-button support
   const showTeacherForm = searchParams.get('modal') === 'teacher-form';
   const showClassroomForm = searchParams.get('modal') === 'classroom-form';
+  const showClassroomStudents = searchParams.get('modal') === 'classroom-students';
+  const classroomStudentsId = searchParams.get('id');
+  const classroomForStudents = classroomStudentsId ? classrooms.find(c => c.id === classroomStudentsId) || null : null;
   const teacherDetailId = searchParams.get('teacher');
   const selectedTeacherForDetail = teacherDetailId ? teachers.find(t => t.id === teacherDetailId) || null : null;
   const editTeacherId = searchParams.get('edit');
@@ -573,19 +577,29 @@ export default function AdminDashboard() {
                               ) : (
                                 <span className="text-amber-600">ללא מורה אחראי</span>
                               )}
+                              <span className="text-blue-600">{(classroom.student_ids || []).length} תלמידים</span>
                             </div>
                           </div>
                         </div>
 
                         <div className="flex items-center gap-2">
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => openEditClassroom(classroom)}
-                            className="h-8 text-xs"
-                          >
-                            ערוך
-                          </Button>
+                           <Button
+                             size="sm"
+                             variant="outline"
+                             onClick={() => setSearchParams({ modal: 'classroom-students', id: classroom.id })}
+                             className="h-8 text-xs gap-1"
+                             title="שייך תלמידים לכיתה"
+                           >
+                             <Users className="w-3.5 h-3.5" /> תלמידים
+                           </Button>
+                           <Button
+                             size="sm"
+                             variant="outline"
+                             onClick={() => openEditClassroom(classroom)}
+                             className="h-8 text-xs"
+                           >
+                             ערוך
+                           </Button>
                           <Button
                             size="sm"
                             variant="outline"
@@ -738,6 +752,14 @@ export default function AdminDashboard() {
             </CardContent>
           </Card>
         </motion.div>
+
+        {/* Classroom Students Enrollment Modal */}
+        {showClassroomStudents && classroomForStudents && (
+          <ClassroomStudentsEditor
+            classroom={classroomForStudents}
+            onClose={() => setSearchParams({}, { replace: true })}
+          />
+        )}
 
         {/* Classroom Form Modal */}
         {showClassroomForm && (
