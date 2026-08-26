@@ -6,6 +6,13 @@ import { VitePWA } from 'vite-plugin-pwa'
 // https://vite.dev/config/
 export default defineConfig({
   logLevel: 'error', // Suppress warnings, only show errors
+  // Force a clean re-bundle of optimized deps on each dev server start. A
+  // stale .vite/deps cache — React and react-dom chunks ending up with
+  // mismatched ?v= hashes — resolves `react` to null at runtime and produces
+  // "Cannot read properties of null (reading 'useState')" in AuthProvider.
+  optimizeDeps: {
+    force: true,
+  },
   plugins: [
     base44({
       // Support for legacy code that imports the base44 SDK with @/integrations, @/entities, etc.
