@@ -32,7 +32,7 @@ const AttendancePage       = lazy(() => import('./pages/AttendancePage'));
 const WeeklyAttendanceReportPage = lazy(() => import('./pages/WeeklyAttendanceReportPage'));
 const MonthlyAttendanceReportPage = lazy(() => import('./pages/MonthlyAttendanceReportPage'));
 const WeeklySummaryPage = lazy(() => import('./pages/WeeklySummaryPage'));
-const WeeklyBulletinPage = lazy(() => import('./pages/WeeklyBulletinPage'));
+const WeeklyCommunicationPage = lazy(() => import('./pages/WeeklyCommunicationPage'));
 const BirthdaysReportPage = lazy(() => import('./pages/BirthdaysReportPage'));
 const WeeklyTasksPage = lazy(() => import('./pages/WeeklyTasksPage'));
 const GradeManagementPage  = lazy(() => import('./pages/GradeManagementPage'));
@@ -90,8 +90,8 @@ const MonthlyReportsPage       = lazy(() => import('./pages/MonthlyReportsPage')
 const OcrReviewPage            = lazy(() => import('./pages/OcrReviewPage'));
 const SchoolCalendarPage       = lazy(() => import('./pages/SchoolCalendarPage'));
 const SystemMapPage            = lazy(() => import('./pages/SystemMapPage'));
-const WeeklySheetPage           = lazy(() => import('./pages/WeeklySheetPage'));
-const ContactSheetPage          = lazy(() => import('./pages/ContactSheetPage'));
+
+
 const PollPage                  = lazy(() => import('./pages/PollPage'));
 
 // Direction-aware page transitions.
@@ -140,7 +140,8 @@ function AnimatedRoutes() {
               <Route path="/weekly-attendance-report" element={<WeeklyAttendanceReportPage />} />
               <Route path="/monthly-attendance-report" element={<MonthlyAttendanceReportPage />} />
               <Route path="/weekly-summary" element={<WeeklySummaryPage />} />
-<Route path="/weekly-bulletin" element={<WeeklyBulletinPage />} />
+<Route path="/weekly-bulletin" element={<Navigate to="/weekly-communication?tab=bulletin" replace />} />
+<Route path="/weekly-communication" element={<WeeklyCommunicationPage />} />
               <Route path="/birthdays-report" element={<BirthdaysReportPage />} />
               <Route path="/weekly-tasks" element={<WeeklyTasksPage />} />
               <Route path="/grades" element={<GradeManagementPage />} />
@@ -186,8 +187,8 @@ function AnimatedRoutes() {
 <Route path="/ocr-review/:itemId" element={<OcrReviewPage />} />
 <Route path="/school-calendar" element={<SchoolCalendarPage />} />
               <Route path="/map" element={<SystemMapPage />} />
-              <Route path="/weekly-sheet" element={<WeeklySheetPage />} />
-              <Route path="/contact-sheet" element={<ContactSheetPage />} />
+              <Route path="/weekly-sheet" element={<Navigate to="/weekly-communication?tab=sheet" replace />} />
+              <Route path="/contact-sheet" element={<Navigate to="/weekly-communication?tab=contacts" replace />} />
               <Route path="/poll" element={<PollPage />} />
 <Route path="/teacher-login" element={<TeacherLogin />} />
 <Route path="/teacher-dashboard" element={<TeacherDashboard />} />

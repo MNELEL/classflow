@@ -1,7 +1,6 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import AppLayout from '@/components/layout/AppLayout';
 import BulletinList from '@/components/bulletin/BulletinList';
 import BulletinEditor from '@/components/bulletin/BulletinEditor';
 import { generateWeeklyBulletin, getWeekStart } from '@/lib/bulletinGenerator';
@@ -9,10 +8,10 @@ import { exportWeeklyBulletinPDF } from '@/lib/weeklyBulletinExport';
 import { toast } from 'sonner';
 import { Newspaper, Loader2 } from 'lucide-react';
 
-export default function WeeklyBulletinPage() {
+export default function BulletinTab() {
   const qc = useQueryClient();
   const [selectedId, setSelectedId] = useState(null);
-  const [draft, setDraft] = useState(null); // local editable copy of selected bulletin
+  const [draft, setDraft] = useState(null);
   const [template, setTemplate] = useState(null);
   const [generating, setGenerating] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -28,13 +27,11 @@ export default function WeeklyBulletinPage() {
     queryFn: () => base44.entities.CertificateTemplate.filter({ kind: 'weekly_bulletin' }),
   });
 
-  // Selected bulletin record (fresh from server)
   const selected = useMemo(
     () => bulletins.find((b) => b.id === selectedId) || null,
     [bulletins, selectedId]
   );
 
-  // Sync local draft when selection changes
   useEffect(() => {
     setDraft(selected ? { ...selected } : null);
     setTemplate(null);
@@ -45,7 +42,6 @@ export default function WeeklyBulletinPage() {
     return JSON.stringify(selected) !== JSON.stringify(draft);
   }, [selected, draft]);
 
-  // Fetch template preview image (library item file_url) when template changes
   const { data: templateImage } = useQuery({
     queryKey: ['template-image', template?.id],
     queryFn: async () => {
@@ -123,50 +119,48 @@ export default function WeeklyBulletinPage() {
   }
 
   return (
-    <AppLayout>
-      <div className="max-w-3xl mx-auto p-4 space-y-5" dir="rtl">
-        <div className="flex items-center gap-2">
-          <div className="w-9 h-9 rounded-xl bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 flex items-center justify-center">
-            <Newspaper className="w-5 h-5" />
-          </div>
+    <div className="space-y-5">
+      <div className="flex items-center gap-2">
+        <div className="w-9 h-9 rounded-xl bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 flex items-center justify-center">
+          <Newspaper className="w-5 h-5" />
+        </div>
+        <div>
+          <h2 className="text-lg font-bold">חוברת קשר שבועית</h2>
+          <p className="text-xs text-muted-foreground">טיוטה אוטומטית לפי ההספק ומערכת השעות</p>
+        </div>
+      </div>
+
+      {isLoading ? (
+        <div className="flex justify-center py-10"><Loader2 className="w-6 h-6 animate-spin text-muted-foreground" /></div>
+      ) : (
+        <div className="grid md:grid-cols-2 gap-5">
           <div>
-            <h1 className="text-xl font-bold">חוברת קשר שבועית</h1>
-            <p className="text-xs text-muted-foreground">טיוטה אוטומטית לפי ההספק ומערכת השעות</p>
+            <BulletinList
+              bulletins={bulletins}
+              selectedId={selectedId}
+              onSelect={setSelectedId}
+              generating={generating}
+              onGenerate={handleGenerate}
+            />
+          </div>
+          <div className="rounded-2xl border border-border bg-card p-4">
+            <BulletinEditor
+              bulletin={draft}
+              onChange={handleChange}
+              template={template}
+              templates={templates}
+              onTemplateChange={setTemplate}
+              templateImageUrl={templateImage}
+              onSave={handleSave}
+              onExport={handleExport}
+              onApprove={handleApprove}
+              saving={saving}
+              exporting={exporting}
+              dirty={dirty}
+            />
           </div>
         </div>
-
-        {isLoading ? (
-          <div className="flex justify-center py-10"><Loader2 className="w-6 h-6 animate-spin text-muted-foreground" /></div>
-        ) : (
-          <div className="grid md:grid-cols-2 gap-5">
-            <div>
-              <BulletinList
-                bulletins={bulletins}
-                selectedId={selectedId}
-                onSelect={setSelectedId}
-                generating={generating}
-                onGenerate={handleGenerate}
-              />
-            </div>
-            <div className="rounded-2xl border border-border bg-card p-4">
-              <BulletinEditor
-                bulletin={draft}
-                onChange={handleChange}
-                template={template}
-                templates={templates}
-                onTemplateChange={setTemplate}
-                templateImageUrl={templateImage}
-                onSave={handleSave}
-                onExport={handleExport}
-                onApprove={handleApprove}
-                saving={saving}
-                exporting={exporting}
-                dirty={dirty}
-              />
-            </div>
-          </div>
-        )}
-      </div>
-    </AppLayout>
+      )}
+    </div>
   );
 }
