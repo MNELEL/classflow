@@ -13,6 +13,14 @@ export default defineConfig({
   optimizeDeps: {
     force: true,
   },
+  // Deduplicate React: some transitive deps resolve their own copy of
+  // react/react-dom, which leaves the app rendering with renderer A while
+  // hooks come from React B (React's internal dispatcher is null →
+  // "Cannot read properties of null (reading 'useState')"). Pinning both
+  // packages to a single resolution guarantees one React copy app-wide.
+  resolve: {
+    dedupe: ['react', 'react-dom'],
+  },
   plugins: [
     base44({
       // Support for legacy code that imports the base44 SDK with @/integrations, @/entities, etc.
