@@ -19,7 +19,7 @@ import StudentTaskList from '@/components/students/StudentTaskList';
 import GradeSparkline from '@/components/students/GradeSparkline';
 import QuickPreferencesEditor from '@/components/students/QuickPreferencesEditor';
 import ParentContactBar from '@/components/students/ParentContactBar';
-import ParentContactLog from '@/components/portfolio/ParentContactLog';
+import UnifiedCommunicationHistory from '@/components/students/UnifiedCommunicationHistory';
 import StudentPortfolio from '@/components/portfolio/StudentPortfolio';
 import PerformanceBadge from '@/components/students/PerformanceBadge';
 import { calculatePerformanceScore } from '@/lib/performanceScore';
@@ -296,7 +296,7 @@ export default function StudentProfilePage() {
             <TabsTrigger value="notes" className="text-xs px-1">הערות</TabsTrigger>
             <TabsTrigger value="files" className="text-xs px-1">קבצים</TabsTrigger>
             <TabsTrigger value="portfolio" className="text-xs px-1">תיק</TabsTrigger>
-            <TabsTrigger value="parents" className="text-xs px-1">הורים</TabsTrigger>
+            <TabsTrigger value="parents" className="text-xs px-1">תקשורת</TabsTrigger>
           </TabsList>
 
           {/* ── Grades ── */}
@@ -573,7 +573,7 @@ export default function StudentProfilePage() {
           {/* ── Parents: contact info + communication history ── */}
           <TabsContent value="parents" className="mt-3 space-y-3">
             <ParentContactBar student={student} />
-            <ParentContactLog studentId={id} studentName={student.name} />
+            <UnifiedCommunicationHistory studentId={id} studentName={student.name} />
           </TabsContent>
         </Tabs>
       </div>
