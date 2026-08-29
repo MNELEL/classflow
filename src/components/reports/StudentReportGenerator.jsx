@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { escapeHtml } from '@/lib/htmlEscape';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -233,6 +233,24 @@ export default function StudentReportGenerator({ students }) {
   const [aiSummary, setAiSummary] = useState('');
   const [generatingAI, setGeneratingAI] = useState(false);
   const [sendEmailAutomatically, setSendEmailAutomatically] = useState(false);
+  const qc = useQueryClient();
+
+  // Persist a record of the generated report/assessment in the student's
+  // portfolio so it appears in their profile (תיק תלמיד) automatically.
+  async function persistReport(kind, summaryText) {
+    if (!selectedStudentId) return;
+    try {
+      await base44.entities.StudentPortfolioItem.create({
+        student_id: selectedStudentId,
+        type: 'document',
+        title: kind === 'ai_summary' ? `הערכה פדגוגית - ${period}` : `דוח תקופתי - ${period}`,
+        description: summaryText || `דוח לתקופה ${period}. ${grades.length} ציונים, ${tasks.filter(t => t.status === 'done').length}/${tasks.length} משימות הושלמו.`,
+        date: new Date().toISOString().slice(0, 10),
+        tags: [kind === 'ai_summary' ? 'הערכה' : 'דוח', 'תקופתי', period],
+      });
+      qc.invalidateQueries({ queryKey: ['portfolio'] });
+    } catch {}
+  }
 
   async function handleGenerateAISummary() {
     if (!student) return;
@@ -267,6 +285,7 @@ export default function StudentReportGenerator({ students }) {
 4. המלצה פדגוגית אחת`,
       });
       setAiSummary(res);
+      await persistReport('ai_summary', res);
       toast.success('סיכום AI הופק!');
       if (sendEmailAutomatically) {
         await handleAutoSendEmail(res);
@@ -291,6 +310,7 @@ export default function StudentReportGenerator({ students }) {
     if (!student) { toast.error('בחר תלמיד'); return; }
     setIsGenerating(true);
     const win = openPrintWindow();
+    await persistReport('report');
     setTimeout(() => {
       win.focus();
       win.print();
@@ -304,6 +324,7 @@ export default function StudentReportGenerator({ students }) {
     setIsGenerating(true);
     try {
       await createStudentReportWordDoc(student, grades, tasks, teacherName, period);
+      await persistReport('report');
       toast.success('מסמך ה-Word ייוצר בהצלחה!');
     } catch {
       toast.error('שגיאה בייצוא Word');

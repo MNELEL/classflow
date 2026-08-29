@@ -21,6 +21,8 @@ import QuickPreferencesEditor from '@/components/students/QuickPreferencesEditor
 import ParentContactBar from '@/components/students/ParentContactBar';
 import UnifiedCommunicationHistory from '@/components/students/UnifiedCommunicationHistory';
 import StudentPortfolio from '@/components/portfolio/StudentPortfolio';
+import StudentReportsAndCertificates from '@/components/students/StudentReportsAndCertificates';
+import StudentClassContacts from '@/components/students/StudentClassContacts';
 import PerformanceBadge from '@/components/students/PerformanceBadge';
 import { calculatePerformanceScore } from '@/lib/performanceScore';
 import { CUSTOM_FIELD_LABELS } from '@/components/students/StudentCustomFields';
@@ -511,28 +513,9 @@ export default function StudentProfilePage() {
 
           {/* ── Files ── */}
           <TabsContent value="files" className="mt-3 space-y-4">
-            {/* Portfolio items */}
-            {myPortfolio.length > 0 && (
-              <div className="space-y-2">
-                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">תיק אישי</p>
-                {myPortfolio.map(item => (
-                  <div key={item.id} className="flex items-center gap-3 bg-card border border-border rounded-xl px-3.5 py-3">
-                    <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
-                      <FileText className="w-4 h-4 text-primary" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium truncate">{item.title}</p>
-                      <p className="text-xs text-muted-foreground">{item.type} · {item.date && formatDate(item.date)}</p>
-                    </div>
-                    {item.file_url && (
-                      <a href={item.file_url} target="_blank" rel="noreferrer">
-                        <ExternalLink className="w-4 h-4 text-muted-foreground hover:text-primary transition-colors" />
-                      </a>
-                    )}
-                  </div>
-                ))}
-              </div>
-            )}
+            {/* Generated reports & certificates — auto-updates with everything
+                produced for this student */}
+            <StudentReportsAndCertificates studentId={id} />
 
             {/* Related library items */}
             {relatedLibrary.length > 0 && (
@@ -560,8 +543,8 @@ export default function StudentProfilePage() {
               </div>
             )}
 
-            {myPortfolio.length === 0 && relatedLibrary.length === 0 && (
-              <div className="text-center py-8 text-muted-foreground text-sm">אין קבצים מקושרים</div>
+            {relatedLibrary.length === 0 && (
+              <div className="text-center py-6 text-muted-foreground text-xs">אין חומרי לימוד נוספים מקושרים</div>
             )}
           </TabsContent>
 
@@ -572,6 +555,7 @@ export default function StudentProfilePage() {
 
           {/* ── Parents: contact info + communication history ── */}
           <TabsContent value="parents" className="mt-3 space-y-3">
+            <StudentClassContacts studentId={id} />
             <ParentContactBar student={student} />
             <UnifiedCommunicationHistory studentId={id} studentName={student.name} />
           </TabsContent>
