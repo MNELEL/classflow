@@ -95,6 +95,28 @@ export default async function(req) {
     }
     if (hwUpdates.length) await svc.entities.HomeworkAssignment.bulkUpdate(hwUpdates);
 
+    // Classroom.student_ids: replace removed IDs with keepId and dedupe, so the
+    // kept student inherits the duplicates' enrollments and no orphan IDs remain.
+    try {
+      const classrooms = await svc.entities.Classroom.list('-updated_date', 1000);
+      const clsUpdates = [];
+      for (const c of classrooms) {
+        const ids = c.student_ids || [];
+        let changed = false;
+        const seen = new Set();
+        const out = [];
+        for (const id of ids) {
+          const nv = removeIds.includes(id) ? keepId : id;
+          if (seen.has(nv)) { changed = true; continue; }
+          seen.add(nv);
+          if (nv !== id) changed = true;
+          out.push(nv);
+        }
+        if (changed) clsUpdates.push({ id: c.id, student_ids: out });
+      }
+      if (clsUpdates.length) await svc.entities.Classroom.bulkUpdate(clsUpdates);
+    } catch {}
+
     // Remap friends/avoid/separate references on all students
     const allStudents = await svc.entities.Student.list('-updated_date', 1000);
     const refUpdates = [];

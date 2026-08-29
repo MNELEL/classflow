@@ -17,6 +17,7 @@ import {
   CheckCircle2, Clock, AlertCircle, Archive, GraduationCap, FileText
 } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { resolveScopedStudentIds, countClassroomStudents } from '@/lib/classroomStudents';
 
 const TASK_STATUS = {
   pending:     { label: 'ממתינות',  icon: Clock,        color: 'text-amber-600' },
@@ -80,8 +81,8 @@ export default function AdminOverviewPage() {
   }, [classrooms, yearFilter]);
 
   const scopedStudentIds = useMemo(
-    () => new Set(scopedClassrooms.flatMap(c => c.student_ids || [])),
-    [scopedClassrooms]
+    () => resolveScopedStudentIds(scopedClassrooms, allStudents),
+    [scopedClassrooms, allStudents]
   );
   const scopedTasks = useMemo(
     () => allTasks.filter(t => scopedStudentIds.has(t.student_id)),
@@ -98,19 +99,19 @@ export default function AdminOverviewPage() {
   const teacherProgress = useMemo(() => {
     return teachers.map(teacher => {
       const teacherClassrooms = scopedClassrooms.filter(c => c.teacher_id === teacher.id);
-      const studentIds = teacherClassrooms.flatMap(c => c.student_ids || []);
-      const teacherTasks = scopedTasks.filter(t => studentIds.includes(t.student_id));
+      const studentIds = resolveScopedStudentIds(teacherClassrooms, allStudents);
+      const teacherTasks = scopedTasks.filter(t => studentIds.has(t.student_id));
       const doneCount = teacherTasks.filter(t => t.status === 'done').length;
       return {
         ...teacher,
         classroomCount: teacherClassrooms.length,
-        studentCount: studentIds.length,
+        studentCount: studentIds.size,
         taskCount: teacherTasks.length,
         doneCount,
         completionRate: teacherTasks.length > 0 ? Math.round(doneCount / teacherTasks.length * 100) : 0,
       };
     });
-  }, [teachers, scopedClassrooms, scopedTasks]);
+  }, [teachers, scopedClassrooms, scopedTasks, allStudents]);
 
   const filteredClassrooms = useMemo(() => {
     if (classFilter === 'active') return activeClassrooms;
@@ -249,7 +250,7 @@ export default function AdminOverviewPage() {
                       <div className="flex items-center gap-2 text-xs text-muted-foreground">
                         <span>{c.teacher_name || 'לא משויך'}</span>
                         {c.grade_level && <span>• שכבה {c.grade_level}</span>}
-                        <span>• {(c.student_ids || []).length} תלמידים</span>
+                        <span>• {countClassroomStudents(c, allStudents)} תלמידים</span>
                       </div>
                     </div>
                   </div>

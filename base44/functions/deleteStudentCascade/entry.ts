@@ -117,6 +117,22 @@ export default async function (req) {
       errors.push(`HomeworkAssignment: ${e.message}`);
     }
 
+    // Classroom.student_ids: remove the deleted student from every classroom's
+    // enrollment array so admin statistics aren't left with orphan IDs.
+    try {
+      const classrooms = await svc.entities.Classroom.list('-updated_date', 1000);
+      const clsUpdates = [];
+      for (const c of classrooms) {
+        const ids = c.student_ids || [];
+        const filtered = ids.filter(id => id !== studentId);
+        if (filtered.length !== ids.length) clsUpdates.push({ id: c.id, student_ids: filtered });
+      }
+      if (clsUpdates.length) await svc.entities.Classroom.bulkUpdate(clsUpdates);
+      deletedCounts.Classroom_unenrolled = clsUpdates.length;
+    } catch (e) {
+      errors.push(`Classroom: ${e.message}`);
+    }
+
     // Remove this student from other students' friends/avoid/separate
     // reference arrays — same remap mergeStudents does, minus the "keep"
     // target since there's nothing to remap to on a real delete.
