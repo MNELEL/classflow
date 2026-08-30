@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { base44 } from '@/api/base44Client';
+import { loadBranding } from '@/lib/branding';
 
 export default function Contact() {
   const [name, setName] = useState('');
@@ -13,6 +14,13 @@ export default function Contact() {
   const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(false);
   const [sent, setSent] = useState(false);
+
+  const branding = loadBranding();
+  const classEmail = branding.contact_email || 'kitahei1tashpaz@gmail.com';
+  const supportEmail = branding.support_email || 'nm0527603669@gmail.com';
+  const contactPhone = branding.contact_phone || '052-760-3669';
+  const contactPerson = branding.contact_person || 'מיכאל נתן';
+  const phoneHref = 'tel:' + contactPhone.replace(/[^0-9+]/g, '').replace(/^0/, '+972');
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -22,7 +30,7 @@ export default function Contact() {
       // to prevent content spoofing / email header injection
       const sanitize = (str, max = 500) => (str || '').replace(/[\x00-\x1F\x7F]/g, ' ').slice(0, max).trim();
       await base44.integrations.Core.SendEmail({
-        to: 'support@classflow.app',
+        to: supportEmail,
         subject: `הודעה חדשה מ-${sanitize(name, 80) || 'אנונימי'}`,
         body: `שם: ${sanitize(name, 100)}\nאימייל: ${sanitize(email, 100)}\n\n${sanitize(message, 2000)}`,
       });
@@ -46,21 +54,26 @@ export default function Contact() {
           <p className="text-muted-foreground mt-2">נשמח לשמוע מכם ולעזור בכל שאלה</p>
         </div>
 
-        <div className="grid sm:grid-cols-3 gap-4 mb-8">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-8">
           <div className="bg-card rounded-xl border border-border p-4 text-center">
             <Mail className="w-5 h-5 text-primary mx-auto mb-2" />
             <p className="text-xs text-muted-foreground">מייל הכיתה</p>
-            <p className="text-sm font-medium text-foreground">להשלמת הכתובת</p>
+            <a href={`mailto:${classEmail}`} className="text-xs font-medium text-foreground hover:underline break-all" dir="ltr">{classEmail}</a>
+          </div>
+          <div className="bg-card rounded-xl border border-border p-4 text-center">
+            <Mail className="w-5 h-5 text-primary mx-auto mb-2" />
+            <p className="text-xs text-muted-foreground">תמיכה</p>
+            <a href={`mailto:${supportEmail}`} className="text-xs font-medium text-foreground hover:underline break-all" dir="ltr">{supportEmail}</a>
           </div>
           <div className="bg-card rounded-xl border border-border p-4 text-center">
             <Phone className="w-5 h-5 text-primary mx-auto mb-2" />
             <p className="text-xs text-muted-foreground">טלפון</p>
-            <a href="tel:+972527603669" className="text-sm font-medium text-foreground hover:underline" dir="ltr">052-760-3669</a>
+            <a href={phoneHref} className="text-sm font-medium text-foreground hover:underline" dir="ltr">{contactPhone}</a>
           </div>
           <div className="bg-card rounded-xl border border-border p-4 text-center">
             <User className="w-5 h-5 text-primary mx-auto mb-2" />
             <p className="text-xs text-muted-foreground">איש קשר</p>
-            <p className="text-sm font-medium text-foreground">מיכאל נתן</p>
+            <p className="text-sm font-medium text-foreground">{contactPerson}</p>
           </div>
         </div>
 

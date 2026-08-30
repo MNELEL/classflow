@@ -138,6 +138,41 @@ export default function BrandingPanel() {
                 placeholder="לדוגמה: ד'2, כיתה ז..."
               />
             </div>
+            <div>
+              <Label className="text-sm mb-1 block">מייל הכיתה (פניות הורים)</Label>
+              <Input
+                value={branding.contact_email || ''}
+                onChange={e => update('contact_email', e.target.value)}
+                placeholder="kitahei1tashpaz@gmail.com"
+                dir="ltr"
+              />
+            </div>
+            <div>
+              <Label className="text-sm mb-1 block">מייל תמיכה ראשי</Label>
+              <Input
+                value={branding.support_email || ''}
+                onChange={e => update('support_email', e.target.value)}
+                placeholder="nm0527603669@gmail.com"
+                dir="ltr"
+              />
+            </div>
+            <div>
+              <Label className="text-sm mb-1 block">טלפון איש קשר</Label>
+              <Input
+                value={branding.contact_phone || ''}
+                onChange={e => update('contact_phone', e.target.value)}
+                placeholder="052-760-3669"
+                dir="ltr"
+              />
+            </div>
+            <div>
+              <Label className="text-sm mb-1 block">שם איש קשר</Label>
+              <Input
+                value={branding.contact_person || ''}
+                onChange={e => update('contact_person', e.target.value)}
+                placeholder="מיכאל נתן"
+              />
+            </div>
           </div>
         </CardContent>
       </Card>

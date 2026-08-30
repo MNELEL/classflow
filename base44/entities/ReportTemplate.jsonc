@@ -1,0 +1,82 @@
+{
+  "name": "ReportTemplate",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "\u05e9\u05dd \u05d9\u05d3\u05d9\u05d3\u05d5\u05ea\u05d9 \u05dc\u05ea\u05d1\u05e0\u05d9\u05ea"
+    },
+    "subject": {
+      "type": "string",
+      "description": "\u05e0\u05d5\u05e9\u05d0 \u05d4\u05de\u05d9\u05d9\u05dc (\u05d9\u05db\u05d5\u05dc \u05dc\u05d4\u05db\u05d9\u05dc {{placeholders}})"
+    },
+    "body": {
+      "type": "string",
+      "description": "\u05ea\u05d5\u05db\u05df \u05d4\u05d3\u05d5\u05d7 \u05e2\u05dd {{placeholders}} \u05dc\u05de\u05d9\u05dc\u05d5\u05d9 \u05d9\u05d3\u05e0\u05d9 (\u05dc\u05de\u05e9\u05dc {{student_name}}, {{assessment}})"
+    },
+    "is_active": {
+      "type": "boolean",
+      "default": true,
+      "description": "\u05d4\u05d0\u05dd \u05d4\u05ea\u05d1\u05e0\u05d9\u05ea \u05e4\u05e2\u05d9\u05dc\u05d4"
+    },
+    "description": {
+      "type": "string",
+      "maxLength": 1000,
+      "description": "\u05ea\u05d9\u05d0\u05d5\u05e8 \u05d0\u05d5\u05e4\u05e6\u05d9\u05d5\u05e0\u05dc\u05d9"
+    }
+  },
+  "required": [
+    "name",
+    "body"
+  ],
+  "rls": {
+    "create": {
+      "$or": [
+        {
+          "created_by_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "read": {
+      "$or": [
+        {
+          "created_by_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "$or": [
+        {
+          "created_by_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "created_by_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
+}

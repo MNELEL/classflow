@@ -23,6 +23,8 @@ import UnifiedCommunicationHistory from '@/components/students/UnifiedCommunicat
 import StudentPortfolio from '@/components/portfolio/StudentPortfolio';
 import StudentReportsAndCertificates from '@/components/students/StudentReportsAndCertificates';
 import StudentClassContacts from '@/components/students/StudentClassContacts';
+import StudentSmartSearch from '@/components/students/StudentSmartSearch';
+import ReportTemplateSender from '@/components/students/ReportTemplateSender';
 import PerformanceBadge from '@/components/students/PerformanceBadge';
 import { calculatePerformanceScore } from '@/lib/performanceScore';
 import { CUSTOM_FIELD_LABELS } from '@/components/students/StudentCustomFields';
@@ -280,6 +282,19 @@ export default function StudentProfilePage() {
 
         {/* Quick preferences editor */}
         <QuickPreferencesEditor student={student} />
+
+        {/* Smart search across portfolio, communication, grades, etc. */}
+        <StudentSmartSearch
+          student={student}
+          studentId={id}
+          portfolio={myPortfolio}
+          grades={myGrades}
+          attendance={myAttendance}
+          behavior={myBehavior}
+          feedback={myFeedback}
+          library={relatedLibrary}
+          onJump={setActiveTab}
+        />
 
         {/* Quick navigation — continuous personal folder */}
         <div className="grid grid-cols-3 gap-2">
@@ -555,6 +570,7 @@ export default function StudentProfilePage() {
 
           {/* ── Parents: contact info + communication history ── */}
           <TabsContent value="parents" className="mt-3 space-y-3">
+            <ReportTemplateSender student={student} />
             <StudentClassContacts studentId={id} />
             <ParentContactBar student={student} />
             <UnifiedCommunicationHistory studentId={id} studentName={student.name} />

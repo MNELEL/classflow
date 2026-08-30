@@ -58,8 +58,9 @@ const SECTIONS = [
     subtitle: 'שיתוף עם הורים ותצוגת תלמיד',
     layout: 'rows',
     items: [
-      { path: '/parents',      icon: Contact, label: 'הורים',        desc: 'תקשורת ושיתוף חומרים', color: 'bg-teal-100 text-teal-600 dark:bg-teal-900/30 dark:text-teal-400' },
-      { path: '/student-view', icon: Eye,     label: 'תצוגת תלמיד',  desc: 'מה התלמיד רואה',        color: 'bg-sky-100 text-sky-600 dark:bg-sky-900/30 dark:text-sky-400'     },
+      { path: '/parents',           icon: Contact,  label: 'הורים',         desc: 'תקשורת ושיתוף חומרים', color: 'bg-teal-100 text-teal-600 dark:bg-teal-900/30 dark:text-teal-400' },
+      { path: '/report-templates',  icon: FileText, label: 'תבניות דוח',  desc: 'תבניות קבועות למילוי ושליחה להורים', color: 'bg-rose-100 text-rose-600 dark:bg-rose-900/30 dark:text-rose-400' },
+      { path: '/student-view',      icon: Eye,      label: 'תצוגת תלמיד', desc: 'מה התלמיד רואה',        color: 'bg-sky-100 text-sky-600 dark:bg-sky-900/30 dark:text-sky-400'     },
       { path: '/weekly-communication', icon: Newspaper, label: 'תקשורת שבועית', desc: 'חוברת קשר, דף הורים ודף קשר מוסדי', color: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400' },
     ],
   },
