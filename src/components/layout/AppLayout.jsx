@@ -49,7 +49,7 @@ export default function AppLayout({ children }) {
     '/raffle','/daily-summary','/exam-scanner','/school-calendar','/weekly-attendance-report','/monthly-attendance-report','/weekly-summary','/birthdays-report','/weekly-tasks','/more','/settings','/tasks-hub',
     '/history','/admin','/generators','/admin-generators','/teacher-insights','/weekly-bulletin',
     '/ingest','/teaching-style-dashboard','/teacher-style','/teacher-login',
-    '/teacher-dashboard','/map','/weekly-sheet','/contact-sheet','/creation-center','/weekly-communication','/poll',
+    '/teacher-dashboard','/map','/weekly-sheet','/contact-sheet','/creation-center','/weekly-communication','/poll','/admin-overview','/certificates','/monthly-reports','/review','/templates',
   ];
 
   function isMoreSubPath(pathname) {
