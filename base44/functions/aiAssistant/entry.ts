@@ -110,6 +110,7 @@ ${JSON.stringify(aiSummary).slice(0, 6000)}
 - עבור parent_contact (רישום קשר הורים): התלמיד חייב להיות מזוהה. חלץ contact_type (call/meeting/message/email/note), contact_summary (תוכן הפנייה), contact_date (YYYY-MM-DD, ברירת מחדל היום). אם לא מזוהה תלמיד — needs_clarification=true.
 - עבור daily_log (תיעוד יומי יחיד): השתמש רק כשהמורה מתאר/ת דבר כללי אחד שאינו מתפרק לכוונה ספציפית. חלץ log_text ו-log_date (YYYY-MM-DD, ברירת מחדל היום). אם יש מספר דברים — השתמש ב-bulk_daily_log.
 - עבור תלמיד קיים, התאם את השם ל-ID מהרשימה ומלא את student_id. אם השם לא נמצא, השאר את student_id ריק ושים את השם ב-student_name. כשיש כמה תלמידים בעלי שם זהה או שלא ברור למי התכוון המורה — הגדר needs_clarification=true עם שאלה קצרה.
+- עבור query_student_info ו-natural_query: מלא את sources בכל תלמיד שהזכרת בתשובה — כל פריט: { label: "פרופיל <שם>", type: "student", path: "/students/<id>", student_id: "<id>" }. השתמש רק בתלמידים שקיימים ברשימה. זה מאפשר למורה לאמת את המידע בקליק.
 - אם הפקודה לא ברורה או לא ניתנת לביצוע, החזר intent="unknown".`,
       response_json_schema: {
         type: 'object',
@@ -192,7 +193,19 @@ ${JSON.stringify(aiSummary).slice(0, 6000)}
           note_student_name: { type: 'string' },
           note_tags: { type: 'array', items: { type: 'string' } },
           note_query_scope: { type: 'string', enum: ['open', 'all', 'by_student'] },
-          resolve_student_name: { type: 'string' }
+          resolve_student_name: { type: 'string' },
+          sources: {
+            type: 'array',
+            items: {
+              type: 'object',
+              properties: {
+                label: { type: 'string' },
+                type: { type: 'string' },
+                path: { type: 'string' },
+                student_id: { type: 'string' }
+              }
+            }
+          }
         },
         required: ['intent']
       }
@@ -269,6 +282,7 @@ ${JSON.stringify(aiSummary).slice(0, 6000)}
         return Response.json({ success: false, message: action.student_name ? `לא מצאתי תלמיד בשם ${action.student_name}.` : 'לא מצאתי תלמיד תואם.' });
       }
       const cf = student.custom_fields || {};
+      const sources = [{ label: `פרופיל ${student.name}`, type: 'student', path: `/students/${student.id}`, student_id: student.id }];
       const FIELD_LABELS: Record<string, string> = {
         birth_date: 'יום הולדת',
         parent_phone: 'טלפון הורים',
@@ -285,7 +299,7 @@ ${JSON.stringify(aiSummary).slice(0, 6000)}
         const msg = val
           ? `${FIELD_LABELS[action.query_field]} של ${student.name}: ${val}`
           : `אין רשום ${FIELD_LABELS[action.query_field]} עבור ${student.name}.`;
-        return Response.json({ success: true, message: msg });
+        return Response.json({ success: true, message: msg, sources });
       }
       // "all" — list all known fields
       const parts: string[] = [];
@@ -295,11 +309,11 @@ ${JSON.stringify(aiSummary).slice(0, 6000)}
       const msg = parts.length
         ? `פרטי ${student.name}: ${parts.join(' • ')}`
         : `אין שדות מותאמים רשומים עבור ${student.name}.`;
-      return Response.json({ success: true, message: msg });
+      return Response.json({ success: true, message: msg, sources });
     }
 
     if (action.intent === 'natural_query') {
-      return Response.json({ success: true, message: action.reply || 'לא הצלחתי לנתח את מצב הכיתה מהנתונים הנוכחיים.' });
+      return Response.json({ success: true, message: action.reply || 'לא הצלחתי לנתח את מצב הכיתה מהנתונים הנוכחיים.', sources: Array.isArray(action.sources) ? action.sources : [] });
     }
 
     if (action.intent === 'unknown' || !action.intent) {

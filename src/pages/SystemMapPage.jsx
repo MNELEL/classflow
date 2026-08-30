@@ -157,7 +157,7 @@ export default function SystemMapPage() {
           </div>
         )}
 
-        {visibleTree.map((sup) => {
+        {visibleTree.map((sup, supIdx) => {
           const superOpen = effectiveOpenSupers.has(sup.title);
           const subCount = sup.subs.reduce((a, s) => a + s.items.length, 0);
           return (
@@ -165,8 +165,11 @@ export default function SystemMapPage() {
               {/* כותרת קטגוריית-על */}
               <button
                 onClick={() => toggleSuper(sup.title)}
-                className="w-full flex items-center justify-between gap-2 px-4 py-3 text-right hover:bg-accent/50 transition-colors"
+                className="w-full flex items-center justify-between gap-2 px-4 py-3 text-right hover:bg-accent/50 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset rounded-2xl"
                 aria-expanded={superOpen}
+                aria-controls={`sup-panel-${supIdx}`}
+                id={`sup-btn-${supIdx}`}
+                aria-label={`${superOpen ? 'סגור' : 'פתח'} קטגוריה ${sup.title}`}
               >
                 <div className="flex items-center gap-2 min-w-0">
                   <span className="text-sm font-bold">{sup.title}</span>
@@ -182,16 +185,19 @@ export default function SystemMapPage() {
 
               {/* קטגוריות-משנה */}
               {superOpen && (
-                <div className="divide-y border-t">
-                  {sup.subs.map((s) => {
+                <div className="divide-y border-t" id={`sup-panel-${supIdx}`} role="region" aria-labelledby={`sup-btn-${supIdx}`}>
+                  {sup.subs.map((s, subIdx) => {
                     const key = `${sup.title}::${s.title}`;
                     const subOpen = effectiveOpenSubs.has(key);
                     return (
                       <div key={key}>
                         <button
                           onClick={() => toggleSub(key)}
-                          className="w-full flex items-center justify-between gap-2 px-4 py-2.5 text-right bg-muted/30 hover:bg-muted/50 transition-colors"
+                          className="w-full flex items-center justify-between gap-2 px-4 py-2.5 text-right bg-muted/30 hover:bg-muted/50 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset"
                           aria-expanded={subOpen}
+                          aria-controls={`sub-panel-${supIdx}-${subIdx}`}
+                          id={`sub-btn-${supIdx}-${subIdx}`}
+                          aria-label={`${subOpen ? 'סגור' : 'פתח'} תת-קטגוריה ${s.title}`}
                         >
                           <div className="flex items-center gap-2 min-w-0">
                             <span className="text-xs font-semibold text-muted-foreground">{s.title}</span>
@@ -203,12 +209,13 @@ export default function SystemMapPage() {
                           />
                         </button>
                         {subOpen && (
-                          <div className="divide-y">
+                          <div className="divide-y" id={`sub-panel-${supIdx}-${subIdx}`} role="region" aria-labelledby={`sub-btn-${supIdx}-${subIdx}`}>
                             {s.items.map((it) => (
                               <button
                                 key={`${sup.title}-${s.title}-${it.path}`}
                                 onClick={() => navigate(it.path)}
-                                className="w-full flex items-start justify-between gap-2 px-4 py-3 text-right hover:bg-accent/50 transition-colors"
+                                className="w-full flex items-start justify-between gap-2 px-4 py-3 text-right hover:bg-accent/50 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset"
+                                aria-label={`פתח ${it.label} — ${it.sub}`}
                               >
                                 <div className="min-w-0">
                                   <p className="text-sm font-semibold text-foreground">{it.label}</p>

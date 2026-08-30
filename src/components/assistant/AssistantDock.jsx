@@ -1,10 +1,12 @@
 import React, { useState, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Sparkles, Mic, X, Send, Loader2, MessageSquareText, HelpCircle } from 'lucide-react';
+import { Sparkles, Mic, X, Send, Loader2, MessageSquareText, HelpCircle, ExternalLink } from 'lucide-react';
 import { toast } from 'sonner';
-import { useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
+import ReviewCard from '@/components/review/ReviewCard';
+import { executePendingUpdate } from '@/lib/pendingUpdateActions';
 
 const SUGGESTIONS = [
   'קח אותי לציונים',
@@ -26,6 +28,41 @@ export default function AssistantDock() {
   const navigate = useNavigate();
   const inputRef = useRef(null);
   const recogRef = useRef(null);
+
+  const { data: students = [] } = useQuery({ queryKey: ['students'], queryFn: () => base44.entities.Student.list() });
+  const [pendingPreview, setPendingPreview] = useState(null);
+  const [quickProcessing, setQuickProcessing] = useState(false);
+
+  async function handleQuickApprove(item, editedPayload) {
+    setQuickProcessing(true);
+    try {
+      await executePendingUpdate({ ...item, payload: editedPayload });
+      await base44.entities.PendingUpdate.update(item.id, { payload: editedPayload, status: 'approved', reviewed_at: new Date().toISOString() });
+      toast.success(`אושר: ${item.summary}`);
+      setPendingPreview(null);
+      setReply({ type: 'answer', text: `אושר בהצלחה: ${item.summary}` });
+      qc.invalidateQueries({ queryKey: ['pendingUpdates'] });
+      qc.invalidateQueries();
+    } catch (err) {
+      toast.error('שגיאה באישור: ' + (err.message || ''));
+    } finally {
+      setQuickProcessing(false);
+    }
+  }
+
+  async function handleQuickReject(item) {
+    setQuickProcessing(true);
+    try {
+      await base44.entities.PendingUpdate.update(item.id, { status: 'rejected', reviewed_at: new Date().toISOString() });
+      toast.success('ההצעה נדחתה');
+      setPendingPreview(null);
+      qc.invalidateQueries({ queryKey: ['pendingUpdates'] });
+    } catch {
+      toast.error('שגיאה בדחייה');
+    } finally {
+      setQuickProcessing(false);
+    }
+  }
 
   const executeCommand = useCallback(async (text, isVoice = false) => {
     if (!text.trim()) return;
@@ -54,20 +91,19 @@ export default function AssistantDock() {
         setInput('');
         setOpen(false);
       } else if (data.success && data.pending) {
-        // פעולת כתיבה — נשמרה כהצעה לסקירה.
+        // פעולת כתיבה — נשמרה כהצעה. מציגים אישור מהיר בתוך הפאנל
+        // (עריכת שדות + אישור/דחייה) בלי לעבור למסך הסקירה.
         qc.invalidateQueries({ queryKey: ['pendingUpdates'] });
-        toast.success('הצעה נוצרה! עבור למסך סקירה לאישור', {
-          action: {
-            label: 'לסקירה',
-            onClick: () => navigate('/review'),
-          },
-        });
+        try {
+          const rec = await base44.entities.PendingUpdate.get(data.pending_id);
+          setPendingPreview(rec);
+        } catch {
+          toast.success('הצעה נוצרה', { action: { label: 'לסקירה', onClick: () => navigate('/review') } });
+        }
         setInput('');
-        setReply(null);
-        setOpen(false);
       } else if (data.success) {
-        // שאלת קריאה / שליפת הערות — מציגים את התשובה מיד בתוך הפאנל.
-        setReply({ type: 'answer', text: data.message });
+        // שאלת קריאה / שליפת הערות — מציגים את התשובה ומקורות לאימות.
+        setReply({ type: 'answer', text: data.message, sources: data.sources });
         setInput('');
       } else {
         toast.error(data.message || 'לא הצלחתי להבין את הפקודה');
@@ -163,7 +199,7 @@ export default function AssistantDock() {
                   </div>
                   <span className="text-sm font-semibold text-foreground">עוזר ClassFlow</span>
                 </div>
-                <button onClick={() => { setOpen(false); setReply(null); }} className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-accent transition-colors" aria-label="סגור">
+                <button onClick={() => { setOpen(false); setReply(null); setPendingPreview(null); }} className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-accent transition-colors" aria-label="סגור">
                   <X className="w-4 h-4 text-muted-foreground" />
                 </button>
               </div>
@@ -192,8 +228,42 @@ export default function AssistantDock() {
                         <p className={reply.type === 'clarify' ? 'text-amber-900 dark:text-amber-100' : 'text-foreground'}>
                           {reply.text}
                         </p>
+                        {reply.type === 'answer' && Array.isArray(reply.sources) && reply.sources.length > 0 && (
+                          <div className="mt-2 flex flex-wrap gap-1.5">
+                            {reply.sources.map((s, i) => (
+                              <button
+                                key={i}
+                                onClick={() => { navigate(s.path); setOpen(false); }}
+                                className="text-[11px] px-2 py-0.5 rounded-full bg-primary/10 text-primary hover:bg-primary/20 inline-flex items-center gap-1"
+                              >
+                                <ExternalLink className="w-3 h-3" /> {s.label}
+                              </button>
+                            ))}
+                          </div>
+                        )}
                       </div>
                     </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
+              {/* אישור מהיר — עריכת שדות + אישור/דחייה בלי לעבור למסך הסקירה */}
+              <AnimatePresence>
+                {pendingPreview && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: 'auto' }}
+                    exit={{ opacity: 0, height: 0 }}
+                    className="px-3 pb-2 max-h-[55vh] overflow-y-auto"
+                  >
+                    <p className="text-[11px] font-semibold text-muted-foreground px-1 pb-1.5">אישור מהיר — ערוך שדות ואשר</p>
+                    <ReviewCard
+                      pending={pendingPreview}
+                      students={students}
+                      onApprove={handleQuickApprove}
+                      onReject={handleQuickReject}
+                      isProcessing={quickProcessing}
+                    />
                   </motion.div>
                 )}
               </AnimatePresence>
@@ -232,7 +302,7 @@ export default function AssistantDock() {
               </form>
 
               {/* Suggestions */}
-              {!loading && !listening && !reply && (
+              {!loading && !listening && !reply && !pendingPreview && (
                 <div className="px-3 pb-3 flex flex-wrap gap-1.5">
                   {SUGGESTIONS.map(s => (
                     <button

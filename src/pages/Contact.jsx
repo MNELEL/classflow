@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowRight, Mail, Phone, MapPin, Loader2, Send } from 'lucide-react';
+import { ArrowRight, Mail, Phone, User, Loader2, Send } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -49,18 +49,18 @@ export default function Contact() {
         <div className="grid sm:grid-cols-3 gap-4 mb-8">
           <div className="bg-card rounded-xl border border-border p-4 text-center">
             <Mail className="w-5 h-5 text-primary mx-auto mb-2" />
-            <p className="text-xs text-muted-foreground">אימייל</p>
-            <a href="mailto:support@classflow.app" className="text-sm font-medium text-foreground hover:underline">support@classflow.app</a>
+            <p className="text-xs text-muted-foreground">מייל הכיתה</p>
+            <p className="text-sm font-medium text-foreground">להשלמת הכתובת</p>
           </div>
           <div className="bg-card rounded-xl border border-border p-4 text-center">
             <Phone className="w-5 h-5 text-primary mx-auto mb-2" />
             <p className="text-xs text-muted-foreground">טלפון</p>
-            <a href="tel:+972-3-123-4567" className="text-sm font-medium text-foreground hover:underline">03-123-4567</a>
+            <a href="tel:+972527603669" className="text-sm font-medium text-foreground hover:underline" dir="ltr">052-760-3669</a>
           </div>
           <div className="bg-card rounded-xl border border-border p-4 text-center">
-            <MapPin className="w-5 h-5 text-primary mx-auto mb-2" />
-            <p className="text-xs text-muted-foreground">כתובת</p>
-            <p className="text-sm font-medium text-foreground">תל אביב, ישראל</p>
+            <User className="w-5 h-5 text-primary mx-auto mb-2" />
+            <p className="text-xs text-muted-foreground">איש קשר</p>
+            <p className="text-sm font-medium text-foreground">מיכאל נתן</p>
           </div>
         </div>
 
