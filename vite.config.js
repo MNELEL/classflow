@@ -19,7 +19,7 @@ export default defineConfig({
   // "Cannot read properties of null (reading 'useState')"). Pinning both
   // packages to a single resolution guarantees one React copy app-wide.
   resolve: {
-    dedupe: ['react', 'react-dom'],
+    dedupe: ['react', 'react-dom', 'react/jsx-runtime'],
   },
   plugins: [
     base44({
