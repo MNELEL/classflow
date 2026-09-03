@@ -17,22 +17,27 @@
     },
     "email": {
       "description": "\u05d0\u05d9\u05de\u05d9\u05d9\u05dc",
+      "maxLength": 200,
       "type": "string"
     },
     "name": {
       "description": "\u05e9\u05dd",
+      "maxLength": 120,
       "type": "string"
     },
     "notes": {
       "description": "\u05d4\u05e2\u05e8\u05d5\u05ea",
+      "maxLength": 1000,
       "type": "string"
     },
     "phone": {
       "description": "\u05d8\u05dc\u05e4\u05d5\u05df",
+      "maxLength": 40,
       "type": "string"
     },
     "role": {
       "description": "\u05ea\u05e4\u05e7\u05d9\u05d3",
+      "maxLength": 120,
       "type": "string"
     },
     "sort_order": {
