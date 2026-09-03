@@ -248,8 +248,12 @@ function LivePoll({ poll, students, onChanged }) {
   }, [votes]);
 
   const setV = useMutation({
-    mutationFn: ({ studentId, studentName, optionIndex }) => {
-      const nextVotes = votes.filter((v) => v.student_id !== studentId);
+    mutationFn: async ({ studentId, studentName, optionIndex }) => {
+      // קוראים את המצב הכי עדכני מה-DB ברגע השמירה עצמה (לא מה-closure)
+      // כדי למנוע דריסת הצבעות של מורים אחרים שהתעדכנו בחלון 3 השניות האחרונות (refetchInterval).
+      const latest = await base44.entities.ClassPoll.get(poll.id);
+      const currentVotes = latest?.votes ?? [];
+      const nextVotes = currentVotes.filter((v) => v.student_id !== studentId);
       if (optionIndex !== null) {
         nextVotes.push({ student_id: studentId, student_name: studentName, option_index: optionIndex });
       }
