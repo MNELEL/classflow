@@ -131,7 +131,7 @@ function AnimatedRoutes() {
 
             {/* Protected app routes */}
             <Route element={<ProtectedRoute unauthenticatedElement={<Navigate to="/login" replace />} />}>
-              <Route path="/" element={<AttendancePage />} />
+              <Route path="/" element={<DashboardPage />} />
               <Route path="/dashboard" element={<DashboardPage />} />
               <Route path="/seating" element={<SeatingPage />} />
               <Route path="/students" element={<StudentsPage />} />
