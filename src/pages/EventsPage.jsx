@@ -11,6 +11,7 @@ import { toast } from 'sonner';
 import { CalendarDays, Plus, MapPin, Clock, Trash2, X } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { formatDateBoth } from '@/lib/formatDate';
+import { enqueueWrite, isOnline } from '@/lib/offlineQueue';
 
 const TYPE_META = {
   trip: { label: 'טיול', color: 'text-emerald-600', bg: 'bg-emerald-100 dark:bg-emerald-900/30', emoji: '🚌' },
