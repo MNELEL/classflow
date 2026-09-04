@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
 import { RefreshCw } from 'lucide-react';
-import { subscribeQueue } from '@/lib/offlineQueue';
-import { useOfflineSyncQueue } from '@/hooks/useOfflineSyncQueue';
+import { subscribeQueue, flushQueue, isOnline } from '@/lib/offlineQueue';
+import { toast } from 'sonner';
+import { base44 } from '@/api/base44Client';
 
 /**
  * אייקון קטן בכותרת שמופיע רק כשיש פעולות ממתינות לסנכרון (נוכחות/ציונים
