@@ -18,12 +18,15 @@
     "options": {
       "description": "\u05d0\u05e4\u05e9\u05e8\u05d5\u05d9\u05d5\u05ea \u05ea\u05e9\u05d5\u05d1\u05d4 (2-4)",
       "items": {
+        "maxLength": 200,
         "type": "string"
       },
+      "maxItems": 4,
       "type": "array"
     },
     "question": {
       "description": "\u05e9\u05d0\u05dc\u05ea \u05d4\u05e1\u05e7\u05e8",
+      "maxLength": 500,
       "type": "string"
     },
     "status": {
@@ -46,6 +49,7 @@
             "type": "string"
           },
           "student_name": {
+            "maxLength": 120,
             "type": "string"
           }
         },
