@@ -46,6 +46,11 @@ export default function DashboardPage() {
     queryKey: ['students'],
     queryFn: () => base44.entities.Student.list(),
   });
+  const { data: classes = [] } = useQuery({
+    queryKey: ['classrooms'],
+    queryFn: () => base44.entities.Classroom.list(),
+  });
+  const [classFilter, setClassFilter] = useState('all');
   const { data: grades = [] } = useQuery({ queryKey: ['grades'], queryFn: () => base44.entities.Grade.list('-date', 100), enabled: secondaryEnabled, staleTime: 60000 });
   const { data: attendance = [] } = useQuery({ queryKey: ['attendance'], queryFn: () => base44.entities.Attendance.list('-date', 100), enabled: secondaryEnabled, staleTime: 60000 });
   const { data: libraryItems = [] } = useQuery({ queryKey: ['library'], queryFn: () => base44.entities.LibraryItem.list('-created_date', 50), enabled: secondaryEnabled, staleTime: 60000 });
