@@ -4,6 +4,18 @@ import { subscribeQueue, flushQueue, isOnline } from '@/lib/offlineQueue';
 import { toast } from 'sonner';
 import { base44 } from '@/api/base44Client';
 
+const EXECUTORS = {
+  attendance: async ({ studentId, date, status, justified, justification_reason }) => {
+    const existing = await base44.entities.Attendance.filter({ student_id: studentId, date });
+    const payload = { status };
+    if (justified !== undefined) payload.justified = justified;
+    if (justification_reason !== undefined) payload.justification_reason = justification_reason;
+    if (existing[0]) return base44.entities.Attendance.update(existing[0].id, payload);
+    return base44.entities.Attendance.create({ student_id: studentId, date, ...payload });
+  },
+  grade: async (data) => base44.entities.Grade.create(data),
+};
+
 /**
  * אייקון קטן בכותרת שמופיע רק כשיש פעולות ממתינות לסנכרון (נוכחות/ציונים
  * שנשמרו בזמן ניתוק). לחיצה מנסה סנכרון מיידי — שימושי כשהחיבור חוזר אבל
