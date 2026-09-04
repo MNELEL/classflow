@@ -61,6 +61,18 @@ export default function DashboardPage() {
   const handleRefresh = useCallback(async () => { await refetch(); }, [refetch]);
   const { containerRef, pullY, refreshing } = usePullToRefresh(handleRefresh);
 
+  // מורה עם כמה כיתות: מסננים את כל הנתונים לפי הכיתה הנבחרת (או לכל הכיתות בברירת מחדל).
+  // Student אין לו class_id ישיר; הקשר מגיע רק דרך Classroom.student_ids.
+  const selectedClass = classFilter === 'all' ? null : classes.find((c) => c.id === classFilter);
+  const classStudentIds = selectedClass ? new Set(selectedClass.student_ids || []) : null;
+
+  const students = classStudentIds ? allStudents.filter((s) => classStudentIds.has(s.id)) : allStudents;
+  const grades = classStudentIds ? allGrades.filter((g) => classStudentIds.has(g.student_id)) : allGrades;
+  const attendance = classStudentIds ? allAttendance.filter((a) => classStudentIds.has(a.student_id)) : allAttendance;
+  const homework = classStudentIds
+    ? allHomework.filter((h) => (h.student_ids || []).some((id) => classStudentIds.has(id)))
+    : allHomework;
+  const behaviorEvents = classStudentIds ? allBehaviorEvents.filter((b) => classStudentIds.has(b.student_id)) : allBehaviorEvents;
 
   const activeStudents = students.filter(s => s.is_active !== false);
   const studentsWithNeeds = students.filter(s => s.special_needs?.length > 0);
