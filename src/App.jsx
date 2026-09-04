@@ -211,6 +211,9 @@ function AnimatedRoutes() {
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin, user } = useAuth();
   const navigate = useNavigate();
+  // מריץ את תור הסנכרון המקומי בכל מקום באפליקציה, לא רק כשמסך הנוכחות/ציונים פתוח —
+  // כדי שפעולות שנשמרו בזמן שהמסך היה פתוח יישלחו גם אם המורה כבר עבר הלאה.
+  useOfflineSyncQueue();
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [locked, setLocked] = useState(isLocked());
   // On a device/browser with no cached PIN status at all (cleared storage,
