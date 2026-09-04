@@ -30,7 +30,7 @@ export default function GradeManager({ student, open, onClose }) {
   });
 
   const createMutation = useMutation({
-    mutationFn: (data) => {
+    mutationFn: async (data) => {
       const score = Number(data.score);
       const maxScore = Number(data.max_score) || 100;
       // Same bounds check as the AI-command path in
@@ -41,9 +41,33 @@ export default function GradeManager({ student, open, onClose }) {
       if (!Number.isFinite(score) || score < 0 || score > maxScore) {
         throw new Error(`ציון לא תקין: ${data.score} (חייב להיות בין 0 ל-${maxScore})`);
       }
-      return base44.entities.Grade.create({ ...data, student_id: student.id, score, max_score: maxScore });
+      const payload = { ...data, student_id: student.id, score, max_score: maxScore };
+      // בדיקת הטווח למעלה רצה גם בלי רשת, כדי שהמורה יקבל מיד משוב
+      // על קלט שגוי עוד לפני שהוא מנסה לשלוח לשרת; הציון עצמו לא דורש
+      // בדיקת קונפליקט מורכבת (בשונה מנוכחות, אין upsert לפי תאריך/מבחן).
+      if (!isOnline()) {
+        enqueueWrite('grade', payload);
+        return { ...payload, id: `queued-${Date.now()}`, __queued: true };
+      }
+      try {
+        return await base44.entities.Grade.create(payload);
+      } catch (err) {
+        const looksLikeNetworkError = err?.message?.toLowerCase?.().includes('network')
+          || err?.message?.toLowerCase?.().includes('fetch')
+          || err?.name === 'TypeError';
+        if (looksLikeNetworkError) {
+          enqueueWrite('grade', payload);
+          return { ...payload, id: `queued-${Date.now()}`, __queued: true };
+        }
+        throw err;
+      }
     },
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ['grades'] }); setShowForm(false); setForm({ subject: '', test_name: '', score: '', max_score: '100', date: format(new Date(), 'yyyy-MM-dd'), period: 'exam', notes: '' }); toast.success('ציון נוסף'); },
+    onSuccess: (result) => {
+      qc.invalidateQueries({ queryKey: ['grades'] });
+      setShowForm(false);
+      setForm({ subject: '', test_name: '', score: '', max_score: '100', date: format(new Date(), 'yyyy-MM-dd'), period: 'exam', notes: '' });
+      toast.success(result?.__queued ? 'ציון נשמר מקומי ויסונכרן כשהחיבור יחזור' : 'ציון נוסף');
+    },
   });
 
   const deleteMutation = useMutation({
