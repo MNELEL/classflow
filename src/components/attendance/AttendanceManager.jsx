@@ -12,6 +12,7 @@ import { Check, X, Clock, ChevronRight, ChevronLeft, Search, BadgeCheck } from '
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { formatDateLong } from '@/lib/formatDate';
+import { enqueueWrite, isOnline } from '@/lib/offlineQueue';
 
 const STATUS_CONFIG = {
   present: { label: 'נוכח', icon: Check, color: 'bg-emerald-500 hover:bg-emerald-600 text-white', badge: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400' },
