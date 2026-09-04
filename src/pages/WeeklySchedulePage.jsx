@@ -247,7 +247,7 @@ export default function WeeklySchedulePage() {
       // שמירה מקומית עם המצב המלא של השבוע (data.days) — אין צורך בבדיקת קונפליקט
       // מורכבת כי זו החלפה מלאה של המצב הנוכחי, לא diff.
       if (!isOnline()) {
-        enqueueWrite('weekly_plan', { mode: 'create', payload: data });
+        enqueueWrite('weekly_plan', { mode: 'create', payload: data, week_start: data.week_start });
         return { ...data, id: `queued-${Date.now()}`, __queued: true };
       }
       try {
@@ -257,7 +257,7 @@ export default function WeeklySchedulePage() {
           || err?.message?.toLowerCase?.().includes('fetch')
           || err?.name === 'TypeError';
         if (looksLikeNetworkError) {
-          enqueueWrite('weekly_plan', { mode: 'create', payload: data });
+          enqueueWrite('weekly_plan', { mode: 'create', payload: data, week_start: data.week_start });
           return { ...data, id: `queued-${Date.now()}`, __queued: true };
         }
         throw err;
