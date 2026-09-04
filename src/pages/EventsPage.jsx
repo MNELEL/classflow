@@ -38,7 +38,26 @@ export default function EventsPage() {
   const past = events.filter(e => new Date(e.start_date) < now);
 
   const createEventMutation = useMutation({
-    mutationFn: (data) => base44.entities.SchoolEvent.create(data),
+    mutationFn: async (data) => {
+      // אין חיבור: מוסיפים לתור הסנכרון המקומי (אותה תבנית כמו נוכחות/ציונים) —
+      // העדכון האופטימי למטה כבר מציג את האירוע מיד, ונשלח בפועל כשהחיבור יחזור.
+      if (!isOnline()) {
+        enqueueWrite('school_event', data);
+        return { ...data, id: `queued-${Date.now()}`, __queued: true };
+      }
+      try {
+        return await base44.entities.SchoolEvent.create(data);
+      } catch (err) {
+        const looksLikeNetworkError = err?.message?.toLowerCase?.().includes('network')
+          || err?.message?.toLowerCase?.().includes('fetch')
+          || err?.name === 'TypeError';
+        if (looksLikeNetworkError) {
+          enqueueWrite('school_event', data);
+          return { ...data, id: `queued-${Date.now()}`, __queued: true };
+        }
+        throw err;
+      }
+    },
     onMutate: async (newEvent) => {
       await qc.cancelQueries({ queryKey: ['school-events'] });
       const previous = qc.getQueryData(['school-events']);
@@ -47,8 +66,8 @@ export default function EventsPage() {
     },
     onError: (_err, _vars, ctx) => { if (ctx?.previous) qc.setQueryData(['school-events'], ctx.previous); },
     onSettled: () => qc.invalidateQueries({ queryKey: ['school-events'] }),
-    onSuccess: () => {
-      toast.success('האירוע נוצר!');
+    onSuccess: (result) => {
+      toast.success(result?.__queued ? 'האירוע נשמר מקומי ויסונכרן כשהחיבור יחזור' : 'האירוע נוצר!');
       setShowForm(false);
       setForm({ title: '', description: '', type: 'other', start_date: '', end_date: '', location: '', color: '#3b82f6' });
     },
