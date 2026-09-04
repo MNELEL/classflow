@@ -8,6 +8,7 @@ import {
 
 import { loadBranding } from '@/lib/branding';
 import OverdueAlertsPanel from '@/components/alerts/OverdueAlertsPanel';
+import SyncQueueIndicator from '@/components/layout/SyncQueueIndicator';
 import HelpButton from '@/components/common/HelpButton';
 import { usePullToRefresh } from '@/hooks/usePullToRefresh';
 import PullToRefreshIndicator from '@/components/ui/PullToRefreshIndicator';
