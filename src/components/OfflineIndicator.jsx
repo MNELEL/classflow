@@ -27,6 +27,13 @@ export default function OfflineIndicator() {
     function handleOnline() {
       setIsOnline(true);
       toast.success('החיבור לאינטרנט חזר');
+      // מנסים לרוקן את התור מיד כשהחיבור חוזר — המורה לא צריך לשים לב לאייקון
+      // הסינכון וללחוץ עליו בעצמו. שגיאות עדיינות נשארות בתור לניסיון הבא.
+      flushQueue(EXECUTORS).then(({ sent }) => {
+        if (sent > 0) toast.success(sent === 1 ? 'פעולה אחת סונכנה' : `${sent} פעולות סונכנו`);
+      }).catch(() => {
+        // כשל סנכרון אוטומטי נכשל — התור נשאר, המורה עדיין יכול לסנכן ידנית דרך SyncQueueIndicator.
+      });
     }
     function handleOffline() {
       setIsOnline(false);
