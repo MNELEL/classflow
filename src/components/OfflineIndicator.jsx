@@ -33,7 +33,7 @@ export default function OfflineIndicator() {
       style={{ paddingTop: 'calc(0.375rem + env(safe-area-inset-top, 0px))' }}
     >
       <WifiOff className="w-3.5 h-3.5 shrink-0" />
-      <span>אין חיבור לאינטרנט — שינויים לא יישמרו עד שהחיבור יחזור</span>
+      <span>אין חיבור לאינטרנט — סימון נוכחות וציונים יישמרו ויסונכרנו כשהחיבור יחזור</span>
     </div>
   );
 }
