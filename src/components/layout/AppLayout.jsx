@@ -204,6 +204,7 @@ export default function AppLayout({ children }) {
           <span className="font-semibold text-base tracking-tight flex-1 text-center">{isDashboard ? 'ClassFlow' : title}</span>
 
           <div className="flex items-center gap-1 relative">
+            <SyncQueueIndicator />
             <OverdueAlertsPanel />
             <HelpButton />
             {location.pathname !== '/settings' ? (
