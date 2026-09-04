@@ -7,6 +7,9 @@ import AppLayout from '@/components/layout/AppLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Users, LayoutGrid, AlertTriangle, CheckCircle2, TrendingUp, FileDown, FileSpreadsheet, Printer, Sparkles, Map, BarChart2 } from 'lucide-react';
+import {
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+} from '@/components/ui/select';
 import GlobalSyncButton from '@/components/common/GlobalSyncButton';
 import TasksAlert from '@/components/dashboard/TasksAlert';
 import AbsenceAlert from '@/components/dashboard/AbsenceAlert';
