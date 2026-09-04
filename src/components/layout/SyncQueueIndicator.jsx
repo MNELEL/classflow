@@ -11,16 +11,27 @@ import { base44 } from '@/api/base44Client';
  */
 export default function SyncQueueIndicator() {
   const [count, setCount] = useState(0);
-  const { syncing, runFlush } = useOfflineSyncQueue();
+  const [syncing, setSyncing] = useState(false);
 
   useEffect(() => subscribeQueue((items) => setCount(items.length)), []);
 
   if (count === 0) return null;
 
+  async function handleClick() {
+    if (!isOnline() || syncing) return;
+    setSyncing(true);
+    try {
+      const { sent } = await flushQueue(EXECUTORS);
+      if (sent > 0) toast.success(sent === 1 ? 'פעולה אחת סונכנה' : `${sent} פעולות סונכנו`);
+    } finally {
+      setSyncing(false);
+    }
+  }
+
   return (
     <button
       type="button"
-      onClick={runFlush}
+      onClick={handleClick}
       disabled={syncing}
       className="min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg hover:bg-accent transition-colors select-none relative"
       aria-label={`${count} פעולות ממתינות לסנכרון — לחץ לניסיון מיידי`}
