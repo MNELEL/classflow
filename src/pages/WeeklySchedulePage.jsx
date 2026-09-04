@@ -243,13 +243,55 @@ export default function WeeklySchedulePage() {
   const plan = plans[0] || null;
 
   const createPlan = useMutation({
-    mutationFn: (data) => base44.entities.WeeklyPlan.create(data),
-    onSuccess: () => qc.invalidateQueries(['weekly-plans', weekKey]),
+    mutationFn: async (data) => {
+      // שמירה מקומית עם המצב המלא של השבוע (data.days) — אין צורך בבדיקת קונפליקט
+      // מורכבת כי זו החלפה מלאה של המצב הנוכחי, לא diff.
+      if (!isOnline()) {
+        enqueueWrite('weekly_plan', { mode: 'create', payload: data });
+        return { ...data, id: `queued-${Date.now()}`, __queued: true };
+      }
+      try {
+        return await base44.entities.WeeklyPlan.create(data);
+      } catch (err) {
+        const looksLikeNetworkError = err?.message?.toLowerCase?.().includes('network')
+          || err?.message?.toLowerCase?.().includes('fetch')
+          || err?.name === 'TypeError';
+        if (looksLikeNetworkError) {
+          enqueueWrite('weekly_plan', { mode: 'create', payload: data });
+          return { ...data, id: `queued-${Date.now()}`, __queued: true };
+        }
+        throw err;
+      }
+    },
+    onSuccess: (result) => {
+      qc.invalidateQueries(['weekly-plans', weekKey]);
+      if (result?.__queued) toast.success('השינוי נשמר מקומי ויסונכן כשהחיבור יחזור');
+    },
   });
 
   const updatePlan = useMutation({
-    mutationFn: ({ id, data }) => base44.entities.WeeklyPlan.update(id, data),
-    onSuccess: () => qc.invalidateQueries(['weekly-plans', weekKey]),
+    mutationFn: async ({ id, data }) => {
+      if (!isOnline()) {
+        enqueueWrite('weekly_plan', { mode: 'update', id, payload: data, week_start: weekKey });
+        return { id, ...data, __queued: true };
+      }
+      try {
+        return await base44.entities.WeeklyPlan.update(id, data);
+      } catch (err) {
+        const looksLikeNetworkError = err?.message?.toLowerCase?.().includes('network')
+          || err?.message?.toLowerCase?.().includes('fetch')
+          || err?.name === 'TypeError';
+        if (looksLikeNetworkError) {
+          enqueueWrite('weekly_plan', { mode: 'update', id, payload: data, week_start: weekKey });
+          return { id, ...data, __queued: true };
+        }
+        throw err;
+      }
+    },
+    onSuccess: (result) => {
+      qc.invalidateQueries(['weekly-plans', weekKey]);
+      if (result?.__queued) toast.success('השינוי נשמר מקומי ויסונכן כשהחיבור יחזור');
+    },
   });
 
   // Build lesson map: { day -> { hour -> lesson[] } }
