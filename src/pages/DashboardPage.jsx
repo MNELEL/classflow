@@ -178,6 +178,21 @@ export default function DashboardPage() {
             </div>
           </div>
           <p className="text-muted-foreground text-sm">מצב הכיתה במבט אחד</p>
+          {classes.length > 1 && (
+            <div className="mt-3">
+              <Select value={classFilter} onValueChange={setClassFilter}>
+                <SelectTrigger className="max-w-[220px] h-9 text-sm" aria-label="סינון לפי כיתה">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">כל הכיתות</SelectItem>
+                  {classes.map((c) => (
+                    <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
         </motion.div>
 
         {/* Daily Briefing */}
