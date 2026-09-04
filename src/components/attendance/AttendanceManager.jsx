@@ -38,14 +38,33 @@ export default function AttendanceManager({ students }) {
 
   const upsertMutation = useMutation({
     mutationFn: async ({ studentId, status, justified, justification_reason }) => {
+      // אין חיבור: מוסיפים לתור הסנכרון מקומי (נוכחות אינה דורשת בדיקת
+      // קונפליקט מורכבת), נשלח בפועל כשהחיבור יחזור. ה-onMutate למטה
+      // כבר מציג את השינוי מיד, אז המורה לא מרגיש הפרש בין רשת ללא רשת.
+      if (!isOnline()) {
+        enqueueWrite('attendance', { studentId, date: selectedDate, status, justified, justification_reason });
+        return { queued: true };
+      }
       const existing = attendance.find(a => a.student_id === studentId && a.date === selectedDate);
       const payload = { status };
       if (justified !== undefined) payload.justified = justified;
       if (justification_reason !== undefined) payload.justification_reason = justification_reason;
-      if (existing) {
-        return base44.entities.Attendance.update(existing.id, payload);
-      } else {
-        return base44.entities.Attendance.create({ student_id: studentId, date: selectedDate, ...payload });
+      try {
+        if (existing) {
+          return await base44.entities.Attendance.update(existing.id, payload);
+        }
+        return await base44.entities.Attendance.create({ student_id: studentId, date: selectedDate, ...payload });
+      } catch (err) {
+        // החיבור נפל באמצע הבקשה (לא רק navigator.onLine שגוי) — מעבירים לתור מקומי
+        // מצד ניתוק רשת בלבד, אבל אינן מנסים להבדיל שגיאות שרת אמיתיות (כגון RLS).
+        const looksLikeNetworkError = err?.message?.toLowerCase?.().includes('network')
+          || err?.message?.toLowerCase?.().includes('fetch')
+          || err?.name === 'TypeError';
+        if (looksLikeNetworkError) {
+          enqueueWrite('attendance', { studentId, date: selectedDate, status, justified, justification_reason });
+          return { queued: true };
+        }
+        throw err;
       }
     },
     onMutate: async ({ studentId, status, justified, justification_reason }) => {
