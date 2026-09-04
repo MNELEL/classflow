@@ -13,6 +13,7 @@ import { useSelectedDate } from '@/lib/dateContext';
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 import { toast } from 'sonner';
 import { addWeeks, addDays, startOfWeek, format, isSameDay } from 'date-fns';
+import { enqueueWrite, isOnline } from '@/lib/offlineQueue';
 import SmartBellTimer from '@/components/schedule/SmartBellTimer';
 import { MobileSelect, SelectItem } from '@/components/ui/MobileSelect';
 import { usePullToRefresh } from '@/hooks/usePullToRefresh';
