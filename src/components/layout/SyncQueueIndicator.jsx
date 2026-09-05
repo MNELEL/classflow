@@ -15,6 +15,10 @@ const EXECUTORS = {
   },
   grade: async (data) => base44.entities.Grade.create(data),
   school_event: async (data) => base44.entities.SchoolEvent.create(data),
+  weekly_plan: async ({ mode, id, payload }) => {
+    if (mode === 'update') return base44.entities.WeeklyPlan.update(id, payload);
+    return base44.entities.WeeklyPlan.create(payload);
+  },
 };
 
 /**
