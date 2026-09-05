@@ -16,6 +16,7 @@ const EXECUTORS = {
     return base44.entities.Attendance.create({ student_id: studentId, date, ...payload });
   },
   grade: async (data) => base44.entities.Grade.create(data),
+  school_event: async (data) => base44.entities.SchoolEvent.create(data),
 };
 
 export default function OfflineIndicator() {
