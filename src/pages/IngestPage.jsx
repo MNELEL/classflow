@@ -184,32 +184,48 @@ export default function IngestPage() {
             : null;
           const materialType = r.type === 'material' ? 'study' : null;
           const finalCategory = r.type === 'students' ? 'תלמידים' : r.type === 'material' ? 'חומר לימוד' : '';
-          const created = await base44.entities.LibraryItem.create({
-            title: title.trim() || r.name,
-            source_type: r.type === 'audio' ? 'audio_file' : (r.name.endsWith('.pdf') ? 'pdf' : 'word_doc'),
-            file_url: r.file_url,
-            file_name: r.name,
-            transcript: r.type === 'audio' ? r.extracted : undefined,
-            original_text: r.type !== 'audio' ? r.extracted : undefined,
-            ocr_confidence: r.type !== 'audio' ? ocrConf : null,
-            material_type: materialType,
-            description: r.extracted?.slice(0, 500),
-            ai_status: r.type === 'audio' ? 'ready' : 'pending',
-            category: finalCategory || undefined,
-          });
-          await logIngestAudit({
-            file_name: r.name,
-            suggested_category: '',
-            final_category: finalCategory,
-            material_type: materialType,
-            was_changed: false,
-            original_text_length: (r.extracted || '').length,
-            item_id: created?.id,
-          });
+          // שומרים על כל קובץ בנפרד — אם קובץ אחד נכשל באמצע ההלולאה, הקבצים
+          // שכבר נשמרו לספרייה לא אובדים, והמורה לא צריך לעבור שוב על עיבוד
+          // ה-AI היקר (זמן/עלות) על קבצים שכבר הצליחו.
+          try {
+            const created = await base44.entities.LibraryItem.create({
+              title: title.trim() || r.name,
+              source_type: r.type === 'audio' ? 'audio_file' : (r.name.endsWith('.pdf') ? 'pdf' : 'word_doc'),
+              file_url: r.file_url,
+              file_name: r.name,
+              transcript: r.type === 'audio' ? r.extracted : undefined,
+              original_text: r.type !== 'audio' ? r.extracted : undefined,
+              ocr_confidence: r.type !== 'audio' ? ocrConf : null,
+              material_type: materialType,
+              description: r.extracted?.slice(0, 500),
+              ai_status: r.type === 'audio' ? 'ready' : 'pending',
+              category: finalCategory || undefined,
+            });
+            await logIngestAudit({
+              file_name: r.name,
+              suggested_category: '',
+              final_category: finalCategory,
+              material_type: materialType,
+              was_changed: false,
+              original_text_length: (r.extracted || '').length,
+              item_id: created?.id,
+            });
+            savedCount += 1;
+          } catch {
+            failedSaves.push(r.name);
+          }
         }
-        toast.success(`${successResults.length} קבצים נשמרו לספרייה`);
-        setFiles([]);
-        setTitle('');
+        if (failedSaves.length === 0) {
+          toast.success(`${savedCount} קבצים נשמרו לספרייה`);
+          setFiles([]);
+          setTitle('');
+        } else if (savedCount > 0) {
+          toast.error(`${savedCount} קבצים נשמרו, אבל ${failedSaves.length} לא נשמרו: ${failedSaves.join('， ')}. העיבוד שלהם נשמר — אפשר לנסות לשמור שוב בלי להעלות מחדש.`);
+          // משאירים רק את הקבצים שנכשלו בשדה כדי שאפשר לנסות שוב בלי לאבד את העיבוד שכבר הצליח.
+          setFiles(prev => prev.filter(f => failedSaves.includes(f.name)));
+        } else {
+          toast.error('שגיאה בשמירה לספרייה. העיבוד של הקבצים נשמר — אפשר לנסות לשמור שוב ללא להעלות מחדש.');
+        }
       } catch {
         toast.error('שגיאה בשמירה לספרייה');
       }
