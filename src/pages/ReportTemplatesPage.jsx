@@ -9,6 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent } from '@/components/ui/card';
 import { Plus, Trash2, Pencil, X, Check, FileText } from 'lucide-react';
 import { toast } from 'sonner';
+import { useConfirmDialog } from '@/hooks/useConfirmDialog';
 
 const EMPTY = { name: '', subject: '', body: '' };
 
