@@ -112,6 +112,7 @@ export default function WorksheetDetailPage() {
 
   return (
     <AppLayout>
+      {ConfirmDialog}
       <div ref={containerRef} className="p-4 max-w-2xl mx-auto space-y-4" dir="rtl">
         <PullToRefreshIndicator pullY={pullY} refreshing={refreshing} />
 
