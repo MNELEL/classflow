@@ -33,6 +33,12 @@ export default function RafflePage() {
   const [spinName, setSpinName] = useState('');
   const [spinTimer, setSpinTimer] = useState(null);
 
+  // מנקה את אנימציית הסיבוב אם המורה עוזב את המסך באמצע ההגרלה — בלי זה
+  // ה-interval היה ממשיך לרוץ ברקע ומנסה לעדכן state על רכיב שכבר לא מוצג.
+  useEffect(() => {
+    return () => { if (spinTimer) clearInterval(spinTimer); };
+  }, [spinTimer]);
+
   const { data: students = [], isLoading } = useQuery({
     queryKey: ['students'],
     queryFn: () => base44.entities.Student.list(),
