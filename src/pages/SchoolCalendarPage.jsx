@@ -6,6 +6,7 @@ import { Plus, Pencil, Trash2, Clock, CalendarOff, CalendarClock, CalendarDays, 
 import SchoolRuleForm from '@/components/school/SchoolRuleForm';
 import { toHebrewFull } from '@/lib/hebrewDate';
 import { toast } from 'sonner';
+import { useConfirmDialog } from '@/hooks/useConfirmDialog';
 
 const DAYS = ['ראשון','שני','שלישי','רביעי','חמישי','שישי','שבת'];
 const EVENTS = { rosh_chodesh: 'ראש חודש', erev_chag: 'ערב חג', chag: 'חג', vacation: 'חופשה' };
