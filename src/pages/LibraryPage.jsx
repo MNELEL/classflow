@@ -70,9 +70,10 @@ export default function LibraryPage() {
   const [page, setPage] = useState(1);
   const [confirmDeleteId, setConfirmDeleteId] = useState(null);
 
+  const LIBRARY_FETCH_LIMIT = 500;
   const { data: items = [], isLoading } = useQuery({
     queryKey: ['library'],
-    queryFn: () => base44.entities.LibraryItem.list('-created_date', 100),
+    queryFn: () => base44.entities.LibraryItem.list('-created_date', LIBRARY_FETCH_LIMIT),
     refetchInterval: (query) => query.state.data?.some(i => i.ai_status === 'processing') ? 4000 : false,
   });
 
