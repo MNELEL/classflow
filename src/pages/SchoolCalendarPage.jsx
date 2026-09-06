@@ -52,6 +52,7 @@ export default function SchoolCalendarPage() {
   const qc = useQueryClient();
   const [formOpen, setFormOpen] = useState(false);
   const [editing, setEditing] = useState(null);
+  const { confirm, ConfirmDialog } = useConfirmDialog();
 
   const { data: rules = [], isLoading } = useQuery({
     queryKey: ['schoolCalendarRules'],
