@@ -45,7 +45,7 @@ export default function ReportTemplatesPage() {
   }
 
   async function remove(id) {
-    if (!window.confirm('למחוק תבנית זו?')) return;
+    if (!(await confirm({ title: 'למחוק תבנית זו?', description: 'הפעולה בלתי הפיכה.', confirmLabel: 'מחק' }))) return;
     try {
       await base44.entities.ReportTemplate.delete(id);
       qc.invalidateQueries({ queryKey: ['report-templates'] });
