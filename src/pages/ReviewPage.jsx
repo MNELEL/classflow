@@ -119,13 +119,24 @@ export default function ReviewPage() {
   async function handleClearReviewed() {
     const reviewed = [...approved, ...rejected];
     if (reviewed.length === 0) return;
-    try {
-      for (const item of reviewed) {
+    // מוחקים כל פריט בנפרד — אם מחיקה אחת נכשלת באמצע, שאר הפריטים שכבר נמחקו
+    // לא נשארים תקועים ב-UI, והמורה לא צריך לנסות לנקות שוב את הרשימה כולה.
+    let cleared = 0;
+    let failed = 0;
+    for (const item of reviewed) {
+      try {
         await base44.entities.PendingUpdate.delete(item.id);
+        cleared += 1;
+      } catch {
+        failed += 1;
       }
+    }
+    qc.invalidateQueries({ queryKey: ['pendingUpdates'] });
+    if (failed === 0) {
       toast.success('הרשימה נוקתה');
-      qc.invalidateQueries({ queryKey: ['pendingUpdates'] });
-    } catch (err) {
+    } else if (cleared > 0) {
+      toast.error(`${cleared} פריטים נוקו, אבל ${failed} לא נמחקו. אפשר לנסות שוב.`);
+    } else {
       toast.error('שגיאה בניקוי');
     }
   }
