@@ -363,9 +363,11 @@ function ClosedPollCard({ poll, onChanged }) {
   const totals = poll.options.map((_, i) => (poll.votes ?? []).filter((v) => v.option_index === i).length);
   const total = totals.reduce((a, b) => a + b, 0);
   const dateStr = new Date(poll.closed_at ?? poll.updated_date).toLocaleDateString('he-IL');
+  const { confirm, ConfirmDialog } = useConfirmDialog();
 
   return (
     <Card>
+      {ConfirmDialog}
       <CardContent className="pt-6 space-y-3">
         <div className="flex items-start justify-between gap-2">
           <div>
