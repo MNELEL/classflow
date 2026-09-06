@@ -133,6 +133,7 @@ export default function ReportTemplatesPage() {
           </div>
         )}
       </div>
+      {ConfirmDialog}
     </AppLayout>
   );
 }
