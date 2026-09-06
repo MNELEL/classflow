@@ -1,0 +1,38 @@
+{
+  "name": "Google Drive Student Docs Sync",
+  "description": "Watches Google Drive for changes and automatically syncs new student documents into the library",
+  "trigger": {
+    "condition": null,
+    "config": {
+      "trigger_type": "connector",
+      "events": [
+        "changes"
+      ],
+      "integration_type": "googledrive",
+      "resource_id": null
+    }
+  },
+  "definition": {
+    "document": {
+      "dsl": "1.0.0",
+      "name": "google_drive_student_docs_sync",
+      "version": "1.0",
+      "namespace": "base44"
+    },
+    "do": [
+      {
+        "run_function": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "syncDriveStudentDocs",
+            "args": {}
+          },
+          "then": "end"
+        }
+      }
+    ]
+  },
+  "x-base44-migrated-from-automation": {
+    "legacy_payload_function": "syncDriveStudentDocs"
+  }
+}
