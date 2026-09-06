@@ -42,8 +42,8 @@ function RuleCard({ r, onEdit, onDelete }) {
         <div className="text-sm font-semibold truncate">{r.name}</div>
         <div className="text-xs text-muted-foreground truncate">{describe(r)}</div>
       </div>
-      <button onClick={onEdit} className="w-9 h-9 rounded-lg hover:bg-accent flex items-center justify-center text-muted-foreground"><Pencil className="w-4 h-4" /></button>
-      <button onClick={onDelete} className="w-9 h-9 rounded-lg hover:bg-destructive/10 flex items-center justify-center text-destructive"><Trash2 className="w-4 h-4" /></button>
+      <button onClick={onEdit} aria-label={`עריכת ${r.name}`} className="w-9 h-9 rounded-lg hover:bg-accent flex items-center justify-center text-muted-foreground"><Pencil className="w-4 h-4" aria-hidden="true" /></button>
+      <button onClick={onDelete} aria-label={`מחיקת ${r.name}`} className="w-9 h-9 rounded-lg hover:bg-destructive/10 flex items-center justify-center text-destructive"><Trash2 className="w-4 h-4" aria-hidden="true" /></button>
     </div>
   );
 }
