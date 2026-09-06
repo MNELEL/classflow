@@ -233,6 +233,7 @@ ${cls?.name ? `שם הכיתה: ${cls.name}.` : ''} ${topic.trim() ? `נושא: 
 
 function LivePoll({ poll, students, onChanged }) {
   const qc = useQueryClient();
+  const { confirm, ConfirmDialog } = useConfirmDialog();
 
   const { data: fresh } = useQuery({
     queryKey: ['poll-live', poll.id],
