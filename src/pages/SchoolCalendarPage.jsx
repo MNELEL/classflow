@@ -109,7 +109,7 @@ export default function SchoolCalendarPage() {
           ) : (
             <div className="space-y-2">
               {grouped[sec.key].map(r => (
-                <RuleCard key={r.id} r={r} onEdit={() => { setEditing(r); setFormOpen(true); }} onDelete={() => { if (confirm('למחוק את הכלל?')) delMut.mutate(r.id); }} />
+                <RuleCard key={r.id} r={r} onEdit={() => { setEditing(r); setFormOpen(true); }} onDelete={async () => { if (await confirm({ title: 'למחוק את הכלל?', description: 'הפעולה בלתי הפיכה.', confirmLabel: 'מחק' })) delMut.mutate(r.id); }} />
               ))}
             </div>
           )}
