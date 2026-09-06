@@ -365,6 +365,11 @@ export default function LibraryPage() {
                   <Button size="sm" variant="outline" disabled={safePage >= totalPages} onClick={() => setPage(p => p + 1)}>הבא</Button>
                 </div>
               )}
+              {items.length >= LIBRARY_FETCH_LIMIT && (
+                <p className="text-center text-xs text-muted-foreground pt-1">
+                  מוצגים {LIBRARY_FETCH_LIMIT} הפריטים העדכניים ביותר. חומרים ישנים יותר לא מוצגים כרגע — פנה לתמיכה אם אתה צריך לגשת אליהם.
+                </p>
+              )}
               </>
             )}
           </TabsContent>
