@@ -6,6 +6,7 @@ import {
   MessageSquare, Plus, Sparkles, Trash2, X, Check, Radio, History, Lock, Unlock, Loader2,
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { useConfirmDialog } from '@/hooks/useConfirmDialog';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
