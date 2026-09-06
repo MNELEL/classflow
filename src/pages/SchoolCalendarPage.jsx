@@ -122,6 +122,7 @@ export default function SchoolCalendarPage() {
       </div>
 
       <SchoolRuleForm open={formOpen} initial={editing} onClose={() => { setFormOpen(false); setEditing(null); }} onSave={(payload) => saveMut.mutate(payload)} />
+      {ConfirmDialog}
     </div>
   );
 }
