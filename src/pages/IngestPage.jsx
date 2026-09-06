@@ -176,6 +176,8 @@ export default function IngestPage() {
     // Save to library
     const successResults = allResults.filter(r => r.status === 'success');
     if (successResults.length > 0 && title.trim()) {
+      let savedCount = 0;
+      const failedSaves = [];
       try {
         for (const r of successResults) {
           const rows = r.rows || [];
