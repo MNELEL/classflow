@@ -269,6 +269,7 @@ function LivePoll({ poll, students, onChanged }) {
 
   return (
     <div className="grid gap-4 lg:grid-cols-[1.2fr_1fr]">
+      {ConfirmDialog}
       <Card>
         <CardContent className="pt-6 space-y-4">
           <div className="flex items-start justify-between gap-2">
