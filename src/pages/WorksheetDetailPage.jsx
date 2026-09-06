@@ -149,7 +149,9 @@ export default function WorksheetDetailPage() {
             size="sm"
             variant="outline"
             className="text-destructive hover:text-destructive"
-            onClick={() => { if (confirm('למחוק דף עבודה זה?')) deleteMutation.mutate(); }}
+            onClick={async () => {
+              if (await confirm({ title: 'למחוק דף עבודה זה?', description: 'הפעולה בלתי הפיכה.', confirmLabel: 'מחק' })) deleteMutation.mutate();
+            }}
           >
             <Trash2 className="w-3.5 h-3.5" />
           </Button>
