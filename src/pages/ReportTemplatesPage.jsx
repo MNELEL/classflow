@@ -21,6 +21,7 @@ export default function ReportTemplatesPage() {
   });
   const [editing, setEditing] = useState(null);
   const [draft, setDraft] = useState(EMPTY);
+  const { confirm, ConfirmDialog } = useConfirmDialog();
 
   function startNew() { setEditing('new'); setDraft(EMPTY); }
   function startEdit(t) { setEditing(t.id); setDraft({ name: t.name, subject: t.subject || '', body: t.body }); }
