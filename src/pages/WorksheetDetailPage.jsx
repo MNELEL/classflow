@@ -18,6 +18,7 @@ export default function WorksheetDetailPage() {
   const navigate = useNavigate();
   const qc = useQueryClient();
   const [showAnswers, setShowAnswers] = useState({});
+  const { confirm, ConfirmDialog } = useConfirmDialog();
 
   const handleRefresh = async () => { await qc.invalidateQueries({ queryKey: ['worksheet', id] }); };
   const { containerRef, pullY, refreshing } = usePullToRefresh(handleRefresh);
