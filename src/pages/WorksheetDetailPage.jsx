@@ -10,6 +10,7 @@ import { toast } from 'sonner';
 import { Printer, Star, StarOff, Trash2, ChevronDown, ChevronUp, BookOpen } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { usePullToRefresh } from '@/hooks/usePullToRefresh';
+import { useConfirmDialog } from '@/hooks/useConfirmDialog';
 import PullToRefreshIndicator from '@/components/ui/PullToRefreshIndicator';
 
 export default function WorksheetDetailPage() {
