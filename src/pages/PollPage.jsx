@@ -308,7 +308,8 @@ function LivePoll({ poll, students, onChanged }) {
                 <Lock className="ms-1 h-4 w-4" aria-hidden="true" /> סיים ושמור
               </Button>
               <Button variant="ghost" size="sm" className="text-destructive" onClick={async () => {
-                if (!confirm('למחוק את הסקר?')) return;
+                if (!(await confirm({ title: 'למחוק את הסקר?', description: 'הפעולה בלתי הפיכה. כל הנתונים של הסקר יימחקו.', confirmLabel: 'מחק' })))
+                  return;
                 await base44.entities.ClassPoll.delete(poll.id);
                 toast.success('נמחק');
                 onChanged();
