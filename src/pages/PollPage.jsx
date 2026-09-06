@@ -383,7 +383,8 @@ function ClosedPollCard({ poll, onChanged }) {
               <Unlock className="ms-1 h-3.5 w-3.5" aria-hidden="true" /> פתח מחדש
             </Button>
             <Button variant="ghost" size="icon" className="text-destructive" onClick={async () => {
-              if (!confirm('למחוק?')) return;
+              if (!(await confirm({ title: 'למחוק את הסקר?', description: 'הפעולה בלתי הפיכה.', confirmLabel: 'מחק' })))
+                return;
               await base44.entities.ClassPoll.delete(poll.id);
               onChanged();
             }}>
