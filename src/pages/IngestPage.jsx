@@ -383,8 +383,8 @@ export default function IngestPage() {
                     <p className="text-[11px] text-muted-foreground">{(file.size / 1024).toFixed(0)} KB</p>
                   </div>
                   {!processing && (
-                    <button onClick={() => removeFile(idx)} className="p-1.5 hover:bg-destructive/10 rounded-lg text-muted-foreground hover:text-destructive">
-                      <X className="w-4 h-4" />
+                    <button onClick={() => removeFile(idx)} aria-label={`הסרת ${file.name}`} className="p-1.5 hover:bg-destructive/10 rounded-lg text-muted-foreground hover:text-destructive">
+                      <X className="w-4 h-4" aria-hidden="true" />
                     </button>
                   )}
                 </motion.div>
