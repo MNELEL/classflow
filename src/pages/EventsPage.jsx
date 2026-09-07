@@ -173,8 +173,8 @@ export default function EventsPage() {
                     <span>{meta.emoji}</span>
                     <span className="text-sm flex-1 truncate">{event.title}</span>
                     <span className="text-[10px] text-muted-foreground">{formatDateBoth(event.start_date)}</span>
-                    <button onClick={() => deleteMutation.mutate(event.id)} className="p-1 hover:bg-destructive/10 rounded-lg">
-                      <X className="w-3 h-3 text-destructive" />
+                    <button onClick={() => deleteMutation.mutate(event.id)} aria-label={`מחיקת ${event.title}`} className="p-1 hover:bg-destructive/10 rounded-lg">
+                      <X className="w-3 h-3 text-destructive" aria-hidden="true" />
                     </button>
                   </div>
                 );
