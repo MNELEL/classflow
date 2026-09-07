@@ -172,7 +172,7 @@ export default function SettingsPage() {
                   <div key={c.id} className="flex items-center gap-1.5 bg-muted/60 rounded-lg px-2.5 py-1.5">
                     {c.icon && <span>{c.icon}</span>}
                     <span className="text-sm font-medium">{c.name}</span>
-                    <button onClick={() => delCat.mutate(c.id)} className="text-destructive/40 hover:text-destructive mr-1"><Trash2 className="w-3 h-3" /></button>
+                    <button onClick={() => delCat.mutate(c.id)} aria-label={`מחיקת קטגוריה ${c.name}`} className="text-destructive/40 hover:text-destructive mr-1"><Trash2 className="w-3 h-3" aria-hidden="true" /></button>
                   </div>
                 ))}
               </div>
