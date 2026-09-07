@@ -136,8 +136,8 @@ export default function EventsPage() {
                     <div className="flex-1 min-w-0">
                       <div className="flex items-start justify-between gap-2">
                         <p className="font-semibold text-sm">{event.title}</p>
-                        <button onClick={() => deleteMutation.mutate(event.id)} className="p-1 hover:bg-destructive/10 rounded-lg shrink-0">
-                          <Trash2 className="w-3.5 h-3.5 text-destructive" />
+                        <button onClick={() => deleteMutation.mutate(event.id)} aria-label={`מחיקת ${event.title}`} className="p-1 hover:bg-destructive/10 rounded-lg shrink-0">
+                          <Trash2 className="w-3.5 h-3.5 text-destructive" aria-hidden="true" />
                         </button>
                       </div>
                       <div className="flex items-center gap-2 mt-1 flex-wrap">
