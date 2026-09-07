@@ -165,8 +165,8 @@ export default function GamificationPage() {
                       <p className="font-semibold text-sm">{c.title}</p>
                       {c.description && <p className="text-xs text-muted-foreground">{c.description}</p>}
                     </div>
-                    <button onClick={() => deleteCampaign.mutate(c.id)} className="text-destructive/40 hover:text-destructive">
-                      <Trash2 className="w-3.5 h-3.5" />
+                    <button onClick={() => deleteCampaign.mutate(c.id)} aria-label={`מחיקת ${c.title}`} className="text-destructive/40 hover:text-destructive">
+                      <Trash2 className="w-3.5 h-3.5" aria-hidden="true" />
                     </button>
                   </div>
                   <div className="flex items-center gap-2 mb-2">
