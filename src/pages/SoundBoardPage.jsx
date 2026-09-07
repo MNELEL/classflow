@@ -312,7 +312,7 @@ function SoundCard({ sound, isPlaying, onPlay, onDelete, audioRef, onEnded, type
               {sound.tags?.slice(0, 3).map(tag => (
                 <Badge key={tag} variant="secondary" className="text-[9px] px-1 py-0 h-4">
                   {tag}
-                  <button onClick={() => handleRemoveTag(tag)} className="ml-1 hover:text-destructive">×</button>
+                  <button onClick={() => handleRemoveTag(tag)} aria-label={`הסרת תג ${tag}`} className="ml-1 hover:text-destructive">×</button>
                 </Badge>
               ))}
               {(!sound.tags || sound.tags.length === 0) && (
