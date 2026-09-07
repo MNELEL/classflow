@@ -97,8 +97,8 @@ export default function GamificationPage() {
           </div>
           <Leaderboard students={students} pointsMap={pointsMap} kioskMode />
         </div>
-        <button onClick={() => setKioskMode(false)} className="fixed top-4 left-4 text-white/50 hover:text-white">
-          <Minimize2 className="w-5 h-5" />
+        <button onClick={() => setKioskMode(false)} aria-label="יציאה ממצב תצוגה מלא" className="fixed top-4 left-4 text-white/50 hover:text-white">
+          <Minimize2 className="w-5 h-5" aria-hidden="true" />
         </button>
       </div>
     );
