@@ -282,8 +282,8 @@ export default function TeacherStylePage() {
                   <div key={i} className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-primary/5 border border-primary/20 text-xs">
                     <FileText className="w-3 h-3 text-primary" />
                     <span className="truncate max-w-[120px]">{f.name}</span>
-                    <button onClick={() => setUploadedFiles(prev => prev.filter((_, j) => j !== i))} className="text-muted-foreground hover:text-destructive">
-                      <X className="w-3 h-3" />
+                    <button onClick={() => setUploadedFiles(prev => prev.filter((_, j) => j !== i))} aria-label={`הסרת ${f.name}`} className="text-muted-foreground hover:text-destructive">
+                      <X className="w-3 h-3" aria-hidden="true" />
                     </button>
                   </div>
                 ))}
