@@ -172,7 +172,7 @@ function LessonCard({ lesson, color, onDelete, libraryItem }) {
       {confirm ? (
         <div className="absolute inset-0 rounded-xl bg-destructive/90 flex items-center justify-center gap-2 z-10">
           <button onClick={() => { onDelete(); setConfirm(false); }} className="text-white text-[11px] font-bold px-2 py-1 bg-white/20 rounded-lg">מחק</button>
-          <button onClick={() => setConfirm(false)} className="text-white/80 text-[11px]"><X className="w-3 h-3" /></button>
+          <button onClick={() => setConfirm(false)} aria-label="ביטול" className="text-white/80 text-[11px]"><X className="w-3 h-3" aria-hidden="true" /></button>
         </div>
       ) : (
         <button
