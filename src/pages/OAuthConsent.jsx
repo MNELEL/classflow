@@ -72,7 +72,7 @@ export default function OAuthConsent() {
         }
         setInfo(data);
       } catch (e) {
-        setError("Could not load this authorization request. Please try again.");
+        setError("לא ניתן היה לטעון את בקשת האישור הזו. אנא נסה שוב.");
       } finally {
         if (!redirecting) setChecking(false);
       }
