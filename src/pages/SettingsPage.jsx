@@ -177,8 +177,8 @@ export default function SettingsPage() {
                 ))}
               </div>
               <div className="flex gap-2">
-                <Input placeholder="אייקון (אמוג'י)" value={newCat.icon} onChange={e => setNewCat(p => ({ ...p, icon: e.target.value }))} className="w-20 text-center" />
-                <Input placeholder="שם קטגוריה..." value={newCat.name} onChange={e => setNewCat(p => ({ ...p, name: e.target.value }))} className="flex-1" />
+                <Input aria-label="אייקון קטגוריה" placeholder="אייקון (אמוג'י)" value={newCat.icon} onChange={e => setNewCat(p => ({ ...p, icon: e.target.value }))} className="w-20 text-center" />
+                <Input aria-label="שם הקטגוריה" placeholder="שם קטגוריה..." value={newCat.name} onChange={e => setNewCat(p => ({ ...p, name: e.target.value }))} className="flex-1" />
                 <Button size="icon" onClick={() => newCat.name && addCat.mutate(newCat)} disabled={!newCat.name} aria-label="הוסף קטגוריה"><Plus className="w-4 h-4" /></Button>
               </div>
               <Input placeholder="תיאור פדגוגי (אופציונלי)" value={newCat.description} onChange={e => setNewCat(p => ({ ...p, description: e.target.value }))} />
