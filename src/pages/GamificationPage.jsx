@@ -253,7 +253,7 @@ export default function GamificationPage() {
                 ))}
               </div>
             </div>
-            <Input placeholder="סיבה / תיאור..." value={rewardForm.reason} onChange={e => setRewardForm(p => ({ ...p, reason: e.target.value }))} />
+            <Input aria-label="סיבה או תיאור הפרס" placeholder="סיבה / תיאור..." value={rewardForm.reason} onChange={e => setRewardForm(p => ({ ...p, reason: e.target.value }))} />
             <Button className="w-full" onClick={handleAddReward} disabled={addReward.isPending}>
               {addReward.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : '✨ הענק נקודות'}
             </Button>
