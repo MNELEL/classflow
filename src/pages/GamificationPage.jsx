@@ -274,7 +274,7 @@ export default function GamificationPage() {
         <DialogContent dir="rtl" className="max-w-sm">
           <DialogHeader><DialogTitle>🎯 צור מבצע חדש</DialogTitle></DialogHeader>
           <div className="space-y-3">
-            <Input placeholder="שם המבצע..." value={campaignForm.title} onChange={e => setCampaignForm(p => ({ ...p, title: e.target.value }))} />
+            <Input aria-label="שם המבצע" placeholder="שם המבצע..." value={campaignForm.title} onChange={e => setCampaignForm(p => ({ ...p, title: e.target.value }))} />
             <Textarea placeholder="תיאור..." value={campaignForm.description} onChange={e => setCampaignForm(p => ({ ...p, description: e.target.value }))} className="resize-none text-sm min-h-[60px]" />
             <div className="flex gap-2 items-center">
               <label className="text-sm text-muted-foreground shrink-0">יעד נקודות:</label>
