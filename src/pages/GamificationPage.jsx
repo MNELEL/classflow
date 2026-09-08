@@ -157,7 +157,7 @@ export default function GamificationPage() {
             )}
             {campaigns.map(c => {
               const topPoints = Math.max(...students.map(s => pointsMap[s.id] || 0), 1);
-              const progress = Math.min(100, Math.round((topPoints / c.target_points) * 100));
+              const progress = c.target_points > 0 ? Math.min(100, Math.round((topPoints / c.target_points) * 100)) : 0;
               return (
                 <div key={c.id} className="bg-card border border-border/70 rounded-2xl p-4">
                   <div className="flex justify-between items-start mb-2">
