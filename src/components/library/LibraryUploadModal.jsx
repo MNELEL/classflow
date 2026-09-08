@@ -6,7 +6,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { MobileSelect, SelectItem } from '@/components/ui/MobileSelect';
 import { Badge } from '@/components/ui/badge';
 import { base44 } from '@/api/base44Client';
-import { useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { Loader2, Upload, X, Check, Link2, Globe, FileText, Mic, Video, Image, Music, File, Plus, CloudIcon, FolderDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -17,6 +17,7 @@ import { useNavigate } from 'react-router-dom';
 import { validateExtractedText, buildQualityNote } from '@/lib/aiAnalysis';
 import { validateUploadSize } from '@/lib/uploadValidation';
 import { transcribeAudioFile } from '@/lib/audioTranscription';
+import { attachTranscriptToCommunicationHistory } from '@/lib/audioCommunicationLink';
 
 const CATEGORIES = ['גמרא', 'הלכה', 'חומש', 'נ"ך', 'תפילה', 'מחשבת ישראל', 'מדעים', 'מתמטיקה', 'שפה', 'תבנית תעודה', 'תבנית חוברת קשר', 'אחר'];
 
@@ -83,6 +84,25 @@ async function analyzeItem(item, qc, opts = {}) {
           qc.invalidateQueries({ queryKey: ['library-item', item.id] });
           return;
         }
+      }
+      // Student-linked audio (e.g. a recorded conversation with a parent):
+      // attach the transcript to the student's communication history instead
+      // of running the lesson-analysis pipeline.
+      if (opts.linkedStudent) {
+        await attachTranscriptToCommunicationHistory({
+          student: opts.linkedStudent,
+          transcript,
+          libraryItem: item,
+        });
+        qc.invalidateQueries({ queryKey: ['parent-contacts'] });
+        await base44.entities.LibraryItem.update(item.id, {
+          ai_status: 'ready',
+          ai_summary: `✅ תומלל וצורף להיסטוריית התקשורת של ${opts.linkedStudent.name}`,
+        });
+        qc.invalidateQueries({ queryKey: ['library'] });
+        qc.invalidateQueries({ queryKey: ['library-item', item.id] });
+        toast.success(`התמלול צורף להיסטוריית התקשורת של ${opts.linkedStudent.name}`);
+        return;
       }
       // Full lesson analysis: structured summary + review questions + key points + classification
       const analysis = await base44.integrations.Core.InvokeLLM({
@@ -200,6 +220,11 @@ export default function LibraryUploadModal({ open, onClose, defaultCategory = ''
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState([]); // [{name, status}]
   const [dragOver, setDragOver] = useState(false);
+  // Students list — for linking an audio upload to a student's communication history
+  const { data: students = [] } = useQuery({
+    queryKey: ['students-active-lite'],
+    queryFn: () => base44.entities.Student.filter({ is_active: true }, 'name', 500),
+  });
 
   function reset() {
     setTab('files'); setFiles([]); setLinkUrl(''); setLinkType('youtube_link');
@@ -227,6 +252,8 @@ export default function LibraryUploadModal({ open, onClose, defaultCategory = ''
         sourceType: detectSourceType(f),
         title: f.name.replace(/\.[^.]+$/, ''),
         id: Math.random().toString(36).slice(2),
+        studentId: null,
+        studentName: null,
       }));
     setFiles(prev => [...prev, ...fileArray]);
   }, []);
@@ -346,7 +373,11 @@ export default function LibraryUploadModal({ open, onClose, defaultCategory = ''
           });
           progress[progress.length - 1].status = 'analyzing';
           setUploadProgress([...progress]);
-          analyzeItem(item, qc, { file: fileObj.file, navigate }); // background
+          analyzeItem(item, qc, {
+            file: fileObj.file,
+            navigate,
+            linkedStudent: fileObj.studentId ? { id: fileObj.studentId, name: fileObj.studentName } : null,
+          }); // background
           progress[progress.length - 1].status = 'done';
           setUploadProgress([...progress]);
         } catch {
@@ -493,28 +524,48 @@ export default function LibraryUploadModal({ open, onClose, defaultCategory = ''
             {files.length > 0 && (
               <div className="space-y-2 max-h-56 overflow-y-auto">
                 {files.map(f => (
-                  <div key={f.id} className="flex items-center gap-2 p-2 bg-muted/30 rounded-xl border border-border">
-                    <span className="text-xl shrink-0">{sourceTypeIcon(f.sourceType)}</span>
-                    <div className="flex-1 min-w-0">
-                      <input
-                        className="w-full text-sm bg-transparent border-none outline-none font-medium"
-                        value={f.title}
-                        onChange={e => setFiles(prev => prev.map(x => x.id === f.id ? { ...x, title: e.target.value } : x))}
-                      />
-                      <p className="text-[10px] text-muted-foreground">{(f.file.size / 1024 / 1024).toFixed(2)} MB • {f.sourceType}</p>
+                  <div key={f.id} className="p-2 bg-muted/30 rounded-xl border border-border space-y-1.5">
+                    <div className="flex items-center gap-2">
+                      <span className="text-xl shrink-0">{sourceTypeIcon(f.sourceType)}</span>
+                      <div className="flex-1 min-w-0">
+                        <input
+                          className="w-full text-sm bg-transparent border-none outline-none font-medium"
+                          value={f.title}
+                          onChange={e => setFiles(prev => prev.map(x => x.id === f.id ? { ...x, title: e.target.value } : x))}
+                        />
+                        <p className="text-[10px] text-muted-foreground">{(f.file.size / 1024 / 1024).toFixed(2)} MB • {f.sourceType}</p>
+                      </div>
+                      <MobileSelect value={f.sourceType} onValueChange={v => setFiles(prev => prev.map(x => x.id === f.id ? { ...x, sourceType: v } : x))} className="h-7 text-[10px] w-28">
+                        <SelectItem value="pdf">📄 PDF</SelectItem>
+                        <SelectItem value="word_doc">📝 Word</SelectItem>
+                        <SelectItem value="presentation">📊 PPT</SelectItem>
+                        <SelectItem value="audio_file">🎵 אודיו</SelectItem>
+                        <SelectItem value="audio_recording">🎙️ הקלטה</SelectItem>
+                        <SelectItem value="video_file">🎬 סרטון</SelectItem>
+                        <SelectItem value="image">🖼️ תמונה</SelectItem>
+                      </MobileSelect>
+                      <button onClick={() => removeFile(f.id)} className="text-muted-foreground hover:text-destructive transition-colors">
+                        <X className="w-4 h-4" />
+                      </button>
                     </div>
-                    <MobileSelect value={f.sourceType} onValueChange={v => setFiles(prev => prev.map(x => x.id === f.id ? { ...x, sourceType: v } : x))} className="h-7 text-[10px] w-28">
-                      <SelectItem value="pdf">📄 PDF</SelectItem>
-                      <SelectItem value="word_doc">📝 Word</SelectItem>
-                      <SelectItem value="presentation">📊 PPT</SelectItem>
-                      <SelectItem value="audio_file">🎵 אודיו</SelectItem>
-                      <SelectItem value="audio_recording">🎙️ הקלטה</SelectItem>
-                      <SelectItem value="video_file">🎬 סרטון</SelectItem>
-                      <SelectItem value="image">🖼️ תמונה</SelectItem>
-                    </MobileSelect>
-                    <button onClick={() => removeFile(f.id)} className="text-muted-foreground hover:text-destructive transition-colors">
-                      <X className="w-4 h-4" />
-                    </button>
+                    {(f.sourceType === 'audio_file' || f.sourceType === 'audio_recording') && (
+                      <div className="flex items-center gap-1.5">
+                        <Mic className="w-3.5 h-3.5 text-primary shrink-0" />
+                        <MobileSelect
+                          value={f.studentId || 'none'}
+                          onValueChange={v => {
+                            const s = students.find(x => x.id === v);
+                            setFiles(prev => prev.map(x => x.id === f.id
+                              ? { ...x, studentId: v === 'none' ? null : v, studentName: v === 'none' ? null : s?.name || null }
+                              : x));
+                          }}
+                          className="h-7 text-[10px] flex-1"
+                        >
+                          <SelectItem value="none">ללא קישור לתלמיד</SelectItem>
+                          {students.map(s => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}
+                        </MobileSelect>
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>
