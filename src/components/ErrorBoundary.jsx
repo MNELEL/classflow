@@ -19,6 +19,23 @@ export default class ErrorBoundary extends Component {
     // Always log to console for local/dev visibility.
     console.error('[ErrorBoundary] Caught render error:', error, errorInfo);
 
+    // Self-heal the "mixed dev chunks" failure mode: when Vite re-optimizes
+    // deps (server restart / cache bust) without a full browser reload, the
+    // page ends up with react from one dep-optimization run and react-dom
+    // from another — React's hook dispatcher stays null and every useState
+    // throws "Cannot read properties of null (reading 'useState')". A full
+    // reload fetches a consistent module graph; do it automatically once
+    // per session so the teacher never sees this transient dev error.
+    if (
+      error instanceof TypeError &&
+      /reading 'useState'/.test(error.message || '') &&
+      !sessionStorage.getItem('classflow_stale_chunk_reload')
+    ) {
+      sessionStorage.setItem('classflow_stale_chunk_reload', '1');
+      window.location.reload();
+      return;
+    }
+
     // Best-effort: surface admin-only technical details without blocking
     // the fallback UI on a network round trip.
     base44.auth.me()
