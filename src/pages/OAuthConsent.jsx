@@ -25,7 +25,7 @@ export default function OAuthConsent() {
       let redirecting = false;
       try {
         if (!ctx) {
-          setError("This authorization link is invalid or has expired.");
+          setError("קישור האישור הזה לא תקין או פג תוקף.");
           return;
         }
         // Resolve the handle first: a dead handle must never render
