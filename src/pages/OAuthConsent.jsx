@@ -113,7 +113,7 @@ export default function OAuthConsent() {
         if ([400, 403, 404, 409].includes(res.status)) {
           let detail = "";
           try { detail = (await res.json()).detail; } catch (_) { /* keep default */ }
-          setReconnect(detail || "This authorization can no longer be completed. Reconnect from your AI client to try again.");
+          setReconnect(detail || "אישור זה לא יכול להשתלם יותר. חבר מחדש מהלקוח ה-AI שלך כדי לנסות שוב.");
           setSubmitting(false);
           return;
         }
