@@ -32,7 +32,7 @@ export default function ForgotPassword() {
       subtitle="נשלח לך קישור לאיפוס סיסמה"
       footer={
         <Link to="/login" className="text-primary font-medium hover:underline">
-          <ArrowLeft className="w-3 h-3 inline ms-1" />חזרה להתחברות
+          <ArrowRight className="w-3 h-3 inline ms-1" />חזרה להתחברות
         </Link>
       }
     >
