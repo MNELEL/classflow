@@ -67,6 +67,7 @@ function Row({ children, className = '' }) {
 
 /* ── main ─────────────────────────────────────────────── */
 export default function DailyBriefing({ students = [] }) {
+  const { TODAY, SINCE_30, GREETING } = useNowConstants();
   const studentMap = useMemo(() => Object.fromEntries(students.map(s => [s.id, s])), [students]);
 
   const { data: tasks = [] } = useQuery({ queryKey: ['tasks', 'all'], queryFn: () => base44.entities.Task.list() });
