@@ -136,24 +136,24 @@ export default function OAuthConsent() {
 
   if (checking) {
     return (
-      <AuthLayout icon={ShieldCheck} title="Authorize access">
+      <AuthLayout icon={ShieldCheck} title="אישור גישה">
         <div className="flex items-center justify-center py-6 text-muted-foreground">
-          <Loader2 className="w-5 h-5 mr-2 animate-spin" aria-hidden="true" />
-          Loading…
+          <Loader2 className="w-5 h-5 me-2 animate-spin" aria-hidden="true" />
+          טוען…
         </div>
       </AuthLayout>
     );
   }
 
-  const client = (info && info.client_name) || "An AI client";
-  const appName = (info && info.app_name) || "this app";
+  const client = (info && info.client_name) || "לקוח AI";
+  const appName = (info && info.app_name) || "האפליקציה הזאת";
 
   if (decided) {
     return (
       <AuthLayout
         icon={ShieldCheck}
-        title={decided === "approve" ? "Access granted" : "Access denied"}
-        subtitle={`You can return to ${client} and close this window.`}
+        title={decided === "approve" ? "הגישה אושרה" : "הגישה נדחתה"}
+        subtitle={`אפשר לחזור ל-${client} ולסגור את החלון.`}
       />
     );
   }
@@ -163,7 +163,7 @@ export default function OAuthConsent() {
   // no approve/deny controls.
   if (reconnect) {
     return (
-      <AuthLayout icon={ShieldCheck} title="Reconnect required">
+      <AuthLayout icon={ShieldCheck} title="נדרש חיבור מחדש">
         <div className="p-3 rounded-lg bg-destructive/10 text-destructive text-sm">
           {reconnect}
         </div>
@@ -176,7 +176,7 @@ export default function OAuthConsent() {
   // the error alone, never the approve/deny controls.
   if (error && !info) {
     return (
-      <AuthLayout icon={ShieldCheck} title="Authorize access">
+      <AuthLayout icon={ShieldCheck} title="אישור גישה">
         <div className="p-3 rounded-lg bg-destructive/10 text-destructive text-sm">
           {error}
         </div>
@@ -189,8 +189,8 @@ export default function OAuthConsent() {
   return (
     <AuthLayout
       icon={ShieldCheck}
-      title="Authorize access"
-      subtitle={`${client} wants to access ${appName} on your behalf`}
+      title="אישור גישה"
+      subtitle={`${client} מבקש גישה ל-${appName} מטעמך`}
     >
       {error && (
         <div className="mb-4 p-3 rounded-lg bg-destructive/10 text-destructive text-sm">
@@ -199,7 +199,7 @@ export default function OAuthConsent() {
       )}
 
       <p className="text-sm font-medium text-foreground mb-2">
-        {tools.length ? `It will be able to use these tools in ${appName}:` : "No tools requested"}
+        {tools.length ? `הוא יוכל להשתמש בכלים הבאים ב-${appName}:` : "לא בוקשו כלים"}
       </p>
       {tools.length > 0 && (
         <ul className="space-y-2 text-sm mb-6">
@@ -223,15 +223,15 @@ export default function OAuthConsent() {
           disabled={submitting}
           onClick={() => respond("deny")}
         >
-          Deny
+          דחה
         </Button>
         <Button
           className="flex-1 h-12 font-medium"
           disabled={submitting}
           onClick={() => respond("approve")}
         >
-          {submitting ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
-          Approve
+          {submitting ? <Loader2 className="w-4 h-4 me-2 animate-spin" /> : null}
+          אשר
         </Button>
       </div>
     </AuthLayout>
