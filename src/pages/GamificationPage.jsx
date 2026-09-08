@@ -280,7 +280,7 @@ export default function GamificationPage() {
               <label className="text-sm text-muted-foreground shrink-0">יעד נקודות:</label>
               <Input type="number" value={campaignForm.target_points} onChange={e => setCampaignForm(p => ({ ...p, target_points: +e.target.value }))} className="h-8" />
             </div>
-            <Input placeholder="🎁 הפרס..." value={campaignForm.reward_description} onChange={e => setCampaignForm(p => ({ ...p, reward_description: e.target.value }))} />
+            <Input aria-label="תיאור הפרס" placeholder="🎁 הפרס..." value={campaignForm.reward_description} onChange={e => setCampaignForm(p => ({ ...p, reward_description: e.target.value }))} />
             <Button className="w-full" onClick={() => addCampaign.mutate(campaignForm)} disabled={!campaignForm.title || addCampaign.isPending}>
               {addCampaign.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : 'צור מבצע'}
             </Button>
