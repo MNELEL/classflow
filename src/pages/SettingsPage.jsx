@@ -181,7 +181,7 @@ export default function SettingsPage() {
                 <Input aria-label="שם הקטגוריה" placeholder="שם קטגוריה..." value={newCat.name} onChange={e => setNewCat(p => ({ ...p, name: e.target.value }))} className="flex-1" />
                 <Button size="icon" onClick={() => newCat.name && addCat.mutate(newCat)} disabled={!newCat.name} aria-label="הוסף קטגוריה"><Plus className="w-4 h-4" /></Button>
               </div>
-              <Input placeholder="תיאור פדגוגי (אופציונלי)" value={newCat.description} onChange={e => setNewCat(p => ({ ...p, description: e.target.value }))} />
+              <Input aria-label="תיאור פדגוגי של הקטגוריה" placeholder="תיאור פדגוגי (אופציונלי)" value={newCat.description} onChange={e => setNewCat(p => ({ ...p, description: e.target.value }))} />
             </CardContent>
           </Card>
 
