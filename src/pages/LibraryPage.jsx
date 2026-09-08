@@ -234,7 +234,7 @@ export default function LibraryPage() {
             {/* Search */}
             <div className="relative">
               <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-              <Input placeholder="חפש לפי כותרת, נושא, תגיות..." value={search}
+              <Input aria-label="חיפוש בספרייה" placeholder="חפש לפי כותרת, נושא, תגיות..." value={search}
                 onChange={e => setSearch(e.target.value)} className="pr-9 h-9" />
             </div>
 
