@@ -117,7 +117,7 @@ export default function OAuthConsent() {
           setSubmitting(false);
           return;
         }
-        throw new Error("Could not complete authorization. Please try again.");
+        throw new Error("אישור הגישה נכשל. אנא נסה שוב.");
       }
       const data = await res.json();
       window.location.href = data.redirect_url;
