@@ -11,10 +11,19 @@ import {
 import { format, subDays, parseISO, isToday, isPast } from 'date-fns';
 import { he } from 'date-fns/locale';
 
-const TODAY = format(new Date(), 'yyyy-MM-dd');
-const SINCE_30 = format(subDays(new Date(), 30), 'yyyy-MM-dd');
-const HOUR = new Date().getHours();
-const GREETING = HOUR < 12 ? 'בוקר טוב' : HOUR < 17 ? 'צהריים טובים' : 'ערב טוב';
+// הערה: עד לא מציאים כקבועי-מודול כאן — אם המורה משאיר את ה-PWA פתוחה מעבר לחצות (נפוץ ראלי לדשבורד
+// שאמור להישאר פתוח במשך היום), קבוע שברמת טעינה ראשונה היה מקפיא לעולם
+// את "היום" ונשאר כך עד רענון הדף, גם אחרי חצות. מחשבים מחדש בכל רנדור במקום
+// משתנים קבועים — העלות החישוב זניחה בהרבה ומתרחשת על כל rerender שגם כך
+// נדרש בגלל רענון ה-query הקיים.
+function useNowConstants() {
+  const now = new Date();
+  const TODAY = format(now, 'yyyy-MM-dd');
+  const SINCE_30 = format(subDays(now, 30), 'yyyy-MM-dd');
+  const HOUR = now.getHours();
+  const GREETING = HOUR < 12 ? 'בוקר טוב' : HOUR < 17 ? 'צהריים טובים' : 'ערב טוב';
+  return { TODAY, SINCE_30, HOUR, GREETING, now };
+};
 
 /* ── helpers ──────────────────────────────────────────── */
 function Section({ color, icon, title, count, link, linkLabel, children }) {
