@@ -41,7 +41,7 @@ export default function OAuthConsent() {
           { credentials: "include", headers: infoHeaders },
         );
         if (!res.ok) {
-          setError("This authorization link is invalid or has expired.");
+          setError("קישור האישור הזה לא תקין או פג תוקף.");
           return;
         }
         const data = await res.json();
