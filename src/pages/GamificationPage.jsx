@@ -278,7 +278,7 @@ export default function GamificationPage() {
             <Textarea placeholder="תיאור..." value={campaignForm.description} onChange={e => setCampaignForm(p => ({ ...p, description: e.target.value }))} className="resize-none text-sm min-h-[60px]" />
             <div className="flex gap-2 items-center">
               <label className="text-sm text-muted-foreground shrink-0">יעד נקודות:</label>
-              <Input type="number" value={campaignForm.target_points} onChange={e => setCampaignForm(p => ({ ...p, target_points: +e.target.value }))} className="h-8" />
+              <Input type="number" min={1} aria-label="יעד נקודות למבצע" value={campaignForm.target_points} onChange={e => setCampaignForm(p => ({ ...p, target_points: +e.target.value }))} className="h-8" />
             </div>
             <Input aria-label="תיאור הפרס" placeholder="🎁 הפרס..." value={campaignForm.reward_description} onChange={e => setCampaignForm(p => ({ ...p, reward_description: e.target.value }))} />
             <Button className="w-full" onClick={() => addCampaign.mutate(campaignForm)} disabled={!campaignForm.title || addCampaign.isPending}>
