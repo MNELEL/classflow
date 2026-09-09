@@ -39,6 +39,7 @@ const WeeklyTasksPage = lazy(() => import('./pages/WeeklyTasksPage'));
 const GradeManagementPage  = lazy(() => import('./pages/GradeManagementPage'));
 const LibraryPage          = lazy(() => import('./pages/LibraryPage'));
 const LibraryItemPage      = lazy(() => import('./pages/LibraryItemPage'));
+const LibraryAnalysisPage  = lazy(() => import('./pages/LibraryAnalysisPage'));
 const GamificationPage     = lazy(() => import('./pages/GamificationPage'));
 const ToolkitPage          = lazy(() => import('./pages/ToolkitPage'));
 const ParentPortalPage     = lazy(() => import('./pages/ParentPortalPage'));
@@ -150,6 +151,7 @@ function AnimatedRoutes() {
               <Route path="/grades" element={<GradeManagementPage />} />
               <Route path="/library" element={<LibraryPage />} />
               <Route path="/library/:itemId" element={<LibraryItemPage />} />
+              <Route path="/library/:itemId/analysis" element={<LibraryAnalysisPage />} />
               <Route path="/gamification" element={<GamificationPage />} />
               <Route path="/toolkit" element={<ToolkitPage />} />
               <Route path="/parents" element={<ParentPortalPage />} />

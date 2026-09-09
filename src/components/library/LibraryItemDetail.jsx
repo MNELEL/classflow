@@ -8,7 +8,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import ReactMarkdown from 'react-markdown';
-import { X, Sparkles, Loader2, Plus, Trash2, Printer, Heart, Edit2, Check, BookOpen, Layers, GraduationCap, Star, Copy, ScanText, ExternalLink, Save } from 'lucide-react';
+import { X, Sparkles, Loader2, Plus, Trash2, Printer, Heart, Edit2, Check, BookOpen, Layers, GraduationCap, Star, Copy, ScanText, ExternalLink, Save, Columns2 } from 'lucide-react';
 import { toast } from 'sonner';
 import ArtifactGenerator from './ArtifactGenerator';
 import ArtifactRenderer from './ArtifactRenderer';
@@ -219,6 +219,12 @@ export default function LibraryItemDetail({ itemId, onClose }) {
             <Button size="sm" variant="outline" className="gap-1 text-xs h-7 whitespace-nowrap"
               onClick={() => navigate(`/ocr-review/${itemId}`)}>
               <ScanText className="w-3 h-3" /> סקירת OCR
+            </Button>
+          )}
+          {(item.transcript || ['audio_file', 'audio_recording', 'video_file'].includes(item.source_type)) && (
+            <Button size="sm" variant="outline" className="gap-1 text-xs h-7 whitespace-nowrap"
+              onClick={() => navigate(`/library/${itemId}/analysis`)}>
+              <Columns2 className="w-3 h-3" /> מסך ניתוח
             </Button>
           )}
           <button
